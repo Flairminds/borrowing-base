@@ -1,0 +1,47 @@
+/* #app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.preact:hover {
+  filter: drop-shadow(0 0 2em #673ab8aa);
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+} */
+
+/* *::-webkit-scrollbar { 
+  width: 10px !important; 
+  border-radius: 5px;
+} */
+
+/* *::-webkit-scrollbar-track { 
+  background: #f1f1f1; 
+}  */
+
+/* *::-webkit-scrollbar-thumb { 
+  background: gainsboro; 
+  border-radius: 5px;
+}  */
+
+/* body::-webkit-scrollbar-thumb:hover { 
+  background: #555; 
+}  */
+
+/* body::-webkit-scrollbar-button { 
+  display: none; 
+}  */

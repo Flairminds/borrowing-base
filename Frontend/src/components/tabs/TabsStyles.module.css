@@ -1,0 +1,74 @@
+/* .tabsDiv {
+    display: flex;
+    align-items: center;
+    width: 107%;
+    height: 16.5%;
+    border: 1px solid #DCDEDE;
+    box-shadow: #DCDEDE;
+    border-radius: 6px;
+    margin-bottom: 10px; 
+    gap: 10px;
+    cursor: pointer;
+} */
+.graphDiv {
+    width: 80%;
+    padding: 1%;
+    background-color: aqua;
+}
+
+.activeTab {
+    background-color: green; /* Change to your desired green color */
+}
+
+.tabImage
+{
+    width: 40px;
+    height: 40px;
+    padding-left: 10px;
+}
+
+.tabDataContainer
+{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.tabName
+{
+    font-weight: 400;
+    font-size: 14px;
+}
+.tabData
+{
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.changeDiv
+{
+    font-weight: 400;
+    font-size: 14px;
+    color: #6D6E6F;
+}
+
+.prevValue
+{
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.percentageChangeDiv
+{
+    font-weight: 500;
+    font-size: 14px;
+    color: #0EB198;
+}
+
+.moreIcon
+{
+    display: flex;
+    flex: 1;
+    justify-content: flex-end;
+    padding-right: 10px;
+}

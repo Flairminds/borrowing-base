@@ -1,0 +1,9 @@
+.customDatePicker .ant-picker-input > input {
+    box-shadow: none;
+    outline: none;
+  }
+  
+  /* Optional: Add any other custom styles */
+  .customDatePicker .ant-picker {
+    border: none;
+  }

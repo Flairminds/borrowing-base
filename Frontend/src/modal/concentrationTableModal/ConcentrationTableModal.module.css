@@ -1,0 +1,163 @@
+
+.image {
+  margin-bottom: 5px;
+  margin-right: 5px;
+}
+
+.titlecontainer {
+  display: flex;
+  gap: 5px;
+}
+
+.title {
+  font-weight: 500;
+  font-size: 16px;
+  padding: 0 0 0 3%;
+}
+
+.lockbutton{
+  background-color: #0EB198;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th{
+  padding: 8px;
+  padding-left: 15px;
+  text-align: left;
+  border-bottom: 1px solid #DCDEDE;
+  font-weight: 600;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+  background-color: #f2f2f2;
+
+  /* border-radius: 8px; */
+  
+}
+.td {
+  padding: 8px;
+  padding-left: 15px;
+  text-align: left;
+  border-bottom: 1px solid #DCDEDE;
+  font-weight: 400;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+
+.totalRow
+{
+  padding: 8px;
+  padding-left: 15px;
+  text-align: left;
+  border-bottom: 1px solid #DCDEDE;
+  font-weight: 400;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+  background-color: #EEF6FC;
+  
+  /* border-radius: 8px; */
+}
+
+.tableContainer
+{
+  border: 1px solid #DCDEDE;
+  border-radius: 8px;
+}
+
+.headRow .th:first-child
+{
+  border-top-left-radius: 9px;
+  /* background-color: red; */
+}
+
+.headRow .th:last-child 
+{
+  border-top-right-radius: 9px;
+  /* background-color: red; */
+}
+
+.lastRow .totalRow:first-child
+{
+  border-bottom-left-radius: 8px;
+}
+
+.lastRow .totalRow:last-child
+{
+  border-bottom-right-radius: 8px;
+}
+
+/* .tr
+{
+  border-bottom-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+} */
+
+.failDiv, .passDiv, .resultDiv{
+  /* background-color: red; */
+  /* display: flex; */
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.failDiv div{
+  /* margin: 5px; */
+  padding: 0.3rem 0.8rem;
+  text-align: center;
+  border-radius:13px;
+  background-color: #EB5757;
+  color: white;
+  /* text-align: center; */
+}
+
+.passDiv div{
+  background-color: #2fa703;
+  /* margin: 5px; */
+  text-align: center;
+  padding: 0.3rem 0.8rem;
+  border-radius:13px;
+  color: white;
+}
+
+.resultDiv div{
+  /* margin: 5px; */
+  padding: 0.3rem 0.8rem;
+  text-align: center;
+  border-radius:13px;
+}
+
+.naDatadiv div{
+  background-color: #ffa115;
+  /* margin: 5px; */
+  text-align: center;
+  padding: 0.3rem 0.8rem;
+  border-radius:13px;
+  color: white;
+}
+
+.prevActualData
+{
+  text-align: center;
+  margin: 0;
+}
+
+
+.failprevActual{
+  color: #EB5757;
+}
+
+.passprevActual{
+  color: #2fa703;
+}
+
+.naprevActual
+{
+  color: #ffa115;
+}

@@ -1,0 +1,22 @@
+.formContainer
+{
+    padding: 1rem;
+}
+
+.label{
+    font-weight: bold;
+}
+
+.input{
+    border: 0px;
+    width: 98%;
+    margin: 0.3rem 0rem;
+    border-bottom: 1px solid #A2A0A2;
+    padding: 0.3    rem 0.1rem;
+    
+}
+.input:focus{
+    outline: none;
+    border: 0px;
+    border-bottom: 1px solid #A2A0A2;
+}

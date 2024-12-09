@@ -1,0 +1,26 @@
+.updateParameterPopupContainer{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-left: 1.4rem;
+  margin: 1rem;
+}
+
+.optionDiv{
+    display: flex;
+    gap: 20px;
+}
+
+.parameterChangeContainer{
+    display: flex;
+    flex-direction: column;
+    padding-top: 0.8rem;
+}
+
+.changeInfo
+{
+    padding-bottom: 10px;
+    font-weight: 500;
+    font-size: 13px;
+}
+

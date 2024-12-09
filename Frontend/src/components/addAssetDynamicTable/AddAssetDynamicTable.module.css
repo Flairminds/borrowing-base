@@ -1,0 +1,104 @@
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    /* overflow-y: auto; */
+  }
+  
+  .th{
+    padding: 8px;
+    padding-left: 15px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 600;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    
+  }
+  .td {
+    padding: 8px;
+    padding-left: 15px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 400;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+    
+  }
+  
+  
+  .totalRow
+  {
+    padding: 8px;
+    padding-left: 15px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 400;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+    background-color: #EEF6FC;
+    
+    /* border-radius: 8px; */
+  }
+  
+  .tableContainer
+  {
+    height: 100%;
+    border: 1px solid #DCDEDE;
+    border-radius: 8px;
+    overflow-x: scroll;
+  }
+
+  .headRow .th:first-child
+  {
+    border-top-left-radius: 9px;
+    /* background-color: red; */
+  }
+
+  .headRow .th:last-child 
+  {
+    border-top-right-radius: 9px;
+    /* background-color: red; */
+  }
+
+  .lastRow .totalRow:first-child
+  {
+    border-bottom-left-radius: 8px;
+  }
+
+  .lastRow .totalRow:last-child
+  {
+    border-bottom-right-radius: 8px;
+  }
+
+  /* .tr
+  {
+    border-bottom-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+  } */
+/* 
+  .stickyHeader {
+  position: sticky; 
+  top: 0; 
+  z-index: 1;  
+  background-color: #f2f2f2; 
+} */
+
+
+.th:last-child, .td:last-child {
+  position: sticky;
+  right: 0;
+  background-color: #f2f2f2;
+  z-index: 1;
+}
+
+
+.th:last-child{
+  z-index: 100;
+}

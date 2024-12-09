@@ -1,0 +1,19 @@
+.cardContainer{
+    border: 1px solid #DCDEDE;
+    border-radius: 10px;
+    height: 100%;
+}
+
+.cardHeader
+{
+    display: flex;
+    justify-content: space-between;
+    padding: 1% 1% 0 1%;
+    align-items: center;
+}
+
+.heading
+{
+    font-weight: 500;
+    font-size: 16px;
+  }

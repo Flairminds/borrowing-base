@@ -1,0 +1,27 @@
+.inputBox
+{
+    background-color: #F9F9F9;
+    border: none;
+}
+
+.inputBox:focus {
+    border: none;
+    outline: none;
+}
+
+.searchDiv
+{
+    background-color: #F9F9F9;
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+    min-width: 40%;
+}
+
+::placeholder {
+    color: #C6C6C6;
+    opacity: 1; /* Firefox */
+  }
+  
+  ::-ms-input-placeholder { /* Edge 12-18 */
+    color: red;
+  }

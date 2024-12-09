@@ -1,0 +1,155 @@
+global:
+  currency: 'USD'                                    # ['USD', 'CAD', ...]
+  date-format: 'DD-MMM-YYYY'                         # [ 'MM-DD-YYYY', 'YYYY-MM-DD', ...]
+  amount-display-style: 'comma-separated'            # ['comma-separated', 'human-readable']
+  amount-decimal-places : 0                          # [0, 2] 
+  amount-decimal-places-in-human-readable-format : 1 # [0, 1, 2] 
+
+fund_std_col_map:
+  Max. Industry Concentration (% BB):
+    PCOF: 
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+      Industry:
+        Sheet Name: PL BB Build
+        Column Name: Eligible Industry
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Borrowing Base
+      Industry:
+        Sheet Name: Loan List
+        Column Name: Obligor Industry
+  Min. Eligible Issuers (#):
+    PCOF:
+      Eligible Issuer:
+        Sheet Name: PL BB Build
+        Column Name: Eligible Issuers
+    PFLT:
+      Eligible Issuer:
+        Sheet Name: Loan List
+        Column Name: Obligor
+  8 or 9 Issuers?:
+    PCOF:
+      Eligible Issuer:
+        Sheet Name: PL BB Build
+        Column Name: Eligible Issuers
+    PFLT:
+      Eligible Issuer:
+        Sheet Name: Loan List
+        Column Name: Obligor
+  Second Lien and Split Lien:
+    PFLT:
+      Second Lien and Split Lien:
+        Sheet Name: Loan List
+        Column Name: Second Lien and Split Lien
+      Values:
+        Sheet Name: Borrowing Base
+        Column Name: Values
+      Terms:
+        Sheet Name: Borrowing Base
+        Column Name: Terms
+  Second Lien:
+    PFLT:
+      Second Lien:
+        Sheet Name: Loan List
+        Column Name: Second Lien
+      Values:
+        Sheet Name: Borrowing Base
+        Column Name: Values
+      Terms:
+        Sheet Name: Borrowing Base
+        Column Name: Terms
+  DIP Collateral Loans:
+    PFLT:
+      DIP Collateral Loans:
+        Sheet Name: Loan List
+        Column Name: DIP Collateral Loans
+      Values:
+        Sheet Name: Borrowing Base
+        Column Name: Values
+      Terms:
+        Sheet Name: Borrowing Base
+        Column Name: Terms
+  Max. LTV Transactions:
+    PCOF:
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+      LTV Transaction:
+        Sheet Name: PL BB Build
+        Column Name: Classifications LTV Transaction
+  Max. Foreign Eligible Portfolio Investments:
+    PCOF:
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+      Approved Foreign Jurisdiction:
+        Sheet Name: PL BB Build
+        Column Name: Classifications Approved Foreign Jurisdiction
+  Max. Warehouse Assets:
+    PCOF:
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+      Warehouse Asset:
+        Sheet Name: PL BB Build
+        Column Name: Classifications Warehouse Asset
+  Max. Contribution to BB with Maturity > 8 years:
+    PCOF:
+      Maturity Date:
+        Sheet Name: PL BB Build
+        Column Name: Investment Maturity
+      Terms:
+        Sheet Name: Availability Borrower
+        Column Name: A
+      Values:
+        Sheet Name: Availability Borrower
+        Column Name: B
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+    PFLT:
+      Maturity Date:
+        Sheet Name: Loan List
+        Column Name: Maturity Date
+      Terms:
+        Sheet Name: Borrowing Base
+        Column Name: Terms
+      Values:
+        Sheet Name: Borrowing Base
+        Column Name: Values
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Borrowing Base
+  Max. Industry Concentration (Largest Industry, % BB):
+    PCOF: 
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+      Industry:
+        Sheet Name: PL BB Build
+        Column Name: Eligible Industry
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Borrowing Base
+      Industry:
+        Sheet Name: Loan List
+        Column Name: Obligor Industry
+  Max. Industry Concentration (2nd Largest Industry, % BB):
+    PCOF: 
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+      Industry:
+        Sheet Name: PL BB Build
+        Column Name: Eligible Industry
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Borrowing Base
+      Industry:
+        Sheet Name: Loan List
+        Column Name: Obligor Industry

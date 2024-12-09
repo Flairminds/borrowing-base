@@ -1,0 +1,230 @@
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .th{
+    padding: 8px;
+    padding-left: 15px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 600;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+    background-color: #f2f2f2;
+
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    /* border-radius: 8px; */
+    
+  }
+  .td {
+    /* white-space: nowrap; */
+    min-width: 7rem;
+    width: max-content;
+    padding: 8px;
+    padding-left: 15px;
+    text-align: center;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 400;
+    font-size: 14px;
+    /* align-items: center; */
+    /* justify-content: center; */
+    
+  }
+  
+  
+  .totalRow
+  {
+    padding: 8px;
+    padding-left: 15px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 400;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+    background-color: #EEF6FC;
+    
+    /* border-radius: 8px; */
+  }
+  
+  .tableContainer
+  {
+    border: 1px solid #DCDEDE;
+    border-radius: 8px;
+    height: 65vh;
+    overflow-x: scroll;
+  }
+
+  .headRow .th:first-child
+  {
+    border-top-left-radius: 9px;
+    /* background-color: red; */
+  }
+
+  .headRow .th:last-child 
+  {
+    border-top-right-radius: 9px;
+    /* background-color: red; */
+  }
+
+  .lastRow .totalRow:first-child
+  {
+    border-bottom-left-radius: 8px;
+  }
+
+  .lastRow .totalRow:last-child
+  {
+    border-bottom-right-radius: 8px;
+  }
+
+  .th:last-child, .td:last-child {
+    min-width: 6rem;
+    position: sticky;
+    background-color: white;
+    right: 0;
+    z-index: 1;
+  }
+  
+  
+  .th:last-child{
+    background-color: #f2f2f2;
+    z-index: 100;
+  }
+
+  .editAssetOptionImage
+  {
+    margin: 0rem 0.3rem;
+    cursor: pointer;
+  }
+
+  /* .tr
+  {
+  {
+    border-bottom-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+  } */
+
+  .tabsContainer{
+    display: flex;
+    width: 100%;
+    overflow-x: scroll;
+  }
+
+  .tabsContainer::-webkit-scrollbar {
+    display: none;
+}
+
+
+  .tabs
+  {
+    min-width: 5rem;
+    border-bottom: 2px solid rgb(160, 154, 154);
+    margin: 1rem 0.5rem;
+  }
+
+  .active
+  {
+    min-width: 5rem;
+    border-bottom: 2px solid #0EB198;
+    margin: 1rem 0.5em;
+  }
+
+  .messageContainer
+  {
+    text-align: end;
+    padding: 0px 5px;
+    color: rgb(221, 49, 49);
+  }
+
+  .assetUpdateInput
+  {
+    outline: none;
+    border: 0px;
+  }
+
+  .assetUpdateInput:focus
+  {
+    outline: none;
+    border-bottom: 1px solid black;
+  }
+  .currValueInput
+  {
+    outline: none;
+    background-color: #FFE2E5;
+    border: 0px;
+  }
+
+  .currValueInput:focus
+  {
+    outline: none;
+    border-bottom: 1px solid black;
+  }
+
+  .inputCellDiv
+  {
+    display: flex;
+  }
+
+  .optionsContainer
+  {
+    margin: 0.3rem 0.5rem;
+  }
+
+  .option
+  {
+    margin: 0.2rem 0.3rem;
+    cursor: pointer;
+  }
+
+  .redText
+  {
+    color: red;
+  }
+
+  .optionIcon
+  {
+    margin: 0rem 0.2rem 0.2rem 0.2rem;
+  }
+
+  .WIAnameInput
+  {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0.5rem 0.2rem
+  }
+  
+  .WIAInformation
+  {
+    font-size: 14px;
+    font-weight: 400;
+    margin: 0.1rem 0.2rem 0.6rem 0.2rem;
+    padding-right : 1rem;
+  }
+
+  .modificationSwitchContainer
+  {
+    background-color: #FBFCFE;
+    padding: 1rem;    
+    border: 1px solid #DCDCDC;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+  }
+
+  .modificationSwitch
+  {
+    margin-right: 0.6rem;
+  }
+
+  .prevValueText
+  {
+    /* background-color: #FFE2E5; */
+    background-color: #CDFFF7;
+  }
+  
+

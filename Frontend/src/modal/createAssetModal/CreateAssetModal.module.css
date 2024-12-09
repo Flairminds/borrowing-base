@@ -1,0 +1,35 @@
+.formContainer
+{
+    height: 70vh;
+    overflow-y: scroll;
+}
+
+.formItem
+{
+    margin: 0.6rem 1rem;
+}
+
+.formlabel
+{
+    color: rgb(97, 93, 93);
+    font-size: 14px;
+}
+
+.forminput
+{
+    width: 100%;
+    padding: 0.3rem;
+    border: 1px solid #DCDEDE;
+    border-radius: 5px;
+}
+
+.forminput:focus{
+    outline: none;
+}
+
+.submitBtn
+{
+    text-align: end;
+    margin: 1rem 3rem;
+    
+}

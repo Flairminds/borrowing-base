@@ -1,0 +1,68 @@
+.main {
+    /* font-family: Arial, sans-serif; */
+    /* padding: 1%; */
+    margin-top: 1.3rem;
+    margin-right: 3%;
+    margin-left: 5%;
+    margin-bottom: 1rem;
+    /* border: 1px solid #DCDEDE; */
+    border-radius: 5px;
+
+  }
+  
+  /* table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #DCDEDE;
+  }
+  
+  th{
+    padding: 8px;
+    padding-left: 15px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 600;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+  }
+  td {
+    padding: 8px;
+    padding-left: 15px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 400;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  th {
+    background-color: #f2f2f2;
+  } */
+  .pass {
+    display: flex;
+    background-color:#248900;
+    border-radius: 20px;
+    width: 50%;
+    justify-content: center;
+    border-bottom: 1px solid #DCDEDE;
+    margin-top: 10px;
+    padding:0.5% 0 0.5% 0;
+  }
+  
+  .fail {
+    display: flex;
+    background-color: #EB5757;
+    border-radius: 20px;
+    width: 50%;
+    justify-content: center;
+    border-bottom: 1px solid #DCDEDE; 
+    padding:0.5% 0 0.5% 0;
+    margin-top: 10px;
+  }
+  
+  .totalRow
+  {
+    background-color: #EEF6FC;
+  }

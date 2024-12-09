@@ -1,0 +1,301 @@
+.main{
+    display: flex;
+    flex-direction: column;
+    height: 55vh;
+}
+.heading{
+    padding: 1% 0 0 1% ;
+    /* background-color: aqua; */
+    /* height: 20%; */
+}
+
+.uploadFileDiv{
+    flex-grow: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* justify-self: flex-end; */
+    align-items: center;
+    /* height: 83.8vh; */
+    /* height: 100vh; */
+    /* background-color: aquamarine; */
+}
+
+.txtDiv{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.uploadBtnDiv{
+    padding-top: 1%;
+}
+
+.btn{
+    border: none;
+    padding: 10px 16px 10px 16px;
+    border-radius: 6px;
+    background-color: #0EB198;
+    color: #FFFFFF;
+}
+
+
+/* ::view-transition-new */
+
+
+
+
+
+
+
+
+
+
+
+.graphDiv {
+    width: 80%;
+    padding: 1%;
+}
+
+/* New styles for upload file modal */
+.uploadModalContainer {
+    border-top: 1px solid #CDD6E1;
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.25);
+    padding: 1% 3% 2% 3%;
+}
+
+.uploadModalContent {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.uploadDropzone {
+    border: 2px dashed #3B7DDD;
+    border-radius: 6px;
+    background-color: rgba(59, 125, 221, 0.02);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    margin-bottom: 20px;
+    padding: 20px;
+}
+
+.uploadDropzone p {
+    margin: 0;
+}
+
+.uploadedFilesList {
+    list-style-type: none;
+    padding: 0;
+}
+
+.uploadedFilesList li {
+    margin-bottom: 10px;
+}
+
+.uploadedFilesList li span {
+    font-weight: bold;
+}
+.container{
+    border-top: 1px solid #CDD6E1;
+    box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.25);
+    padding: 1% 3% 2% 3%;
+    
+}
+
+form {
+    padding-bottom: 5px;
+  }
+  
+    div .visible {
+      height: 120px;
+      border: 1px dashed rgba(59, 125, 221, 0.2);
+      border-radius: 6px;
+      background-color: rgba(59, 125, 221, 0.02);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      margin-right: 0px;
+    }
+  .imageClass {
+    background-image: url(../../assets//Cards/uploadFileimg.svg);
+    background-size: 100%;
+    width: 50px;
+    height: 50px;
+    margin-bottom: 10px;
+  }
+  
+  .btn-continue {
+    color: #ffffff;
+    background-color: #0eb198;
+    border-radius: 6px;
+    padding: 10px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    margin-right: 10px;
+    outline: none;
+    border: #0eb198;
+  }
+  
+  .btn-continue.disabled {
+    cursor: not-allowed;
+  }
+  
+  .modalContainer {
+    position: absolute;
+    top: 65%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+  }
+  
+  .greyoutBg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #000000;
+    opacity: 0.5;
+  }
+  
+  .whiteOut {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background-color: #ffffff;
+    opacity: 0.5;
+  }
+  
+  .loader {
+    animation: rotate 3s linear infinite;
+    width: 5rem;
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 15;
+  }
+  .download{
+    padding-bottom: 2%;    border-bottom: blue;
+  }
+  .aTag{
+    border-bottom: #3B7DDD;
+  }
+  .dataDiv{
+    display: flex;
+    flex-direction: column;
+    /* padding:  0; */
+  }
+  .inputSearch{
+    /* width: 20%; */
+    border-radius: 6px;
+    border: 1px solid #C8C8C8;
+    padding: 1%;
+    margin-bottom: 5px;
+  }
+  .searchinputTag{
+    padding: 0 1%;
+    border: none;
+  }
+  .DataFiles{
+    padding-top: 1%;
+    /* background-color: #0eb198; */
+    height: 12rem;
+    overflow:scroll ;
+  }
+  
+  
+  .dataMapping{
+    /* background-color: #0eb198; */
+    /* height: 50%; */
+    padding: 1.2% 0%;
+    font-weight: 400;
+    font-size: 14px;
+  }
+  .heading{
+    padding: 1.7% 2%; 
+  }
+  .uploadedFileDiv :hover{
+    border-radius: 8px;
+    background-color: #F7F7F7;
+  }
+.hoverContainer{
+  display: flex;
+
+}
+  .uploadedFileDiv .dataMapping {
+    position: relative;
+  }
+  
+  .uploadedFileDiv .dataMapping .hoverContainer:hover {
+    border-radius: 18px;  
+    background-color: #F7F7F7;
+  }
+  
+  .uploadedFileDiv .crossButton {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 1% 2%;
+    /* background-color: rgba(0, 0, 0, 0.5); */
+    /* color: white; */
+    cursor: pointer;
+    display: none;
+  }
+  
+  .uploadedFileDiv .hoverContainer:hover .crossButton {
+    display: block;
+  }
+  .imgCros{
+    cursor: pointer;
+    padding-right: 10px;
+  }
+  .imgCros:hover{
+    display: block;
+  }
+
+  .whatifdropdown
+  {
+    font-size: 12px;
+    border-radius: 0.4rem;
+    padding: 2px 5px;
+    border: 1px solid rgb(205, 214, 225);
+    color: rgb(109, 110, 111);
+  }
+
+  .saveBtnDiv{
+    background-color: #F7E0B4;
+    display: flex;
+    justify-content: space-between;
+    padding:6px 45px 6px 0;
+  }
+  .inputUntittled{
+    padding-left: 10px;
+    border: none;
+    outline: none;
+    /* border-bottom: 1px solid #d4cfcf; */
+  }
+
+  inputUntittled:focus{
+    padding-left: 10px;
+    border: none;
+    border-bottom: 1px solid #d4cfcf;
+  }
+  
+  .aboutImg{
+    height: 3.7vh;
+    padding-right:0.8rem ;
+    margin: 0rem 0.2rem;
+  }
+  .filledBtn {
+    color: white !important;
+    border:  2px solid  #0EB198!important;
+    background-color: #0EB198!important;
+    border-radius: 6px !important;
+}
+

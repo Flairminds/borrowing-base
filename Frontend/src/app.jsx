@@ -1,0 +1,114 @@
+import React, { useEffect, useState } from 'react';
+import { Route, Routes } from 'react-router';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './app.css';
+import { PageLayout } from './components/pageLayout/PageLayout';
+import { Layout } from './layouts/layout/Layout';
+import { AssetSelectionPage } from './pages/assetSelection/AssetSelectionPage';
+import { ConcentrationTestMaster } from './pages/testMaster/ConcentrationTestMaster';
+import { landingPageData } from './services/api';
+import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
+
+
+
+export function App() {
+
+  const [tablesData, setTablesData] = useState(null);
+  const [reportDate, setReportDate] = useState();
+  const [constDate, setConstDate] = useState();
+  const [availableClosingDates, setAvailableClosingDates] = useState();
+  const [baseFile, setBaseFile] = useState({
+    name: '',
+    id: ''
+  });
+  const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
+  const [fundType, setFundType] = useState("");
+  const [assetSelectionData, setAssetSelectionData] = useState([]);
+  const [selectedAssets, setSelectedAssets] = useState(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
+
+  const getLandingPageData = async() => {
+    try {
+      const res = await landingPageData(1);
+      if (res.status == 200) {
+        setConstDate(res.data.closing_date);
+        setAvailableClosingDates(res.data.closing_dates);
+        setTablesData(res.data);
+        setReportDate(res.data.closing_date);
+        setFundType(res.data.fund_name);
+        setBaseFile({name: res.data.file_name, id: res.data.base_data_file_id});
+      }
+    } catch (err) {
+      if (err.response.status == 404) {
+          setIsAnalysisModalOpen(true);
+        }
+      console.error(err);
+    }
+    };
+
+  useEffect(() => {
+    getLandingPageData();
+  }, []);
+
+  useEffect(() => {
+    setSelectedAssets(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
+  }, [assetSelectionData]);
+
+
+  return (
+    <>
+      <Routes>
+        <Route
+          path='/'
+          element={<Layout />}
+        >
+          <Route
+            path='/'
+            element={
+              <PageLayout
+                constDate={constDate}
+                setConstDate={setConstDate}
+                tablesData={tablesData}
+                setTablesData={setTablesData}
+                reportDate={reportDate}
+                setReportDate={setReportDate}
+                baseFile={baseFile}
+                setBaseFile={setBaseFile}
+                isAnalysisModalOpen={isAnalysisModalOpen}
+                setIsAnalysisModalOpen={setIsAnalysisModalOpen}
+                availableClosingDates={availableClosingDates}
+                fundType={fundType}
+                setFundType={setFundType}
+                setAssetSelectionData={setAssetSelectionData}
+              />
+            }
+          >
+          </Route>
+          <Route path='/fund-setup' element={<ConcentrationTestMaster />} />
+          <Route
+            path='/asset-selection'
+            element={
+              <AssetSelectionPage
+                baseFile={baseFile}
+                setBaseFile={setBaseFile}
+                setTablesData={setTablesData}
+                setAssetSelectionData={setAssetSelectionData}
+                assetSelectionData={assetSelectionData}
+                selectedAssets={selectedAssets}
+                setSelectedAssets={setSelectedAssets}
+                setIsAnalysisModalOpen={setIsAnalysisModalOpen}
+                setConstDate={setConstDate}
+                fundType={fundType}
+              />
+            }
+          />
+
+
+
+        </Route>
+      </Routes>
+      <ToastContainer />
+
+    </>
+  );
+}

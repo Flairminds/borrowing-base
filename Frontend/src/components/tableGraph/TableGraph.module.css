@@ -1,0 +1,117 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #DCDEDE;
+}
+
+.th{
+  padding: 8px;
+  padding-left: 15px;
+  text-align: left;
+  border-bottom: 1px solid #DCDEDE;
+  font-weight: 600;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+  background-color: #f2f2f2;
+
+}
+.td {
+  padding: 8px;
+  padding-left: 15px;
+  text-align: left;
+  border-bottom: 1px solid #DCDEDE;
+  font-weight: 400;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+}
+  
+  /* th {
+  } */
+  .pass {
+    display: flex;
+    background-color:#248900;
+    border-radius: 20px;
+    width: 50%;
+    justify-content: center;
+    border-bottom: 1px solid #DCDEDE;
+    margin-top: 10px;
+    padding:0.5% 0 0.5% 0;
+  }
+  
+  .fail {
+    display: flex;
+    background-color: #EB5757;
+    border-radius: 20px;
+    width: 50%;
+    justify-content: center;
+    border-bottom: 1px solid #DCDEDE; 
+    padding:0.5% 0 0.5% 0;
+    margin-top: 10px;
+  }
+
+  .moreInfobtn{
+    width: 100%;
+    font-size: 14px;
+    font-weight: 500;
+    color: #3B7DDD;
+    border: 1px solid #DCDEDE;
+    box-shadow: 3px -8px 14px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .tableContainer
+  {
+    width: 50%;
+  }
+  
+  .chartContainer
+  {
+    width: 50%;
+    /* padding-left: 3rem; */
+  }
+
+  .totalRow
+  {
+    padding: 8px;
+    padding-left: 15px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 400;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+    background-color: #EEF6FC;
+  }
+
+  .industryTag
+  {
+    margin: 0.1rem 0.5rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 12px;
+    border-radius: 13px;
+    background-color: #008571;
+    color: white;
+  }
+
+  .GreenText
+  {
+    color: #0D6683;
+  }
+
+  .updatedText
+  {
+    font-size: 12px;
+  }
+
+  .tableGraphContainer
+  {
+    margin: 1rem 3% 1rem 5%;
+    border : 1px solid #DCDEDE;
+    border-radius:8px;
+  }
+
+  .check
+  {
+    color: red;
+  }

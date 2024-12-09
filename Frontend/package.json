@@ -1,0 +1,53 @@
+{
+  "name": "pepper-portfollio-dashboard",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "install-eslint-config": "npm install eslint eslint-plugin-react eslint-plugin-react-hooks eslint-config-prettier eslint-plugin-prettier eslint-plugin-import prettier eslint-plugin-no-comments eslint-plugin-css-modules eslint-formatter-summary-chart @stylistic/eslint-plugin-js@latest @typescript-eslint/eslint-plugin @typescript-eslint/parser --save-dev",
+    "lint": "eslint \"src/**/*.{js,jsx}\"",
+    "lint-errors": "eslint --quiet \"src/**/*.{js,jsx}\"",
+    "lint-errors-chart": "eslint --format summary-chart \"src/**/*.{js,jsx}\"",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "antd": "^5.17.0",
+    "axios": "^1.6.8",
+    "html-react-parser": "^5.1.10",
+    "preact": "^10.19.6",
+    "react-dropzone": "^14.2.3",
+    "react-router": "^6.22.3",
+    "react-router-dom": "^6.22.3",
+    "react-toastify": "^10.0.5",
+    "recharts": "^2.12.3"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.8.2",
+    "@eslint/js": "^9.11.1",
+    "@stylistic/eslint-plugin-js": "^2.8.0",
+    "@types/react": "^18.3.8",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.7.0",
+    "@typescript-eslint/parser": "^8.7.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "eslint": "^8.57.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-formatter-summary-chart": "^0.3.0",
+    "eslint-plugin-css-modules": "^2.12.0",
+    "eslint-plugin-import": "^2.30.0",
+    "eslint-plugin-no-comments": "^1.1.10",
+    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-react": "^7.36.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "globals": "^15.9.0",
+    "prettier": "^3.3.3",
+    "vite": "^5.2.0"
+  }
+}

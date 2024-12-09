@@ -1,0 +1,6 @@
+.venv
+flask_session
+*.pyc
+__pycache__
+/Backend/.env
+/Backend/.pre-commit-config.yaml
