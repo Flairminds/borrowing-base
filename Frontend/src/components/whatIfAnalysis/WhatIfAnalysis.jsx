@@ -323,6 +323,8 @@ export const WhatIfAnalysis = (
         setSelectedOption(0)
         setTableModal(false)
         setChangeParameterSubmitDisplay(false)
+        setParameterList(null)
+        setSelectedOptionUpdateValue(null)
         // isDuplicateFileModal(false)
       };
     
@@ -359,6 +361,11 @@ export const WhatIfAnalysis = (
         }
 
       };
+
+     
+
+      
+      
 
       const hanleAssetInventory =()=>{
         setIsAssetInventoryModal(true)
