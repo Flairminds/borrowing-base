@@ -33,8 +33,8 @@ def wia_library():
 
 @wia_blueprint.route("/get_base_data_file_sheet_data", methods=["POST"])
 def get_base_data_file_sheet_data():
-    return wiaControllers.get_base_data_file_sheet_data_function()
+    return wiaControllers.get_base_data_file_sheet_data()
 
 @wia_blueprint.route("/update_values_in_sheet", methods=["POST"])
 def update_values_in_sheet():
-    return wiaControllers.update_values_in_sheet_function()
+    return wiaControllers.update_values_in_sheet()

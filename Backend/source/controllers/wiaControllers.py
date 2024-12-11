@@ -163,31 +163,33 @@ def wia_library():
             500,
         )
     
-def get_base_data_file_sheet_data_function():
+def get_base_data_file_sheet_data():
     try:
         data = request.get_json()
 
         request_validation_result = wiaService.validate_get_sheet_data_request(data)
         if request_validation_result:
-            return jsonify(request_validation_result), 400
+            return HTTPResponse.error(message=request_validation_result, status_code=400)
 
         sheet_data, changes = wiaService.get_file_data(data)
-        return jsonify({"table_data": sheet_data, "changes": changes}), 200
+        return HTTPResponse.success(
+            result={"table_data": sheet_data, "changes": changes}
+        )
 
     except Exception as e:
-        return HTTPResponse.error(message=f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+        return HTTPResponse.error(message="Internal Server Error")
     
-def update_values_in_sheet_function():
+def update_values_in_sheet():
     try:
         data = request.get_json()
 
         request_validation_status = wiaService.validate_update_value_request(data)
         if request_validation_status:
-            return jsonify(request_validation_status), 400
+            return HTTPResponse.error(message=request_validation_status, status_code=400)
 
         updated_df, initial_df = wiaService.update_add_df(data)
 
         response_data = wiaService.save_updated_df(data, updated_df, initial_df)
-        return jsonify(response_data)
+        return HTTPResponse.success(result=response_data)
     except Exception as e:
-        return HTTPResponse.error(message=f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+        return HTTPResponse.error(message="Internal Server Error")
