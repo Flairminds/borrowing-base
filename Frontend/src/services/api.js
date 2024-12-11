@@ -302,7 +302,7 @@ export const getUpdateAssetData = (base_data_file_id, sheetName,whatIfAnalysisId
         "what_if_analysis_id":whatIfAnalysisId
     }
 
-    const res = axios.post(`${ApiURL}/get_base_data_file_sheet_data` , updateAssetData)
+    const res = axios.post(`${ApiURL}/wia/get_base_data_file_sheet_data` , updateAssetData)
     return res;
 }
 
@@ -313,7 +313,7 @@ export const updateSheetValues = (base_data_file_id,sheet_name, assetsChanges,wh
         sheet_name:sheet_name,
         changes:assetsChanges
     }
-    const res = axios.post(`${ApiURL}/update_values_in_sheet`, updatedSheetData);
+    const res = axios.post(`${ApiURL}/wia/update_values_in_sheet`, updatedSheetData);
     return res;
 }
 
