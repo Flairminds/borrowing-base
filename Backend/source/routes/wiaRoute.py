@@ -30,3 +30,11 @@ def save_analysis():
 @wia_blueprint.route('/wia_library', methods=["POST"])
 def wia_library():
     return wiaControllers.wia_library()
+
+@wia_blueprint.route("/get_base_data_file_sheet_data", methods=["POST"])
+def get_base_data_file_sheet_data():
+    return wiaControllers.get_base_data_file_sheet_data_function()
+
+@wia_blueprint.route("/update_values_in_sheet", methods=["POST"])
+def update_values_in_sheet():
+    return wiaControllers.update_values_in_sheet_function()
