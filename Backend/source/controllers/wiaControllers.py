@@ -190,6 +190,11 @@ def update_values_in_sheet():
         updated_df, initial_df = wiaService.update_add_df(data)
 
         response_data = wiaService.save_updated_df(data, updated_df, initial_df)
-        return HTTPResponse.success(result=response_data)
+        if not response_data["success"]:
+            return HTTPResponse.error(message="Internal Server Error")
+        
+        return HTTPResponse.success(result={
+            "modified_base_data_file_id": response_data["data"]["modified_base_data_file_id"]
+        })
     except Exception as e:
         return HTTPResponse.error(message="Internal Server Error")
