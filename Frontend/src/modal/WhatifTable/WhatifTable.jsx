@@ -48,7 +48,7 @@ export const WhatifTable = ({simulationType,setSimulationType,data, columns, set
     try {
       const response = await getSelectedWIAAsstes(id,whatIfAnalysisType);
       setSimulationType(response.data.simulation_type)
-      setSelectedWIA(response.data);
+      setSelectedWIA(response.data.result);
       isWiaSimulationModal(true);
     } catch (err) {
       console.error(err);

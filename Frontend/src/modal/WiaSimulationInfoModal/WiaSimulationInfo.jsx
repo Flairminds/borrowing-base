@@ -60,22 +60,38 @@ export const WiaSimulationInfo = ({ selectedWIA, wiaSimulationModal, isWiaSimula
                                 .map((row, rowIndex) => (
                                     <tr key={rowIndex}>
                                         {selectedWIA[previewSheets[selectedSheetNumber]]?.columns?.map((col, colIndex) => (
-                                            <td key={colIndex} className={Styles.td}>
-                                                {row[col.key]?.changed ? (
-                                                    <>
+                                            <>
+                                                {
+                                                selectedWIA[previewSheets[selectedSheetNumber]]?.new_data.includes(row.Investment_Name?.current_value) ? (
+                                                    <td key={colIndex} className={Styles.addedRow}>
+                                                        {col.key == "Investment_Name" ?
+                                                              <>
+                                                              {row[col.key]?.current_value} 
+                                                              <span className={Styles.newTag}>New</span>
+                                                              </>
+                                                              :
+                                                               row[col.key]?.current_value }
+                                                    </td>
+
+                                                )
+                                                :row[col.key]?.changed ? (
+                                                    <td key={colIndex} className={Styles.td}>
                                                         <div className={Styles.currentValue}>
                                                             {row[col.key]?.current_value}
                                                         </div>
                                                         <div className={Styles.previousValue}>
                                                             {row[col.key]?.previous_value}
                                                         </div>
-                                                    </>
+                                                    </td>
                                                 ) : (
-                                                    row[col.key]?.current_value
+                                                    <td key={colIndex} className={Styles.td}>
+                                                        {row[col.key]?.current_value}
+                                                    </td>
                                                 )}
-                                            </td>
+                                            </>
                                         ))}
                                     </tr>
+
                                 ))}
                         </tbody>
                     </table>
