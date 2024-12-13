@@ -417,8 +417,8 @@ def filter_assets(sheet_df, base_data_file, asset_column_name):
 def get_file_data(data):
     try:
         base_data_file_id = data.get("base_data_file_id")
-        # sheet_name = data.get("sheet_name")
-        sheet_name = "Loan List"
+        sheet_name = data.get("sheet_name")
+        # sheet_name = "Loan List"
 
         base_data_file = BaseDataFile.query.filter_by(id=base_data_file_id).first()
 
