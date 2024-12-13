@@ -43,7 +43,7 @@ export const WhatIfAnalysisOptions = (
     const defaultsheetName = 'PL BB Build';
     const basefileid = baseFile.id;
     try{
-      const res = await getUpdateAssetData(basefileid, defaultsheetName);
+      const res = await getUpdateAssetData(basefileid, defaultsheetName, whatIfAnalysisId);
       setUpdateAssetTableData(res.data);
       setIsupdateAssetModalOpen(true)
     }
