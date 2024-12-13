@@ -9,10 +9,13 @@ from models import WhatIfAnalysis,  ModifiedBaseDataFile, BaseDataFile, db
 from source.utility.ServiceResponse import ServiceResponse
 
 from constants.error_constants import ErrorConstants
-from source.services.PCOF.WIA.util import pcof_convert_to_table
-from source.services.PFLT.WIA.util import pflt_convert_to_table
+from source.services.PCOF.WIA.util import PCOF_WIA
+from source.services.PFLT.WIA.util import PFLT_WIA
 import app
 from source.utility.HTTPResponse import HTTPResponse
+
+PCOF_FUND_WIA = PCOF_WIA()
+PFLT_FUND_WIA = PFLT_WIA()
 
 
 def get_asset_overview(excelfile):
@@ -587,10 +590,10 @@ def get_file_data(data):
                 sheet_df = modified_sheet[sheet_name]
 
     if fund_type == "PCOF":
-        table_dict = pcof_convert_to_table(sheet_df, sheet_name)
+        table_dict = PCOF_FUND_WIA.convert_to_table(sheet_df, sheet_name)
 
     if fund_type == "PFLT":
-        table_dict = pflt_convert_to_table(sheet_df, sheet_name)
+        table_dict = PFLT_FUND_WIA.convert_to_table(sheet_df, sheet_name)
 
     changes = None
     if what_if_analysis_id:
