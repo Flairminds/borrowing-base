@@ -6,6 +6,7 @@ from source.services.PCOF.WIA import addAssetAnalyst as pcofAddAssetAnalyst
 from source.services.PFLT.WIA import addAssetAnalyst as pfltAddAssetAnalyst
 from source.services.PCOF.WIA import updateParameterAnalyst as pcofUpdateParameterAnalyst
 from source.services.PFLT.WIA import updateParameterAnalyst as pfltUpdateParameterAnalyst
+from source.services.PCOF.WIA import assetInventory as pcofAssetInventry
 from source.utility.HTTPResponse import HTTPResponse
 from source.utility.Log import Log
 
@@ -150,6 +151,41 @@ def wia_library():
         }
 
         return HTTPResponse.success(message=wia_library_service_result.get("message"), result=response)
+
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "error": str(e),
+                    "error_type": str(type(e).__name__),
+                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
+                }
+            ),
+            500,
+        )
+    
+def get_asset_inventry():
+    try:
+        data = request.get_json()
+        what_if_analysis_id = data["what_if_analysis_id"]
+        what_if_analysis_type = data["what_if_analysis_type"]
+
+        fund_type = commonServices.get_fundType_of_wia(what_if_analysis_id, what_if_analysis_type)
+        if not fund_type["success"]:
+            return HTTPResponse.error(status_code= 404, message=fund_type["message"]  )
+        
+        fund_type=fund_type["data"]
+
+        match fund_type:
+            case "PCOF":
+                asset_inventry = pcofAssetInventry.get_asset_inventry(what_if_analysis_id, what_if_analysis_type)
+            # case "PFLT":
+            #     asset_inventry = pfltAssetInventry.get_asset_inventry(what_if_analysis_id, what_if_analysis_type)
+
+
+        # response = {"result":asset_inventry}
+        
+        return HTTPResponse.success(message="What if analysis inventory data fetched successfully", result=asset_inventry["data"])
 
     except Exception as e:
         return (
