@@ -27,6 +27,7 @@ import { assetInventory } from '../../utils/asset';
 import { AssetInventory } from '../../modal/assetInventoryModal/AssetInventory';
 import { UpdateAssetDetailsModal } from '../../modal/updateAssetWIA/updateAssetDetailsModal/UpdateAssetDetailsModal';
 import { SaveAnalysisConfirmationModel } from '../../modal/saveanalysisconfirmationmodel/SaveAnalysisConfirmationModel';
+import { WhatIfAnalysisLib } from '../../modal/whatIfAnalysisLibrary/WhatIfAnalysisLib';
 
 export const WhatIfAnalysis = (
   { 
@@ -518,31 +519,22 @@ export const WhatIfAnalysis = (
             setSaveBtn={setSaveBtn}
           />
 
-          
-            <Modal title="What if Analysis Library" 
-            open={tableModal} 
-            onOk={handleOk}
-           onCancel={handleCancel}
-            width={'85%'}
-                footer={[
-                    // <div key="footer-buttons" className="px-4">
-                    // <button key="back" onClick={()=>setTableModal(false)} className={ButtonStyles.outlinedBtn}>
-                    //     Cancel
-                    // </button>
-                    // <Button className={ButtonStyles.filledBtn} loading={loading}
-                    //      key="submit" type="primary" style={{ backgroundColor: '#0EB198' }}
-                    // >
-                    //     Use
-                    // </Button>
-                    // </div>
-                
-                  ]}  
-           >
-            <WhatifTable setTableModal={setTableModal} whatIfAnalysisListData={whatIfAnalysisListData} data={whatIfAnalysisListData} columns={Whatif_Columns}
-             setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} selectedRow={selectedRow} setSelectedRow={setSelectedRow}  simulationType={simulationType} setSimulationType={setSimulationType}
-             whatIfAnalysisId={whatIfAnalysisId} whatIfAnalysisType={whatIfAnalysisType}
-             />
-            </Modal>
+        <WhatIfAnalysisLib
+        tableModal={tableModal}
+        handleOk ={handleOk}
+        handleCancel ={handleCancel}
+        setTableModal ={setTableModal}
+        whatIfAnalysisListData ={whatIfAnalysisListData}
+        Whatif_Columns ={Whatif_Columns}
+        setTablesData ={setTablesData}
+        setWhatifAnalysisPerformed ={setWhatifAnalysisPerformed}
+        selectedRow = {selectedRow}
+        setSelectedRow = {setSelectedRow}
+        simulationType = {simulationType}
+        setSimulationType = {setSimulationType}
+        whatIfAnalysisId = {whatIfAnalysisId}
+        whatIfAnalysisType ={whatIfAnalysisType}
+        />
 
         <SaveAnalysisConfirmationModel
         descriptionModal={descriptionModal}
@@ -550,9 +542,9 @@ export const WhatIfAnalysis = (
         isSetDescriptionModal={isSetDescriptionModal}
         setDescriptionInput={setDescriptionInput}
         whatIfanalysisLoader={whatIfanalysisLoader}
-        save_what_if_analysis={save_what_if_analysis}
+        SaveWhatIfAnalysis={save_what_if_analysis}
         descriptionInput={descriptionInput}
       />
          </>
-  )
-}
+  );
+};
