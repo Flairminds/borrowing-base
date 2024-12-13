@@ -190,7 +190,7 @@ export const UpdateAssetDetailsModal = ({
             const res = await updateModifiedAssets(currentAnalysisId);
             setWhatifAnalysisPerformed(true)
             setSaveBtn(true)
-            setTablesData(res.data.message);
+            setTablesData(res?.data?.result);
             handleCancel()
         }
         catch(err)
