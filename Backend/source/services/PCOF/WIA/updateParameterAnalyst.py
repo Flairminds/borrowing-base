@@ -86,11 +86,15 @@ def update_parameters(base_data_file, type, asset_percent_list):
         df_principle_obligations,
     ) = pcofUtility.read_excels(xl_sheet_df_map)
 
-    df_PL_BB_Build = df_PL_BB_Build[df_PL_BB_Build["Investment Name"].isin(pcofUtility.get_eligible_funds(df_PL_BB_Build))]
+    selected_assets = json.loads(base_data_file.included_excluded_assets_map)["included_assets"]
 
-    included_assets = json.loads(base_data_file.included_excluded_assets_map)["included_assets"]
-
-    df_PL_BB_Build = df_PL_BB_Build[df_PL_BB_Build["Investment Name"].isin(included_assets)]
+    df_PL_BB_Build = df_PL_BB_Build.copy()
+    
+    # get eligible and included assets
+    selected_assets_mask = df_PL_BB_Build["Investment Name"].isin(selected_assets)
+    df_PL_BB_Build = df_PL_BB_Build[selected_assets_mask].reset_index(drop=True)
+    df_PL_BB_Build = df_PL_BB_Build[df_PL_BB_Build["Is Eligible Issuer"] == "Yes"]
+    
     initial_pl_bb_build = df_PL_BB_Build.copy(deep=True)
 
     df_PL_BB_Build["debt"] = (df_PL_BB_Build["Financials LTM EBITDA ($MMs)"] * df_PL_BB_Build["Leverage Total Leverage"])

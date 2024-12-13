@@ -30,3 +30,7 @@ def save_analysis():
 @wia_blueprint.route('/wia_library', methods=["POST"])
 def wia_library():
     return wiaControllers.wia_library()
+
+@wia_blueprint.route('/get_asset_inventry', methods=["POST"])
+def get_asset_inventry():
+    return wiaControllers.get_asset_inventry()
