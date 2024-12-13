@@ -26,6 +26,7 @@ import { UpdateParameterModal } from '../../modal/updateParameterModal/UpdatePar
 import { assetInventory } from '../../utils/asset';
 import { AssetInventory } from '../../modal/assetInventoryModal/AssetInventory';
 import { UpdateAssetDetailsModal } from '../../modal/updateAssetWIA/updateAssetDetailsModal/UpdateAssetDetailsModal';
+import { SaveAnalysisConfirmationModel } from '../../modal/saveanalysisconfirmationmodel/SaveAnalysisConfirmationModel';
 
 export const WhatIfAnalysis = (
   { 
@@ -543,37 +544,15 @@ export const WhatIfAnalysis = (
              />
             </Modal>
 
-            <Modal
-                title="Do you want to add note?"
-                centered
-                open={descriptionModal}
-                // onOk={handleSaveEbita}
-                onCancel={handleCancel}
-                width={'50%'}
-                footer={[
-                    <div key="footer-buttons" className="px-4">
-                    <button key="back" onClick={()=>{isSetDescriptionModal(false); setDescriptionInput('') }} className={ButtonStyles.outlinedBtn}>
-                        Cancel
-                    </button>
-                    <Button className={ButtonStyles.filledBtn} loading={whatIfanalysisLoader}
-                         key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={save_what_if_analysis}
-                    >
-                        Save
-                    </Button>
-                    </div>
-                ]}    
-            >
-                <>
-                    <Input 
-                        type="text" 
-                        placeholder='Notes'
-                        value={descriptionInput}
-                        style={{width:'80%' , margin:'1rem'}}
-                        onChange={(e)=>setDescriptionInput(e.target.value)}
-                    />
-                </>
-            </Modal>
-
-        </>
+        <SaveAnalysisConfirmationModel
+        descriptionModal={descriptionModal}
+        handleCancel={handleCancel}
+        isSetDescriptionModal={isSetDescriptionModal}
+        setDescriptionInput={setDescriptionInput}
+        whatIfanalysisLoader={whatIfanalysisLoader}
+        save_what_if_analysis={save_what_if_analysis}
+        descriptionInput={descriptionInput}
+      />
+         </>
   )
 }
