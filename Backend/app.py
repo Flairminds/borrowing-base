@@ -289,15 +289,6 @@ def lock_concentration_test():
     )  # Assuming lock_concentration_test_function() is defined in an imported module
 
 
-@app.route("/api/get_base_data_file_sheet_data", methods=["POST"])
-def get_base_data_file_sheet_data():
-    return get_base_data_file_sheet_data_function()
-
-
-@app.route("/api/update_values_in_sheet", methods=["POST"])
-def update_values_in_sheet():
-    return update_values_in_sheet_function()
-
 
 @app.route("/api/calculate_bb_modified_sheets", methods=["POST"])
 def calculate_bb_modified_sheets():
