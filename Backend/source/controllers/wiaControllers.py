@@ -6,12 +6,8 @@ from source.services.PCOF.WIA import addAssetAnalyst as pcofAddAssetAnalyst
 from source.services.PFLT.WIA import addAssetAnalyst as pfltAddAssetAnalyst
 from source.services.PCOF.WIA import updateParameterAnalyst as pcofUpdateParameterAnalyst
 from source.services.PFLT.WIA import updateParameterAnalyst as pfltUpdateParameterAnalyst
-<<<<<<< HEAD
-from source.services.PCOF.WIA import assetInventory as pcofAssetInventry
-=======
 from source.services.PCOF.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pcofUpdateAssetAnalyst
 from source.services.PFLT.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pfltUpdateAssetAnalyst
->>>>>>> 6a242fe (updated asset added for PCOF and PFLT)
 from source.utility.HTTPResponse import HTTPResponse
 from source.utility.Log import Log
 
@@ -160,16 +156,7 @@ def wia_library():
         return HTTPResponse.success(message=wia_library_service_result.get("message"), result=response)
 
     except Exception as e:
-        return (
-            jsonify(
-                {
-                    "error": str(e),
-                    "error_type": str(type(e).__name__),
-                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
-                }
-            ),
-            500,
-        )
+        return HTTPResponse.error(message="Internal Server Error")
     
 def get_asset_inventry():
     try:
@@ -206,9 +193,11 @@ def get_base_data_file_sheet_data():
         if request_validation_result:
             return HTTPResponse.error(message=request_validation_result, status_code=400)
 
-        sheet_data, changes = wiaService.get_file_data(data)
+        response_data = wiaService.get_file_data(data)
+        table_dict, changes = response_data["data"]["table_dict"], response_data["data"]["changes"]
+
         return HTTPResponse.success(
-            result={"table_data": sheet_data, "changes": changes}
+            result={"table_data": table_dict, "changes": changes}
         )
 
     except Exception as e:
@@ -219,8 +208,8 @@ def update_values_in_sheet():
         data = request.get_json()
 
         request_validation_status = wiaService.validate_update_value_request(data)
-        if request_validation_status:
-            return HTTPResponse.error(message=request_validation_status, status_code=400)
+        if request_validation_status is not None and not request_validation_status.get("success"):
+            return HTTPResponse.error(message=request_validation_status["message"], status_code=400)
 
         updated_df, initial_df = wiaService.update_add_df(data)
 
@@ -243,27 +232,17 @@ def calculate_bb_modified_sheets():
             return HTTPResponse.error(message = service_response["message"], status_code = 400)
         
         modified_base_data_file = service_response["data"]
-        # modified_base_data_file = wiaService.get_modified_data_file(modified_base_data_file_id)
         base_data_file = commonServices.get_base_data_file(base_data_file_id=modified_base_data_file.base_data_file_id)
 
         match base_data_file.fund_type:
             case "PCOF":
-                update_asset_response = pcofUpdateAssetAnalyst.update_assset(base_data_file, modified_base_data_file)
+                response_data = pcofUpdateAssetAnalyst.update_assset(base_data_file, modified_base_data_file)
+                update_asset_response = response_data["data"]
             case "PFLT":
-                update_asset_response = pfltUpdateAssetAnalyst.update_assset(base_data_file, modified_base_data_file)
+                response_data = pfltUpdateAssetAnalyst.update_assset(base_data_file, modified_base_data_file)
+                update_asset_response = response_data["data"]
 
-
-        return jsonify({"error_status": False, "message": update_asset_response}), 200
+        return HTTPResponse.success(result = update_asset_response, message = "Successfully processed.")
 
     except Exception as e:
-        return (
-            jsonify(
-                {
-                    "error_status": True,
-                    "error": str(e),
-                    "error_type": type(e).__name__,
-                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
-                }
-            ),
-            500,
-        )
+        return HTTPResponse.error(message = "Internal Server Error")

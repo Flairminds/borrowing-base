@@ -248,7 +248,8 @@ def update_add_df(data):
 
     updated_assets = changes.get("updated_assets")
     if updated_assets:
-        df = update_df(df, changes, sheet_name)
+        response_data = update_df(df, changes, sheet_name)
+        df = response_data["data"]
     return df, initial_df
 
   
@@ -273,6 +274,14 @@ def validate_update_value_request(data):
     changes = data.get("changes")
     if not changes:
         return ServiceResponse.error(message="Changes is required")
+    
+    update_assets = changes["updated_assets"]
+    for asset in update_assets:
+        if not asset.get("row_name"):
+            return ServiceResponse.error(message="Row name is required")
+        
+        if not asset.get("column_name"):
+            return ServiceResponse.error(message="Column name is required")
     
 
 def save_updated_df(data, updated_df, initial_df):
@@ -406,78 +415,91 @@ def filter_assets(sheet_df, base_data_file, asset_column_name):
     return sheet_df[selected_assets_mask]
 
 def get_file_data(data):
-    base_data_file_id = data.get("base_data_file_id")
-    sheet_name = data.get("sheet_name")
-    # sheet_name = "Loan List"
+    try:
+        base_data_file_id = data.get("base_data_file_id")
+        # sheet_name = data.get("sheet_name")
+        sheet_name = "Loan List"
 
-    base_data_file = BaseDataFile.query.filter_by(id=base_data_file_id).first()
+        base_data_file = BaseDataFile.query.filter_by(id=base_data_file_id).first()
 
-    file_data = pickle.loads(base_data_file.file_data)
-    sheet_df = file_data[sheet_name]
-    fund_type = base_data_file.fund_type
+        file_data = pickle.loads(base_data_file.file_data)
+        sheet_df = file_data[sheet_name]
+        fund_type = base_data_file.fund_type
 
-    if sheet_name == "PL BB Build":
-        sheet_df = filter_assets(sheet_df, base_data_file, "Investment Name")
+        if sheet_name == "PL BB Build":
+            sheet_df = filter_assets(sheet_df, base_data_file, "Investment Name")
 
-    if sheet_name == "Loan List":
-        sheet_df = filter_assets(sheet_df, base_data_file, "Security Name")
+        if sheet_name == "Loan List":
+            sheet_df = filter_assets(sheet_df, base_data_file, "Security Name")
 
-    what_if_analysis_id = data.get("what_if_analysis_id")
-    if what_if_analysis_id:
-        modified_base_data_file = ModifiedBaseDataFile.query.filter_by(
-            id=what_if_analysis_id
-        ).first()
-        if modified_base_data_file:
-            modified_sheet = pickle.loads(modified_base_data_file.modified_data)
-            if sheet_name not in modified_sheet.keys():
-                sheet_df = pickle.loads(base_data_file.file_data)[sheet_name]
+        what_if_analysis_id = data.get("what_if_analysis_id")
+        if what_if_analysis_id:
+            modified_base_data_file = ModifiedBaseDataFile.query.filter_by(
+                id=what_if_analysis_id
+            ).first()
+            if modified_base_data_file:
+                modified_sheet = pickle.loads(modified_base_data_file.modified_data)
+                if sheet_name not in modified_sheet.keys():
+                    sheet_df = pickle.loads(base_data_file.file_data)[sheet_name]
+                else:
+                    sheet_df = modified_sheet[sheet_name]
+
+        if fund_type == "PCOF":
+            response_data = PCOF_FUND_WIA.convert_to_table(sheet_df, sheet_name)
+            table_dict = response_data["data"]
+        if fund_type == "PFLT":
+            response_data = PFLT_FUND_WIA.convert_to_table(sheet_df, sheet_name)
+            table_dict = response_data["data"]
+
+        changes = None
+        if what_if_analysis_id:
+            modified_base_data_file = ModifiedBaseDataFile.query.filter_by(
+                id=what_if_analysis_id
+            ).first()
+            if sheet_name not in modified_sheet:
+                changes = None
             else:
-                sheet_df = modified_sheet[sheet_name]
+                changes = json.loads(modified_base_data_file.changes)[sheet_name][
+                    "updated_assets"
+                ]
 
-    if fund_type == "PCOF":
-        table_dict = PCOF_FUND_WIA.convert_to_table(sheet_df, sheet_name)
-
-    if fund_type == "PFLT":
-        table_dict = PFLT_FUND_WIA.convert_to_table(sheet_df, sheet_name)
-
-    changes = None
-    if what_if_analysis_id:
-        modified_base_data_file = ModifiedBaseDataFile.query.filter_by(
-            id=what_if_analysis_id
-        ).first()
-        if sheet_name not in modified_sheet:
-            changes = None
-        else:
-            changes = json.loads(modified_base_data_file.changes)[sheet_name][
-                "updated_assets"
-            ]
-
-    return table_dict, changes
+        # return {table_dict:table_dict, changes:changes}
+        return ServiceResponse.success(data={"table_dict":table_dict, "changes":changes})
+        
+    except Exception as e:
+        return ServiceResponse.error(message = "Internal Server Error")
+    
 
 def update_df(sheet_df, changes, sheet_name):
     values_to_update = changes["updated_assets"]
-    for value_to_update in values_to_update:
-        row_name = value_to_update["row_name"]
 
-        col_name = value_to_update["column_name"]
-        if col_name != sheet_df.columns[0]:
-            row_index = commonServices.get_row_index(sheet_df, row_name)
-            if row_index != -1:
-                updated_value = value_to_update["updated_value"]
-                updated_value = commonServices.get_updated_value(updated_value)
+    try:
+        for value_to_update in values_to_update:
+            row_name = value_to_update["row_name"]
 
-                col_type = sheet_df[col_name].dtype
+            col_name = value_to_update["column_name"]
+            if col_name != sheet_df.columns[0]:
+                row_index = commonServices.get_row_index(sheet_df, row_name)
+                if row_index != -1:
+                    updated_value = value_to_update["updated_value"]
+                    updated_value = commonServices.get_updated_value(updated_value)
 
-                updated_value = commonServices.get_raw_value(updated_value, col_type)
-                # print(col_type, col_name, updated_value)
+                    col_type = sheet_df[col_name].dtype
 
-                previous_value = sheet_df.loc[row_index, col_name]
-                previous_value = commonServices.get_raw_value(previous_value, col_type)
-                if commonServices.find_is_NaT(previous_value):
-                    previous_value = ""
-                value_to_update["previous_value"] = previous_value
-                sheet_df.loc[row_index, col_name] = updated_value
-    return sheet_df
+                    updated_value = commonServices.get_raw_value(updated_value, col_type)
+                    # print(col_type, col_name, updated_value)
+
+                    previous_value = sheet_df.loc[row_index, col_name]
+                    previous_value = commonServices.get_raw_value(previous_value, col_type)
+                    if commonServices.find_is_NaT(previous_value):
+                        previous_value = ""
+                    value_to_update["previous_value"] = previous_value
+                    sheet_df.loc[row_index, col_name] = updated_value
+
+        return ServiceResponse.success(data=sheet_df)
+        
+    except Exception as e:
+        return ServiceResponse.error(message = "Internal Server Error")
 
 
 def get_modified_data_file(modified_base_data_file_id):
