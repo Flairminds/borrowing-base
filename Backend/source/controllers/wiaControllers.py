@@ -6,9 +6,16 @@ from source.services.PCOF.WIA import addAssetAnalyst as pcofAddAssetAnalyst
 from source.services.PFLT.WIA import addAssetAnalyst as pfltAddAssetAnalyst
 from source.services.PCOF.WIA import updateParameterAnalyst as pcofUpdateParameterAnalyst
 from source.services.PFLT.WIA import updateParameterAnalyst as pfltUpdateParameterAnalyst
+<<<<<<< HEAD
 from source.services.PCOF.WIA import assetInventory as pcofAssetInventry
+=======
+from source.services.PCOF.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pcofUpdateAssetAnalyst
+from source.services.PFLT.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pfltUpdateAssetAnalyst
+>>>>>>> 6a242fe (updated asset added for PCOF and PFLT)
 from source.utility.HTTPResponse import HTTPResponse
 from source.utility.Log import Log
+
+import modified_dfs_calculation
 
 def add_additional_columns(get_parameter_res, type):
     if type == "Ebitda":
@@ -226,3 +233,37 @@ def update_values_in_sheet():
         })
     except Exception as e:
         return HTTPResponse.error(message="Internal Server Error")
+    
+
+def calculate_bb_modified_sheets():
+    request_data = request.get_json()
+    try:
+        service_response = commonServices.validate_request_data(request_data)
+        if not service_response["success"]:
+            return HTTPResponse.error(message = service_response["message"], status_code = 400)
+        
+        modified_base_data_file = service_response["data"]
+        # modified_base_data_file = wiaService.get_modified_data_file(modified_base_data_file_id)
+        base_data_file = commonServices.get_base_data_file(base_data_file_id=modified_base_data_file.base_data_file_id)
+
+        match base_data_file.fund_type:
+            case "PCOF":
+                update_asset_response = pcofUpdateAssetAnalyst.update_assset(base_data_file, modified_base_data_file)
+            case "PFLT":
+                update_asset_response = pfltUpdateAssetAnalyst.update_assset(base_data_file, modified_base_data_file)
+
+
+        return jsonify({"error_status": False, "message": update_asset_response}), 200
+
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "error_status": True,
+                    "error": str(e),
+                    "error_type": type(e).__name__,
+                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
+                }
+            ),
+            500,
+        )

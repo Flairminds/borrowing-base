@@ -42,3 +42,7 @@ def get_base_data_file_sheet_data():
 @wia_blueprint.route("/update_values_in_sheet", methods=["POST"])
 def update_values_in_sheet():
     return wiaControllers.update_values_in_sheet()
+
+@wia_blueprint.route("/calculate_bb_modified_sheets", methods=["POST"])
+def calculate_bb_modified_sheets():
+    return wiaControllers.calculate_bb_modified_sheets() 

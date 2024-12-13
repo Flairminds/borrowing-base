@@ -3,7 +3,7 @@ from source.utility.ServiceResponse import ServiceResponse
 
 import numpy as np
 import pandas as pd
-from source.utility.ServiceResponse import ServiceResponse
+
 
 def get_base_data_file(**kwargs):
     if "base_data_file_id" in kwargs.keys():
@@ -118,4 +118,16 @@ def get_updated_value(updated_value):
         except ValueError:
             pass
     return updated_value
+
+def validate_request_data(data):
+    modified_base_data_file_id = data.get("modified_base_data_file_id")
+    if not modified_base_data_file_id:
+        return ServiceResponse.error(message="modified_base_data_file_id is required")
+
+    modified_base_data_file = ModifiedBaseDataFile.query.filter_by(id=modified_base_data_file_id).first()
+
+    if not modified_base_data_file:
+        return ServiceResponse.error(message="No modified_base_data_file found")
+    
+    return ServiceResponse.success(data = modified_base_data_file)
 

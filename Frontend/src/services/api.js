@@ -321,7 +321,7 @@ export const updateModifiedAssets = (what_if_analysis_id) => {
     const payload = {
         modified_base_data_file_id :what_if_analysis_id,
     }
-    const res = axios.post(`${ApiURL}/calculate_bb_modified_sheets` , payload)
+    const res = axios.post(`${ApiURL}/wia/calculate_bb_modified_sheets` , payload)
     return res
 
 }
