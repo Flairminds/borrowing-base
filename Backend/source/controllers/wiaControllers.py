@@ -6,9 +6,12 @@ from source.services.PCOF.WIA import addAssetAnalyst as pcofAddAssetAnalyst
 from source.services.PFLT.WIA import addAssetAnalyst as pfltAddAssetAnalyst
 from source.services.PCOF.WIA import updateParameterAnalyst as pcofUpdateParameterAnalyst
 from source.services.PFLT.WIA import updateParameterAnalyst as pfltUpdateParameterAnalyst
-from source.services.PCOF.WIA import assetInventory as pcofAssetInventry
+from source.services.PCOF.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pcofUpdateAssetAnalyst
+from source.services.PFLT.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pfltUpdateAssetAnalyst
 from source.utility.HTTPResponse import HTTPResponse
 from source.utility.Log import Log
+
+import modified_dfs_calculation
 
 def add_additional_columns(get_parameter_res, type):
     if type == "Ebitda":
@@ -153,16 +156,7 @@ def wia_library():
         return HTTPResponse.success(message=wia_library_service_result.get("message"), result=response)
 
     except Exception as e:
-        return (
-            jsonify(
-                {
-                    "error": str(e),
-                    "error_type": str(type(e).__name__),
-                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
-                }
-            ),
-            500,
-        )
+        return HTTPResponse.error(message="Internal Server Error")
     
 def get_asset_inventry():
     try:
@@ -188,13 +182,67 @@ def get_asset_inventry():
         return HTTPResponse.success(message="What if analysis inventory data fetched successfully", result=asset_inventry["data"])
 
     except Exception as e:
-        return (
-            jsonify(
-                {
-                    "error": str(e),
-                    "error_type": str(type(e).__name__),
-                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
-                }
-            ),
-            500,
+        return HTTPResponse.error(message="Internal server error")
+    
+
+def get_base_data_file_sheet_data():
+    try:
+        data = request.get_json()
+
+        request_validation_result = wiaService.validate_get_sheet_data_request(data)
+        if request_validation_result:
+            return HTTPResponse.error(message=request_validation_result, status_code=400)
+
+        response_data = wiaService.get_file_data(data)
+        table_dict, changes = response_data["data"]["table_dict"], response_data["data"]["changes"]
+
+        return HTTPResponse.success(
+            result={"table_data": table_dict, "changes": changes}
         )
+
+    except Exception as e:
+        return HTTPResponse.error(message="Internal Server Error")
+    
+def update_values_in_sheet():
+    try:
+        data = request.get_json()
+
+        request_validation_status = wiaService.validate_update_value_request(data)
+        if request_validation_status is not None and not request_validation_status.get("success"):
+            return HTTPResponse.error(message=request_validation_status["message"], status_code=400)
+
+        updated_df, initial_df = wiaService.update_add_df(data)
+
+        response_data = wiaService.save_updated_df(data, updated_df, initial_df)
+        if not response_data["success"]:
+            return HTTPResponse.error(message="Internal Server Error")
+        
+        return HTTPResponse.success(result={
+            "modified_base_data_file_id": response_data["data"]["modified_base_data_file_id"]
+        })
+    except Exception as e:
+        return HTTPResponse.error(message="Internal Server Error")
+    
+
+def calculate_bb_modified_sheets():
+    request_data = request.get_json()
+    try:
+        service_response = commonServices.validate_request_data(request_data)
+        if not service_response["success"]:
+            return HTTPResponse.error(message = service_response["message"], status_code = 400)
+        
+        modified_base_data_file = service_response["data"]
+        base_data_file = commonServices.get_base_data_file(base_data_file_id=modified_base_data_file.base_data_file_id)
+
+        match base_data_file.fund_type:
+            case "PCOF":
+                response_data = pcofUpdateAssetAnalyst.update_assset(base_data_file, modified_base_data_file)
+                update_asset_response = response_data["data"]
+            case "PFLT":
+                response_data = pfltUpdateAssetAnalyst.update_assset(base_data_file, modified_base_data_file)
+                update_asset_response = response_data["data"]
+
+        return HTTPResponse.success(result = update_asset_response, message = "Successfully processed.")
+
+    except Exception as e:
+        return HTTPResponse.error(message = "Internal Server Error")

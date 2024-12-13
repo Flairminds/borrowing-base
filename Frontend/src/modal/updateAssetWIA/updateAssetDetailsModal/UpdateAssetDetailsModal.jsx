@@ -47,7 +47,7 @@ export const UpdateAssetDetailsModal = ({
     const [addAssetDetailsModalOpen , setAddAssetDetailsModalOpen] = useState(false);
     const [showModification, setShowModification] = useState(false)
     
-    const previewSheets = updateAssetTableData?.table_data?.sheets
+    const previewSheets = updateAssetTableData?.result?.table_data?.sheets
 
     const handleCancel = () => {    
         setIsupdateAssetModalOpen(false);
@@ -69,7 +69,7 @@ export const UpdateAssetDetailsModal = ({
 
     const handleCommitChange = (e, investment_name, colKey, colName, currValue) => {
         e.stopPropagation();
-        updateDataAfterChange(updateAssetTableData, investment_name ,colKey,selectedSheetNumber, updateAssetInputText);
+        updateDataAfterChange(updateAssetTableData.result, investment_name ,colKey,selectedSheetNumber, updateAssetInputText);
         const currentChanges = {
             row_name: investment_name,
             column_name: colName,
@@ -99,9 +99,9 @@ export const UpdateAssetDetailsModal = ({
             rows_to_add:[],
             rows_to_delete:[]
         };
-        if(updateAssetTableData?.changes)
+        if(updateAssetTableData?.result?.changes)
         {
-           totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes , ...appliedChanges]
+           totalChangesOnSheet.updated_assets = [...updateAssetTableData?.result?.changes , ...appliedChanges]
         }
         else
         {
@@ -122,7 +122,7 @@ export const UpdateAssetDetailsModal = ({
             if(appliedChanges.length> 0 || addedDeletedAssets?.addedAssets?.length > 0 || addedDeletedAssets?.deletedAssets?.length > 0 )
             {
                 const res = await updateSheetValues(baseFile.id,selectedSheetNumber,totalChangesOnSheet,whatIfAnalysisId);
-                setWhatIfAnalysisId(res.data.modified_base_data_file_id);
+                setWhatIfAnalysisId(res?.data?.result?.modified_base_data_file_id);
             }
         }
         catch(err)
@@ -160,9 +160,9 @@ export const UpdateAssetDetailsModal = ({
         let totalChangesOnSheet ={
             updated_assets:{}
         };
-        if(updateAssetTableData?.changes)
+        if(updateAssetTableData?.result?.changes)
         {
-           totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes , ...appliedChanges]
+           totalChangesOnSheet.updated_assets = [...updateAssetTableData?.result?.changes , ...appliedChanges]
         }
         else
         {
@@ -172,8 +172,8 @@ export const UpdateAssetDetailsModal = ({
             if(totalChangesOnSheet.updated_assets.length> 0)
             {
                 const res = await updateSheetValues(baseFile.id,selectedSheetNumber,totalChangesOnSheet,whatIfAnalysisId);
-                setWhatIfAnalysisId(res.data.modified_base_data_file_id);
-                currentAnalysisId=res.data.modified_base_data_file_id;
+                setWhatIfAnalysisId(res?.data?.result?.modified_base_data_file_id);
+                currentAnalysisId=res?.data?.result?.modified_base_data_file_id;
             }
         }
         catch(err)
@@ -190,7 +190,7 @@ export const UpdateAssetDetailsModal = ({
             const res = await updateModifiedAssets(currentAnalysisId);
             setWhatifAnalysisPerformed(true)
             setSaveBtn(true)
-            setTablesData(res.data.message);
+            setTablesData(res?.data?.result);
             handleCancel()
         }
         catch(err)
@@ -218,7 +218,7 @@ export const UpdateAssetDetailsModal = ({
 
         if(addDeleteAssetData.type == 'duplicate')
         {
-            const resultData = duplicateAsset(updateAssetTableData, effectiveIndex, enteredInputData , updateAssetDefaultColumnsData[selectedSheetNumber], selectedSheetNumber)
+            const resultData = duplicateAsset(updateAssetTableData.result, effectiveIndex, enteredInputData , updateAssetDefaultColumnsData[selectedSheetNumber], selectedSheetNumber)
             setAppliedChanges([...appliedChanges, ...resultData.duplicatechangesArray])
             setAaddedDeletedAssets({
                 ...addedDeletedAssets,
@@ -229,7 +229,7 @@ export const UpdateAssetDetailsModal = ({
             setAddAssetDetailsModalOpen(false)
         }
         else if(addDeleteAssetData.type != 'delete'){
-            const resultData = addAssetAtIndex(updateAssetTableData, effectiveIndex, enteredInputData , updateAssetDefaultColumnsData[selectedSheetNumber], selectedSheetNumber)
+            const resultData = addAssetAtIndex(updateAssetTableData.result, effectiveIndex, enteredInputData , updateAssetDefaultColumnsData[selectedSheetNumber], selectedSheetNumber)
             setUpdateAssetTableData(resultData)
             setAaddedDeletedAssets({
                 ...addedDeletedAssets,
@@ -240,7 +240,7 @@ export const UpdateAssetDetailsModal = ({
         }
         else
         {
-            const resultData = deleteAssetAtIndex(updateAssetTableData,effectiveIndex,updateAssetDefaultColumnsData[selectedSheetNumber],selectedSheetNumber)
+            const resultData = deleteAssetAtIndex(updateAssetTableData.result,effectiveIndex,updateAssetDefaultColumnsData[selectedSheetNumber],selectedSheetNumber)
             setUpdateAssetTableData(resultData.updatedData)
             setAaddedDeletedAssets({
                 ...addedDeletedAssets,
@@ -319,7 +319,7 @@ export const UpdateAssetDetailsModal = ({
             <table className={Styles.table}>
                 <thead>
                 <tr className={Styles.headRow}>
-                    {updateAssetTableData && updateAssetTableData?.table_data[selectedSheetNumber]?.columns.map((col, index) => (
+                    {updateAssetTableData?.result && updateAssetTableData?.result?.table_data[selectedSheetNumber]?.columns.map((col, index) => (
                     <th key={index} className={Styles.th}>
                         {col.label}
                     </th>
@@ -328,16 +328,16 @@ export const UpdateAssetDetailsModal = ({
                 </tr>
                 </thead>
                 <tbody>
-                {updateAssetTableData && updateAssetTableData?.table_data[selectedSheetNumber]?.data.map((row, rowIndex) => (
+                {updateAssetTableData?.result && updateAssetTableData?.result?.table_data[selectedSheetNumber]?.data.map((row, rowIndex) => (
                     <tr key={rowIndex}>
-                    {updateAssetTableData && updateAssetTableData?.table_data[selectedSheetNumber]?.columns.map((col) => (
+                    {updateAssetTableData?.result && updateAssetTableData?.result?.table_data[selectedSheetNumber]?.columns.map((col) => (
                         <td 
                             key={col}
                             className={Styles.td}
                         >
                                 <div className={Styles.inputCellDiv}>
                                 <input 
-                                    className={showModification && getLatestPrevValue(updateAssetTableData?.changes ,appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) ? Styles.currValueInput : Styles.assetUpdateInput} 
+                                    className={showModification && getLatestPrevValue(updateAssetTableData?.result?.changes ,appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) ? Styles.currValueInput : Styles.assetUpdateInput} 
                                     onFocus={() =>handleInputFocus(row[updateAssetDefaultColumnsData[selectedSheetNumber]],col.label)}
                                     type="text" 
                                     value={selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label ? updateAssetInputText : row[col.key]  }  
@@ -356,9 +356,9 @@ export const UpdateAssetDetailsModal = ({
                                 </>
                                 }
                                 </div>
-                            {showModification && getLatestPrevValue(updateAssetTableData?.changes ,appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) && 
+                            {showModification && getLatestPrevValue(updateAssetTableData?.result?.changes ,appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) && 
                             <div className={`${Styles.inputCellDiv} ${Styles.prevValueText}`}>
-                                {getLatestPrevValue(updateAssetTableData?.changes ,appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label)}
+                                {getLatestPrevValue(updateAssetTableData?.result?.changes ,appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label)}
                             </div>
                             }
 

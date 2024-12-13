@@ -1,6 +1,11 @@
 from models import BaseDataFile, WhatIfAnalysis, ModifiedBaseDataFile, db
 from source.utility.ServiceResponse import ServiceResponse
 
+import numpy as np
+import pandas as pd
+
+from source.utility.ServiceResponse import ServiceResponse
+from models import ModifiedBaseDataFile, BaseDataFile
 
 def get_base_data_file(**kwargs):
     if "base_data_file_id" in kwargs.keys():
@@ -46,3 +51,85 @@ def get_fundType_of_wia(what_if_analysis_id, what_if_analysis_type):
     fund_type = fund_type[0]
 
     return ServiceResponse.success(data=fund_type, message="Base data file fund for WIA fetched")
+
+def get_raw_value(updated_value, col_type):
+    try:
+        if col_type == np.float64:
+            if updated_value != "":
+                if type(updated_value) == str:
+                    updated_value = updated_value.replace(",", "")
+                    updated_value = float(updated_value)
+            else:
+                updated_value = None
+        if col_type == np.int64:
+            if updated_value != "":
+                if type(updated_value) == str:
+                    updated_value = updated_value.replace(",", "")
+                    updated_value = int(updated_value)
+            else:
+                updated_value = None
+        elif col_type == "<M8[ns]":  # Handling datetime
+            if updated_value != "":
+                if type(updated_value) != str:
+                    if find_is_NaT(updated_value):
+                        updated_value = ""
+                    else:
+                        updated_value = pd.to_datetime(
+                            updated_value, errors="coerce"
+                        ).strftime("%Y-%m-%d")
+            else:
+                updated_value = None
+        if col_type == object:
+            try:
+                if not pd.isna(updated_value):
+                    if updated_value != "":
+                        updated_value = float(updated_value.replace(",", ""))
+                    else:
+                        updated_value = None
+                else:
+                    updated_value = ""
+            except ValueError:
+                updated_value = updated_value
+        return updated_value
+    
+    except Exception as e:
+        return ServiceResponse.error(message=f"Error in get_raw_value: {e}")
+
+
+def get_row_index(sheet_df, row_name):
+    try:
+        row_index = sheet_df[sheet_df[sheet_df.columns[0]] == row_name].index[0]
+        return row_index
+    except IndexError as ie:
+        return -1
+    
+def find_is_NaT(previous_value):
+    try:
+        if pd.isna(previous_value):
+            return True
+    except Exception as e:
+        return False
+
+
+def get_updated_value(updated_value):
+    if isinstance(updated_value, str):
+        try:
+            if updated_value.endswith("%"):
+                updated_value = updated_value[:-1]
+                updated_value = float(updated_value) / 100
+        except ValueError:
+            pass
+    return updated_value
+
+def validate_request_data(data):
+    modified_base_data_file_id = data.get("modified_base_data_file_id")
+    if not modified_base_data_file_id:
+        return ServiceResponse.error(message="modified_base_data_file_id is required")
+
+    modified_base_data_file = ModifiedBaseDataFile.query.filter_by(id=modified_base_data_file_id).first()
+
+    if not modified_base_data_file:
+        return ServiceResponse.error(message="No modified_base_data_file found")
+    
+    return ServiceResponse.success(data = modified_base_data_file)
+

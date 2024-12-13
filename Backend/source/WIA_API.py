@@ -18,8 +18,10 @@ from dotenv import load_dotenv
 from io import BytesIO
 from numerize import numerize
 
-import modify_sheet
 import modified_dfs_calculation
+
+from source.services import wiaService
+from source.utility.HTTPResponse import HTTPResponse
 
 
 def updating_selected_assets(selected_assets, df_PL_BB_Build, original_PL_BB_Build):
@@ -1156,98 +1158,7 @@ def download_excel_for_assets_function():
             500,
         )
 
-
-def get_base_data_file_sheet_data_function():
-    try:
-        data = request.get_json()
-
-        request_validation_result = modify_sheet.validate_get_sheet_data_request(data)
-        if request_validation_result:
-            return jsonify(request_validation_result), 400
-
-        sheet_data, changes = modify_sheet.get_file_data(data)
-        return jsonify({"table_data": sheet_data, "changes": changes}), 200
-
-    except Exception as e:
-        return (
-            jsonify(
-                {
-                    "error": str(e),
-                    "error_type": type(e).__name__,
-                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
-                }
-            ),
-            500,
-        )
-
-
-def update_values_in_sheet_function():
-    try:
-        data = request.get_json()
-
-        request_validation_status = modify_sheet.validate_update_value_request(data)
-        if request_validation_status:
-            return jsonify(request_validation_status), 400
-
-        updated_df, initial_df = modify_sheet.update_add_df(data)
-
-        response_data = modify_sheet.save_updated_df(data, updated_df, initial_df)
-        return jsonify(response_data)
-    except Exception as e:
-        return (
-            jsonify(
-                {
-                    "error_status": True,
-                    "error": str(e),
-                    "error_type": type(e).__name__,
-                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
-                }
-            ),
-            500,
-        )
-
-
-def calculate_bb_modified_sheets_function():
-    data = request.get_json()
-    try:
-        request_validation_status = modified_dfs_calculation.validate_request_data(data)
-        if request_validation_status:
-            return jsonify(request_validation_status), 400
-
-        response_data, updated_df_PL_BB_Output = (
-            modified_dfs_calculation.calculate_base_data(data)
-        )
-
-        if modified_dfs_calculation.save_response_data(
-            data, response_data, updated_df_PL_BB_Output
-        ):
-            return jsonify({"error_status": False, "message": response_data}), 200
-        else:
-            return (
-                jsonify(
-                    {
-                        "error_status": False,
-                        "message": "Could not calculate borrowing base on modified sheets",
-                    }
-                ),
-                500,
-            )
-
-    except Exception as e:
-        return (
-            jsonify(
-                {
-                    "error_status": True,
-                    "error": str(e),
-                    "error_type": type(e).__name__,
-                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
-                }
-            ),
-            500,
-        )
-
-
-def save_what_if_analysis_function():
+def save_what_if_analysis():
     try:
         data = request.get_json()
         temporary_what_if_analysis_id = data["temporary_what_if_analysis_id"]
