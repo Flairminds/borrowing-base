@@ -1157,47 +1157,8 @@ def download_excel_for_assets_function():
             ),
             500,
         )
-def calculate_bb_modified_sheets_function():
-    data = request.get_json()
-    try:
-        request_validation_status = modified_dfs_calculation.validate_request_data(data)
-        if request_validation_status:
-            return jsonify(request_validation_status), 400
 
-        response_data, updated_df_PL_BB_Output = (
-            modified_dfs_calculation.calculate_base_data(data)
-        )
-
-        if modified_dfs_calculation.save_response_data(
-            data, response_data, updated_df_PL_BB_Output
-        ):
-            return jsonify({"error_status": False, "message": response_data}), 200
-        else:
-            return (
-                jsonify(
-                    {
-                        "error_status": False,
-                        "message": "Could not calculate borrowing base on modified sheets",
-                    }
-                ),
-                500,
-            )
-
-    except Exception as e:
-        return (
-            jsonify(
-                {
-                    "error_status": True,
-                    "error": str(e),
-                    "error_type": type(e).__name__,
-                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
-                }
-            ),
-            500,
-        )
-
-
-def save_what_if_analysis_function():
+def save_what_if_analysis():
     try:
         data = request.get_json()
         temporary_what_if_analysis_id = data["temporary_what_if_analysis_id"]

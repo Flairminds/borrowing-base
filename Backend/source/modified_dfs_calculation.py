@@ -7,18 +7,6 @@ import app
 from models import ModifiedBaseDataFile, BaseDataFile
 
 
-def validate_request_data(data):
-    modified_base_data_file_id = data.get("modified_base_data_file_id")
-    if not modified_base_data_file_id:
-        return {"error_status": True, "message": "base_data_file_id is required"}
-
-    modified_base_data_file = ModifiedBaseDataFile.query.filter_by(
-        id=modified_base_data_file_id
-    ).first()
-    if not modified_base_data_file:
-        return {"error_status": True, "message": "No modified_base_data_file found"}
-
-
 def calculate_base_data(data):
     modified_base_data_file_id = data.get("modified_base_data_file_id")
     if not modified_base_data_file_id:

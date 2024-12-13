@@ -478,3 +478,8 @@ def update_df(sheet_df, changes, sheet_name):
                 value_to_update["previous_value"] = previous_value
                 sheet_df.loc[row_index, col_name] = updated_value
     return sheet_df
+
+
+def get_modified_data_file(modified_base_data_file_id):
+    modified_base_data_file = ModifiedBaseDataFile.query.filter_by(id=modified_base_data_file_id).first()
+    return modified_base_data_file
