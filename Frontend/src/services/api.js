@@ -140,7 +140,7 @@ export const getListOfWhatIfAnalysis = (user_id) =>{
 
 export const getSelectedWIAAsstes = (whatIfAnalysisId,whatIfAnalysisType) =>{
     
-    const res = axios.post(`${ApiURL}/get_selected_WIA_asstes`, {
+    const res = axios.post(`${ApiURL}/wia/get_asset_inventry`, {
         what_if_analysis_id:whatIfAnalysisId,
         what_if_analysis_type:whatIfAnalysisType
     });
