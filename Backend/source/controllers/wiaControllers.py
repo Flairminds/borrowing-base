@@ -8,6 +8,7 @@ from source.services.PCOF.WIA import updateParameterAnalyst as pcofUpdateParamet
 from source.services.PFLT.WIA import updateParameterAnalyst as pfltUpdateParameterAnalyst
 from source.services.PCOF.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pcofUpdateAssetAnalyst
 from source.services.PFLT.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pfltUpdateAssetAnalyst
+from source.services.PCOF.WIA import assetInventory as pcofAssetInventry
 from source.utility.HTTPResponse import HTTPResponse
 from source.utility.Log import Log
 
