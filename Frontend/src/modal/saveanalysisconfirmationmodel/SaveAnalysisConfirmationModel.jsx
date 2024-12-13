@@ -1,6 +1,7 @@
 import React from 'react';
 import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
 import { Button, Input, Modal } from 'antd';
+import { CustomButton } from '../../components/custombutton/CustomButton';
 
 export const SaveAnalysisConfirmationModel = ({
     descriptionModal,
@@ -24,11 +25,13 @@ export const SaveAnalysisConfirmationModel = ({
                     <button key="back" onClick={()=>{isSetDescriptionModal(false); setDescriptionInput('') }} className={ButtonStyles.outlinedBtn}>
                         Cancel
                     </button>
-                    <Button className={ButtonStyles.filledBtn} loading={whatIfanalysisLoader}
-                         key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={save_what_if_analysis}
-                    >
-                        Save
-                    </Button>
+                    <CustomButton
+                    isFilled={true}
+                    loading={whatIfanalysisLoader}
+                    loadingText="Saving..."
+                    text="Save"
+                    onClick={save_what_if_analysis}
+                    />
                     </div>
                 ]}    
             >

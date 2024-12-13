@@ -1,0 +1,28 @@
+import React from 'react';
+import { Button } from "antd";
+import 'antd/dist/reset.css'; // Import Ant Design styles
+import ButtonStyle from './CustomButton.module.css';
+
+export const CustomButton = ({
+  isFilled = false,
+  text = 'Button',
+  isOk = false,
+  onClick = () => {},
+  type = 'text',
+  loading = false,
+  loadingText = 'Loading...', 
+  customStyle = {},
+}) => {
+  return (
+    
+    <Button 
+      onClick={onClick}
+      className={`${isFilled ? `${ButtonStyle.filledBtn}` : `${ButtonStyle.outlinedBtn}`}`}
+      style={customStyle}
+      htmlType={type}
+      loading={loading}
+    >
+      {loading ? loadingText : text}
+    </Button >
+  );
+};

@@ -553,7 +553,6 @@ export const WhatIfAnalysis = (
         save_what_if_analysis={save_what_if_analysis}
         descriptionInput={descriptionInput}
       />
-
-        </>
+         </>
   )
 }
