@@ -293,9 +293,6 @@ class AssetProcessor:
 
                 if base_row is not None:
                     base_value = base_row[col]
-                    # currently added, to be removed after bug is resolved from backend 
-                    # if not isinstance(base_value, str):
-                    #     continue
                     changed = bool(base_value != value)
                     percent_change = (
                         self.calculate_percent_change(base_value, value)
