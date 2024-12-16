@@ -1,42 +1,38 @@
-import React from 'react'
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css'
-import { Button, Modal } from 'antd'
-import { getListOfWhatIfAnalysis, lockHairCutTestData } from '../../services/api'
-import styles from './ConcentrationTestConfirmationModal.module.css'
+import { Button, Modal } from 'antd';
+import React from 'react';
+import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
+import { getListOfWhatIfAnalysis, lockHairCutTestData } from '../../services/api';
+import styles from './ConcentrationTestConfirmationModal.module.css';
 
 export const ConcentrationTestConfirmationModal = ({
     confirmationModalOpen, setConfirmationModalOpen, baseFile, hairCutArray, setTablesData,
-    setConentrationTestModalOpen,setWhatIfAnalysisListData }) => {
-  
-    const handleCancel  =() => {
-        setConfirmationModalOpen(false)
-    }
+    setConentrationTestModalOpen, setWhatIfAnalysisListData }) => {
+
+    const handleCancel = () => {
+        setConfirmationModalOpen(false);
+    };
 
     const handleLock = async() => {
-        try{
+        try {
           const res = await lockHairCutTestData(baseFile.id,hairCutArray);
           setTablesData(res.data)
           getWhatifAnalysisList()
           setConentrationTestModalOpen(false)
-        }
-        catch(err) {
+        } catch (err) {
           console.error(err);
         }
 
-        setConfirmationModalOpen(false) 
-    }
+        setConfirmationModalOpen(false);
+    };
 
     const getWhatifAnalysisList = async () => {
-      try{
-        const response = await getListOfWhatIfAnalysis(1)  
-        setWhatIfAnalysisListData(response.data.Whatif_data)
+      try {
+        const response = await getListOfWhatIfAnalysis(1);
+        setWhatIfAnalysisListData(response.data.Whatif_data);
+      } catch (err) {
+        console.error(err);
       }
-      catch(err)
-      {
-        console.error(err)
-      }
-      
-    }
+    };
 
     return (
     <>
@@ -56,7 +52,7 @@ export const ConcentrationTestConfirmationModal = ({
                 <Button className={ButtonStyles.filledBtn} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={handleLock}>
                     Yes
                 </Button>
-                </div>,
+                </div>
                 ]}
         >
           <div className={styles.Popupcontainer}>
@@ -68,7 +64,7 @@ export const ConcentrationTestConfirmationModal = ({
             <b>
               Would you like to proceed?
             </b>
-       </Modal>     
+       </Modal>
     </>
-  )
-}
+  );
+};

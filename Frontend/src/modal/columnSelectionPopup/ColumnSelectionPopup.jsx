@@ -20,12 +20,9 @@ export const ColumnSelectionPopup = ({setAssetSelectionData, assetSelectionData,
           );
     };
     useEffect(() => {
-        if(selectedColumns.length < 4)
-            {
+        if (selectedColumns.length < 4) {
                 setCheckBoxesDisabled(false);
-            }
-            else
-            {
+            } else {
                 setCheckBoxesDisabled(true);
             }
     }, [selectedColumns]);
@@ -36,13 +33,11 @@ export const ColumnSelectionPopup = ({setAssetSelectionData, assetSelectionData,
             user_id : 1,
             assets_selection_columns : selectedColumns
         };
-        try{
+        try {
             const res = await setConfigurations(payload);
             assestSelection();
             toast.success('Configurations Set Successfully');
-        }
-        catch(err)
-        {
+        } catch (err) {
             console.error(err);
         }
         setColumnSelectionPopupOpen(false);
@@ -59,11 +54,10 @@ export const ColumnSelectionPopup = ({setAssetSelectionData, assetSelectionData,
                   });
                   getTrendGraphData(fundType);
                   setDate(null);
-                }
-                catch(err){
+                } catch (err) {
                  console.error(err);
                 }
-    }
+    };
 
   return (
     <>
@@ -106,7 +100,6 @@ export const ColumnSelectionPopup = ({setAssetSelectionData, assetSelectionData,
 
             </>
             </Modal>
-
     </>
   );
 };
