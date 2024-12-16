@@ -1,30 +1,29 @@
-import {  Modal } from 'antd'
-import React from 'react'
+import {Modal } from 'antd';
+import { useEffect, useState } from 'preact/hooks';
+import React from 'react';
 import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
 import { intermediateMetricsTable } from '../../services/api';
-import { useEffect, useState } from 'preact/hooks';
 import { PreviewTable } from '../previewModal/PreviewTable';
 
-export const AboutModal = ({isAboutModalState,aboutModalState,baseFile}) => {
-  
-    const[intermediateMetrics,setIntermediateMetrics]= useState()
+export const AboutModal = ({isAboutModalState, aboutModalState, baseFile}) => {
 
-    const handleCancel =() =>{
-        isAboutModalState(false)
-    }
-    
-    useEffect(()=>{
+    const [intermediateMetrics, setIntermediateMetrics] = useState();
+
+    const handleCancel = () =>{
+        isAboutModalState(false);
+    };
+
+    useEffect(() => {
         const getMediateMetrics = async () =>{
-            try{
-                const res = await intermediateMetricsTable(baseFile.id)
-                setIntermediateMetrics(res.data)
+            try {
+                const res = await intermediateMetricsTable(baseFile.id);
+                setIntermediateMetrics(res.data);
+              } catch (err) {
+              console.error(err);
             }
-            catch (err){
-              console.error(err)
-            }
-        } 
-        getMediateMetrics()
-    },[])
+          };
+          getMediateMetrics();
+    }, []);
 
   return (
     <>
@@ -48,5 +47,5 @@ export const AboutModal = ({isAboutModalState,aboutModalState,baseFile}) => {
               </>
             </Modal>
     </>
-  )
-}
+  );
+};

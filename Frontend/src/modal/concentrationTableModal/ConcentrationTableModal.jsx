@@ -1,43 +1,43 @@
-import React from 'react'
-import { Button, Modal } from 'antd'
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css'
-import Styles from './ConcentrationTableModal.module.css'
-import { TableComponent } from '../../components/Tables/TableComponent'
-import { getConentrationData, lockHairCutTestData } from '../../services/api'
-import { ConcentrationTestConfirmationModal } from '../concentrationTestConfirmationModal/ConcentrationTestConfirmationModal'
-import { useState } from 'preact/hooks'
-import { countOccurrencesOfTest } from '../../utils/helperFunctions/CountOfTestStatus'
-import TotalTestIcon from '../../assets/ConcentrationTest/TotalTestIcon.svg'
-import PassTestIcon from '../../assets/ConcentrationTest/PassTestIcon.svg'
-import FailTestIcon from '../../assets/ConcentrationTest/FailTestIcon.svg'
+import { Button, Modal } from 'antd';
+import { useState } from 'preact/hooks';
+import React from 'react';
+import FailTestIcon from '../../assets/ConcentrationTest/FailTestIcon.svg';
+import PassTestIcon from '../../assets/ConcentrationTest/PassTestIcon.svg';
+import TotalTestIcon from '../../assets/ConcentrationTest/TotalTestIcon.svg';
+import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
+import { getConentrationData, lockHairCutTestData } from '../../services/api';
+import { countOccurrencesOfTest } from '../../utils/helperFunctions/CountOfTestStatus';
+import { ConcentrationTestConfirmationModal } from '../concentrationTestConfirmationModal/ConcentrationTestConfirmationModal';
+import Styles from './ConcentrationTableModal.module.css';
+import { TableComponent } from '../../components/Tables/TableComponent';
 
-const ConcentrationTestCount = ({imageSrc , testCountText , backgroundColor}) => {
+const ConcentrationTestCount = ({imageSrc, testCountText, backgroundColor}) => {
 
   const style = {
-    backgroundColor : backgroundColor , 
-    padding:'5px 10px', 
-    borderRadius:'30px', 
-    color :'white', 
-    fontWeight:400
-  }
-  
-  return(
+    backgroundColor: backgroundColor,
+    padding: '5px 10px',
+    borderRadius: '30px',
+    color: 'white',
+    fontWeight: 400
+  };
+
+  return (
     <div style={style}>
       <img className={Styles.image} src={imageSrc} alt={imageSrc} />
       {testCountText}
     </div>
-  )
+  );
 
-}
+};
 
 
 export const ConcentrationTableModal = ({
   baseFile,
   concentrationTestModalOpen,
-  setConentrationTestModalOpen, 
-  setConcentrationTestTableData, 
-  concentrationTestTableData, 
-  showObligationTotal=true,
+  setConentrationTestModalOpen,
+  setConcentrationTestTableData,
+  concentrationTestTableData,
+  showObligationTotal = true,
   hairCutArray,
   setIsHairCutTestModalOpen,
   setHairCutTestData,
@@ -45,30 +45,29 @@ export const ConcentrationTableModal = ({
   setWhatIfAnalysisListData
 }) => {
   const columns = concentrationTestTableData?.columns[0]?.data
-  const len = concentrationTestTableData  && concentrationTestTableData[columns[0]]?.length;
+  const len = concentrationTestTableData && concentrationTestTableData[columns[0]]?.length;
   const dataMappingArray = Array(len).fill('');
   const [confirmationModalOpen, setConfirmationModalOpen] = useState(false)
 
   const handleCancel = () => {
     setConentrationTestModalOpen(false);
-  }
+  };
 
   const totalTests = concentrationTestTableData?.Result?.length
   const passedTests = countOccurrencesOfTest(concentrationTestTableData?.Result, 'Pass')
   const failedTests = countOccurrencesOfTest(concentrationTestTableData?.Result, 'Fail')
 
-  const handleHairCutTestModal= async() => {    
+  const handleHairCutTestModal = async() => {
     let hairCutpayloadArray = hairCutArray.map(el => Object.values(el)[0]);
-    try{
+    try {
       const res = await getConentrationData(1, baseFile.id, hairCutpayloadArray);
       setHairCutTestData(res.data.table)
       setIsHairCutTestModalOpen(true)
-    }
-    catch(err) {
+    } catch (err) {
       console.error(err);
     }
     setConentrationTestModalOpen(false);
-  }
+  };
 
   return (
     <>
@@ -77,9 +76,9 @@ export const ConcentrationTableModal = ({
           <>
           <div className={Styles.titlecontainer}>
           <span className={Styles.title}>Concentration Test</span>
-            <ConcentrationTestCount backgroundColor="#6873C7" testCountText={totalTests} imageSrc={TotalTestIcon}  />
-            <ConcentrationTestCount backgroundColor="#248900" testCountText={passedTests} imageSrc={PassTestIcon}  />
-            <ConcentrationTestCount backgroundColor="#EB5757" testCountText={failedTests} imageSrc={FailTestIcon}  />
+            <ConcentrationTestCount backgroundColor="#6873C7" testCountText={totalTests} imageSrc={TotalTestIcon} />
+            <ConcentrationTestCount backgroundColor="#248900" testCountText={passedTests} imageSrc={PassTestIcon} />
+            <ConcentrationTestCount backgroundColor="#EB5757" testCountText={failedTests} imageSrc={FailTestIcon} />
           </div>
           </>
         }
@@ -95,7 +94,7 @@ export const ConcentrationTableModal = ({
             <Button className={ButtonStyles.filledBtn} key="submit" type="primary" classNames={Styles.lockbutton} onClick={() => setConfirmationModalOpen(true)}>
               Lock
             </Button>
-          </div>,
+          </div>
         ]}
       >
         <div className={Styles.tableContainer}>
@@ -123,7 +122,7 @@ export const ConcentrationTableModal = ({
                               <div>
                                 {concentrationTestTableData[ed][i]?.data}
                               </div>
-                              {concentrationTestTableData['Previous Result']  ? 
+                              {concentrationTestTableData['Previous Result'] ?
                               <p className={`${Styles.prevActualData} ${concentrationTestTableData['Previous Result'][i]?.data == "Fail" ? Styles.failprevActual : null} ${concentrationTestTableData['Previous Result'][i]?.data == "Pass" ? Styles.passprevActual : null}`}>
                                 {concentrationTestTableData['Previous Actual'][i]?.data}
                               </p>
@@ -138,7 +137,7 @@ export const ConcentrationTableModal = ({
                               <div>
                                 {concentrationTestTableData[ed][i]?.data}
                               </div>
-                              {concentrationTestTableData['Previous Result']  ? 
+                              {concentrationTestTableData['Previous Result'] ?
                               <p className={`
                                 ${Styles.prevActualData} 
                                 ${concentrationTestTableData['Previous Result'][i]?.data == "Fail" ? Styles.failprevActual : null} 
@@ -158,7 +157,7 @@ export const ConcentrationTableModal = ({
                               <div>
                                 {concentrationTestTableData[ed][i]?.data}
                               </div>
-                              {concentrationTestTableData['Previous Result']  ? 
+                              {concentrationTestTableData['Previous Result'] ?
                               <p className={`
                                     ${Styles.prevActualData} 
                                     ${concentrationTestTableData['Previous Result'][i]?.data == "Fail" ? Styles.failprevActual : null} 
@@ -203,7 +202,7 @@ export const ConcentrationTableModal = ({
                             </td>
                           ) : null}
                         </>
-                      ) : (i !== len-1 ? (
+                      ) : (i !== len - 1 ? (
                         <td key={j} className={Styles.td}>
                           {concentrationTestTableData[ed][i]?.data}
                         </td>
@@ -217,8 +216,8 @@ export const ConcentrationTableModal = ({
         </div>
       </Modal>
 
-      <ConcentrationTestConfirmationModal 
-        confirmationModalOpen={confirmationModalOpen} 
+      <ConcentrationTestConfirmationModal
+        confirmationModalOpen={confirmationModalOpen}
         setConfirmationModalOpen={setConfirmationModalOpen}
         baseFile={baseFile}
         hairCutArray={hairCutArray}
@@ -227,5 +226,5 @@ export const ConcentrationTableModal = ({
         setWhatIfAnalysisListData={setWhatIfAnalysisListData}
       />
     </>
-  )
-}
+  );
+};
