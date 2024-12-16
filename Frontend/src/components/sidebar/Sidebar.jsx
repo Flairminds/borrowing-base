@@ -17,6 +17,9 @@ export const Sidebar = () => {
       if (iconNum == 2) {
         navigate('/fund-setup');
       }
+      if(iconNum == 3) {
+        navigate('/data-ingestion')
+      }
   };
 
   return (

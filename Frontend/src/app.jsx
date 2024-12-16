@@ -9,6 +9,7 @@ import { AssetSelectionPage } from './pages/assetSelection/AssetSelectionPage';
 import { ConcentrationTestMaster } from './pages/testMaster/ConcentrationTestMaster';
 import { landingPageData } from './services/api';
 import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
+import { DataIngestionPage } from './pages/dataIngestion/DataIngestionPage';
 
 
 
@@ -89,19 +90,20 @@ export function App() {
             path='/asset-selection'
             element={
               <AssetSelectionPage
-                baseFile={baseFile}
-                setBaseFile={setBaseFile}
-                setTablesData={setTablesData}
-                setAssetSelectionData={setAssetSelectionData}
-                assetSelectionData={assetSelectionData}
-                selectedAssets={selectedAssets}
-                setSelectedAssets={setSelectedAssets}
-                setIsAnalysisModalOpen={setIsAnalysisModalOpen}
-                setConstDate={setConstDate}
-                fundType={fundType}
+              baseFile={baseFile}
+              setBaseFile={setBaseFile}
+              setTablesData={setTablesData}
+              setAssetSelectionData={setAssetSelectionData}
+              assetSelectionData={assetSelectionData}
+              selectedAssets={selectedAssets}
+              setSelectedAssets={setSelectedAssets}
+              setIsAnalysisModalOpen={setIsAnalysisModalOpen}
+              setConstDate={setConstDate}
+              fundType={fundType}
               />
             }
           />
+          <Route path='/data-ingestion' element={<DataIngestionPage />} />
 
 
 
