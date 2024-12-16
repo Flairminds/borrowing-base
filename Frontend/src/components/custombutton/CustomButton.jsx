@@ -7,7 +7,7 @@ export const CustomButton = ({
   isFilled = false,
   text = 'Button',
   onClick = () => {},
-  type = 'text',
+  type = 'button',
   loading = false,
   loadingText = 'Loading...',
   customStyle = {}
