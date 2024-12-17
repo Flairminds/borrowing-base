@@ -28,10 +28,12 @@ export const UpdateAssetDetailsModal = ({
     setWhatIfAnalysisId,
     setTablesData,
     setWhatifAnalysisPerformed,
-    setSaveBtn
+    setSaveBtn,
+    fundType
 }) => {
 
-    const [selectedSheetNumber, setSelectedSheetNumber] = useState(updateAssetModalData.defaultSelectedSheet);
+    
+    const [selectedSheetNumber, setSelectedSheetNumber] = useState();
     const [updateAssetInputText,setUpdateAssetInputText ] = useState('');
     const [appliedChanges, setAppliedChanges] = useState([]);
     const [enteredInputData,setEnteredInputData] = useState('')
@@ -46,6 +48,12 @@ export const UpdateAssetDetailsModal = ({
     const [loading, setLoading] = useState(false)
     const [addAssetDetailsModalOpen , setAddAssetDetailsModalOpen] = useState(false);
     const [showModification, setShowModification] = useState(false)
+
+    useEffect(() => {
+        if (fundType) {
+          setSelectedSheetNumber(updateAssetModalData(fundType));
+        }
+      }, [fundType]);
     
     const previewSheets = updateAssetTableData?.table_data?.sheets
 
@@ -54,11 +62,13 @@ export const UpdateAssetDetailsModal = ({
         setSelectedOption(0);
         setAppliedChanges([]);
         setLoading(false);
-        setSelectedSheetNumber(updateAssetModalData.defaultSelectedSheet)
+        setSelectedSheetNumber(updateAssetModalData(fundType))
     }
 
     const handleInputFocus = (investment_name, colName) => {
+        console.log(investment_name , colName);
         setSelectedCellData({investment_name : investment_name,colName:colName});
+        
         setUpdateAssetInputText('');
     }
 
@@ -91,6 +101,8 @@ export const UpdateAssetDetailsModal = ({
             colName:''
         })
     }
+
+    
 
     const handleSheetChange = async(sheetName) => {
 
@@ -143,11 +155,10 @@ export const UpdateAssetDetailsModal = ({
         try{
             const res = await getUpdateAssetData(baseFile.id, sheetName, whatIfAnalysisId)
             setUpdateAssetTableData(res.data.result);
-            console.log(res.data.result , "Result");
             setAppliedChanges([]);
             setUpdateAssetInputText('')
             setSelectedSheetNumber(sheetName)
-            console.log(sheetName , "Result");
+           
         }
         catch(err)
         {
@@ -204,6 +215,8 @@ export const UpdateAssetDetailsModal = ({
     }
 
     const updateAddDeleteData = (rowIndex,operationType) => {
+        console.log(rowIndex, "ROWINDEX");
+        console.log(operationType, "OperationType");
         setAddDeleteAssetData({
             index: rowIndex,
             type:operationType
@@ -246,9 +259,9 @@ export const UpdateAssetDetailsModal = ({
             setUpdateAssetTableData(resultData.updatedData)
             setAaddedDeletedAssets({
                 ...addedDeletedAssets,
-                deletedAssets :[...addedDeletedAssets.deletedAssets, {row_identifier:resultData.rowName}]
+                deletedAssets:[...addedDeletedAssets.deletedAssets, {row_identifier:resultData.rowName}]
             })
-            setAddAssetDetailsModalOpen(false)
+            setAddAssetDetailsModalOpen(false);
         }
     }
 
@@ -270,7 +283,7 @@ export const UpdateAssetDetailsModal = ({
     )
 
     const handleShowModificationChange = (checked) => {
-        setShowModification(checked)
+        setShowModification(checked);
     }
 
   return (
@@ -333,24 +346,24 @@ export const UpdateAssetDetailsModal = ({
                 {updateAssetTableData && updateAssetTableData?.table_data[selectedSheetNumber]?.data.map((row, rowIndex) => (
                     <tr key={rowIndex}>
                     {updateAssetTableData && updateAssetTableData?.table_data[selectedSheetNumber]?.columns.map((col) => (
-                        
-                        <td 
+
+                        <td
                             key={col}
                             className={Styles.td}
                         >
-                          
+
                                 <div className={Styles.inputCellDiv}>
-                                <input 
+                                <input
                                     className={showModification && getLatestPrevValue(updateAssetTableData?.changes ,appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) ? Styles.currValueInput : Styles.assetUpdateInput} 
                                     onFocus={() =>handleInputFocus(row[updateAssetDefaultColumnsData[selectedSheetNumber]],col.label)}
-                                    type="text" 
+                                    type="text"
                                     value={selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label ? updateAssetInputText : row[col.key]  }  
-                                    onChange={(e) => handleCellInputChange(e)} 
+                                    onChange={(e) => handleCellInputChange(e)}
                                 />
                                 {selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label  &&
                                 <>
                                 <img 
-                                    style={{zIndex:200}} src={RightIcon} alt="Right Icon" 
+                                    style={{zIndex:200}} src={RightIcon} alt="Right Icon"
                                     onClick={(e)=> handleCommitChange(e,row[updateAssetDefaultColumnsData[selectedSheetNumber]],col.key, col.label ,row[col.key])} 
                                 />
                                 <img 
@@ -383,7 +396,7 @@ export const UpdateAssetDetailsModal = ({
             </div>
 
       </>
-        
+
       </Modal>
 
       <AddAssetDetailsModal

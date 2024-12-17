@@ -39,8 +39,7 @@ export const WhatIfAnalysisOptions = (
   }
 
   const getUpdateAssetSheetData = async() => {
-
-    const defaultsheetName = 'PL BB Build';
+    const defaultsheetName = fundType === 'PCOF' ? 'PL BB Build' : 'Loan List';
     const basefileid = baseFile.id;
     try{
       const res = await getUpdateAssetData(basefileid, defaultsheetName);

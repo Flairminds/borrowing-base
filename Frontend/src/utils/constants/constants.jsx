@@ -19,11 +19,16 @@ export const updateAssetDefaultColumnsData = {
     'Obligors Net Capital' : 'Obligors_Net_Capital',
     'Advance Rates' : 'Investor_Type',
     'Concentration Limits' : 'Investors',
-    'Principle Obligations' : 'Principal_Obligations'
+    'Principle Obligations' : 'Principal_Obligations',
+    'Loan List' : 'Security_Name',
+    'Inputs' : 'INPUTS',
+    'Cash Balance Projections' : 'Currency',
+    'Credit Balance Projection' : 'Currency'
+    
 }
 
-export const updateAssetModalData = {
-    defaultSelectedSheet:'PL BB Build',
+export const updateAssetModalData = (fundType) => {
+    return fundType === 'PCOF' ? 'PL BB Build' : 'Loan List';
 }
 
 export const fundOptionsArray = [
