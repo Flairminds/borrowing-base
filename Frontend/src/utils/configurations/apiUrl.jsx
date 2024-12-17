@@ -6,8 +6,7 @@
 // disha
 // const apiURL = 'https://4m3x42wn-5000.inc1.devtunnels.ms/api'
 // Abhinav
-// const apiURL = 'https://ts3pl306-5000.inc1.devtunnels.ms/api'
-
+const apiURL = 'https://ts3pl306-5000.inc1.devtunnels.ms/api'
 // Varad
 ////const apiURL = 'https://4w5k1fp7-5000.inc1.devtunnels.ms/api'
 
@@ -18,7 +17,7 @@
 // local link
 // const apiURL = 'http://192.168.1.78:5000/api'
 
-const apiURL = 'http://127.0.0.1:5000/api';
+// const apiURL = 'http://127.0.0.1:5000/api';
 
 // const apiURL = 'http://localhost:5000/api'
 
