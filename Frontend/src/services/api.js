@@ -302,7 +302,7 @@ export const getUpdateAssetData = (base_data_file_id, sheetName,whatIfAnalysisId
         "what_if_analysis_id":whatIfAnalysisId
     }
 
-    const res = axios.post(`${ApiURL}/wia/get_base_data_file_sheet_data` , updateAssetData)
+    const res = axios.post(`${ApiURL}/wia/get_base_data_file_sheet_data` , updateAssetData);
     return res;
 }
 
@@ -321,7 +321,7 @@ export const updateModifiedAssets = (what_if_analysis_id) => {
     const payload = {
         modified_base_data_file_id :what_if_analysis_id,
     }
-    const res = axios.post(`${ApiURL}/wia/calculate_bb_modified_sheets` , payload)
+    const res = axios.post(`${ApiURL}/wia/calculate_bb_modified_sheets` , payload);
     return res
 
 }

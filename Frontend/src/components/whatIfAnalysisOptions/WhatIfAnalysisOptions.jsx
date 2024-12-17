@@ -7,10 +7,10 @@ import { toast } from 'react-toastify';
 import { wiaOptions } from '../../utils/configurations/wiaOptions';
 
 export const WhatIfAnalysisOptions = (
-  { selectedOption, 
+  { selectedOption,
     setSelectedOption,
     setIsModalVisible,
-    setEbitdaModalOpen, 
+    setEbitdaModalOpen,
     setIsupdateAssetModalOpen,
     setUpdateAssetTableData,
     baseFile,
@@ -21,11 +21,11 @@ export const WhatIfAnalysisOptions = (
   }) => {
 
   const handleDropdownChange = (value) => {
-    setSaveBtn(false)
+    setSaveBtn(false);
     setWhatIfAnalysisId(null);
     if(value == 1)
     {
-        setIsModalVisible(true)
+        setIsModalVisible(true);
     }
     else if(value == 2)
     {
@@ -33,24 +33,24 @@ export const WhatIfAnalysisOptions = (
     }
     else if(value == 3)
     {
-      getUpdateAssetSheetData()
+      getUpdateAssetSheetData();
       // setUpdateAssetTableData(updateAssetData)
     }
   }
-  
+
   const getUpdateAssetSheetData = async() => {
-    
+
     const defaultsheetName = 'PL BB Build';
     const basefileid = baseFile.id;
     try{
-      const res = await getUpdateAssetData(basefileid, defaultsheetName, whatIfAnalysisId);
-      setUpdateAssetTableData(res.data);
-      setIsupdateAssetModalOpen(true)
+      const res = await getUpdateAssetData(basefileid, defaultsheetName);
+      setUpdateAssetTableData(res.data.result);
+      setIsupdateAssetModalOpen(true);
     }
     catch(err)
     {
-      toast.error("something went wrong")
-      console.error(err)
+      toast.error("something went wrong");
+      console.error(err);
     }
 
   }
@@ -58,7 +58,7 @@ export const WhatIfAnalysisOptions = (
 
   return (
     <>
-   
+
   <div style={{ textAlign: "center", flex: "1", margin: '0rem 1rem', paddingRight: "2rem" }}>
     <Select
       className={ButtonStyles.filledBtn}
@@ -72,14 +72,13 @@ export const WhatIfAnalysisOptions = (
   </div>
 
 
-      
+
         <div>
 
           {/* <AboutModal isAboutModalState={isAboutModalState} aboutModalState={aboutModalState}  /> */}
           {/* Preveiw */}
         </div>
-        
 
     </>
-  )
-}
+  );
+};
