@@ -158,3 +158,20 @@ class Fund(db.Model):
     concentration_tests = db.relationship(
         "FundConcentrationTest", back_populates="fund"
     )
+
+
+class SourceFiles(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    file_name = db.Column(db.String(100), nullable=False)
+    extension = db.Column(db.String(100), nullable=False)
+    file_url = db.Column(db.String(200), nullable=False)
+    file_size = db.Column(db.Float, nullable=False)
+    company_id = db.Column(db.Integer, nullable=False)
+    fund_type = db.Column(db.String(100), nullable=False)
+    is_validated = db.Column(db.Boolean, default=False)
+    is_extracted = db.Column(db.Boolean, default=False)
+    uploaded_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    modified_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    uploaded_by = db.Column(db.Integer, nullable=False)
+    is_deleted = db.Column(db.Boolean, default=False)
+    file_type = db.Column(db.String(100))
