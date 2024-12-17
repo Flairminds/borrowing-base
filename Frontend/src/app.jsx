@@ -27,6 +27,7 @@ export function App() {
   const [fundType, setFundType] = useState("");
   const [assetSelectionData, setAssetSelectionData] = useState([]);
   const [selectedAssets, setSelectedAssets] = useState(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
+  const [dataIngestionFileList, setDataIngestionFileList] = useState()
 
   const getLandingPageData = async() => {
     try {
@@ -103,7 +104,15 @@ export function App() {
               />
             }
           />
-          <Route path='/data-ingestion' element={<DataIngestionPage />} />
+          <Route
+            path='/data-ingestion'
+            element={
+              <DataIngestionPage
+                dataIngestionFileList={dataIngestionFileList}
+                setDataIngestionFileList={setDataIngestionFileList}
+              />
+            }
+          />
 
 
 
