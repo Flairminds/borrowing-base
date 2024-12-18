@@ -1,6 +1,6 @@
 from flask import request, jsonify
 
-from source.services import wiaService
+from source.services.WIA import wiaService, assetInventory
 from source.services.commons import commonServices
 from source.services.PCOF.WIA import addAssetAnalyst as pcofAddAssetAnalyst
 from source.services.PFLT.WIA import addAssetAnalyst as pfltAddAssetAnalyst
@@ -8,7 +8,6 @@ from source.services.PCOF.WIA import updateParameterAnalyst as pcofUpdateParamet
 from source.services.PFLT.WIA import updateParameterAnalyst as pfltUpdateParameterAnalyst
 from source.services.PCOF.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pcofUpdateAssetAnalyst
 from source.services.PFLT.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pfltUpdateAssetAnalyst
-from source.services.PCOF.WIA import assetInventory as pcofAssetInventry
 from source.utility.HTTPResponse import HTTPResponse
 from source.utility.Log import Log
 
@@ -172,14 +171,7 @@ def get_asset_inventry():
         
         fund_type=fund_type["data"]
 
-        match fund_type:
-            case "PCOF":
-                asset_inventry = pcofAssetInventry.get_asset_inventry(what_if_analysis_id, what_if_analysis_type)
-            # case "PFLT":
-            #     asset_inventry = pfltAssetInventry.get_asset_inventry(what_if_analysis_id, what_if_analysis_type)
-
-
-        # response = {"result":asset_inventry}
+        asset_inventry = assetInventory.get_asset_inventry(what_if_analysis_id, what_if_analysis_type, fund_type)
         
         return HTTPResponse.success(message="What if analysis inventory data fetched successfully", result=asset_inventry["data"])
 

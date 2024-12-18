@@ -5,7 +5,7 @@ from datetime import datetime
 
 from source.services.PFLT.calculation.pflt_borrowing_base import PFLTBorrowingBase as PBC
 from source.services.PFLT.WIA import responseGenerator
-from source.services import wiaService
+from source.services.WIA import wiaService
 from source.services.PFLT.pflt_utility.constants import sheet_uniques
 from source.utility.ServiceResponse import ServiceResponse
 

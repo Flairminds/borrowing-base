@@ -6,7 +6,7 @@ from datetime import datetime
 from source.services.PCOF import utility as pcofUtility
 from source.services.PCOF.calculation.functionsCall import calculate_bb
 from source.services.PCOF.WIA import responseGenerator2
-from source.services import wiaService
+from source.services.WIA import wiaService
 from source.utility.ServiceResponse import ServiceResponse
 
 def get_parameters(base_data_file, type):
