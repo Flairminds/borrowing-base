@@ -139,7 +139,7 @@ export const WhatIfAnalysis = (
     const getWhatifAnalysisList = async () => {
       try{
         const response = await getListOfWhatIfAnalysis(1)
-        setWhatIfAnalysisListData(response.data.result.data)
+        setWhatIfAnalysisListData(response.data.result)
       }
       catch(err)
       {
@@ -524,8 +524,8 @@ export const WhatIfAnalysis = (
         handleOk ={handleOk}
         handleCancel ={handleCancel}
         setTableModal ={setTableModal}
-        whatIfAnalysisListData ={whatIfAnalysisListData}
-        Whatif_Columns ={Whatif_Columns}
+        whatIfAnalysisListData ={whatIfAnalysisListData.data}
+        Whatif_Columns ={whatIfAnalysisListData.columns}
         setTablesData ={setTablesData}
         setWhatifAnalysisPerformed ={setWhatifAnalysisPerformed}
         selectedRow = {selectedRow}

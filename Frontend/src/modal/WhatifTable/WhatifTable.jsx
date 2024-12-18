@@ -87,7 +87,7 @@ export const WhatifTable = ({simulationType,setSimulationType,data, columns, set
               <th className={Styles.th}></th>
               {columns.map((col, index) => (
                 <th key={index} className={Styles.th}>
-                  {col.title}
+                  {col.label}
                 </th>
               ))}
               <th className={Styles.th}></th>
@@ -118,7 +118,7 @@ export const WhatifTable = ({simulationType,setSimulationType,data, columns, set
                           </span>
                         </Button>
                       ) : (
-                        <span>{row[col.key]}</span>
+                        <span>{row[col.key].replace("_", " ")}</span>
                       )}
                     </td>
                   ))}

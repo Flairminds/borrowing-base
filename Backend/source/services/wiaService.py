@@ -120,6 +120,7 @@ def wia_library(user_id):
             "note": what_if_entry.note if what_if_entry.note else "",
             "what_if_analysis_id": what_if_entry.id,
             "simulation_type": what_if_entry.simulation_type,
+            "fund_type": base_data_file.fund_type,
             "last_updated": (
                 what_if_entry.updated_at.strftime("%m/%d/%Y")
                 if what_if_entry.updated_at
