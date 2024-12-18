@@ -508,7 +508,7 @@ export const WhatIfAnalysis = (
             isupdateAssetModalOpen={isupdateAssetModalOpen}
             setIsupdateAssetModalOpen={setIsupdateAssetModalOpen}
             updateAssetTableData={updateAssetTableData}
-            setUpdateAssetTableData={setUpdateAssetTableData}  
+            setUpdateAssetTableData={setUpdateAssetTableData}
             selectedCellData={selectedCellData}
             setSelectedCellData={setSelectedCellData}
             baseFile={baseFile}
@@ -517,6 +517,7 @@ export const WhatIfAnalysis = (
             setTablesData={setTablesData}
             setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
             setSaveBtn={setSaveBtn}
+            fundType={fundType}
           />
 
         <WhatIfAnalysisLib
