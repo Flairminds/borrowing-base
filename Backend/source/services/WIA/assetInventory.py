@@ -58,10 +58,10 @@ class AssetProcessor:
             self.init_update_asset_inventory(what_if_analysis)
 
     def init_add_asset(self, what_if_analysis, sheet_name):
-        initial_loan_list = pickle.loads(what_if_analysis.initial_data)[sheet_name]
-        updated_loan_list = pickle.loads(what_if_analysis.updated_data)[sheet_name]
-        self.what_if_intermediate_metrics_output = updated_loan_list
-        self.base_data_intermediate_metrics_output = initial_loan_list
+        initial_sheet = pickle.loads(what_if_analysis.initial_data)[sheet_name]
+        updated_sheet = pickle.loads(what_if_analysis.updated_data)[sheet_name]
+        self.what_if_intermediate_metrics_output = updated_sheet
+        self.base_data_intermediate_metrics_output = initial_sheet
         self.sheet_name = sheet_name
         # Ensure indices are aligned
         self.base_data_intermediate_metrics_output.reset_index(drop=True, inplace=True)
@@ -83,11 +83,11 @@ class AssetProcessor:
 
     def init_asset_inventory(self, what_if_analysis, sheet_name):
 
-        self.asset_inventory_initial_loan_list = pickle.loads(
+        self.asset_inventory_initial_sheet = pickle.loads(
             what_if_analysis.initial_data
         )
         self.asset_inventory_updated_data = pickle.loads(what_if_analysis.updated_data)
-        self.asset_inventory_updated_loan_list = self.asset_inventory_updated_data[sheet_name]
+        self.asset_inventory_updated_sheet = self.asset_inventory_updated_data[sheet_name]
         self.sheet_name = sheet_name
         self.data = {
             self.sheet_name: {
@@ -232,13 +232,13 @@ class AssetProcessor:
             self.what_if_intermediate_metrics_output.fillna("", inplace=True)
             self.base_data_intermediate_metrics_output.fillna("", inplace=True)
         else:
-            self.asset_inventory_initial_loan_list = (
-                self.asset_inventory_initial_loan_list[self.sheet_name][self.specific_columns]
+            self.asset_inventory_initial_sheet = (
+                self.asset_inventory_initial_sheet[self.sheet_name][self.specific_columns]
                 .rename(columns=self.renamed_columns)
                 .fillna("")
             )
-            self.asset_inventory_updated_loan_list = (
-                self.asset_inventory_updated_loan_list[self.specific_columns]
+            self.asset_inventory_updated_sheet = (
+                self.asset_inventory_updated_sheet[self.specific_columns]
                 .rename(columns=self.renamed_columns)
                 .fillna("")
             )
@@ -298,10 +298,10 @@ class AssetProcessor:
         self.data[self.sheet_name]["new_data"] = self.added_indices
 
     def process_asset_inventory_rows(self):
-        for index, row in self.asset_inventory_updated_loan_list.iterrows():
+        for index, row in self.asset_inventory_updated_sheet.iterrows():
             row_data = {}
-            base_row = self.asset_inventory_initial_loan_list[
-                self.asset_inventory_initial_loan_list["Investor Name"]
+            base_row = self.asset_inventory_initial_sheet[
+                self.asset_inventory_initial_sheet["Investor Name"]
                 == row["Investor Name"]
             ]
 
