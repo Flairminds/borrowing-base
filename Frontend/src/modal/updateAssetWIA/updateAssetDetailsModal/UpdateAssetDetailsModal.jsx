@@ -66,7 +66,6 @@ export const UpdateAssetDetailsModal = ({
     }
 
     const handleInputFocus = (investment_name, colName) => {
-        console.log(investment_name , colName);
         setSelectedCellData({investment_name : investment_name,colName:colName});
         
         setUpdateAssetInputText('');
@@ -215,8 +214,6 @@ export const UpdateAssetDetailsModal = ({
     }
 
     const updateAddDeleteData = (rowIndex,operationType) => {
-        console.log(rowIndex, "ROWINDEX");
-        console.log(operationType, "OperationType");
         setAddDeleteAssetData({
             index: rowIndex,
             type:operationType
