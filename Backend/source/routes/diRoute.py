@@ -11,3 +11,7 @@ def get_concentration_tests():
 @di_blueprint.route("/get_blobs", methods=["GET"])
 def get_blobs():
     return diController.get_blobs()
+
+@di_blueprint.route("/extract_base_data", methods=["GET"])
+def extract_base_data():
+    return diController.extract_base_data()
