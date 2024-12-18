@@ -1,0 +1,45 @@
+def truncate_and_rename_columns(df):
+    """
+    Truncate column names to 63 characters and ensure uniqueness.
+    """
+    max_length = 63
+    new_columns = []
+    seen = set()
+    
+    for col in df.columns:
+        # Truncate to max_length
+        truncated_col = col[:max_length]
+        
+        # Ensure uniqueness
+        unique_col = truncated_col
+        counter = 1
+        while unique_col in seen:
+            unique_col = f"{truncated_col[:max_length - len(str(counter)) - 1]}_{counter}"
+            counter += 1
+        
+        seen.add(unique_col)
+        new_columns.append(unique_col)
+    
+    df.columns = new_columns
+    return df
+
+def process_and_store_data(data_dict, engine):
+    """Process each DataFrame and store it in the database."""
+    for sheet_name, df in data_dict.items():
+        print(f"Processing sheet: {sheet_name}")
+        
+        # Log duplicates for debugging
+        duplicates = df.columns[df.columns.duplicated()].tolist()
+        if duplicates:
+            print(f"Duplicate columns in sheet {sheet_name}: {duplicates}")
+        
+        # Truncate and rename columns
+        df = truncate_and_rename_columns(df)
+        
+        # Store in the database
+        try:
+            df.to_sql(sheet_name, con=engine, if_exists='replace', index=False, method='multi')
+            print(f"Successfully stored sheet: {sheet_name}")
+        except Exception as e:
+            print(f"Failed to store sheet {sheet_name}. Error: {e}")
+            
