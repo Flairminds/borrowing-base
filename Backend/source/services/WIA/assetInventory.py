@@ -6,28 +6,63 @@ import pandas as pd
 from datetime import datetime
 from numerize import numerize
 
+PCOF_SPECIFIC_COLUMNS = [
+    "Investment Name",
+    "Issuer",
+    "Financials LTM EBITDA ($MMs)",
+    "Leverage Total Leverage",
+    # "Borrowing Base",
+]
+
+PCOF_RENAMED_COLUMNS = {
+    "Investment Name": "Investor Name",
+    "Financials LTM EBITDA ($MMs)": "EBITDA",
+    "Leverage Total Leverage": "Leverage",
+}
+
+
+PFLT_SPECIFIC_COLUMNS = [
+    "Security Name",
+    "Current TTM EBITDA",
+    "Current Total Debt/EBITDA",
+]
+
+PFLT_RENAMED_COLUMNS = {
+    "Security Name": "Investor Name",
+    "Current TTM EBITDA": "EBITDA",
+    "Current Total Debt/EBITDA": "Leverage",
+}
+
 class AssetProcessor:
-    def __init__(self, what_if_analysis):
+    def __init__(self, what_if_analysis, fund_type):
         self.simulation_type = what_if_analysis.simulation_type
 
+        match fund_type:
+            case "PCOF":
+                sheet_name = "PL BB Build"
+                self.specific_columns = PCOF_SPECIFIC_COLUMNS
+                self.renamed_columns = PCOF_RENAMED_COLUMNS
+            case "PFLT":
+                sheet_name = "Loan List"
+                self.specific_columns = PFLT_SPECIFIC_COLUMNS
+                self.renamed_columns = PFLT_RENAMED_COLUMNS
+
         if self.simulation_type == "add_asset":
-            self.init_add_asset(what_if_analysis)
+            self.init_add_asset(what_if_analysis, sheet_name)
         elif (
             self.simulation_type == "change_Ebitda"
             or self.simulation_type == "change_Leverage"
         ):
-            self.init_asset_inventory(what_if_analysis)
+            self.init_asset_inventory(what_if_analysis, sheet_name)
         else:
             self.init_update_asset_inventory(what_if_analysis)
 
-    def init_add_asset(self, what_if_analysis):
-        initial_pl_bb_build = pickle.loads(what_if_analysis.initial_data)["PL BB Build"]
-        updated_pl_bb_build = pickle.loads(what_if_analysis.updated_data)[
-            "PL BB Build"
-        ]
-        self.what_if_intermediate_metrics_output = updated_pl_bb_build
-        self.base_data_intermediate_metrics_output = initial_pl_bb_build
-        self.sheet_name = "PL BB Build"
+    def init_add_asset(self, what_if_analysis, sheet_name):
+        initial_sheet = pickle.loads(what_if_analysis.initial_data)[sheet_name]
+        updated_sheet = pickle.loads(what_if_analysis.updated_data)[sheet_name]
+        self.what_if_intermediate_metrics_output = updated_sheet
+        self.base_data_intermediate_metrics_output = initial_sheet
+        self.sheet_name = sheet_name
         # Ensure indices are aligned
         self.base_data_intermediate_metrics_output.reset_index(drop=True, inplace=True)
         self.what_if_intermediate_metrics_output.reset_index(drop=True, inplace=True)
@@ -46,15 +81,14 @@ class AssetProcessor:
         self.added_indices = self.identify_added_rows()
         self.process_rows()
 
-    def init_asset_inventory(self, what_if_analysis):
-        self.asset_inventory_initial_pl_bb_build = pickle.loads(
+    def init_asset_inventory(self, what_if_analysis, sheet_name):
+
+        self.asset_inventory_initial_sheet = pickle.loads(
             what_if_analysis.initial_data
         )
         self.asset_inventory_updated_data = pickle.loads(what_if_analysis.updated_data)
-        self.asset_inventory_updated_pl_bb_build = self.asset_inventory_updated_data[
-            "PL BB Build"
-        ]
-        self.sheet_name = "PL BB Build"
+        self.asset_inventory_updated_sheet = self.asset_inventory_updated_data[sheet_name]
+        self.sheet_name = sheet_name
         self.data = {
             self.sheet_name: {
                 "columns": [],
@@ -64,23 +98,11 @@ class AssetProcessor:
             }
         }
 
-        self.specific_columns = [
-            "Investment Name",
-            "Issuer",
-            "Financials LTM EBITDA ($MMs)",
-            "Leverage Total Leverage",
-            # "Borrowing Base",
-        ]
-        self.renamed_columns = {
-            "Investment Name": "Investor Name",
-            "Financials LTM EBITDA ($MMs)": "EBITDA",
-            "Leverage Total Leverage": "Leverage",
-        }
-
         self.prepare_columns()
         self.fill_missing_values()
         self.process_rows()
 
+        
     def init_update_asset_inventory(self, modified_base_data_file):
         modified_data = pickle.loads(modified_base_data_file.modified_data)
         initial_data = pickle.loads(modified_base_data_file.initial_data)
@@ -210,13 +232,13 @@ class AssetProcessor:
             self.what_if_intermediate_metrics_output.fillna("", inplace=True)
             self.base_data_intermediate_metrics_output.fillna("", inplace=True)
         else:
-            self.asset_inventory_initial_pl_bb_build = (
-                self.asset_inventory_initial_pl_bb_build["PL BB Build"][self.specific_columns]
+            self.asset_inventory_initial_sheet = (
+                self.asset_inventory_initial_sheet[self.sheet_name][self.specific_columns]
                 .rename(columns=self.renamed_columns)
                 .fillna("")
             )
-            self.asset_inventory_updated_pl_bb_build = (
-                self.asset_inventory_updated_pl_bb_build[self.specific_columns]
+            self.asset_inventory_updated_sheet = (
+                self.asset_inventory_updated_sheet[self.specific_columns]
                 .rename(columns=self.renamed_columns)
                 .fillna("")
             )
@@ -276,10 +298,10 @@ class AssetProcessor:
         self.data[self.sheet_name]["new_data"] = self.added_indices
 
     def process_asset_inventory_rows(self):
-        for index, row in self.asset_inventory_updated_pl_bb_build.iterrows():
+        for index, row in self.asset_inventory_updated_sheet.iterrows():
             row_data = {}
-            base_row = self.asset_inventory_initial_pl_bb_build[
-                self.asset_inventory_initial_pl_bb_build["Investor Name"]
+            base_row = self.asset_inventory_initial_sheet[
+                self.asset_inventory_initial_sheet["Investor Name"]
                 == row["Investor Name"]
             ]
 
@@ -330,8 +352,7 @@ class AssetProcessor:
         return self.data
 
 
-
-def get_asset_inventry(what_if_analysis_id, what_if_analysis_type):
+def get_asset_inventry(what_if_analysis_id, what_if_analysis_type, fund_type):
     if what_if_analysis_type == "Update asset":
         # what_if_analysis = ModifiedBaseDataFile.query.filter_by(
         #     id=what_if_analysis_id
@@ -345,7 +366,8 @@ def get_asset_inventry(what_if_analysis_id, what_if_analysis_type):
     if not what_if_analysis:
         ServiceResponse.error(status_code=404, message="what if analysis not found")
 
-    processor = AssetProcessor(what_if_analysis)
+    processor = AssetProcessor(what_if_analysis, fund_type)
     selected_WIA_asstes_table_data = processor.get_response()
 
     return ServiceResponse.success(data=selected_WIA_asstes_table_data,message="What if analysis found")
+

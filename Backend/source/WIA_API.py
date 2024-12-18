@@ -20,7 +20,7 @@ from numerize import numerize
 
 import modified_dfs_calculation
 
-from source.services import wiaService
+from source.services.WIA import wiaService
 from source.utility.HTTPResponse import HTTPResponse
 
 
