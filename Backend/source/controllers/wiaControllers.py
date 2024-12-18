@@ -150,6 +150,7 @@ def wia_library():
                 {"key":"note", "label": "Note"},
                 {"key":"base_file_name", "label": "Base File Name"},
                 {"key":"created_date", "label": "Created Date"},
+                {"key":"fund_type", "label": "Fund Type"},
                 ],
             "data": wia_library_service_result["data"]
         }
