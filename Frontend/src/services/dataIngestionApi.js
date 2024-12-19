@@ -9,3 +9,17 @@ export const getBlobFilesList = () => {
         });
         return response;
 };
+
+export const uploadNewFile = (files, reportDate) => {
+
+    const formData = new FormData();
+    files.forEach((file) => {
+        formData.append('files', file);
+    });
+    formData.append("reporting_date", reportDate);
+
+    const response = axios.post(`${ApiURL}/data_ingestion/upload_source`, formData, {
+        withCredentials: true
+    });
+    return response;
+};
