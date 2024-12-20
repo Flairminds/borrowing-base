@@ -23,7 +23,7 @@ def upload_source_files():
 
 def get_blobs():
     try:
-        service_response = diService.get_files_list()
+        service_response = diService.get_blob_list()
         return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
     except Exception as e:
         Log.func_error(e)
@@ -36,9 +36,22 @@ def extract_base_data():
         master_comp_file_id = req_body.get("master_comp_file_id")
         service_response = diService.extract_base_data(cash_file_id, master_comp_file_id)
         if not service_response["success"]:
-            return HTTPResponse.error(message=service_response.get("message"), status_code=service_response.get("status_code"), data=service_response.get("data"))
+            return HTTPResponse.error(message=service_response.get("message"), status_code=service_response.get("status_code"))
 
         return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Could not generate base data", status_code=500)
+    
+def get_base_data():
+    try:
+        req_body = flask.request.get_json()
+        report_date = req_body.get("report_date")
+        company_id = req_body.get("company_id")
+        service_response = diService.get_base_data(report_date, company_id)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not get base data")
+        return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)

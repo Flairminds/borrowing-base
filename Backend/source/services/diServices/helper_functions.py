@@ -38,7 +38,7 @@ def process_and_store_data(data_dict, engine):
         
         # Store in the database
         try:
-            df.to_sql(sheet_name, con=engine, if_exists='replace', index=False, method='multi')
+            df.to_sql(sheet_name, con=engine, if_exists='append', index=False, method='multi')
             print(f"Successfully stored sheet: {sheet_name}")
         except Exception as e:
             print(f"Failed to store sheet {sheet_name}. Error: {e}")

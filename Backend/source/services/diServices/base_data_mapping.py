@@ -113,7 +113,7 @@ def soi_mapping(engine, company_id, report_date):
         df["company_id"] = company_id
         df["report_date"] = report_date
         # df.to_csv('file1.csv')
-        df.to_sql("base_data", con=engine, if_exists='replace', index=False, method='multi')
+        df.to_sql("base_data", con=engine, if_exists='append', index=False, method='multi')
         
 
     except Exception as e:
