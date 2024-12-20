@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
 import { Button, Modal } from 'antd';
+import React, { useState } from 'react';
 import { TableComponent } from '../../components/Tables/TableComponent';
-import stylesModalTable from "./TableViewModal.module.css"
+import stylesModalTable from "./TableViewModal.module.css";
 
 export const TableViewModal = ({setOpenModal, openModal, data, columns, heading}) => {
   return (
@@ -28,11 +28,10 @@ export const TableViewModal = ({setOpenModal, openModal, data, columns, heading}
                 <div>
                     <TableComponent data={data} columns={columns} showviewMore={false} />
                 </div>
-                
+
             </div>
-            
 
         </Modal>
   </div>
-  )
-}
+  );
+};
