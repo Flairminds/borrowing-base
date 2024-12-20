@@ -1,19 +1,20 @@
+import { DatePicker } from 'antd';
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { CustomButton } from '../../components/custombutton/CustomButton';
 import { UploadExtractionFiles } from '../../modal/dataIngestionModals/uploadFilesModal/UploadExtractionFiles';
-import { getBlobFilesList } from '../../services/dataIngestionApi';
+import { exportBaseDataFile, getBaseFilePreviewData, getBlobFilesList } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './DataIngestionPage.module.css';
 
-export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileList}) => {
+export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileList, setBaseFilePreviewData}) => {
 
     const [uploadFilesPopupOpen, setUploadFilesPopupOpen] = useState(false);
     const [selectedIds, setSelectedIds] = useState([]);
-    const [fileExtractionLoading, setFileExtractionLoading] = useState(false)
+    const [previewBaseDataLoading, setPreviewBaseDataLoading] = useState(false);
+    const [previewReportDate, setPreviewReportDate] = useState('');
 
-    useEffect(() => {
-        blobFilesList();
-    }, []);
+    const navigate = useNavigate();
 
     const blobFilesList = async() => {
         try {
@@ -25,6 +26,10 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
         }
     };
 
+    useEffect(() => {
+        blobFilesList();
+    }, []);
+
     const handleCheckboxClick = (fileId) => {
         if (selectedIds.indexOf(fileId) === -1) {
             setSelectedIds([...selectedIds, fileId]);
@@ -34,72 +39,117 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
     };
 
     const handleFileExtraction = () => {
-        console.info(selectedIds, 'ids');
-        setFileExtractionLoading(true);
-        setTimeout(() => {
-            setFileExtractionLoading(false);
-        }, 2000);
+        // setFileExtractionLoading(true);
+        // try {
+            // const extractionResponse = exportBaseDataFile(selectedIds);
+            showToast("info", "Data extraction started, it might take 2-3 minutes.");
+            // console.info(extractionResponse, 'extracton');
+        // } catch (err) {
+        //     console.error(err);
+        //     showToast("error", err.response.data.message);
+        // }
+
+        // setFileExtractionLoading(false);
+    };
+
+    const handleDateChange = (date, dateString) => {
+        setPreviewReportDate(dateString);
+      };
+
+    const handleBaseDataPreview = async() => {
+        if (!previewReportDate || previewReportDate == "") {
+            showToast('warning', "Select report Date");
+            return;
+        }
+        setPreviewBaseDataLoading(true);
+
+        try {
+            const previewDataResponse = await getBaseFilePreviewData(previewReportDate, 1);
+            console.info(previewDataResponse, 'base preview ');
+            setBaseFilePreviewData(previewDataResponse.data.result);
+            navigate('/base-data-preview');
+        } catch (err) {
+            console.error(err);
+            showToast("error", err.response.data.message);
+        }
+        setPreviewBaseDataLoading(false);
     };
 
   return (
     <>
-    <div className={styles.ingestionPageContainer}>
-        <div className={styles.ingestionPage}>
-                <div className={styles.uploadBtnContainer}>
-                    <CustomButton
-                        isFilled={true}
-                        onClick={() => setUploadFilesPopupOpen(true)}
-                        text='Upload a File'
-                    />
-                </div>
+        <div className={styles.ingestionPageContainer}>
+            <div className={styles.ingestionPage}>
+                    <div className={styles.buttonsContainer}>
+                        <CustomButton
+                            isFilled={true}
+                            onClick={() => setUploadFilesPopupOpen(true)}
+                            text='Upload a File'
+                        />
 
-            <div className={styles.containerParent}>
-                <div className={styles.tableContainer}>
-                    <table className={styles.table}>
-                        <thead>
-                            <tr className={styles.headRow}>
+                    </div>
+
+                    <div className={styles.buttonsContainer}>
+                        <DatePicker
+                            placeholder='Report Date'
+                            onChange={handleDateChange}
+                            allowClear={true}
+                        />
+                        <CustomButton
+                            isFilled={true}
+                            onClick={handleBaseDataPreview}
+                            text='Preview Base Data'
+                            loading={previewBaseDataLoading}
+                            loadingText="Fetching Data"
+                        />
+                    </div>
+
+                <div className={styles.containerParent}>
+                    <div className={styles.tableContainer}>
+                        <table className={styles.table}>
+                            <thead>
+                                <tr className={styles.headRow}>
+                                    <>
+                                    <th className={styles.th}></th>
+                                    {dataIngestionFileList?.columns.map((col, index) => (
+                                    <th key={index} className={styles.th}>
+                                        {col.label}
+                                    </th>
+                                    ))}
+                                    </>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {dataIngestionFileList?.data?.map((row, rowIndex) => (
+                                <tr key={rowIndex}>
                                 <>
-                                <th className={styles.th}></th>
-                                {dataIngestionFileList?.columns.map((col, index) => (
-                                <th key={index} className={styles.th}>
-                                    {col.label}
-                                </th>
-                                ))}
-                                </>
-                            </tr>
-                        </thead>
-                        <tbody>
-                        {dataIngestionFileList?.data?.map((row, rowIndex) => (
-                            <tr key={rowIndex}>
-                            <>
-                                <td className={styles.td} >
-                                    <input onClick={() => handleCheckboxClick(row.file_id)} type="checkbox" />
-                                </td>
-                                {dataIngestionFileList?.columns.map((col) => (
-                                    <td key={col.key} className={styles.td}>
-                                    {row[col.key]}
+                                    <td className={styles.td} >
+                                        <input onClick={() => handleCheckboxClick(row.file_id)} type="checkbox" />
                                     </td>
-                                ))}
-                            </>
-                            </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                                    {dataIngestionFileList?.columns.map((col) => (
+                                        <td key={col.key} className={styles.td}>
+                                        {row[col.key]}
+                                        </td>
+                                    ))}
+                                </>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
 
+                    </div>
                 </div>
-            </div>
 
-                <div className={styles.extractDataBtn}>
-                    <CustomButton
-                        isFilled={true}
-                        onClick={handleFileExtraction}
-                        text='Extract Base Data'
-                        loading={fileExtractionLoading}
-                        loadingText="Extracting Base Data File"
-                    />
+                    <div className={styles.extractDataBtn}>
+                        <CustomButton
+                            isFilled={true}
+                            onClick={handleFileExtraction}
+                            text='Extract Base Data'
+                            // loading={fileExtractionLoading}
+                        />
+                </div>
             </div>
         </div>
-    </div>
+
 
         <UploadExtractionFiles
             uploadFilesPopupOpen={uploadFilesPopupOpen}

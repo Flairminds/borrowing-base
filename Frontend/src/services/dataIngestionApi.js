@@ -23,3 +23,22 @@ export const uploadNewFile = (files, reportDate) => {
     });
     return response;
 };
+
+export const exportBaseDataFile = (uploadedFilesData) => {
+    const uploadedData = {
+        "master_comp_file_id": uploadedFilesData[0],
+        "cash_file_id": uploadedFilesData[1]
+        // "SOI_id": uploadedFilesData[2]
+    };
+    const exportRes = axios.post(`${ApiURL}/data_ingestion/extract_base_data`, uploadedData);
+    return exportRes;
+};
+
+export const getBaseFilePreviewData = (reportDate, companyId) => {
+    const fileData = {
+        'report_date': reportDate,
+        'company_id': companyId
+    };
+    const previewResponse = axios.post(`${ApiURL}/data_ingestion/get_base_data`, fileData);
+    return previewResponse;
+};

@@ -1,28 +1,19 @@
-
-.ingestionPageContainer
+.previewPage
 {
-  display: flex;
-  justify-content: center;
-}
-
-.ingestionPage
-{
-  width: 75%;
-}
-
-.buttonsContainer
-{
-    margin: 1rem 1rem;
-    text-align: right;
+    width: 95vw;
+    display: flex;
+    justify-content: center;
 }
 
 .tableContainer
 {
   border: 1px solid #DCDEDE;
   border-radius: 8px;
-  max-height: 70vh;
-  overflow-y: auto;
-  margin: 0.5rem;
+  /* max-width: 90vw; */
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  margin: 1rem;
 }
 
 .extractDataBtn
@@ -46,6 +37,7 @@
   align-items: center;
   justify-content: center;
   background-color: #f2f2f2;
+  min-width: 8rem;
 }
 
 .td {
@@ -79,6 +71,3 @@
 {
   border-bottom-right-radius: 8px;
 }
-
-
-  

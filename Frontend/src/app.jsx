@@ -10,6 +10,7 @@ import { ConcentrationTestMaster } from './pages/testMaster/ConcentrationTestMas
 import { landingPageData } from './services/api';
 import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
 import { DataIngestionPage } from './pages/dataIngestion/DataIngestionPage';
+import { BorrowingBasePreviewPage } from './pages/borrowingBasePreview/BorrowingBasePreviewPage';
 
 
 
@@ -27,7 +28,8 @@ export function App() {
   const [fundType, setFundType] = useState("");
   const [assetSelectionData, setAssetSelectionData] = useState([]);
   const [selectedAssets, setSelectedAssets] = useState(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
-  const [dataIngestionFileList, setDataIngestionFileList] = useState()
+  const [dataIngestionFileList, setDataIngestionFileList] = useState();
+  const [baseFilePreviewData, setBaseFilePreviewData] = useState([]);
 
   const getLandingPageData = async() => {
     try {
@@ -110,6 +112,18 @@ export function App() {
               <DataIngestionPage
                 dataIngestionFileList={dataIngestionFileList}
                 setDataIngestionFileList={setDataIngestionFileList}
+                baseFilePreviewData={baseFilePreviewData}
+                setBaseFilePreviewData= {setBaseFilePreviewData}
+              />
+            }
+          />
+
+          <Route
+            path='/base-data-preview'
+            element={
+              <BorrowingBasePreviewPage
+                baseFilePreviewData={baseFilePreviewData}
+                setBaseFilePreviewData={setBaseFilePreviewData}
               />
             }
           />
