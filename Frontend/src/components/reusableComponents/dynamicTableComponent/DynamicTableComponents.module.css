@@ -1,0 +1,38 @@
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.th{
+    padding: 8px;
+    padding-left: 15px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 600;
+    font-size: 14px;
+    min-width: 5rem;
+    align-items: center;
+    justify-content: center;
+    background-color: #f2f2f2;
+}
+  
+.td {
+    padding: 8px;
+    padding-left: 15px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 400;
+    font-size: 14px;
+    align-items: center;
+    justify-content: center;
+}
+
+.headRow .th:first-child
+{
+    border-top-left-radius: 9px;
+}
+
+.headRow .th:last-child 
+{
+    border-top-right-radius: 9px;
+}
