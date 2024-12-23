@@ -6,6 +6,7 @@ import { UploadExtractionFiles } from '../../modal/dataIngestionModals/uploadFil
 import { exportBaseDataFile, getBaseFilePreviewData, getBlobFilesList } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './DataIngestionPage.module.css';
+import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 
 export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileList, setBaseFilePreviewData}) => {
 
@@ -19,7 +20,23 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
     const blobFilesList = async() => {
         try {
             const fileresponse = await getBlobFilesList();
-            setDataIngestionFileList(fileresponse.data.result);
+            const responseData = fileresponse.data.result;
+
+            const columnsToAdd = [{
+                'key': 'file_select',
+                'label': '',
+                'render': (value, row) => <input onClick={() => handleCheckboxClick(row.file_id)} type="checkbox" />
+            }];
+
+            const updatedData = {
+                ...responseData,
+                columns: [...columnsToAdd, ...responseData.columns]
+            };
+
+            setDataIngestionFileList(updatedData);
+
+            // Adding additional column for checkboxes
+
         } catch (err) {
             console.error(err);
             showToast("error", err.response.data.message);
@@ -42,6 +59,7 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
         // setFileExtractionLoading(true);
         // try {
             // const extractionResponse = exportBaseDataFile(selectedIds);
+            console.info(selectedIds, 'check');
             showToast("info", "Data extraction started, it might take 2-3 minutes.");
             // console.info(extractionResponse, 'extracton');
         // } catch (err) {
@@ -105,7 +123,7 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
 
                 <div className={styles.containerParent}>
                     <div className={styles.tableContainer}>
-                        <table className={styles.table}>
+                        {/* <table className={styles.table}>
                             <thead>
                                 <tr className={styles.headRow}>
                                     <>
@@ -134,7 +152,9 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
                                 </tr>
                             ))}
                             </tbody>
-                        </table>
+                        </table> */}
+
+                        <DynamicTableComponents data={dataIngestionFileList?.data} columns={dataIngestionFileList?.columns} />
 
                     </div>
                 </div>
