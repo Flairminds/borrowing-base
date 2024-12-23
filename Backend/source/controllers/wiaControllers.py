@@ -10,6 +10,7 @@ from source.services.PCOF.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pc
 from source.services.PFLT.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pfltUpdateAssetAnalyst
 from source.utility.HTTPResponse import HTTPResponse
 from source.utility.Log import Log
+from flask_sqlalchemy import SQLAlchemy
 
 import modified_dfs_calculation
 
@@ -57,16 +58,19 @@ def add_assets():
             base_data_file_id=base_data_file_id
         )
 
-        if base_data_file.fund_type == "PCOF":
+        fund_type = base_data_file.fund_type
+
+        errors = wiaService.validate_selected_assets(selected_assets, fund_type)
+        if len(errors) > 0:
+            return HTTPResponse.error(result=errors)
+
+        if fund_type == "PCOF":
             return pcofAddAssetAnalyst.add_asset(base_data_file, selected_assets)
         else:
             return pfltAddAssetAnalyst.add_asset(base_data_file, selected_assets)
+        
     except Exception as e:
-        return {
-            "error": str(e),
-            "error_type": str(type(e).__name__),
-            "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
-        }, 500
+       return HTTPResponse.error(message="Internal Server Error")
 
 
 def get_parameters():
