@@ -1,13 +1,13 @@
-import React from 'react'
-import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css'
-import styles from './AddAssetDetailsModal.module.css'
-import { Button, Modal } from 'antd'
-import { useState } from 'preact/hooks'
-import { updateAssetDefaultColumnsData } from '../../../utils/constants/constants'
+import { Button, Modal } from 'antd';
+import React from 'react';
+import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css';
+import { updateAssetDefaultColumnsData } from '../../../utils/constants/constants';
+import styles from './AddAssetDetailsModal.module.css';
+import { useState } from 'preact/hooks';
 
 export const AddAssetDetailsModal = (
   {
-    addAssetDetailsModalOpen, 
+    addAssetDetailsModalOpen,
     setAddAssetDetailsModalOpen,
     addDeleteAssetData,
     selectedSheetNumber,
@@ -16,27 +16,27 @@ export const AddAssetDetailsModal = (
     setEnteredInputData
   }) => {
 
-  
+
   const label = ((updateAssetDefaultColumnsData[selectedSheetNumber])?.split('_'))?.join(' ');
 
   const handleCancel = () => {
-    setAddAssetDetailsModalOpen(false)
+    setAddAssetDetailsModalOpen(false);
   }
 
   return (
     <Modal
         title={<span style={{ color: '#909090', fontWeight: '500', fontSize: '14px', padding: '0 0 0 3%' }}>
           {
-            addDeleteAssetData.type == 'duplicate' ? <>Duplicate {label}</> 
+            addDeleteAssetData.type == 'duplicate' ? <>Duplicate {label}</>
             :
-            addDeleteAssetData.type != 'delete' ?  <>Add {label}</> 
-            
+            addDeleteAssetData.type != 'delete' ? <>Add {label}</>
+
             : <>Delete {label}</>
           }
           </span>}
         centered
         open={addAssetDetailsModalOpen}
-        style={{zIndex:100}}
+        style={{zIndex: 100}}
         onCancel={handleCancel}
         width={'75%'}
         footer={<>
@@ -50,15 +50,15 @@ export const AddAssetDetailsModal = (
                 </div>
         </>}
       >
-        {addDeleteAssetData.type != 'delete' ? 
+        {addDeleteAssetData.type != 'delete' ?
         <div className={styles.formContainer}>
           <div className={styles.label}>{label}</div>
-          <input 
-            type="text" 
-            value={enteredInputData} 
+          <input
+            type="text"
+            value={enteredInputData}
             className={styles.input}
             placeholder={`Enter ${label}`}
-            onChange={(e) =>setEnteredInputData(e.target.value)}
+            onChange={(e) => setEnteredInputData(e.target.value)}
            />
         </div>
         :
@@ -68,5 +68,5 @@ export const AddAssetDetailsModal = (
       }
 
       </Modal>
-  )
-}
+  );
+};

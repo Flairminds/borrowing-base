@@ -1,24 +1,24 @@
-import { Button, Modal, Popover, Tooltip,Switch } from 'antd'
-import React from 'react'
-import Styles from './UpdateAssetDetailsModal.module.css'
+import { Button, Modal, Popover, Tooltip,Switch } from 'antd';
 import { useEffect, useRef, useState } from 'preact/hooks';
-import CrossIcon from '../../../assets/CrossIcon.svg'
-import RightIcon from '../../../assets/RightIcon.svg'
+import React from 'react'
+import AddIcon from '../../../assets/AddIcon.svg';
+import CrossIcon from '../../../assets/CrossIcon.svg';
+import DeleteIcon from '../../../assets/DeleteIcon.svg';
+import RightIcon from '../../../assets/RightIcon.svg';
+import DuplicateAssetIcon from '../../../assets/updateAssetIcons/DuplicateAssetIcon.svg'
+import MoreOptionsIcon from '../../../assets/updateAssetIcons/MoreOptionsIcon.svg'
+import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css';
 import { getUpdateAssetData, updateModifiedAssets, updateSheetValues } from '../../../services/api';
-import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css'
 import { updateAssetDefaultColumnsData, updateAssetModalData } from '../../../utils/constants/constants';
 import { addAssetAtIndex, deleteAssetAtIndex, duplicateAsset, getLatestPrevValue, updateDataAfterChange } from '../../../utils/helperFunctions/updateAssetDataChange';
-import {MoreOutlined} from '@ant-design/icons';
-import MoreOptionsIcon from '../../../assets/updateAssetIcons/MoreOptionsIcon.svg'
-import DuplicateAssetIcon from '../../../assets/updateAssetIcons/DuplicateAssetIcon.svg'
-import DeleteIcon from '../../../assets/DeleteIcon.svg'
-import AddIcon from '../../../assets/AddIcon.svg'
 import { AddAssetDetailsModal } from '../addAssetDetailsModal/AddAssetDetailsModal';
+import Styles from './UpdateAssetDetailsModal.module.css';
+import {MoreOutlined} from '@ant-design/icons';
 
 export const UpdateAssetDetailsModal = ({
     isupdateAssetModalOpen,
     setIsupdateAssetModalOpen,
-    updateAssetTableData ,
+    updateAssetTableData,
     setUpdateAssetTableData,
     selectedCellData,
     setSelectedCellData,
@@ -32,19 +32,19 @@ export const UpdateAssetDetailsModal = ({
     fundType
 }) => {
 
-    
+
     const [selectedSheetNumber, setSelectedSheetNumber] = useState();
-    const [updateAssetInputText,setUpdateAssetInputText ] = useState('');
+    const [updateAssetInputText, setUpdateAssetInputText ] = useState('');
     const [appliedChanges, setAppliedChanges] = useState([]);
-    const [enteredInputData,setEnteredInputData] = useState('')
+    const [enteredInputData, setEnteredInputData] = useState('');
     const [addedDeletedAssets, setAaddedDeletedAssets] = useState({
-        addedAssets:[],
-        deletedAssets:[]
-    })
+        addedAssets: [],
+        deletedAssets: []
+    });
     const [addDeleteAssetData, setAddDeleteAssetData] = useState({
-        index:-1,
-        type:'',
-    })
+        index: -1,
+        type: ''
+    });
     const [loading, setLoading] = useState(false)
     const [addAssetDetailsModalOpen , setAddAssetDetailsModalOpen] = useState(false);
     const [showModification, setShowModification] = useState(false)
@@ -54,7 +54,7 @@ export const UpdateAssetDetailsModal = ({
           setSelectedSheetNumber(updateAssetModalData(fundType));
         }
       }, [fundType]);
-    
+
     const previewSheets = updateAssetTableData?.table_data?.sheets
 
     const handleCancel = () => {
@@ -63,204 +63,176 @@ export const UpdateAssetDetailsModal = ({
         setAppliedChanges([]);
         setLoading(false);
         setSelectedSheetNumber(updateAssetModalData(fundType))
-    }
+    };
 
     const handleInputFocus = (investment_name, colName) => {
         setSelectedCellData({investment_name : investment_name,colName:colName});
-        
         setUpdateAssetInputText('');
-    }
+    };
 
-    const handleCellInputChange = (e) =>
-    {
+    const handleCellInputChange = (e) => {
         setUpdateAssetInputText(e.target.value);
-    }
+    };
 
     const handleCommitChange = (e, investment_name, colKey, colName, currValue) => {
         e.stopPropagation();
-        updateDataAfterChange(updateAssetTableData, investment_name ,colKey,selectedSheetNumber, updateAssetInputText);
+        updateDataAfterChange(updateAssetTableData, investment_name, colKey, selectedSheetNumber, updateAssetInputText);
         const currentChanges = {
             row_name: investment_name,
             column_name: colName,
             updated_value: updateAssetInputText,
             prev_value:currValue
-        }
+        };
         setAppliedChanges([...appliedChanges, currentChanges]);
         setSelectedCellData({
             investment_name : '',
-            colName:''
-        })
-        setUpdateAssetInputText('')
-    }
+            colName: ''
+        });
+        setUpdateAssetInputText('');
+    };
 
     const handleCancelChange = () => {
         setUpdateAssetInputText('');
         setSelectedCellData({
             investment_name : '',
-            colName:''
-        })
-    }
-
-    
+            colName: ''
+        });
+    };
 
     const handleSheetChange = async(sheetName) => {
 
-        let totalChangesOnSheet ={
+        let totalChangesOnSheet = {
             updated_assets:[],
             rows_to_add:[],
             rows_to_delete:[]
         };
-        if(updateAssetTableData?.changes)
-        {
-           totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes , ...appliedChanges]
-        }
-        else
-        {
-            totalChangesOnSheet.updated_assets = [...appliedChanges]
+        if (updateAssetTableData?.changes) {
+           totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes, ...appliedChanges];
+        } else {
+            totalChangesOnSheet.updated_assets = [...appliedChanges];
         }
 
-        if(addedDeletedAssets.addedAssets.length > 0)
-        {
+        if (addedDeletedAssets.addedAssets.length > 0) {
             totalChangesOnSheet.rows_to_add = addedDeletedAssets.addedAssets;
         }
 
-        if(addedDeletedAssets?.deletedAssets?.length > 0)
-        {
-            totalChangesOnSheet.rows_to_delete = addedDeletedAssets?.deletedAssets
+        if (addedDeletedAssets?.deletedAssets?.length > 0) {
+            totalChangesOnSheet.rows_to_delete = addedDeletedAssets?.deletedAssets;
         }
 
-        try{
-            if(appliedChanges.length> 0 || addedDeletedAssets?.addedAssets?.length > 0 || addedDeletedAssets?.deletedAssets?.length > 0 )
-            {
-                const res = await updateSheetValues(baseFile.id,selectedSheetNumber,totalChangesOnSheet,whatIfAnalysisId);
+        try {
+            if (appliedChanges.length > 0 || addedDeletedAssets?.addedAssets?.length > 0 || addedDeletedAssets?.deletedAssets?.length > 0 ) {
+                const res = await updateSheetValues(baseFile.id, selectedSheetNumber, totalChangesOnSheet, whatIfAnalysisId);
                 setWhatIfAnalysisId(res.data.result.modified_base_data_file_id);
             }
-        }
-        catch(err)
-        {
-            console.error(err)
+        } catch (err) {
+            console.error(err);
 
         }
 
         setAaddedDeletedAssets({
-            addedAssets:[],
-            deletedAssets:[]
-        })
-        totalChangesOnSheet ={
+            addedAssets: [],
+            deletedAssets: []
+        });
+        totalChangesOnSheet = {
             updated_assets:[],
             rows_to_add:[]
-        }
+        };
 
-        try{
-            const res = await getUpdateAssetData(baseFile.id, sheetName, whatIfAnalysisId)
+        try {
+            const res = await getUpdateAssetData(baseFile.id, sheetName, whatIfAnalysisId);
             setUpdateAssetTableData(res.data.result);
             setAppliedChanges([]);
-            setUpdateAssetInputText('')
-            setSelectedSheetNumber(sheetName)
-           
-        }
-        catch(err)
-        {
-            console.error(err)
+            setUpdateAssetInputText('');
+            setSelectedSheetNumber(sheetName);
+        } catch (err) {
+            console.error(err);
         }
 
-    }
+    };
 
     const updateAssetApply = async() => {
-        setLoading(true)
-        let currentAnalysisId= undefined;
-        let totalChangesOnSheet ={
+        setLoading(true);
+        let currentAnalysisId = undefined;
+        let totalChangesOnSheet = {
             updated_assets:{}
         };
-        if(updateAssetTableData?.changes)
-        {
-           totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes , ...appliedChanges]
+        if (updateAssetTableData?.changes) {
+           totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes , ...appliedChanges];
+        } else {
+            totalChangesOnSheet.updated_assets = [...appliedChanges];
         }
-        else
-        {
-            totalChangesOnSheet.updated_assets = [...appliedChanges]
-        }
-        try{
-            if(totalChangesOnSheet.updated_assets.length> 0)
-            {
-                const res = await updateSheetValues(baseFile.id,selectedSheetNumber,totalChangesOnSheet,whatIfAnalysisId);
+        try {
+            if (totalChangesOnSheet.updated_assets.length > 0) {
+                const res = await updateSheetValues(baseFile.id, selectedSheetNumber, totalChangesOnSheet, whatIfAnalysisId);
                 setWhatIfAnalysisId(res.data.result.modified_base_data_file_id);
                 currentAnalysisId = res.data.result.modified_base_data_file_id;
             }
-        }
-        catch(err)
-        {
-            console.error(err)
-        }
-        if(!currentAnalysisId)
-        {
-            currentAnalysisId = whatIfAnalysisId
-        }
-
-
-        try{
-            const res = await updateModifiedAssets(currentAnalysisId);
-            setWhatifAnalysisPerformed(true)
-            setSaveBtn(true)
-            setTablesData(res.data.result);
-            handleCancel()
-        }
-        catch(err)
-        {
+        } catch (err) {
             console.error(err);
         }
-        setLoading(false)
+        if (!currentAnalysisId) {
+            currentAnalysisId = whatIfAnalysisId;
+        }
 
-    }
 
-    const updateAddDeleteData = (rowIndex,operationType) => {
+        try {
+            const res = await updateModifiedAssets(currentAnalysisId);
+            setWhatifAnalysisPerformed(true);
+            setSaveBtn(true);
+            setTablesData(res.data.result);
+            handleCancel();
+        } catch (err) {
+            console.error(err);
+        }
+        setLoading(false);
+
+    };
+
+    const updateAddDeleteData = (rowIndex, operationType) => {
         setAddDeleteAssetData({
             index: rowIndex,
-            type:operationType
-        })
-        setAddAssetDetailsModalOpen(true)
-    }
+            type: operationType
+        });
+        setAddAssetDetailsModalOpen(true);
+    };
 
     const handleAddDeleteAssets = () => {
         let effectiveIndex;
-        if(addDeleteAssetData.type == 'addAbove') effectiveIndex = addDeleteAssetData.index;
-        else if(addDeleteAssetData.type == 'addBelow') effectiveIndex = addDeleteAssetData.index+1;
-        else if(addDeleteAssetData.type == 'duplicate') effectiveIndex = addDeleteAssetData.index+1;
+        if (addDeleteAssetData.type == 'addAbove') effectiveIndex = addDeleteAssetData.index;
+        else if (addDeleteAssetData.type == 'addBelow') effectiveIndex = addDeleteAssetData.index + 1;
+        else if (addDeleteAssetData.type == 'duplicate') effectiveIndex = addDeleteAssetData.index + 1;
         else effectiveIndex = addDeleteAssetData.index;
 
-        if(addDeleteAssetData.type == 'duplicate')
-        {
-            const resultData = duplicateAsset(updateAssetTableData, effectiveIndex, enteredInputData , updateAssetDefaultColumnsData[selectedSheetNumber], selectedSheetNumber)
-            setAppliedChanges([...appliedChanges, ...resultData.duplicatechangesArray])
+        if (addDeleteAssetData.type == 'duplicate') {
+            const resultData = duplicateAsset(updateAssetTableData, effectiveIndex, enteredInputData, updateAssetDefaultColumnsData[selectedSheetNumber], selectedSheetNumber);
+            setAppliedChanges([...appliedChanges, ...resultData.duplicatechangesArray]);
             setAaddedDeletedAssets({
                 ...addedDeletedAssets,
-                addedAssets :[...addedDeletedAssets.addedAssets, {row_identifier:enteredInputData, row_index:effectiveIndex}]
-            })
-            setUpdateAssetTableData(resultData.updatedTableData)
+                addedAssets: [...addedDeletedAssets.addedAssets, {row_identifier:enteredInputData, row_index:effectiveIndex}]
+            });
+            setUpdateAssetTableData(resultData.updatedTableData);
             setEnteredInputData('');
-            setAddAssetDetailsModalOpen(false)
-        }
-        else if(addDeleteAssetData.type != 'delete'){
-            const resultData = addAssetAtIndex(updateAssetTableData, effectiveIndex, enteredInputData , updateAssetDefaultColumnsData[selectedSheetNumber], selectedSheetNumber)
-            setUpdateAssetTableData(resultData)
+            setAddAssetDetailsModalOpen(false);
+        } else if (addDeleteAssetData.type != 'delete') {
+            const resultData = addAssetAtIndex(updateAssetTableData, effectiveIndex, enteredInputData, updateAssetDefaultColumnsData[selectedSheetNumber], selectedSheetNumber);
+            setUpdateAssetTableData(resultData);
             setAaddedDeletedAssets({
                 ...addedDeletedAssets,
-                addedAssets :[...addedDeletedAssets.addedAssets, {row_identifier:enteredInputData, row_index:effectiveIndex}]
-            })
+                addedAssets: [...addedDeletedAssets.addedAssets, {row_identifier:enteredInputData, row_index:effectiveIndex}]
+            });
             setEnteredInputData('');
-            setAddAssetDetailsModalOpen(false)
-        }
-        else
-        {
-            const resultData = deleteAssetAtIndex(updateAssetTableData,effectiveIndex,updateAssetDefaultColumnsData[selectedSheetNumber],selectedSheetNumber)
-            setUpdateAssetTableData(resultData.updatedData)
+            setAddAssetDetailsModalOpen(false);
+        } else {
+            const resultData = deleteAssetAtIndex(updateAssetTableData, effectiveIndex, updateAssetDefaultColumnsData[selectedSheetNumber], selectedSheetNumber);
+            setUpdateAssetTableData(resultData.updatedData);
             setAaddedDeletedAssets({
                 ...addedDeletedAssets,
-                deletedAssets:[...addedDeletedAssets.deletedAssets, {row_identifier:resultData.rowName}]
-            })
+                deletedAssets: [...addedDeletedAssets.deletedAssets, {row_identifier:resultData.rowName}]
+            });
             setAddAssetDetailsModalOpen(false);
         }
-    }
+    };
 
     const MoreOptionContent = ({rowIndex}) => (
         <div className={Styles.optionsContainer}>
@@ -277,11 +249,11 @@ export const UpdateAssetDetailsModal = ({
                 Delete
             </div>
         </div>
-    )
+    );
 
     const handleShowModificationChange = (checked) => {
         setShowModification(checked);
-    }
+    };
 
   return (
     <>
@@ -309,11 +281,11 @@ export const UpdateAssetDetailsModal = ({
                 Here, you have the ability to update the details of each and every asset with any value you choose and perform comprehensive 'what-if analysis' to evaluate various scenarios and potential outcomes based on those changes.
             </div>
             <div className={Styles.modificationSwitchContainer}>
-                <Switch 
-                    className={Styles.modificationSwitch} 
-                    size="small" 
-                    onChange={handleShowModificationChange} 
-                    style={{backgroundColor:showModification ? "#1EBEA5":null }}
+                <Switch
+                    className={Styles.modificationSwitch}
+                    size="small"
+                    onChange={handleShowModificationChange}
+                    style={{backgroundColor:showModification ? "#1EBEA5" : null }}
                     />
                 Show rows with modifications
             </div>
@@ -351,28 +323,28 @@ export const UpdateAssetDetailsModal = ({
 
                                 <div className={Styles.inputCellDiv}>
                                 <input
-                                    className={showModification && getLatestPrevValue(updateAssetTableData?.changes ,appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) ? Styles.currValueInput : Styles.assetUpdateInput} 
-                                    onFocus={() =>handleInputFocus(row[updateAssetDefaultColumnsData[selectedSheetNumber]],col.label)}
+                                    className={showModification && getLatestPrevValue(updateAssetTableData?.changes, appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) ? Styles.currValueInput : Styles.assetUpdateInput}
+                                    onFocus={() => handleInputFocus(row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label)}
                                     type="text"
-                                    value={selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label ? updateAssetInputText : row[col.key]  }  
+                                    value={selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label ? updateAssetInputText : row[col.key]}
                                     onChange={(e) => handleCellInputChange(e)}
                                 />
-                                {selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label  &&
+                                {selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label &&
                                 <>
-                                <img 
-                                    style={{zIndex:200}} src={RightIcon} alt="Right Icon"
-                                    onClick={(e)=> handleCommitChange(e,row[updateAssetDefaultColumnsData[selectedSheetNumber]],col.key, col.label ,row[col.key])} 
+                                <img
+                                    style={{zIndex: 200}} src={RightIcon} alt="Right Icon"
+                                    onClick={(e) => handleCommitChange(e,row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.key, col.label, row[col.key])}
                                 />
-                                <img 
+                                <img
                                     src={CrossIcon} alt="Cross Icon" 
-                                    onClick={() => handleCancelChange()} 
+                                    onClick={() => handleCancelChange()}
                                 />
                                 </>
                                 }
                                 </div>
-                            {showModification && getLatestPrevValue(updateAssetTableData?.changes ,appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) && 
+                            {showModification && getLatestPrevValue(updateAssetTableData?.changes, appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) &&
                             <div className={`${Styles.inputCellDiv} ${Styles.prevValueText}`}>
-                                {getLatestPrevValue(updateAssetTableData?.changes ,appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label)}
+                                {getLatestPrevValue(updateAssetTableData?.changes, appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label)}
                             </div>
                             }
 
@@ -408,5 +380,5 @@ export const UpdateAssetDetailsModal = ({
       />
 
     </>
-  )
-}
+  );
+};
