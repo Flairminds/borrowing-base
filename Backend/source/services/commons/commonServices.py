@@ -96,9 +96,9 @@ def get_raw_value(updated_value, col_type):
         return ServiceResponse.error(message=f"Error in get_raw_value: {e}")
 
 
-def get_row_index(sheet_df, row_name):
+def get_row_index(sheet_df, row_name, sheet_uniques_name):
     try:
-        row_index = sheet_df[sheet_df[sheet_df.columns[0]] == row_name].index[0]
+        row_index = sheet_df[sheet_df[sheet_uniques_name] == row_name].index[0]
         return row_index
     except IndexError as ie:
         return -1

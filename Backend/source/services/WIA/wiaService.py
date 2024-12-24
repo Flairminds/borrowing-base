@@ -17,6 +17,10 @@ from source.services.commons import commonServices
 PCOF_FUND_WIA = PCOF_WIA()
 PFLT_FUND_WIA = PFLT_WIA()
 
+sheet_uniques = {
+    "Loan List": "Security Name",
+    "PL BB Build": "Investment Name"
+}
 
 def get_asset_overview(excelfile):
     wia_ref_sheets_dict = pd.read_excel(excelfile, sheet_name=None)
@@ -479,8 +483,9 @@ def update_df(sheet_df, changes, sheet_name):
             row_name = value_to_update["row_name"]
 
             col_name = value_to_update["column_name"]
-            if col_name != sheet_df.columns[0]:
-                row_index = commonServices.get_row_index(sheet_df, row_name)
+            sheet_uniques_name = sheet_uniques.get(sheet_name);
+            if col_name != sheet_uniques_name:
+                row_index = commonServices.get_row_index(sheet_df, row_name, sheet_uniques_name)
                 if row_index != -1:
                     updated_value = value_to_update["updated_value"]
                     updated_value = commonServices.get_updated_value(updated_value)
