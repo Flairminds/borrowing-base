@@ -5,7 +5,7 @@ import pandas as pd
 import pickle
 import numpy as np
 
-from models import WhatIfAnalysis,  ModifiedBaseDataFile, BaseDataFile, db
+from models import WhatIfAnalysis,  ModifiedBaseDataFile, BaseDataFile, db, ColumnMetadataMaster, SheetMetadataMaster, Fund
 from source.utility.ServiceResponse import ServiceResponse
 
 from constants.error_constants import ErrorConstants
@@ -506,3 +506,25 @@ def update_df(sheet_df, changes, sheet_name):
 def get_modified_data_file(modified_base_data_file_id):
     modified_base_data_file = ModifiedBaseDataFile.query.filter_by(id=modified_base_data_file_id).first()
     return modified_base_data_file
+    
+def validate_selected_assets(selected_assets, fund_type):
+    errors = []
+   
+    match fund_type:
+        case "PCOF":
+            sheet_name = "PL BB Build"
+        case "PFLT":
+            sheet_name = "Loan List"
+        case _:
+            errors.append(f"Invalid fund type: {fund_type}")
+            return errors
+        
+    results = ColumnMetadataMaster.query.join(SheetMetadataMaster).join(Fund, SheetMetadataMaster.fund_id == Fund.id).filter(SheetMetadataMaster.name == sheet_name, Fund.fund_name == fund_type).all()
+
+    for index, asset in enumerate(selected_assets):
+        for item in results:
+            column = item.column_name
+            if column not in asset or not asset[column]:
+                errors.append(f"Missing or empty value for {column} in asset at index {index}")
+    
+    return errors
