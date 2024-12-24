@@ -528,8 +528,8 @@ def validate_selected_assets(selected_assets, fund_type):
 
     for index, asset in enumerate(selected_assets):
         for item in results:
-            column = item.column_name
-            if column not in asset or not asset[column]:
+            column = item.column_name.replace(" ", "_")
+            if column not in asset or asset[column] is None:
                 errors.append(f"Missing or empty value for {column} in asset at index {index}")
     
     return errors
