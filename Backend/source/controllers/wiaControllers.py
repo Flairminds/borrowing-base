@@ -240,6 +240,9 @@ def calculate_bb_modified_sheets():
                 response_data = pfltUpdateAssetAnalyst.update_assset(base_data_file, modified_base_data_file)
                 update_asset_response = response_data["data"]
 
+        update_asset_response["what_if_analysis_id"] = request_data.get("modified_base_data_file_id")
+        update_asset_response["what_if_analysis_type"] = "Update asset"
+
         return HTTPResponse.success(result = update_asset_response, message = "Successfully processed.")
 
     except Exception as e:
