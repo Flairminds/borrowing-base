@@ -121,7 +121,6 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
                         />
                     </div>
 
-                <div className={styles.containerParent}>
                     <div className={styles.tableContainer}>
                         {/* <table className={styles.table}>
                             <thead>
@@ -157,7 +156,6 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
                         <DynamicTableComponents data={dataIngestionFileList?.data} columns={dataIngestionFileList?.columns} />
 
                     </div>
-                </div>
 
                     <div className={styles.extractDataBtn}>
                         <CustomButton

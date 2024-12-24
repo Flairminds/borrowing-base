@@ -11,6 +11,7 @@ import { landingPageData } from './services/api';
 import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
 import { DataIngestionPage } from './pages/dataIngestion/DataIngestionPage';
 import { BorrowingBasePreviewPage } from './pages/borrowingBasePreview/BorrowingBasePreviewPage';
+import { BaseDataFileList } from './pages/baseDataFileList/BaseDataFileList';
 
 
 
@@ -107,7 +108,7 @@ export function App() {
             }
           />
           <Route
-            path='/data-ingestion'
+            path='/ingestion-files-list'
             element={
               <DataIngestionPage
                 dataIngestionFileList={dataIngestionFileList}
@@ -115,6 +116,13 @@ export function App() {
                 baseFilePreviewData={baseFilePreviewData}
                 setBaseFilePreviewData= {setBaseFilePreviewData}
               />
+            }
+          />
+
+          <Route
+            path='/base-data-list'
+            element={
+              <BaseDataFileList />
             }
           />
 
