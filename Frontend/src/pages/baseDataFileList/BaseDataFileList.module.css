@@ -12,8 +12,14 @@
     text-align: right;
 }
 
+.tableHeading
+{
+    font-size: 25px;
+    font-weight: bold;
+}
+
 .baseDataTableContainer {
     overflow: auto;
     max-height: 70vh;
-    margin: 2rem 0rem;
+    margin: 1.5rem 0rem;
 }

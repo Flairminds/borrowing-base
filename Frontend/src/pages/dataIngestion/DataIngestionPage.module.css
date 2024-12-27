@@ -25,10 +25,15 @@
   margin: 0.5rem;
 }
 
-.extractDataBtn
+.extractDataBtns
 {
   margin: 1rem 0rem;
-  text-align: center;
+  text-align: right;
+}
+
+.tableHeading {
+  font-size: 25px;
+  font-weight: bold;
 }
 
 .table {
