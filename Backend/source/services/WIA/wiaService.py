@@ -19,7 +19,24 @@ PFLT_FUND_WIA = PFLT_WIA()
 
 sheet_uniques = {
     "Loan List": "Security Name",
-    "PL BB Build": "Investment Name"
+    "Inputs": "INPUTS",
+    "Cash Balance Projections": "Currency",
+    "Credit Balance Projection": "Currency",
+
+    "PL BB Build": "Investment Name",
+    "Other Metrics": "Other Metrics",
+    "Availability Borrower": "A",
+    "PL BB Results": "Concentration Tests",
+    "Subscription BB": "Investor",
+    "PL_BB_Results_Security": "Security",
+    "Inputs Industries": "Industries",
+    "Pricing": "Pricing",
+    "Portfolio LeverageBorrowingBase": "Investment Type",
+    "Obligors' Net Capital": "Obligors' Net Capital",
+    "Advance Rates": "Investor Type",
+    "Concentration Limits": "Investors",
+    "Principle Obligations": "Principal Obligations",
+
 }
 
 def get_asset_overview(excelfile):
@@ -423,7 +440,6 @@ def get_file_data(data):
     try:
         base_data_file_id = data.get("base_data_file_id")
         sheet_name = data.get("sheet_name")
-        # sheet_name = "Loan List"
 
         base_data_file = BaseDataFile.query.filter_by(id=base_data_file_id).first()
 
@@ -483,7 +499,7 @@ def update_df(sheet_df, changes, sheet_name):
             row_name = value_to_update["row_name"]
 
             col_name = value_to_update["column_name"]
-            sheet_uniques_name = sheet_uniques.get(sheet_name);
+            sheet_uniques_name = sheet_uniques.get(sheet_name)
             if col_name != sheet_uniques_name:
                 row_index = commonServices.get_row_index(sheet_df, row_name, sheet_uniques_name)
                 if row_index != -1:
