@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Route, Routes } from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -31,6 +31,7 @@ export function App() {
   const [selectedAssets, setSelectedAssets] = useState(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
   const [dataIngestionFileList, setDataIngestionFileList] = useState();
   const [baseFilePreviewData, setBaseFilePreviewData] = useState([]);
+  const selectedIds = useRef([]);
 
   const getLandingPageData = async() => {
     try {
@@ -115,6 +116,8 @@ export function App() {
                 setDataIngestionFileList={setDataIngestionFileList}
                 baseFilePreviewData={baseFilePreviewData}
                 setBaseFilePreviewData= {setBaseFilePreviewData}
+                selectedIds={selectedIds}
+                // setSelectedIds={setSelectedIds}
               />
             }
           />
@@ -122,7 +125,9 @@ export function App() {
           <Route
             path='/base-data-list'
             element={
-              <BaseDataFileList />
+              <BaseDataFileList
+                setBaseFilePreviewData={setBaseFilePreviewData}
+             />
             }
           />
 

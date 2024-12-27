@@ -1,13 +1,22 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import tableStyles from './DynamicTableComponents.module.css';
 
-export const DynamicTableComponents = ({data, columns}) => {
+export const DynamicTableComponents = ({data, columns, additionalColumns = []}) => {
+
+    const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
+
+    useEffect(() => {
+        if (columns && columns?.length > 0) {
+            setUpdatedColumnsData([...columns, ...additionalColumns]);
+        }
+    }, [columns]);
+
   return (
     <>
     <table className={tableStyles.table}>
         <thead>
         <tr className={tableStyles.headRow}>
-            {columns?.map((col, index) => (
+            {updatedColumnsData?.map((col, index) => (
             <th key={index} className={tableStyles.th}>
                 {col.label}
             </th>
@@ -17,7 +26,7 @@ export const DynamicTableComponents = ({data, columns}) => {
         <tbody>
         {data?.map((row, rowIndex) => (
             <tr key={rowIndex}>
-            {columns?.map((col) => (
+            {updatedColumnsData?.map((col) => (
                 <td
                 key={col.key}
                 className={tableStyles.td}

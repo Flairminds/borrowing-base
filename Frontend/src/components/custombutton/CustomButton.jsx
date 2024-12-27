@@ -10,7 +10,8 @@ export const CustomButton = ({
   type = 'button',
   loading = false,
   loadingText = 'Loading...',
-  customStyle = {}
+  customStyle = {},
+  btnDisabled=false
 }) => {
   return (
 
@@ -20,6 +21,7 @@ export const CustomButton = ({
       style={customStyle}
       htmlType={type}
       loading={loading}
+      disabled={btnDisabled}
     >
       {loading ? loadingText : text}
     </Button >

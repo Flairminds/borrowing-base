@@ -3,19 +3,19 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { CustomButton } from '../../components/custombutton/CustomButton';
 import { UploadExtractionFiles } from '../../modal/dataIngestionModals/uploadFilesModal/UploadExtractionFiles';
-import { exportBaseDataFile, getBaseFilePreviewData, getBlobFilesList } from '../../services/dataIngestionApi';
+import { exportBaseDataFile, getBaseDataFilesList, getBaseFilePreviewData, getBlobFilesList } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './DataIngestionPage.module.css';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 
-export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileList, setBaseFilePreviewData}) => {
+export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileList, setBaseFilePreviewData, selectedIds}) => {
 
     const [uploadFilesPopupOpen, setUploadFilesPopupOpen] = useState(false);
-    const [selectedIds, setSelectedIds] = useState([]);
     const [previewBaseDataLoading, setPreviewBaseDataLoading] = useState(false);
     const [previewReportDate, setPreviewReportDate] = useState('');
 
     const navigate = useNavigate();
+    let extractionInterval;
 
     const blobFilesList = async() => {
         try {
@@ -48,26 +48,57 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
     }, []);
 
     const handleCheckboxClick = (fileId) => {
-        if (selectedIds.indexOf(fileId) === -1) {
-            setSelectedIds([...selectedIds, fileId]);
+        if (selectedIds?.current.indexOf(fileId) === -1) {
+            selectedIds.current = [...selectedIds.current, fileId];
+            // setSelectedIds([...selectedIds, fileId]);
         } else {
-            setSelectedIds(selectedIds.filter(id => id !== fileId));
+            selectedIds.current = selectedIds?.current.filter(id => id !== fileId);
+            // setSelectedIds(selectedIds.filter(id => id !== fileId));
         }
     };
 
     const handleFileExtraction = () => {
         // setFileExtractionLoading(true);
-        // try {
-            // const extractionResponse = exportBaseDataFile(selectedIds);
+        try {
+            // const extractionResponse = exportBaseDataFile(selectedIds.current);
             console.info(selectedIds, 'check');
             showToast("info", "Data extraction started, it might take 2-3 minutes.");
-            // console.info(extractionResponse, 'extracton');
-        // } catch (err) {
-        //     console.error(err);
-        //     showToast("error", err.response.data.message);
-        // }
+            // If needed to call immediately
+            // getExtractionStatus(9);
+
+            extractionInterval = setInterval(() => getExtractionStatus(9), 30000);
+        } catch (err) {
+            console.error(err);
+            showToast("error", err.response.data.message);
+        }
 
         // setFileExtractionLoading(false);
+    };
+
+    const getExtractionStatus = async (fileID) => {
+        const fileDetails = {
+            // "report_date": ,
+            "companyId": 1,
+            "baseFileId": fileID
+        };
+
+        try {
+            const extractionStatusRes = await getBaseDataFilesList(fileDetails);
+            const extractionStatus = extractionStatusRes.data.result.data[0].extraction_status;
+            console.info(extractionStatus, 'status');
+            if (extractionStatus !== "In Progress") {
+                console.info(extractionStatus, 'conditionn entered');
+                clearInterval(extractionInterval);
+            }
+            if (extractionStatus === "completed" ) {
+                return true;
+            }
+        } catch (err) {
+            showToast('failure', err?.response?.data.message);
+        }
+
+        return false;
+
     };
 
     const handleDateChange = (date, dateString) => {
