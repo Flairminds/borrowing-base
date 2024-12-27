@@ -3,6 +3,7 @@ from source.utility.ServiceResponse import ServiceResponse
 
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 from source.utility.ServiceResponse import ServiceResponse
 from models import ModifiedBaseDataFile, BaseDataFile
@@ -53,43 +54,43 @@ def get_fundType_of_wia(what_if_analysis_id, what_if_analysis_type):
     return ServiceResponse.success(data=fund_type, message="Base data file fund for WIA fetched")
 
 def get_raw_value(updated_value, col_type):
+  
     try:
-        if col_type == np.float64:
-            if updated_value != "":
+        match col_type:
+            case np.int64:
                 if type(updated_value) == str:
-                    updated_value = updated_value.replace(",", "")
-                    updated_value = float(updated_value)
-            else:
-                updated_value = None
-        if col_type == np.int64:
-            if updated_value != "":
-                if type(updated_value) == str:
-                    updated_value = updated_value.replace(",", "")
+                    updated_value = int(updated_value.replace(",", ""))
+                else:
                     updated_value = int(updated_value)
-            else:
-                updated_value = None
-        elif col_type == "<M8[ns]":  # Handling datetime
-            if updated_value != "":
+
+            case np.float64:
+                if type(updated_value) == str:
+                    updated_value = float(updated_value.replace(",", ""))
+                else:
+                    updated_value = float(updated_value)
+
+            case "<M8[ns]":
                 if type(updated_value) != str:
                     if find_is_NaT(updated_value):
                         updated_value = ""
                     else:
-                        updated_value = pd.to_datetime(
-                            updated_value, errors="coerce"
-                        ).strftime("%Y-%m-%d")
-            else:
-                updated_value = None
-        if col_type == object:
-            try:
-                if not pd.isna(updated_value):
-                    if updated_value != "":
-                        updated_value = float(updated_value.replace(",", ""))
-                    else:
-                        updated_value = None
+                        updated_value = pd.to_datetime(updated_value, errors="coerce").strftime("%Y-%m-%d")
                 else:
-                    updated_value = ""
-            except ValueError:
-                updated_value = updated_value
+                    updated_value = datetime.strptime(updated_value, "%Y-%m-%d").date()
+            
+            case object:
+                try:
+                    if not pd.isna(updated_value):
+                        if updated_value != "":
+                            updated_value = float(updated_value.replace(",", ""))
+                        else:
+                            updated_value = None
+                    else:
+                        updated_value = ""
+                except ValueError:
+                    updated_value = updated_value
+
+        
         return updated_value
     
     except Exception as e:
