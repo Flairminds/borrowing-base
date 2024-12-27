@@ -57,16 +57,16 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
         }
     };
 
-    const handleFileExtraction = () => {
+    const handleFileExtraction = async() => {
         // setFileExtractionLoading(true);
         try {
-            // const extractionResponse = exportBaseDataFile(selectedIds.current);
-            console.info(selectedIds, 'check');
-            showToast("info", "Data extraction started, it might take 2-3 minutes.");
-            // If needed to call immediately
+            const extractionResponse = await exportBaseDataFile(selectedIds.current);
+            console.info(extractionResponse, 'rex');
+            const extractionData = extractionResponse?.data.result;
+            showToast("info", extractionResponse.data.message);
             // getExtractionStatus(9);
 
-            extractionInterval = setInterval(() => getExtractionStatus(9), 30000);
+            extractionInterval = setInterval(() => getExtractionStatus(extractionData), 5000);
         } catch (err) {
             console.error(err);
             showToast("error", err.response.data.message);
@@ -75,15 +75,9 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
         // setFileExtractionLoading(false);
     };
 
-    const getExtractionStatus = async (fileID) => {
-        const fileDetails = {
-            // "report_date": ,
-            "companyId": 1,
-            "baseFileId": fileID
-        };
-
+    const getExtractionStatus = async (extractData) => {
         try {
-            const extractionStatusRes = await getBaseDataFilesList(fileDetails);
+            const extractionStatusRes = await getBaseDataFilesList(extractData);
             const extractionStatus = extractionStatusRes.data.result.data[0].extraction_status;
             console.info(extractionStatus, 'status');
             if (extractionStatus !== "In Progress") {

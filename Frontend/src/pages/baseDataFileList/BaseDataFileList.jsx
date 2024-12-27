@@ -43,7 +43,7 @@ export const BaseDataFileList = ({setBaseFilePreviewData}) => {
     const getFilesList = async () => {
         try {
             const data = {
-                "companyId": 1
+                "company_id": 1
             };
             const filesRes = await getBaseDataFilesList(data);
             setaseDataFilesList(filesRes.data.result);
