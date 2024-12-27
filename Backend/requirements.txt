@@ -1,6 +1,6 @@
 ﻿alembic==1.13.1
 asttokens==2.2.1
-azure-storage-blob==12.17.0
+azure-storage-blob==12.24.0
 backcall==0.2.0
 beautifulsoup4==4.12.2
 black==23.3.0
