@@ -26,6 +26,8 @@ import { UpdateParameterModal } from '../../modal/updateParameterModal/UpdatePar
 import { assetInventory } from '../../utils/asset';
 import { AssetInventory } from '../../modal/assetInventoryModal/AssetInventory';
 import { UpdateAssetDetailsModal } from '../../modal/updateAssetWIA/updateAssetDetailsModal/UpdateAssetDetailsModal';
+import { SaveAnalysisConfirmationModel } from '../../modal/saveanalysisconfirmationmodel/SaveAnalysisConfirmationModel';
+import { WhatIfAnalysisLib } from '../../modal/whatIfAnalysisLibrary/WhatIfAnalysisLib';
 
 export const WhatIfAnalysis = (
   { 
@@ -137,7 +139,7 @@ export const WhatIfAnalysis = (
     const getWhatifAnalysisList = async () => {
       try{
         const response = await getListOfWhatIfAnalysis(1)
-        setWhatIfAnalysisListData(response.data.result.data)
+        setWhatIfAnalysisListData(response.data.result)
       }
       catch(err)
       {
@@ -323,6 +325,8 @@ export const WhatIfAnalysis = (
         setSelectedOption(0)
         setTableModal(false)
         setChangeParameterSubmitDisplay(false)
+        setParameterList(null)
+        setSelectedOptionUpdateValue(null)
         // isDuplicateFileModal(false)
       };
     
@@ -359,6 +363,11 @@ export const WhatIfAnalysis = (
         }
 
       };
+
+     
+
+      
+      
 
       const hanleAssetInventory =()=>{
         setIsAssetInventoryModal(true)
@@ -499,7 +508,7 @@ export const WhatIfAnalysis = (
             isupdateAssetModalOpen={isupdateAssetModalOpen}
             setIsupdateAssetModalOpen={setIsupdateAssetModalOpen}
             updateAssetTableData={updateAssetTableData}
-            setUpdateAssetTableData={setUpdateAssetTableData}  
+            setUpdateAssetTableData={setUpdateAssetTableData}
             selectedCellData={selectedCellData}
             setSelectedCellData={setSelectedCellData}
             baseFile={baseFile}
@@ -508,65 +517,35 @@ export const WhatIfAnalysis = (
             setTablesData={setTablesData}
             setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
             setSaveBtn={setSaveBtn}
+            fundType={fundType}
           />
 
-          
-            <Modal title="What if Analysis Library" 
-            open={tableModal} 
-            onOk={handleOk}
-           onCancel={handleCancel}
-            width={'85%'}
-                footer={[
-                    // <div key="footer-buttons" className="px-4">
-                    // <button key="back" onClick={()=>setTableModal(false)} className={ButtonStyles.outlinedBtn}>
-                    //     Cancel
-                    // </button>
-                    // <Button className={ButtonStyles.filledBtn} loading={loading}
-                    //      key="submit" type="primary" style={{ backgroundColor: '#0EB198' }}
-                    // >
-                    //     Use
-                    // </Button>
-                    // </div>
-                
-                  ]}  
-           >
-            <WhatifTable setTableModal={setTableModal} whatIfAnalysisListData={whatIfAnalysisListData} data={whatIfAnalysisListData} columns={Whatif_Columns}
-             setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} selectedRow={selectedRow} setSelectedRow={setSelectedRow}  simulationType={simulationType} setSimulationType={setSimulationType}
-             whatIfAnalysisId={whatIfAnalysisId} whatIfAnalysisType={whatIfAnalysisType}
-             />
-            </Modal>
+        <WhatIfAnalysisLib
+        tableModal={tableModal}
+        handleOk ={handleOk}
+        handleCancel ={handleCancel}
+        setTableModal ={setTableModal}
+        whatIfAnalysisListData ={whatIfAnalysisListData.data}
+        Whatif_Columns ={whatIfAnalysisListData.columns}
+        setTablesData ={setTablesData}
+        setWhatifAnalysisPerformed ={setWhatifAnalysisPerformed}
+        selectedRow = {selectedRow}
+        setSelectedRow = {setSelectedRow}
+        simulationType = {simulationType}
+        setSimulationType = {setSimulationType}
+        whatIfAnalysisId = {whatIfAnalysisId}
+        whatIfAnalysisType ={whatIfAnalysisType}
+        />
 
-            <Modal
-                title="Do you want to add note?"
-                centered
-                open={descriptionModal}
-                // onOk={handleSaveEbita}
-                onCancel={handleCancel}
-                width={'50%'}
-                footer={[
-                    <div key="footer-buttons" className="px-4">
-                    <button key="back" onClick={()=>{isSetDescriptionModal(false); setDescriptionInput('') }} className={ButtonStyles.outlinedBtn}>
-                        Cancel
-                    </button>
-                    <Button className={ButtonStyles.filledBtn} loading={whatIfanalysisLoader}
-                         key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={save_what_if_analysis}
-                    >
-                        Save
-                    </Button>
-                    </div>
-                ]}    
-            >
-                <>
-                    <Input 
-                        type="text" 
-                        placeholder='Notes'
-                        value={descriptionInput}
-                        style={{width:'80%' , margin:'1rem'}}
-                        onChange={(e)=>setDescriptionInput(e.target.value)}
-                    />
-                </>
-            </Modal>
-
-        </>
-  )
-}
+        <SaveAnalysisConfirmationModel
+        descriptionModal={descriptionModal}
+        handleCancel={handleCancel}
+        isSetDescriptionModal={isSetDescriptionModal}
+        setDescriptionInput={setDescriptionInput}
+        whatIfanalysisLoader={whatIfanalysisLoader}
+        SaveWhatIfAnalysis={save_what_if_analysis}
+        descriptionInput={descriptionInput}
+      />
+         </>
+  );
+};

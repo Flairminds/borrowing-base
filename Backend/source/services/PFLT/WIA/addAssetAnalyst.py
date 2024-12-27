@@ -8,7 +8,7 @@ from source.services.PFLT.calculation.pflt_borrowing_base import (
     PFLTBorrowingBase as PBC,
 )
 from source.services.PFLT.WIA import responseGenerator
-from source.services import wiaService
+from source.services.WIA import wiaService
 
 
 def add_asset(base_data_file, selected_assets):

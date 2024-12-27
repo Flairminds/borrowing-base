@@ -132,7 +132,7 @@ export const ParameterChange = ({ parameterList, selectedOptionUpdateValue, setP
                         </tr>
                     </thead>
                     <tbody>
-                        {parameterList.data?.map((asset, index) => (
+                        {parameterList?.data?.map((asset, index) => (
                             <tr key={index}>
                                 <td className={stylesUload.td}>
                                     <input
@@ -141,7 +141,7 @@ export const ParameterChange = ({ parameterList, selectedOptionUpdateValue, setP
                                         onChange={() => handleCheckboxChange(index)}
                                     />
                                 </td>
-                                {parameterList.columns?.map(column => (
+                                {parameterList?.columns?.map(column => (
                                 <>
                                 {
                                     column.key == 'percent' ?

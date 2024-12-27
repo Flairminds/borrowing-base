@@ -8,7 +8,7 @@ from source.services.PCOF import utility as pcofUtility
 from source.services.PCOF.calculation.functionsCall import calculate_bb
 from source.services.PCOF.WIA import responseGenerator
 from source.services.PCOF.WIA import responseGenerator2
-from source.services import wiaService
+from source.services.WIA import wiaService
 
 
 def add_asset(base_data_file, selected_assets):

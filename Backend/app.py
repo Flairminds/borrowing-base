@@ -44,7 +44,6 @@ from source.concentration_test import (
     change_haircut_number,
     lock_concentration_test_data,
 )
-import source.modify_sheet  # import validate_request, update_value_sheet
 import source.modified_dfs_calculation  # from modified_dfs_calculation import calculate_borrowing_base
 import source.concentration_test_application as concentration_test_application
 
@@ -61,6 +60,7 @@ from numerize import numerize
 from source.routes.dashboardRoute import dashboard_blueprint
 from source.routes.fundSetupRoute import fundSetup_blueprint
 from source.routes.wiaRoute import wia_blueprint
+from source.routes.diRoute import di_blueprint
 
 BASE_DIR = pathlib.Path().absolute()
 os.chdir(BASE_DIR)
@@ -95,6 +95,7 @@ migrate = Migrate(app, db)
 app.register_blueprint(dashboard_blueprint, url_prefix="/api/dashboard")
 app.register_blueprint(fundSetup_blueprint, url_prefix="/api/fund_setup")
 app.register_blueprint(wia_blueprint, url_prefix="/api/wia")
+app.register_blueprint(di_blueprint, url_prefix="/api/data_ingestion")
 
 
 @app.route("/", methods=["GET"])
@@ -289,24 +290,9 @@ def lock_concentration_test():
     )  # Assuming lock_concentration_test_function() is defined in an imported module
 
 
-@app.route("/api/get_base_data_file_sheet_data", methods=["POST"])
-def get_base_data_file_sheet_data():
-    return get_base_data_file_sheet_data_function()
-
-
-@app.route("/api/update_values_in_sheet", methods=["POST"])
-def update_values_in_sheet():
-    return update_values_in_sheet_function()
-
-
-@app.route("/api/calculate_bb_modified_sheets", methods=["POST"])
-def calculate_bb_modified_sheets():
-    return calculate_bb_modified_sheets_function()
-
-
 @app.route("/api/save_what_if_analysis", methods=["POST"])
 def save_what_if_analysis():
-    return save_what_if_analysis_function()
+    return save_what_if_analysis()
 
 
 # @app.route("/api/get_concentration_test_master_list", methods=["POST"])
