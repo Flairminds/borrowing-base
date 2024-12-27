@@ -141,7 +141,7 @@ export const WhatifTable = ({simulationType,setSimulationType,data, columns, set
         </table>
         <WiaSimulationInfo simulationType={simulationType} isWiaSimulationModal={isWiaSimulationModal} wiaSimulationModal={wiaSimulationModal} selectedWIA={selectedWIA} />
       </div>
-      <div style={{display:"flex",justifyContent:"end", paddingRight:"1.2rem",paddingTop:"1rem"}}>
+      <div style={{display: "flex", justifyContent: "end", paddingRight: "1.2rem", paddingTop: "1rem"}}>
         <button onClick={handleUseBtn} className={ButtonStyles.filledBtn}>Use</button>
       </div>
     </div>
