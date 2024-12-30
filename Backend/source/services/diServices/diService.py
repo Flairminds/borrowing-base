@@ -302,6 +302,7 @@ def extract_base_data(files_list):
 
     extracted_base_data_status = ExtractedBaseDataStatus(report_date=master_comp_file_details.report_date, fund_type="PFLT", status="In Progress")
     db.session.add(extracted_base_data_status)
+    db.session.add(extracted_base_data_status)
     db.session.commit()
     db.session.refresh(extracted_base_data_status)
 
