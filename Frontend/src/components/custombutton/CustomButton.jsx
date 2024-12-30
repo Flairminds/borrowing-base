@@ -11,13 +11,13 @@ export const CustomButton = ({
   loading = false,
   loadingText = 'Loading...',
   customStyle = {},
-  btnDisabled=false
+  btnDisabled = false
 }) => {
   return (
 
     <Button
       onClick={onClick}
-      className={`${isFilled ? `${ButtonStyle.filledBtn}` : `${ButtonStyle.outlinedBtn}`}`}
+      className={`${btnDisabled ? `${ButtonStyle.DisabledBtn}` : isFilled ? `${ButtonStyle.filledBtn}` : `${ButtonStyle.outlinedBtn}`}`}
       style={customStyle}
       htmlType={type}
       loading={loading}
