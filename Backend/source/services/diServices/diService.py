@@ -6,13 +6,16 @@ import pandas as pd
 from datetime import datetime
 import azure.functions as func
 from sqlalchemy import text
+import threading
+import numpy as np
 
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db
+from models import SourceFiles, Users, db, ExtractedBaseDataStatus
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
+from source.services.PFLT.PfltDashboardService import PfltDashboardService
 
 def upload_src_file_to_az_storage(files, report_date):
     if len(files) == 0:
@@ -160,26 +163,57 @@ def update_column_names(df, sheet_name, sheet_column_mapper):
     return df
 
 def extract(file_sheet_map, sheet_column_mapper, args):
-    extrcted_df = {}
-    updated_column_df = {}
+    with db.session.begin():
+        extrcted_df = {}
+        updated_column_df = {}
 
-    for file in file_sheet_map.keys():
-        blob_data = file_sheet_map[file]["file"]
-        sheets = file_sheet_map[file]["sheets"]
-        source_file = file_sheet_map[file]["source_file_obj"]
-        if not file_sheet_map[file]["is_extracted"]:
-            for sheet in sheets:
-                column_level_map = sheet_column_mapper[sheet]
-                df_result = get_data(blob_data, sheet, column_level_map, args)
-                if df_result["success_status"] is True:
-                    extrcted_df[sheet] = df_result["dataframe"]
-                    extracted_df = df_result["dataframe"].copy(deep=True)
-                    updated_col_df = update_column_names(extracted_df, sheet, sheet_column_mapper)
-                    updated_col_df["source_file_id"] = source_file.id
-                    updated_column_df[sheet] = updated_col_df
-    return updated_column_df
+        for file in file_sheet_map.keys():
+            blob_data = file_sheet_map[file]["file"]
+            sheets = file_sheet_map[file]["sheets"]
+            source_file = file_sheet_map[file]["source_file_obj"]
+            if not file_sheet_map[file]["is_extracted"]:
+                for sheet in sheets:
+                    column_level_map = sheet_column_mapper[sheet]
+                    df_result = get_data(blob_data, sheet, column_level_map, args)
+                    if df_result["success_status"] is True:
+                        extrcted_df[sheet] = df_result["dataframe"]
+                        extracted_df = df_result["dataframe"].copy(deep=True)
+                        updated_col_df = update_column_names(extracted_df, sheet, sheet_column_mapper)
+                        updated_col_df["source_file_id"] = source_file.id
+                        updated_column_df[sheet] = updated_col_df
+        return updated_column_df
 
-def extract_base_data(cash_file_id, master_comp_file_id):
+def extract_and_store(master_comp_file_details, cash_file_details, file_sheet_map, sheet_column_mapper, args, extracted_base_data_status):
+    from app import app
+    with app.app_context():
+        try:
+                
+            start_time = datetime.now()
+            data_dict = extract(file_sheet_map, sheet_column_mapper, args)
+            engine = db.get_engine()
+            process_store_status = helper_functions.process_and_store_data(data_dict, engine)
+            # if not process_store_status:
+            #     return ServiceResponse.error(message="Error processing and storing data.", status_code=500)
+            base_data_mapping.soi_mapping(engine, master_comp_file_details, cash_file_details)
+            
+            cash_file_details.is_extracted =True
+            master_comp_file_details.is_extracted = True
+
+            extracted_base_data_status.status = "completed"
+            db.session.add(cash_file_details)
+            db.session.add(master_comp_file_details)
+            db.session.add(extracted_base_data_status)
+            db.session.commit()
+
+            
+            end_time = datetime.now()
+            time_difference = (end_time - start_time).total_seconds() * 10**3
+        except Exception as e:
+            extracted_base_data_status.status = "failed"
+            db.session.add(extracted_base_data_status)
+            db.session.commit()
+
+def extract_base_data(files_list):
 
     # initialization
     borrower_stats_column_level_map = {
@@ -229,8 +263,15 @@ def extract_base_data(cash_file_id, master_comp_file_id):
     
     blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
 
-    cash_file_details = SourceFiles.query.filter_by(id=cash_file_id).first()
-    master_comp_file_details = SourceFiles.query.filter_by(id=master_comp_file_id).first()
+    for source_file_id in files_list:
+        source_file = SourceFiles.query.filter_by(id=source_file_id).first()
+        if 'cash' in source_file.file_name.lower():
+            cash_file_details = source_file
+        elif 'master' in source_file.file_name.lower():
+            master_comp_file_details = source_file
+
+    if cash_file_details == None or master_comp_file_details == None:
+        return ServiceResponse.error(message="Please select cash file and master comp file")
 
     if master_comp_file_details.is_extracted and cash_file_details.is_extracted:
         return ServiceResponse.error(message="Data already extracted for the given files.")
@@ -243,52 +284,46 @@ def extract_base_data(cash_file_id, master_comp_file_id):
     master_comp_file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + master_comp_file_name).download_blob().readall())
 
     file_sheet_map = {
-        "master_comp": {
-            "file": master_comp_file,
-            "source_file_obj": master_comp_file_details,
-            "sheets": ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"],
-            "is_extracted": master_comp_file_details.is_extracted
-        },
         "cash": {
             "file": cash_file,
             "source_file_obj": cash_file_details,
             "sheets": ["US Bank Holdings", "Client Holdings"], 
+            "is_extracted": cash_file_details.is_extracted
+        }, 
+        "master_comp": {
+            "file": master_comp_file,
+            "source_file_obj": master_comp_file_details,
+            "sheets": ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"],
             "is_extracted": master_comp_file_details.is_extracted
         }
     }
     args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name"]
 
 
-    azure_func_app = func.FunctionApp(http_auth_level=func.AuthLevel.FUNCTION)
-
-    # put this following code in above function
-    start_time = datetime.now()
-    data_dict = extract(file_sheet_map, sheet_column_mapper, args)
-    engine = db.get_engine()
-    process_store_status = helper_functions.process_and_store_data(data_dict, engine)
-    # if not process_store_status:
-    #     return ServiceResponse.error(message="Error processing and storing data.", status_code=500)
-    base_data_mapping.soi_mapping(engine, master_comp_file_details.company_id, master_comp_file_details.report_date)
-    
-    cash_file_details.is_extracted =True
-    master_comp_file_details.is_extracted = True
-
-    db.session.add(cash_file_details)
-    db.session.add(master_comp_file_details)
+    extracted_base_data_status = ExtractedBaseDataStatus(report_date=master_comp_file_details.report_date, fund_type="PFLT", status="In Progress")
+    db.session.add(extracted_base_data_status)
     db.session.commit()
-
-    end_time = datetime.now()
-    time_difference = (end_time - start_time).total_seconds() * 10**3
+    db.session.refresh(extracted_base_data_status)
 
     response_data = {
+        "id": extracted_base_data_status.id,
         "report_date": master_comp_file_details.report_date.strftime("%Y-%m-%d"),
         "company_id": master_comp_file_details.company_id
     }
-    return ServiceResponse.success(message="Base data extracted successfully", data=response_data)
+    threading.Thread(target=extract_and_store, kwargs={
+        'master_comp_file_details': master_comp_file_details, 
+        'cash_file_details': cash_file_details,
+        'file_sheet_map': file_sheet_map,
+        'sheet_column_mapper': sheet_column_mapper,
+        'args': args,
+        'extracted_base_data_status': extracted_base_data_status}
+    ).start()
+    # put this following code in above function
+    return ServiceResponse.success(message="Base Data extraction might take few minutes", data=response_data)
 
 
 def get_base_data(report_date, company_id):
-    datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
+    # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
     engine = db.get_engine()
     with engine.connect() as connection:
         base_data = pd.DataFrame(connection.execute(text('''select distinct
@@ -332,10 +367,6 @@ def get_base_data(report_date, company_id):
 		when ss."[SI] LIBOR Floor" != 'NM' then ss."[SI] LIBOR Floor"::float
 		else null
 	end as "Floor",
-	case
-		when ss."[SI] Cash Spread to LIBOR" != 'NM' and ss."[SI] Cash Spread to LIBOR" is not null then ss."[SI] Cash Spread to LIBOR"::float + coalesce(ss."[SI] PIK Coupon"::float, 0)::float
-		else null
-	end as "Spread incl. PIK and PIK'able",
 	null as "Base Rate",
 	null as "For Revolvers/Delayed Draw, commitment or other unused fee",
 	null as "PIK / PIK'able For Floating Rate Loans",
@@ -387,18 +418,57 @@ order by usbh."Security/Facility Name"''')).fetchall())
     }
     
     
-    for index, row in base_data.iterrows():
-        row_data = {}
+    # for index, row in base_data.iterrows():
+    #     row_data = {}
         
-        for col, value in row.items():
-            if value != value:
-                value = ""
-            if isinstance(value, (int, float)):
-                    row_data[col.replace(" ", "_")] = value
-            elif isinstance(value, datetime):
-                row_data[col.replace(" ", "_")] = value.strftime("%Y-%m-%d")
-            else:
-                row_data[col.replace(" ", "_")] = value
-        base_data_table["data"].append(row_data)
+    #     for col, value in row.items():
+    #         if value != value:
+    #             value = ""
+    #         if isinstance(value, (int, float)):
+    #                 row_data[col.replace(" ", "_")] = value
+    #         elif isinstance(value, datetime):
+    #             row_data[col.replace(" ", "_")] = value.strftime("%Y-%m-%d")
+    #         else:
+    #             row_data[col.replace(" ", "_")] = value
+    #     base_data_table["data"].append(row_data)
+    base_data.columns = base_data.columns.str.replace(" ", "_")
+    base_data = base_data.replace({np.nan: None})
+    df_dict = base_data.to_dict(orient='records')
+    base_data_table["data"] = df_dict
     
     return ServiceResponse.success(data=base_data_table, message="Base Data")
+
+
+
+def get_extracted_files_list(report_date, company_id, extracted_base_data_status_id):
+    if extracted_base_data_status_id:
+        extracted_base_datas = ExtractedBaseDataStatus.query.filter_by(id=extracted_base_data_status_id).all()
+    else:
+        extracted_base_datas = ExtractedBaseDataStatus.query.all()
+    extraction_result = {
+        "columns": [{
+            "key": "report_date",
+            "label": "Report Date"
+        }, {
+            "key": "fund",
+            "label": "Fund"
+        }, {
+            "key": "extraction_status",
+            "label": "Extraction Status"
+        }, {
+            "key": "extraction_date",
+            "label": "Extraction Date"
+        }],
+        "data": []
+    }
+
+    for extracted_base_data in extracted_base_datas:
+        extraction_result["data"].append({
+            "id": extracted_base_data.id,
+            "report_date": extracted_base_data.report_date.strftime("%Y-%m-%d"),
+            "fund": extracted_base_data.fund_type,
+            "extraction_status": extracted_base_data.status,
+            "extraction_date": extracted_base_data.extraction_date
+        })
+    
+    return ServiceResponse.success(data=extraction_result)
