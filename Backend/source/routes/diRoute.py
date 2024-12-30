@@ -19,3 +19,11 @@ def extract_base_data():
 @di_blueprint.route("/get_base_data", methods=["POST"])
 def get_base_data():
     return diController.get_base_data()
+
+# @di_blueprint.route("/create_base_data", methods=["POST"])
+# def create_base_data():
+#     return diController.create_base_data()
+
+@di_blueprint.route('get_extracted_files_list', methods=["POST"])
+def get_extracted_files_list():
+    return diController.get_extracted_files_list()
