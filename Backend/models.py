@@ -216,9 +216,9 @@ class Companies(db.Model):
 class Users(db.Model):
     user_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     username = db.Column(db.String(255), nullable=False)
-    password = db.Column(db.String, nullable=False)
-    display_name = db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String, nullable=False)
+    password = db.Column(db.String, nullable=True)
+    display_name = db.Column(db.String(255), nullable=True)
+    email = db.Column(db.String, nullable=True)
     company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=False)
     created_by = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
