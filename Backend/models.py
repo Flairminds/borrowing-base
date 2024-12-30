@@ -224,3 +224,10 @@ class Users(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_by = db.Column(db.Integer, nullable=True)
     modified_at = db.Column(db.DateTime(timezone=True))
+
+class ExtractedBaseDataStatus(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    report_date = report_date = db.Column(db.DateTime(timezone=True))
+    fund_type = db.Column(db.String(15), nullable=False)
+    status = db.Column(db.String, nullable=False)
+    extraction_date = db.Column(db.DateTime(timezone=True), server_default=db.func.now())

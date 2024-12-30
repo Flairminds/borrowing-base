@@ -87,6 +87,12 @@ app.config["SQLALCHEMY_DATABASE_URI"] = (
     f"postgresql://{username}:{password}@{database_host_name}:{database_port}/{database_name}"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_size": 10,          
+    "max_overflow": 20,       
+    "pool_timeout": 30,       
+    "pool_recycle": 1800,     
+}
 db.init_app(app)
 migrate = Migrate(app, db)
 

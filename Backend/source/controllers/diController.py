@@ -3,6 +3,7 @@ import flask
 from source.services.diServices import diService
 from source.utility.HTTPResponse import HTTPResponse
 from source.utility.Log import Log
+from Exceptions.StdFileFormatException import StdFileFormatException
 
 def upload_source_files():
     try:
@@ -32,9 +33,8 @@ def get_blobs():
 def extract_base_data():
     try:
         req_body = flask.request.get_json()
-        cash_file_id = req_body.get("cash_file_id")
-        master_comp_file_id = req_body.get("master_comp_file_id")
-        service_response = diService.extract_base_data(cash_file_id, master_comp_file_id)
+        files_list = req_body.get("files_list")
+        service_response = diService.extract_base_data(files_list)
         if not service_response["success"]:
             return HTTPResponse.error(message=service_response.get("message"), status_code=service_response.get("status_code"))
 
@@ -52,6 +52,44 @@ def get_base_data():
         if not service_response["success"]:
             return HTTPResponse.error(message="Could not get base data")
         return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+def create_base_data():
+    try:
+        req_body = flask.request.get_json()
+        report_date = req_body.get("report_date")
+        company_id = req_body.get("company_id")
+        service_response = diService.create_base_data(report_date, company_id)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not get base data")
+        return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
+    except StdFileFormatException as ffe:
+        return (
+            flask.jsonify(
+                {
+                    "error": True,
+                    "error_type": "File Format Error",
+                    "error_message": ffe.error_map,
+                }
+            ),
+            400,
+        )
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def get_extracted_files_list():
+    try:
+        req_body = flask.request.get_json()
+        report_date = req_body.get("report_date")
+        company_id = req_body.get("company_id")
+        extracted_base_data_status_id = req_body.get("extracted_base_data_status_id")
+        service_response = diService.get_extracted_files_list(report_date, company_id, extracted_base_data_status_id)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not get extracted files list")
+        return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)

@@ -41,13 +41,13 @@ def base_data_mapping(cf, engine, bs = None):
                     "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
                 })
 
-def soi_mapping(engine, company_id, report_date):
+def soi_mapping(engine, master_comp_file_details, cash_file_details):
     try:
         with engine.connect() as connection:
             # soi_data = pd.DataFrame(connection.execute(text('select * from "SOI Mapping"')).fetchall())
             # master_comp = pd.DataFrame(connection.execute(text('select * from "Borrower Stats (Quarterly)" bs join "Securities Stats" ss on ss."Family Name" = bs."Company" join "PFLT Borrowing Base" pbb on pbb."Security" = ss."Security"')).fetchall())
             # master_comp = rename_duplicate_columns(master_comp)
-            cash_file = pd.DataFrame(connection.execute(text('select * from "US Bank Holdings" usbh left join "Client Holdings" ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled" left join "SOI Mapping" sm on sm."Cashfile Security Name" = usbh."Security/Facility Name" left join "Securities Stats" ss on ss."Security" = sm."Master_Comp Security Name" left join "PFLT Borrowing Base" pbb on pbb."Security" = ss."Security" left join "Borrower Stats (Quarterly)" bsq on bsq."Company" = ss."Family Name"')).fetchall())
+            cash_file = pd.DataFrame(connection.execute(text('select * from "US Bank Holdings" usbh left join "Client Holdings" ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled" left join "SOI Mapping" sm on sm."Cashfile Security Name" = usbh."Security/Facility Name" left join "Securities Stats" ss on ss."Security" = sm."Master_Comp Security Name" left join "PFLT Borrowing Base" pbb on pbb."Security" = ss."Security" left join "Borrower Stats (Quarterly)" bsq on bsq."Company" = ss."Family Name" where usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AND ss.source_file_id= :master_comp_file_id AND pbb.source_file_id= :master_comp_file_id AND bsq.source_file_id= :master_comp_file_id'), {'cash_file_id': cash_file_details.id, 'master_comp_file_id':master_comp_file_details.id}).fetchall())
             cash_file = rename_duplicate_columns(cash_file)
             base_data_map = pd.DataFrame(connection.execute(text('select * from "base_data_mapping"')).fetchall())
             # securities_stats = pd.DataFrame(connection.execute(text('select * from "Securities Stats"')).fetchall())
@@ -110,8 +110,8 @@ def soi_mapping(engine, company_id, report_date):
             new_dict[i] = res
         df = pd.DataFrame.from_dict(new_dict, orient='index', columns = list(base_data_map['bd_column_name']))
         df = rename_duplicate_columns(df)
-        df["company_id"] = company_id
-        df["report_date"] = report_date
+        df["company_id"] = master_comp_file_details.company_id
+        df["report_date"] = master_comp_file_details.report_date
         # df.to_csv('file1.csv')
         df.to_sql("base_data", con=engine, if_exists='append', index=False, method='multi')
         
