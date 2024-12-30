@@ -9,13 +9,15 @@ export const Sidebar = () => {
   const [active, setActive] = useState(1);
   const navigate = useNavigate();
   const handleIconClick = (iconNum) => {
-   
       setActive(iconNum);
       if (iconNum == 1) {
         navigate('/');
       }
       if (iconNum == 2) {
         navigate('/fund-setup');
+      }
+      if (iconNum == 3) {
+        navigate('/base-data-list');
       }
   };
 
