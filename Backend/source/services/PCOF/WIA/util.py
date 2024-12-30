@@ -1,5 +1,5 @@
 import pandas as pd
-
+from datetime import datetime
 from source.utility.ServiceResponse import ServiceResponse
 
 percentage_map = {
@@ -162,6 +162,8 @@ class PCOF_WIA:
                         if value != value:
                             row_data[col.replace(" ", "_")] = ""
                         else:
+                            if(type(value) == datetime):
+                                value = value.strftime("%Y-%m-%d")
                             row_data[col.replace(" ", "_")] = value
 
                 table_dict[sheet_name]["data"].append(row_data)
