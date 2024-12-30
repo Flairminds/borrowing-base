@@ -7,6 +7,7 @@ import { exportBaseDataFile, getBaseDataFilesList, getBaseFilePreviewData, getBl
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './DataIngestionPage.module.css';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { BackOption } from '../../components/BackOption/BackOption';
 
 export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileList, setBaseFilePreviewData, selectedIds}) => {
 
@@ -123,15 +124,17 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
         <div className={styles.ingestionPageContainer}>
             <div className={styles.ingestionPage}>
                     <div className={styles.buttonsContainer}>
-                        <CustomButton
-                            isFilled={true}
-                            onClick={() => setUploadFilesPopupOpen(true)}
-                            text='Upload a File'
-                        />
-
+                        <div className={styles.backOptionContainer}>
+                            <BackOption onClick={() => navigate('/base-data-list')}
+                                text={`<- Base Data`}/>
+                        </div>
+                        <div className={styles.uploadFileBtnContainer}>
+                            <CustomButton isFilled={true} onClick={() => setUploadFilesPopupOpen(true)} text='Upload a File' />
+                        </div>
                     </div>
 
-                    <div className={styles.buttonsContainer}>
+                    {/* <div className={styles.buttonsContainer}>
+                        <div className={styles.uploadFileBtnContainer}>
                         <DatePicker
                             placeholder='Report Date'
                             onChange={handleDateChange}
@@ -144,7 +147,8 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
                             loading={previewBaseDataLoading}
                             loadingText="Fetching Data"
                         />
-                    </div>
+                        </div>
+                    </div> */}
 
                     <div className={styles.tableContainer}>
                         {/* <table className={styles.table}>

@@ -10,7 +10,7 @@ from sqlalchemy import text
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, db
+from models import SourceFiles, Users, db
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 
@@ -19,7 +19,7 @@ def upload_src_file_to_az_storage(files, report_date):
         return ServiceResponse.error(message = "Please select files.", status_code = 400)
     
     blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
-    company_name = "Penennt"
+    company_name = "Pennant"
     fund_name = "PFLT"
     report_date = datetime.strptime(report_date, "%Y-%m-%d").date()
 
@@ -32,7 +32,6 @@ def upload_src_file_to_az_storage(files, report_date):
             # setting SourceFiles object
             file_name = os.path.splitext(file.filename)[0]
             extension = os.path.splitext(file.filename)[1]
-            file_url = "file_url"
             file.seek(0, 2)  # Move to the end of the file
             file_size = file.tell()  # Get the size in bytes
             file.seek(0)
@@ -48,7 +47,7 @@ def upload_src_file_to_az_storage(files, report_date):
 
             # upload blob in container
             blob_client.upload_blob(name=blob_name, data=file)
-            
+            file_url = blob_client.url + '/' + blob_name
             # add details of files in db
             source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_type=fund_name, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
 
@@ -74,7 +73,17 @@ def upload_src_file_to_az_storage(files, report_date):
 def get_blob_list():
     company_id = 1 # for Penennt
     fund_type = "PFLT"
-    source_files = SourceFiles.query.filter_by(is_deleted=False, company_id=company_id, fund_type=fund_type).order_by(SourceFiles.uploaded_at.desc()).all()
+    source_files = db.session.query(
+            SourceFiles.id,
+            SourceFiles.file_name,
+            SourceFiles.extension,
+            SourceFiles.uploaded_at,
+            SourceFiles.uploaded_by,
+            SourceFiles.fund_type,
+            SourceFiles.file_type,
+            Users.display_name
+        ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id, SourceFiles.fund_type == fund_type).order_by(SourceFiles.uploaded_at.desc()).all()
+    # SourceFiles.query.join(Users).filter_by(is_deleted=False, company_id=company_id, fund_type=fund_type).order_by(SourceFiles.uploaded_at.desc()).all()
     list_table = {
         "columns": [{
             "key": "file_name", 
@@ -98,7 +107,8 @@ def get_blob_list():
             "file_name": source_file.file_name + source_file.extension, 
             "uploaded_at": source_file.uploaded_at.strftime("%Y-%m-%d"), 
             "fund": source_file.fund_type,
-            "source_file_type": source_file.file_type
+            "source_file_type": source_file.file_type,
+            "uploaded_by": source_file.display_name
         })
     
     return ServiceResponse.success(data=list_table)
@@ -212,8 +222,8 @@ def extract_base_data(cash_file_id, master_comp_file_id):
     }
     #--------------------------------
 
-    if not cash_file_id or not master_comp_file_id:
-        return ServiceResponse.error(message="Cash file and master company file ids are required.", status_code=400)
+    # if not cash_file_id or not master_comp_file_id:
+    #     return ServiceResponse.error(message="Cash file and master company file ids are required.", status_code=400)
     
     FOLDER_PATH = "Penennt/PFLT/"
     
@@ -236,7 +246,7 @@ def extract_base_data(cash_file_id, master_comp_file_id):
         "master_comp": {
             "file": master_comp_file,
             "source_file_obj": master_comp_file_details,
-            "sheets": ["Borrower Stats (Quarterly)", "Securities Stats", "PFLT Borrowing Base"],
+            "sheets": ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"],
             "is_extracted": master_comp_file_details.is_extracted
         },
         "cash": {
