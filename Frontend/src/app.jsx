@@ -12,6 +12,7 @@ import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelected
 import { DataIngestionPage } from './pages/dataIngestion/DataIngestionPage';
 import { BorrowingBasePreviewPage } from './pages/borrowingBasePreview/BorrowingBasePreviewPage';
 import { BaseDataFileList } from './pages/baseDataFileList/BaseDataFileList';
+import { SecurityMapping } from './pages/securityMapping/SecurityMapping';
 
 
 
@@ -140,8 +141,13 @@ export function App() {
               />
             }
           />
-
-
+          <Route
+            path='/security-mapping'
+            element={
+              <SecurityMapping
+              />
+            }
+          />
 
         </Route>
       </Routes>
