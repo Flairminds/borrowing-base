@@ -129,7 +129,7 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
                                 text={`<- Base Data`}/>
                         </div>
                         <div className={styles.uploadFileBtnContainer}>
-                            <CustomButton isFilled={true} onClick={() => setUploadFilesPopupOpen(true)} text='Upload a File' />
+                            <CustomButton isFilled={true} onClick={() => setUploadFilesPopupOpen(true)} text='+ Upload Files' />
                         </div>
                     </div>
 

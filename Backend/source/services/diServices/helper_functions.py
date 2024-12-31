@@ -1,3 +1,6 @@
+import pandas as pd
+from sqlalchemy import text
+
 def truncate_and_rename_columns(df):
     """
     Truncate column names to 63 characters and ensure uniqueness.
@@ -23,23 +26,28 @@ def truncate_and_rename_columns(df):
     df.columns = new_columns
     return df
 
-def process_and_store_data(data_dict, engine):
+def process_and_store_data(data_dict, file_id, fund_name, engine):
     """Process each DataFrame and store it in the database."""
     for sheet_name, df in data_dict.items():
         print(f"Processing sheet: {sheet_name}")
         
         # Log duplicates for debugging
-        duplicates = df.columns[df.columns.duplicated()].tolist()
-        if duplicates:
-            print(f"Duplicate columns in sheet {sheet_name}: {duplicates}")
+        # duplicates = df.columns[df.columns.duplicated()].tolist()
+        # if duplicates:
+        #     print(f"Duplicate columns in sheet {sheet_name}: {duplicates}")
         
         # Truncate and rename columns
         df = truncate_and_rename_columns(df)
-        
+        table_name = fund_name.lower() + '_' + sheet_name.lower().replace(" ", "_")
         # Store in the database
         try:
-            df.to_sql(sheet_name, con=engine, if_exists='append', index=False, method='multi')
+            with engine.connect() as connection:
+                data = pd.DataFrame(connection.execute(text(f'select * from {table_name} where source_file_id = :source_file_id limit 1'), {'source_file_id': file_id}).fetchall())
+                if len(data) > 0:
+                    continue
+            df.to_sql(table_name, con=engine, if_exists='append', index=False, method='multi')
             print(f"Successfully stored sheet: {sheet_name}")
         except Exception as e:
-            print(f"Failed to store sheet {sheet_name}. Error: {e}")
+            print(f"Failed to store sheet {sheet_name}")
+            raise Exception(e)
             

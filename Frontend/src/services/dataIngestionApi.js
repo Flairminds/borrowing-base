@@ -32,10 +32,9 @@ export const exportBaseDataFile = (uploadedFilesData) => {
     return exportRes;
 };
 
-export const getBaseFilePreviewData = (reportDate, companyId) => {
+export const getBaseFilePreviewData = (info_id) => {
     const fileData = {
-        'report_date': reportDate,
-        'company_id': companyId
+        'info_id': info_id,
     };
     const previewResponse = axios.post(`${ApiURL}/data_ingestion/get_base_data`, fileData);
     return previewResponse;
@@ -47,7 +46,7 @@ export const getBaseDataFilesList = (data) => {
         "company_id": data.company_id,
         "extracted_base_data_status_id": data.id
     };
-    const fileListResponse = axios.post(`${ApiURL}/data_ingestion/get_extracted_files_list`, fileData);
+    const fileListResponse = axios.post(`${ApiURL}/data_ingestion/get_extracted_base_data_info`, fileData);
     return fileListResponse;
 };
 

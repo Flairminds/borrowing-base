@@ -33,8 +33,8 @@ def get_blobs():
 def extract_base_data():
     try:
         req_body = flask.request.get_json()
-        files_list = req_body.get("files_list")
-        service_response = diService.extract_base_data(files_list)
+        file_ids = req_body.get("files_list")
+        service_response = diService.extract_base_data(file_ids)
         if not service_response["success"]:
             return HTTPResponse.error(message=service_response.get("message"), status_code=service_response.get("status_code"))
 
@@ -46,12 +46,18 @@ def extract_base_data():
 def get_base_data():
     try:
         req_body = flask.request.get_json()
-        report_date = req_body.get("report_date")
-        company_id = req_body.get("company_id")
-        service_response = diService.get_base_data(report_date, company_id)
+        info_id = req_body.get("info_id")
+        service_response = diService.get_base_data(info_id)
         if not service_response["success"]:
             return HTTPResponse.error(message="Could not get base data")
-        return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
+        base_data_map_res = diService.get_base_data_mapping(info_id)
+        result = {
+            "base_data_table": service_response["data"]["base_data_table"],
+            "report_date": service_response["data"]["report_date"],
+            "fund_type": service_response["data"]["fund_type"],
+            "base_data_mapping": base_data_map_res["data"]
+        }
+        return HTTPResponse.success(message=service_response["message"], result=result)
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
@@ -80,13 +86,14 @@ def create_base_data():
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
 
-def get_extracted_files_list():
+def get_extracted_base_data_info():
     try:
         req_body = flask.request.get_json()
-        report_date = req_body.get("report_date")
-        company_id = req_body.get("company_id")
-        extracted_base_data_status_id = req_body.get("extracted_base_data_status_id")
-        service_response = diService.get_extracted_files_list(report_date, company_id, extracted_base_data_status_id)
+        # report_date = req_body.get("report_date")
+        # company_id = req_body.get("company_id")
+        company_id = 1
+        extracted_base_data_info_id = req_body.get("extracted_base_data_info_id")
+        service_response = diService.get_extracted_base_data_info(company_id, extracted_base_data_info_id)
         if not service_response["success"]:
             return HTTPResponse.error(message="Could not get extracted files list")
         return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])

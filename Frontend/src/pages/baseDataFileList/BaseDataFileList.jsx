@@ -21,9 +21,9 @@ export const BaseDataFileList = ({setBaseFilePreviewData}) => {
         navigate('/security-mapping');
     };
 
-    const handleBaseDataPreview = async(reportDate) => {
+    const handleBaseDataPreview = async(info_id) => {
         try {
-            const previewDataResponse = await getBaseFilePreviewData(reportDate, 1);
+            const previewDataResponse = await getBaseFilePreviewData(info_id);
             console.info(previewDataResponse, 'base preview ');
             setBaseFilePreviewData(previewDataResponse.data.result);
             navigate('/base-data-preview');
@@ -36,12 +36,10 @@ export const BaseDataFileList = ({setBaseFilePreviewData}) => {
     const columnsToAdd = [{
         'key': 'file_preview',
         'label': '',
-        'render': (value, row) => <CustomButton
-                                    isFilled={true}
-                                    btnDisabled={row.extraction_status !== "completed"}
-                                    onClick={() => handleBaseDataPreview(row.report_date)}
-                                    text='Preview'
-                                />
+        'render': (value, row) => <div onClick={() => handleBaseDataPreview(row.id)}
+                                    style={{display: row.extraction_status === "completed" ? 'block' : 'none', color: '#0EB198', cursor: 'pointer'}}>
+                                    Preview Base Data
+                                </div>
     }];
 
     const getFilesList = async () => {
