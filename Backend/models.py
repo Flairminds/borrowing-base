@@ -177,7 +177,7 @@ class SourceFiles(db.Model):
     is_deleted = db.Column(db.Boolean, default=False)
     file_type = db.Column(db.String(100))
 
-class HaircutConfig(db.Model):
+class PfltHaircutConfig(db.Model):
     hc_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     fund_type = db.Column(db.String(15), nullable=False)
     company_id = db.Column(db.Integer, nullable=False)
@@ -191,7 +191,7 @@ class HaircutConfig(db.Model):
     modified_by = db.Column(db.Integer, nullable=True)
     modified_at = db.Column(db.DateTime(timezone=True))
 
-class IndustryList(db.Model):
+class PfltIndustryList(db.Model):
     il_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     fund_type = db.Column(db.String(15), nullable=False)
     company_id = db.Column(db.Integer, nullable=False)
@@ -225,9 +225,12 @@ class Users(db.Model):
     modified_by = db.Column(db.Integer, nullable=True)
     modified_at = db.Column(db.DateTime(timezone=True))
 
-class ExtractedBaseDataStatus(db.Model):
+class ExtractedBaseDataInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     report_date = report_date = db.Column(db.DateTime(timezone=True))
     fund_type = db.Column(db.String(15), nullable=False)
     status = db.Column(db.String, nullable=False)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=False)
+    files = db.Column(db.ARRAY(db.Integer))
     extraction_date = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    comments = db.Column(db.String)

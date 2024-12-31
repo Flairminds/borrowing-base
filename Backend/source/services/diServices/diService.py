@@ -12,7 +12,7 @@ import numpy as np
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataStatus
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
@@ -84,19 +84,23 @@ def get_blob_list():
             SourceFiles.uploaded_by,
             SourceFiles.fund_type,
             SourceFiles.file_type,
+            SourceFiles.report_date,
             Users.display_name
         ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id, SourceFiles.fund_type == fund_type).order_by(SourceFiles.uploaded_at.desc()).all()
     # SourceFiles.query.join(Users).filter_by(is_deleted=False, company_id=company_id, fund_type=fund_type).order_by(SourceFiles.uploaded_at.desc()).all()
     list_table = {
         "columns": [{
+            "key": "fund", 
+            "label": "Fund",
+        }, {
             "key": "file_name", 
             "label": "File Name",
         }, {
+            "key": "report_date", 
+            "label": "Report Date",
+        }, {
             "key": "uploaded_at", 
             "label": "Uploaded at",
-        }, {
-            "key": "fund", 
-            "label": "Fund",
         }, {
             "key": "uploaded_by", 
             "label": "Uploaded by",
@@ -108,7 +112,8 @@ def get_blob_list():
         list_table["data"].append({
             "file_id": source_file.id,
             "file_name": source_file.file_name + source_file.extension, 
-            "uploaded_at": source_file.uploaded_at.strftime("%Y-%m-%d"), 
+            "uploaded_at": source_file.uploaded_at.strftime("%Y-%m-%d"),
+            "report_date": source_file.report_date.strftime("%Y-%m-%d"),
             "fund": source_file.fund_type,
             "source_file_type": source_file.file_type,
             "uploaded_by": source_file.display_name
@@ -156,263 +161,254 @@ def update_column_names(df, sheet_name, sheet_column_mapper):
             if index in range(column_level_map[heading][1], column_level_map[heading][2]):
                 column_initials = column_initials + "[" + "".join(word[0].upper() for word in heading.split()) + "] "
         column_name = column_initials + str(column)
-        columns.append(column_name)
+        columns.append(column_name.strip())
 
     df.columns = columns
     df = df.round(3)
     return df
 
 def extract(file_sheet_map, sheet_column_mapper, args):
-    with db.session.begin():
-        extrcted_df = {}
-        updated_column_df = {}
+    extrcted_df = {}
+    updated_column_df = {}
 
-        for file in file_sheet_map.keys():
-            blob_data = file_sheet_map[file]["file"]
-            sheets = file_sheet_map[file]["sheets"]
-            source_file = file_sheet_map[file]["source_file_obj"]
-            if not file_sheet_map[file]["is_extracted"]:
-                for sheet in sheets:
-                    column_level_map = sheet_column_mapper[sheet]
-                    df_result = get_data(blob_data, sheet, column_level_map, args)
-                    if df_result["success_status"] is True:
-                        extrcted_df[sheet] = df_result["dataframe"]
-                        extracted_df = df_result["dataframe"].copy(deep=True)
-                        updated_col_df = update_column_names(extracted_df, sheet, sheet_column_mapper)
-                        updated_col_df["source_file_id"] = source_file.id
-                        updated_column_df[sheet] = updated_col_df
-        return updated_column_df
+    for file in file_sheet_map.keys():
+        blob_data = file_sheet_map[file]["file"]
+        sheets = file_sheet_map[file]["sheets"]
+        source_file = file_sheet_map[file]["source_file_obj"]
+        if not file_sheet_map[file]["is_extracted"]:
+            for sheet in sheets:
+                column_level_map = sheet_column_mapper[sheet]
+                df_result = get_data(blob_data, sheet, column_level_map, args)
+                if df_result["success_status"] is True:
+                    extrcted_df[sheet] = df_result["dataframe"]
+                    extracted_df = df_result["dataframe"].copy(deep=True)
+                    updated_col_df = update_column_names(extracted_df, sheet, sheet_column_mapper)
+                    updated_col_df["source_file_id"] = source_file.id
+                    updated_column_df[sheet] = updated_col_df
+                print(sheet + ' extracted')
+    return updated_column_df
 
-def extract_and_store(master_comp_file_details, cash_file_details, file_sheet_map, sheet_column_mapper, args, extracted_base_data_status):
+def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info):
     from app import app
     with app.app_context():
         try:
-                
-            start_time = datetime.now()
-            data_dict = extract(file_sheet_map, sheet_column_mapper, args)
             engine = db.get_engine()
-            process_store_status = helper_functions.process_and_store_data(data_dict, engine)
-            # if not process_store_status:
-            #     return ServiceResponse.error(message="Error processing and storing data.", status_code=500)
-            base_data_mapping.soi_mapping(engine, master_comp_file_details, cash_file_details)
-            
-            cash_file_details.is_extracted =True
-            master_comp_file_details.is_extracted = True
+            start_time = datetime.now()
+            company_name = "Pennant"
+            fund_name = "PFLT"
+            FOLDER_PATH = company_name + '/' + fund_name + '/'
+        
+            blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
 
-            extracted_base_data_status.status = "completed"
-            db.session.add(cash_file_details)
-            db.session.add(master_comp_file_details)
-            db.session.add(extracted_base_data_status)
+            start_time = datetime.now()
+
+            company_id = None
+            report_date = None
+            new_source_file = False
+            cash_file_details = None
+            master_comp_file_details = None
+            file_sheet_map = None
+
+            for file_id in file_ids:
+                file_details = SourceFiles.query.filter_by(id=file_id).first()
+                company_id = file_details.company_id
+                report_date = file_details.report_date
+                file_name = file_details.file_name + file_details.extension
+                file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + file_name).download_blob().readall())
+                file_type = file_details.file_type
+                if (file_type == 'Cash'):
+                    cash_file_details = file_details
+                    file_sheet_map = {
+                        "cash": {
+                            "file": file,
+                            "source_file_obj": file_details,
+                            "sheets": ["US Bank Holdings", "Client Holdings"], 
+                            "is_extracted": file_details.is_extracted
+                        }
+                    }
+                elif file_type == 'Master Comp':
+                    master_comp_file_details = file_details
+                    file_sheet_map = {
+                        "master_comp": {
+                            "file": file,
+                            "source_file_obj": file_details,
+                            "sheets": ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"],
+                            "is_extracted": file_details.is_extracted
+                        }
+                    }
+                if file_details.is_extracted:
+                    continue
+                args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name"]
+                data_dict = extract(file_sheet_map, sheet_column_mapper, args)
+                process_store_status = helper_functions.process_and_store_data(data_dict, file_id, fund_name, engine)
+                file_details.is_extracted = True
+                db.session.add(file_details)
+                db.session.commit()
+                new_source_file = True
+
+            # if new_source_file:
+            if not cash_file_details or not master_comp_file_details:
+                raise Exception('Proper files not selected.')
+            base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
+            extracted_base_data_info.status = "completed"
+            # else:
+                # extracted_base_data_info.status = "repeated"
+            
+            db.session.add(extracted_base_data_info)
             db.session.commit()
-
-            
             end_time = datetime.now()
             time_difference = (end_time - start_time).total_seconds() * 10**3
         except Exception as e:
-            extracted_base_data_status.status = "failed"
-            db.session.add(extracted_base_data_status)
+            Log.func_error(e)
+            extracted_base_data_info.status = "failed"
+            extracted_base_data_info.comments = str(e)
+            db.session.add(extracted_base_data_info)
             db.session.commit()
 
-def extract_base_data(files_list):
-
+def extract_base_data(file_ids):
+    base_data_info_id = None
+    try:
     # initialization
-    borrower_stats_column_level_map = {
-        "Current Metrics": (0, 9, 52),
-        "At Close Metrics": (0, 52, 79),
-        "Fund": (1, 2, 9),
-        "Capital Structure": (1, 9, 23),
-        "Reporting": (1, 23, 32),
-        "For PSCF-Lev & PSSL": (1, 32, 33),
-        "L3M / Quarterly": (1, 33, 37),
-        "YTD": (1, 37, 41),
-        "Current Leverage Stats Output": (1, 41, 52),
-        "Comps Other Inputs / Leverage Calcs": (1, 52, 58),
-        "Comps - At Close Metrics (Hardcode at close)": (1, 58, 72),
-        "Pricing": (1, 72, 79)
-    }
-
-    security_stats = {
-        "Banks": (0, 3, 9),
-        "Security Information": (0, 10, 30),
-        "PCOF Specific Metrics": (0, 31, 39),
-        "Current": (0, 75, 81),
-        "At Close": (0, 81, 91),
-        "L3M / Quarterly": (0, 91, 95),
-        "YTD": (0, 95, 99)
-    }
-
-    SOI_Mapping = {
-        "General": (0, 1, 5),
-        "For Dropdown": (0, 6, 7)
-    }
-
-    sheet_column_mapper = {
-        "Borrower Stats (Quarterly)": borrower_stats_column_level_map,
-        "Securities Stats": security_stats,
-        "US Bank Holdings": {},
-        "Client Holdings": {},
-        "SOI Mapping": SOI_Mapping,
-        "PFLT Borrowing Base": {}
-    }
-    #--------------------------------
-
-    # if not cash_file_id or not master_comp_file_id:
-    #     return ServiceResponse.error(message="Cash file and master company file ids are required.", status_code=400)
-    
-    FOLDER_PATH = "Penennt/PFLT/"
-    
-    blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
-
-    for source_file_id in files_list:
-        source_file = SourceFiles.query.filter_by(id=source_file_id).first()
-        if 'cash' in source_file.file_name.lower():
-            cash_file_details = source_file
-        elif 'master' in source_file.file_name.lower():
-            master_comp_file_details = source_file
-
-    if cash_file_details == None or master_comp_file_details == None:
-        return ServiceResponse.error(message="Please select cash file and master comp file")
-
-    if master_comp_file_details.is_extracted and cash_file_details.is_extracted:
-        return ServiceResponse.error(message="Data already extracted for the given files.")
-
-    cash_file_name = cash_file_details.file_name + cash_file_details.extension
-    master_comp_file_name = master_comp_file_details.file_name + master_comp_file_details.extension
-
-    cash_file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + cash_file_name).download_blob().readall())
-    
-    master_comp_file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + master_comp_file_name).download_blob().readall())
-
-    file_sheet_map = {
-        "cash": {
-            "file": cash_file,
-            "source_file_obj": cash_file_details,
-            "sheets": ["US Bank Holdings", "Client Holdings"], 
-            "is_extracted": cash_file_details.is_extracted
-        }, 
-        "master_comp": {
-            "file": master_comp_file,
-            "source_file_obj": master_comp_file_details,
-            "sheets": ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"],
-            "is_extracted": master_comp_file_details.is_extracted
+        borrower_stats_column_level_map = {
+            "Current Metrics": (0, 9, 52),
+            "At Close Metrics": (0, 52, 79),
+            "Fund": (1, 2, 9),
+            "Capital Structure": (1, 9, 23),
+            "Reporting": (1, 23, 32),
+            "For PSCF-Lev & PSSL": (1, 32, 33),
+            "L3M / Quarterly": (1, 33, 37),
+            "YTD": (1, 37, 41),
+            "Current Leverage Stats Output": (1, 41, 52),
+            "Comps Other Inputs / Leverage Calcs": (1, 52, 58),
+            "Comps - At Close Metrics (Hardcode at close)": (1, 58, 72),
+            "Pricing": (1, 72, 79)
         }
-    }
-    args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name"]
+
+        security_stats = {
+            "Banks": (0, 3, 9),
+            "Security Information": (0, 10, 30),
+            "PCOF Specific Metrics": (0, 31, 39),
+            "Current": (0, 75, 81),
+            "At Close": (0, 81, 91),
+            "L3M / Quarterly": (0, 91, 95),
+            "YTD": (0, 95, 99)
+        }
+
+        SOI_Mapping = {
+            "General": (0, 1, 5),
+            "For Dropdown": (0, 6, 7)
+        }
+
+        sheet_column_mapper = {
+            "Borrower Stats": borrower_stats_column_level_map,
+            "Securities Stats": security_stats,
+            "US Bank Holdings": {},
+            "Client Holdings": {},
+            "SOI Mapping": SOI_Mapping,
+            "PFLT Borrowing Base": {}
+        }
+        #--------------------------------
+        if len(file_ids) == 0:
+            return ServiceResponse.error(message='No files selected.')
+        ini_file = SourceFiles.query.filter_by(id = file_ids[0]).first()
+        report_date = ini_file.report_date
+        company_id = ini_file.company_id
+        extracted_base_data_info = ExtractedBaseDataInfo(report_date=report_date, fund_type="PFLT", status="in progress", company_id = 1, files = file_ids)
+        db.session.add(extracted_base_data_info)
+        db.session.commit()
+        db.session.refresh(extracted_base_data_info)
+        base_data_info_id = extracted_base_data_info.id
+
+        threading.Thread(target=extract_and_store, kwargs={
+            'file_ids': file_ids,
+            'sheet_column_mapper': sheet_column_mapper,
+            'extracted_base_data_info': extracted_base_data_info}
+        ).start()
+
+        # extract_and_store(file_ids = file_ids, sheet_column_mapper = sheet_column_mapper, extracted_base_data_info = extracted_base_data_info)
+
+        response_data = {
+            "id": extracted_base_data_info.id,
+            "report_date": report_date.strftime("%Y-%m-%d"),
+            "company_id": company_id
+        }
+        # put this following code in above function
+        return ServiceResponse.success(message="Base Data extraction might take few minutes", data=response_data)
+    except Exception as e:
+        Log.func_error(e)
+        if base_data_info_id:
+            extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(id = base_data_info_id).first()
+            extracted_base_data_info.status = 'failed'
+            extracted_base_data_info.comments = str(e)
+            db.session.add(extracted_base_data_info)
+            db.session.commit()
+        return ServiceResponse.error(message='Extraction failed')
 
 
-    extracted_base_data_status = ExtractedBaseDataStatus(report_date=master_comp_file_details.report_date, fund_type="PFLT", status="In Progress")
-    db.session.add(extracted_base_data_status)
-    db.session.add(extracted_base_data_status)
-    db.session.commit()
-    db.session.refresh(extracted_base_data_status)
-
-    response_data = {
-        "id": extracted_base_data_status.id,
-        "report_date": master_comp_file_details.report_date.strftime("%Y-%m-%d"),
-        "company_id": master_comp_file_details.company_id
-    }
-    threading.Thread(target=extract_and_store, kwargs={
-        'master_comp_file_details': master_comp_file_details, 
-        'cash_file_details': cash_file_details,
-        'file_sheet_map': file_sheet_map,
-        'sheet_column_mapper': sheet_column_mapper,
-        'args': args,
-        'extracted_base_data_status': extracted_base_data_status}
-    ).start()
-    # put this following code in above function
-    return ServiceResponse.success(message="Base Data extraction might take few minutes", data=response_data)
-
-
-def get_base_data(report_date, company_id):
+def get_base_data(info_id):
     # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
     engine = db.get_engine()
     with engine.connect() as connection:
-        base_data = pd.DataFrame(connection.execute(text('''select distinct
-	usbh."Issuer/Borrower Name" as "Obligor Name",
-	usbh."Security/Facility Name" as "Security",
-	ss."Security" as "Security Name",
-	null as "Purchase Date (Date Loan contributed to the facility)",
-	sum(ch."Par Amount (Deal Currency)"::float) as "Total Commitment (Issue Currency)",
-	sum(ch."Principal Balance (Deal Currency)"::float) as "Outstanding Principal Balance (Issue Currency)",
-	case when pbb."Defaulted Collateral Loan at Acquisition" = 0 then 'N' when pbb."Defaulted Collateral Loan at Acquisition" = 1 then 'Y' else null end as "Defaulted Collateral Loan / Material Mod (Y/N)",
-	case when pbb."Credit Improved Loan" = 0 then 'N' when pbb."Credit Improved Loan" = 1 then 'Y' else null end as "Credit Improved Loan (Y/N)",
-	usbh."Original Purchase Price" as "Purchase Price",
-	pbb."Stretch Senior (Y/N)" as "Stretch Senior Loan (Y/N)",
-	ch."Issue Name" as "Loan Type (Term / Delayed Draw / Revolver)",
-	ch."Deal Issue (Derived) Rating - Moody's" as "Current Moody's Rating",
-	ch."Deal Issue (Derived) Rating - S&P" as "Current S&P Rating",
-	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as "Initial Fixed Charge Coverage Ratio",
-	null as "Date of Default",
-	null as "Market Value",
-	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as "Current Fixed Charge Coverage Ratio",
-	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA" as "Current Interest Coverage Ratio",
-	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization" as "Initial Debt to Capitalization Ratio",
-	bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA" as "Initial Senior Debt/EBITDA",
-	bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA" as "Initial Total Debt/EBITDA",
-	pbb."Senior Debt"::float / pbb."LTM EBITDA"::float as "Current Senior Debt/EBITDA",
-	pbb."Total Debt"::float / pbb."LTM EBITDA"::float as "Current Total Debt/EBITDA",
-	pbb."Closing LTM EBITDA" as "Initial TTM EBITDA",
-	pbb."Current LTM EBITDA" as "Current TTM EBITDA",
-	ch."As Of Date" as "Current As of Date For Leverage and EBITDA",
-	usbh."Maturity Date" as "Maturity Date",
-	case
-		when ss."[SI] Type of Rate" like 'Fixed Rate%' then 'Y'
-		else 'N'
-	end as "Fixed Rate (Y/N)",
-	null as "Coupon incl. PIK and PIK'able (if Fixed)",
-	case
-		when ss."[SI] LIBOR Floor" is not null then 'Y'
-		else 'N'
-	end as "Floor Obligation (Y/N)",
-	case
-		when ss."[SI] LIBOR Floor" != 'NM' then ss."[SI] LIBOR Floor"::float
-		else null
-	end as "Floor",
-	null as "Base Rate",
-	null as "For Revolvers/Delayed Draw, commitment or other unused fee",
-	null as "PIK / PIK'able For Floating Rate Loans",
-	null as "PIK / PIK'able For Fixed Rate Loans",
-	null as "Interest Paid",
-	bs."[ACM] [COI/LC] S&P Industry" as "Obligor Industry",
-	ss."[SI] Currency" as "Currency (USD / CAD / AUD / EUR)",
-	ss."[SI] Obligor Country" as "Obligor Country",
-	case when pbb."DIP Loans" = 0 then 'N' when pbb."DIP Loans" = 1 then 'Y' else null end as "DIP Loan (Y/N)",
-	case when pbb."Obligations w/ Warrants attached" = 0 then 'N' when pbb."Obligations w/ Warrants attached" = 1 then 'Y' else null end as "Warrants to Purchase Equity (Y/N)",
-	case when pbb."Participations" = 0 then 'N' when pbb."Participations" = 1 then 'Y' else null end as "Parti-cipation (Y/N)",
-	case when pbb."Convertible into Equity" = 0 then 'N' when pbb."Convertible into Equity" = 1 then 'Y' else null end as "Convertible to Equity (Y/N)",
-	pbb."Equity Security" as "Equity Security (Y/N)",
-	pbb."Subject of an Offer or Called for Redemption" as "At Acquisition - Subject to offer or called for redemption (Y/N)",
-	pbb."Margin Stock" as "Margin Stock (Y/N)",
-	pbb."Subject to Withholding Tax" as "Subject to withholding tax (Y/N)",
-	pbb."Defaulted Collateral Loan at Acquisition" as "At Acquisition - Defaulted Collateral Loan",
-	pbb."Zero Coupon Obligation" as "Zero Coupon Obligation (Y/N)",
-	pbb."Covenant Lite" as "Covenant Lite (Y/N)",
-	pbb."Structured Finance Obligation / finance lease" as "Structured Finance Obligation, finance lease or chattel paper (Y/N)",
-	pbb."Material Non-Credit Related Risk" as "Material Non-Credit Related Risk (Y/N)",
-	pbb."Primarily Secured by Real Estate" as "Primarily Secured by Real Estate, Construction Loan or Project Finance Loan (Y/N)",
-	pbb."Interest Only Security" as "Interest Only Security (Y/N)",
-	pbb."Satisfies Other Criteria(1)" as "Satisfies all Other Eligibility Criteria (Y/N)",
-	null as "Excess Concentration Amount (HARD CODE on Last Day of Reinvestment Period)"
-from "US Bank Holdings" usbh
-left join "Client Holdings" ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
-	and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
-left join "SOI Mapping" sm on sm."Cashfile Security Name" = usbh."Security/Facility Name"
-left join "Securities Stats" ss on ss."Security" = sm."Master_Comp Security Name"
-left join "PFLT Borrowing Base" pbb on pbb."Security" = ss."Security"
-left join "Borrower Stats (Quarterly)" bs on bs."Company" = ss."Family Name"
-group by usbh."Issuer/Borrower Name", usbh."Security/Facility Name", pbb."Defaulted Collateral Loan at Acquisition",
-	ss."Security", pbb."Credit Improved Loan", usbh."Original Purchase Price", pbb."Stretch Senior (Y/N)", ch."Issue Name",
-	ch."Deal Issue (Derived) Rating - Moody's", ch."Deal Issue (Derived) Rating - S&P", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio",
-	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization", pbb."Senior Debt", pbb."LTM EBITDA", pbb."Total Debt",
-	pbb."Closing LTM EBITDA", pbb."Current LTM EBITDA", ch."As Of Date", usbh."Maturity Date", ss."[SI] Type of Rate",
-	ss."[SI] LIBOR Floor", bs."[ACM] [COI/LC] S&P Industry", ss."[SI] Currency", ss."[SI] Obligor Country",
-	pbb."DIP Loans", pbb."Obligations w/ Warrants attached", pbb."Participations", pbb."Convertible into Equity",
-	pbb."Equity Security", pbb."Subject of an Offer or Called for Redemption", pbb."Margin Stock", pbb."Subject to Withholding Tax", pbb."Zero Coupon Obligation",
-	pbb."Covenant Lite", pbb."Structured Finance Obligation / finance lease", pbb."Material Non-Credit Related Risk", pbb."Primarily Secured by Real Estate",
-	pbb."Interest Only Security", pbb."Satisfies Other Criteria(1)", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio", bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA",
-	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon"
-order by usbh."Security/Facility Name"''')).fetchall())
+        base_data = pd.DataFrame(connection.execute(text('''select
+        "Obligor Name",
+        "Security",
+        "Security Name",
+        "Purchase Date (Date Loan contributed to the facility)",
+        "Total Commitment (Issue Currency)",
+        "Outstanding Principal Balance (Issue Currency)",
+        "Defaulted Collateral Loan / Material Mod (Y/N)",
+        "Credit Improved Loan (Y/N)",
+        "Purchase Price",
+        "Stretch Senior Loan (Y/N)",
+        "Loan Type (Term / Delayed Draw / Revolver)",
+        "Current Moody's Rating",
+        "Current S&P Rating",
+        "Initial Fixed Charge Coverage Ratio",
+        "Date of Default",
+        "Market Value",
+        "Current Fixed Charge Coverage Ratio",
+        "Current Interest Coverage Ratio",
+        "Initial Debt to Capitalization Ratio",
+        "Initial Senior Debt/EBITDA",
+        "Initial Total Debt/EBITDA",
+        "Current Senior Debt/EBITDA",
+        "Current Total Debt/EBITDA",
+        "Initial TTM EBITDA",
+        "Current TTM EBITDA",
+        "Current As of Date For Leverage and EBITDA",
+        "Maturity Date",
+        "Fixed Rate (Y/N)",
+        "Coupon incl. PIK and PIK'able (if Fixed)",
+        "Floor Obligation (Y/N)",
+        "Floor",
+        "Spread incl. PIK and PIK'able",
+        "Base Rate",
+        "For Revolvers/Delayed Draw, commitment or other unused fee",
+        "PIK / PIK'able For Floating Rate Loans",
+        "PIK / PIK'able For Fixed Rate Loans",
+        "Interest Paid",
+        "Obligor Industry",
+        "Currency (USD / CAD / AUD / EUR)",
+        "Obligor Country",
+        "DIP Loan (Y/N)",
+        "Warrants to Purchase Equity (Y/N)",
+        "Parti-cipation (Y/N)",
+        "Convertible to Equity (Y/N)",
+        "Equity Security (Y/N)",
+        "At Acquisition - Subject to offer or called for redemption (Y/N)",
+        "Margin Stock (Y/N)",
+        "Subject to withholding tax (Y/N)",
+        "At Acquisition - Defaulted Collateral Loan",
+        "Zero Coupon Obligation (Y/N)",
+        "Covenant Lite (Y/N)",
+        "Structured Finance Obligation, finance lease or chattel paper (Y/N)",
+        "Material Non-Credit Related Risk (Y/N)",
+        "Primarily Secured by Real Estate, Construction Loan or Project Finance Loan (Y/N)",
+        "Interest Only Security (Y/N)",
+        "Satisfies all Other Eligibility Criteria (Y/N)",
+        "Excess Concentration Amount (HARD CODE on Last Day of Reinvestment Period)" from base_data where base_data_info_id = :info_id'''), {"info_id": info_id}).fetchall())
 
+    base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
     base_data_table = {
         "columns": [{"key": column.replace(" ", "_"), "label": column} for column in base_data.columns],
         "data": []
@@ -436,16 +432,28 @@ order by usbh."Security/Facility Name"''')).fetchall())
     base_data = base_data.replace({np.nan: None})
     df_dict = base_data.to_dict(orient='records')
     base_data_table["data"] = df_dict
-    
-    return ServiceResponse.success(data=base_data_table, message="Base Data")
+    result = {
+        "base_data_table": base_data_table,
+        "report_date": base_data_info.report_date.strftime("%Y-%m-%d"),
+        "fund_type": base_data_info.fund_type
+    }
+    return ServiceResponse.success(data=result, message="Base Data")
 
+def get_base_data_mapping(info_id):
+    try:
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            base_data_map = pd.DataFrame(connection.execute(text('''select * from base_data_mapping''')).fetchall())
+            df_dict = base_data_map.to_dict(orient='records')
+        return ServiceResponse.success(data=df_dict, message="Base Data Map")
+    except Exception as e:
+        raise Exception(e)
 
-
-def get_extracted_files_list(report_date, company_id, extracted_base_data_status_id):
-    if extracted_base_data_status_id:
-        extracted_base_datas = ExtractedBaseDataStatus.query.filter_by(id=extracted_base_data_status_id).all()
+def get_extracted_base_data_info(company_id, extracted_base_data_info_id):
+    if extracted_base_data_info_id:
+        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(id = extracted_base_data_info_id).all()
     else:
-        extracted_base_datas = ExtractedBaseDataStatus.query.all()
+        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
     extraction_result = {
         "columns": [{
             "key": "report_date",
@@ -459,17 +467,28 @@ def get_extracted_files_list(report_date, company_id, extracted_base_data_status
         }, {
             "key": "extraction_date",
             "label": "Extraction Date"
+        }, {
+            "key": "source_files",
+            "label": "Source Files"
         }],
         "data": []
     }
 
     for extracted_base_data in extracted_base_datas:
+        source_files = SourceFiles.query.filter(SourceFiles.id.in_(extracted_base_data.files)).all()
+        files = ''
+        for file in source_files:
+            if files == '':
+                files = file.file_name
+            else:
+                files = files + '; ' + file.file_name
         extraction_result["data"].append({
             "id": extracted_base_data.id,
             "report_date": extracted_base_data.report_date.strftime("%Y-%m-%d"),
             "fund": extracted_base_data.fund_type,
             "extraction_status": extracted_base_data.status,
-            "extraction_date": extracted_base_data.extraction_date
+            "extraction_date": extracted_base_data.extraction_date.strftime("%Y-%m-%d"),
+            "source_files": files
         })
     
     return ServiceResponse.success(data=extraction_result)

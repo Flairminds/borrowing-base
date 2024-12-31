@@ -41,80 +41,106 @@ def base_data_mapping(cf, engine, bs = None):
                     "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
                 })
 
-def soi_mapping(engine, master_comp_file_details, cash_file_details):
+def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details):
     try:
         with engine.connect() as connection:
-            # soi_data = pd.DataFrame(connection.execute(text('select * from "SOI Mapping"')).fetchall())
-            # master_comp = pd.DataFrame(connection.execute(text('select * from "Borrower Stats (Quarterly)" bs join "Securities Stats" ss on ss."Family Name" = bs."Company" join "PFLT Borrowing Base" pbb on pbb."Security" = ss."Security"')).fetchall())
-            # master_comp = rename_duplicate_columns(master_comp)
-            cash_file = pd.DataFrame(connection.execute(text('select * from "US Bank Holdings" usbh left join "Client Holdings" ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled" left join "SOI Mapping" sm on sm."Cashfile Security Name" = usbh."Security/Facility Name" left join "Securities Stats" ss on ss."Security" = sm."Master_Comp Security Name" left join "PFLT Borrowing Base" pbb on pbb."Security" = ss."Security" left join "Borrower Stats (Quarterly)" bsq on bsq."Company" = ss."Family Name" where usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AND ss.source_file_id= :master_comp_file_id AND pbb.source_file_id= :master_comp_file_id AND bsq.source_file_id= :master_comp_file_id'), {'cash_file_id': cash_file_details.id, 'master_comp_file_id':master_comp_file_details.id}).fetchall())
-            cash_file = rename_duplicate_columns(cash_file)
-            base_data_map = pd.DataFrame(connection.execute(text('select * from "base_data_mapping"')).fetchall())
-            # securities_stats = pd.DataFrame(connection.execute(text('select * from "Securities Stats"')).fetchall())
-            # dataframe = pd.DataFrame(output)
-        # d = {
-        #     "Delayed Draw Term Loan": ['(DDTL)', 'DD T/L'],
-        #     "Term Loan": ['(TL)', '(Term Loan)', 'T/L'],
-        #     "Revolver": ['(Revolver)'],
-        #     "Common Equity": ['(Common Equity)']
-        # }
-        new_dict = {}
-        matched = False
-        for i, cf in cash_file.iterrows():
-            # type = None
-            print(i)
-            if (cf['Security/Facility Name'] is None):
-                continue
-            # for key in d:
-            #     if key in cf['Security/Facility Name']:
-            #         type = key
-            #         break
-            # if (type is None):
-            #     continue
-            # for j, sm in soi_data.iterrows():
-            #     if (sm['Cashfile Security Name'] is None):
-            #         continue
-            #     if (sm['Cashfile Security Name'] == cf['Security/Facility Name']):
-            #         for k, bs in master_comp.iterrows():
-            #             res = None
-            #             if (bs["Security"] is None):
-            #                 continue
-            #             if (bs['Security'] == sm['Master_Comp Security Name']):
-            #                 res = base_data_mapping(cf, bs)
-            #                 matched = True
-            #             # else:
-            #             #     c = None
-            #             #     b = None
-            #             #     for t in d[type]:
-            #             #         if t in bs['Security']:
-            #             #             temp1 = bs['Security'].split(t)
-            #             #             c = temp1[0]
-            #             #             break
-            #             #     for t in d[type]:
-            #             #         # print(t, sm['[G] Security Name'], k, j)
-            #             #         if t in sm['[G] Security Name']:
-            #             #             temp2 = sm['[G] Security Name'].split(t)
-            #             #             b = temp2[0]
-            #             #             break
-            #             #     if (c is not None and b is not None and c == b):
-            #             #         res = base_data_mapping(bs, cf)
-            #             if res is not None:
-            #                 print(res[1])
-            #                 new_dict[i] = res
-            #                 # df = pd.DataFrame([res])
-            #                 # pd.concat([dfo, df])
-            #                 break
-            # if matched is False:
-            res = base_data_mapping(cf, engine=engine)
-            print(res[1])
-            new_dict[i] = res
-        df = pd.DataFrame.from_dict(new_dict, orient='index', columns = list(base_data_map['bd_column_name']))
-        df = rename_duplicate_columns(df)
-        df["company_id"] = master_comp_file_details.company_id
-        df["report_date"] = master_comp_file_details.report_date
-        # df.to_csv('file1.csv')
-        df.to_sql("base_data", con=engine, if_exists='append', index=False, method='multi')
+            cash_file = pd.DataFrame(connection.execute(text('''select distinct
+	usbh."Issuer/Borrower Name" as "Obligor Name",
+	usbh."Security/Facility Name" as "Security",
+	ss."Security" as "Security Name",
+	null as "Purchase Date (Date Loan contributed to the facility)",
+	sum(ch."Par Amount (Deal Currency)"::float) as "Total Commitment (Issue Currency)",
+	sum(ch."Principal Balance (Deal Currency)"::float) as "Outstanding Principal Balance (Issue Currency)",
+	case when pbb."Defaulted Collateral Loan at Acquisition" = 0 then 'N' when pbb."Defaulted Collateral Loan at Acquisition" = 1 then 'Y' else null end as "Defaulted Collateral Loan / Material Mod (Y/N)",
+	case when pbb."Credit Improved Loan" = 0 then 'N' when pbb."Credit Improved Loan" = 1 then 'Y' else null end as "Credit Improved Loan (Y/N)",
+	usbh."Original Purchase Price" as "Purchase Price",
+	pbb."Stretch Senior (Y/N)" as "Stretch Senior Loan (Y/N)",
+	ch."Issue Name" as "Loan Type (Term / Delayed Draw / Revolver)",
+	ch."Deal Issue (Derived) Rating - Moody's" as "Current Moody's Rating",
+	ch."Deal Issue (Derived) Rating - S&P" as "Current S&P Rating",
+	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as "Initial Fixed Charge Coverage Ratio",
+	null as "Date of Default",
+	null as "Market Value",
+	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as "Current Fixed Charge Coverage Ratio",
+	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA" as "Current Interest Coverage Ratio",
+	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization" as "Initial Debt to Capitalization Ratio",
+	bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA" as "Initial Senior Debt/EBITDA",
+	bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA" as "Initial Total Debt/EBITDA",
+	pbb."Senior Debt"::float / pbb."LTM EBITDA"::float as "Current Senior Debt/EBITDA",
+	pbb."Total Debt"::float / pbb."LTM EBITDA"::float as "Current Total Debt/EBITDA",
+	pbb."Closing LTM EBITDA" as "Initial TTM EBITDA",
+	pbb."Current LTM EBITDA" as "Current TTM EBITDA",
+	ch."As Of Date" as "Current As of Date For Leverage and EBITDA",
+	usbh."Maturity Date" as "Maturity Date",
+	case
+		when ss."[SI] Type of Rate" like 'Fixed Rate%' then 'Y'
+		else 'N'
+	end as "Fixed Rate (Y/N)",
+	null as "Coupon incl. PIK and PIK'able (if Fixed)",
+	case
+		when ss."[SI] LIBOR Floor" is not null then 'Y'
+		else 'N'
+	end as "Floor Obligation (Y/N)",
+	case
+		when ss."[SI] LIBOR Floor" != 'NM' then ss."[SI] LIBOR Floor"::float
+		else null
+	end as "Floor",
+	case
+		when ss."[SI] Cash Spread to LIBOR" != 'NM' and ss."[SI] Cash Spread to LIBOR" is not null then ss."[SI] Cash Spread to LIBOR"::float + coalesce(ss."[SI] PIK Coupon"::float, 0)::float
+		else null
+	end as "Spread incl. PIK and PIK'able",
+	null as "Base Rate",
+	null as "For Revolvers/Delayed Draw, commitment or other unused fee",
+	null as "PIK / PIK'able For Floating Rate Loans",
+	null as "PIK / PIK'able For Fixed Rate Loans",
+	null as "Interest Paid",
+	bs."[ACM] [COI/LC] S&P Industry" as "Obligor Industry",
+	ss."[SI] Currency" as "Currency (USD / CAD / AUD / EUR)",
+	ss."[SI] Obligor Country" as "Obligor Country",
+	case when pbb."DIP Loans" = 0 then 'N' when pbb."DIP Loans" = 1 then 'Y' else null end as "DIP Loan (Y/N)",
+	case when pbb."Obligations w/ Warrants attached" = 0 then 'N' when pbb."Obligations w/ Warrants attached" = 1 then 'Y' else null end as "Warrants to Purchase Equity (Y/N)",
+	case when pbb."Participations" = 0 then 'N' when pbb."Participations" = 1 then 'Y' else null end as "Parti-cipation (Y/N)",
+	case when pbb."Convertible into Equity" = 0 then 'N' when pbb."Convertible into Equity" = 1 then 'Y' else null end as "Convertible to Equity (Y/N)",
+	pbb."Equity Security" as "Equity Security (Y/N)",
+	pbb."Subject of an Offer or Called for Redemption" as "At Acquisition - Subject to offer or called for redemption (Y/N)",
+	pbb."Margin Stock" as "Margin Stock (Y/N)",
+	pbb."Subject to Withholding Tax" as "Subject to withholding tax (Y/N)",
+	pbb."Defaulted Collateral Loan at Acquisition" as "At Acquisition - Defaulted Collateral Loan",
+	pbb."Zero Coupon Obligation" as "Zero Coupon Obligation (Y/N)",
+	pbb."Covenant Lite" as "Covenant Lite (Y/N)",
+	pbb."Structured Finance Obligation / finance lease" as "Structured Finance Obligation, finance lease or chattel paper (Y/N)",
+	pbb."Material Non-Credit Related Risk" as "Material Non-Credit Related Risk (Y/N)",
+	pbb."Primarily Secured by Real Estate" as "Primarily Secured by Real Estate, Construction Loan or Project Finance Loan (Y/N)",
+	pbb."Interest Only Security" as "Interest Only Security (Y/N)",
+	pbb."Satisfies Other Criteria(1)" as "Satisfies all Other Eligibility Criteria (Y/N)",
+	null as "Excess Concentration Amount (HARD CODE on Last Day of Reinvestment Period)"
+from pflt_us_bank_holdings usbh
+left join pflt_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
+	and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
+left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
+left join pflt_securities_stats ss on ss."Security" = sm.master_comp_security_name
+left join pflt_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
+left join pflt_borrower_stats bs on bs."Company" = ss."Family Name"
+where usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AND ss.source_file_id= :master_comp_file_id AND pbb.source_file_id= :master_comp_file_id AND bs.source_file_id= :master_comp_file_id
+    group by usbh."Issuer/Borrower Name", usbh."Security/Facility Name", pbb."Defaulted Collateral Loan at Acquisition",
+	ss."Security", pbb."Credit Improved Loan", usbh."Original Purchase Price", pbb."Stretch Senior (Y/N)", ch."Issue Name",
+	ch."Deal Issue (Derived) Rating - Moody's", ch."Deal Issue (Derived) Rating - S&P", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio",
+	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization", pbb."Senior Debt", pbb."LTM EBITDA", pbb."Total Debt",
+	pbb."Closing LTM EBITDA", pbb."Current LTM EBITDA", ch."As Of Date", usbh."Maturity Date", ss."[SI] Type of Rate",
+	ss."[SI] LIBOR Floor", bs."[ACM] [COI/LC] S&P Industry", ss."[SI] Currency", ss."[SI] Obligor Country",
+	pbb."DIP Loans", pbb."Obligations w/ Warrants attached", pbb."Participations", pbb."Convertible into Equity",
+	pbb."Equity Security", pbb."Subject of an Offer or Called for Redemption", pbb."Margin Stock", pbb."Subject to Withholding Tax", pbb."Zero Coupon Obligation",
+	pbb."Covenant Lite", pbb."Structured Finance Obligation / finance lease", pbb."Material Non-Credit Related Risk", pbb."Primarily Secured by Real Estate",
+	pbb."Interest Only Security", pbb."Satisfies Other Criteria(1)", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio", bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA",
+	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon"
+order by usbh."Security/Facility Name"'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id':master_comp_file_details.id}).fetchall())
+            df = cash_file
+            df["base_data_info_id"] = extracted_base_data_info.id
+            df["company_id"] = master_comp_file_details.company_id
+            df["report_date"] = master_comp_file_details.report_date
+            # df.to_csv('file1.csv')
+            df.to_sql("base_data", con=engine, if_exists='append', index=False, method='multi')
         
 
     except Exception as e:
-        print(e)
+        raise Exception(e)
