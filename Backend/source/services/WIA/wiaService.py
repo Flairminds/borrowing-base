@@ -270,7 +270,7 @@ def update_add_df(data):
 
     updated_assets = changes.get("updated_assets")
     if updated_assets:
-        response_data = update_df(df, changes, sheet_name)
+        response_data = update_df(initial_df, df, changes, sheet_name)
         df = response_data["data"]
     return df, initial_df
 
@@ -491,7 +491,7 @@ def get_file_data(data):
         return ServiceResponse.error(message = "Internal Server Error")
     
 
-def update_df(sheet_df, changes, sheet_name):
+def update_df(initial_df, sheet_df, changes, sheet_name):
     values_to_update = changes["updated_assets"]
 
     try:
@@ -504,9 +504,10 @@ def update_df(sheet_df, changes, sheet_name):
                 row_index = commonServices.get_row_index(sheet_df, row_name, sheet_uniques_name)
                 if row_index != -1:
                     updated_value = value_to_update["updated_value"]
-                    updated_value = commonServices.get_updated_value(updated_value)
+                    prev_value = value_to_update["prev_value"]
+                    updated_value = commonServices.get_updated_value(prev_value, updated_value)
 
-                    col_type = sheet_df[col_name].dtype
+                    col_type = initial_df[col_name].dtype
 
                     updated_value = commonServices.get_raw_value(updated_value, col_type)
                     # print(col_type, col_name, updated_value)
