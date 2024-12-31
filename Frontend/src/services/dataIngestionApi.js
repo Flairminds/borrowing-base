@@ -50,3 +50,14 @@ export const getBaseDataFilesList = (data) => {
     const fileListResponse = axios.post(`${ApiURL}/data_ingestion/get_extracted_files_list`, fileData);
     return fileListResponse;
 };
+
+export const getSecurityMappingData = () => {
+    const fileListResponse = axios.get(`${ApiURL}/data_ingestion/get_pflt_sec_mapping`);
+    return fileListResponse;
+};
+
+export const editPfltSecMapping = (changes) => {
+    const payload = { changes };
+    const response = axios.post(`${ApiURL}/data_ingestion/edit_pflt_sec_mapping`, payload);
+    return response;
+};
