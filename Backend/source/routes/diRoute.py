@@ -27,3 +27,15 @@ def get_base_data():
 @di_blueprint.route('get_extracted_base_data_info', methods=["POST"])
 def get_extracted_base_data_info():
     return diController.get_extracted_base_data_info()
+
+@di_blueprint.route('/get_pflt_sec_mapping', methods=["GET"])
+def get_pflt_sec_mapping():
+    return diController.get_pflt_sec_mapping()
+
+@di_blueprint.route('/edit_pflt_sec_mapping', methods=["POST"])
+def edit_pflt_sec_mapping():
+    return diController.edit_pflt_sec_mapping()
+
+@di_blueprint.route('/get_source_file_data', methods=["GET"])
+def get_source_file_data():
+    return diController.get_source_file_data()

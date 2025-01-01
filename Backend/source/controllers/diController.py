@@ -100,3 +100,39 @@ def get_extracted_base_data_info():
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+
+def get_pflt_sec_mapping():
+    try:
+        service_response = diService.get_pflt_sec_mapping()
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not get PFLT Security Mapping")
+        return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+def edit_pflt_sec_mapping():
+    try:
+        req_body = flask.request.get_json()
+        changes = req_body.get('changes')
+
+        service_response = diService.edit_pflt_sec_mapping(changes)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not edit PFLT Security Mapping")
+        return HTTPResponse.success(message=service_response.get("message"))
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def get_source_file_data():
+    try:
+        req_body = flask.request.get_json()
+        file_id = req_body.get('file_id')
+        service_response = diService.get_source_file_data(file_id)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not get source file data")
+        return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
