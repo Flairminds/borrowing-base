@@ -17,7 +17,15 @@ export const BaseDataFileList = ({setBaseFilePreviewData}) => {
         navigate('/ingestion-files-list');
     };
 
+
+    const handleSecurityMapping = () => {
+        navigate('/security-mapping');
+    };
+
+    const handleBaseDataPreview = async(reportDate) => {
+
     const handleBaseDataPreview = async(info_id) => {
+
         try {
             const previewDataResponse = await getBaseFilePreviewData(info_id);
             console.info(previewDataResponse, 'base preview ');
@@ -60,7 +68,12 @@ export const BaseDataFileList = ({setBaseFilePreviewData}) => {
   return (
     <div className={styles.pageContainer}>
         <div className={styles.baseFileListPage}>
-            <div className={styles.buttonsContainer}>
+        <div className={styles.buttonsContainer}>
+                <CustomButton
+                    isFilled={true}
+                    onClick={handleSecurityMapping}
+                    text='Security Mapping'
+                />
                 <CustomButton
                     isFilled={true}
                     onClick={handleExtractNew}
