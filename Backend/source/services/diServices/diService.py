@@ -492,3 +492,66 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id):
         })
     
     return ServiceResponse.success(data=extraction_result)
+
+def get_pflt_sec_mapping():
+    engine = db.get_engine()
+    with engine.connect() as connection:
+        pflt_sec_mapping_df = pd.DataFrame(connection.execute(text('select * from pflt_security_mapping order by id ASC')).fetchall())
+    
+    pflt_sec_mapping_table = {
+        "columns": [{"key": column, "label": column.replace("_", " ")} for column in pflt_sec_mapping_df.columns],
+        "data": []
+    }
+    pflt_sec_mapping_df.columns = pflt_sec_mapping_df.columns.str.replace(" ", "_")
+    pflt_sec_mapping_df = pflt_sec_mapping_df.replace({np.nan: None})
+    df_dict = pflt_sec_mapping_df.to_dict(orient='records')
+    pflt_sec_mapping_table["data"] = df_dict
+
+    return ServiceResponse.success(data=pflt_sec_mapping_table, message="pflt security mapping")
+
+def edit_pflt_sec_mapping(changes):
+    engine = db.get_engine()
+    modified_by = 1 # currently hard coding this variable
+    for change in changes:
+        id = change.get("id")
+        for key in change.keys():
+            if key != "id":
+                value = change.get(key)
+                with engine.connect() as connection:
+                    connection.execute(text(f"UPDATE pflt_security_mapping SET {key} = :value, modified_by = :modified_by, modified_at = now() WHERE id = :id"), {"value": value, "id":id, 'modified_by': modified_by})
+                    connection.commit()
+    
+    return ServiceResponse.success(message="PFLT security mapping edited successfully")
+
+def get_source_file_data(file_id):    
+    sheets = [
+        "Borrower Stats (Quarterly)",
+        "Client Holdings",
+        "PFLT Borrowing Base",
+        "Securities Stats",
+        "US Bank Holdings",
+    ]
+    source_file_table_data = {
+        "sheets": sheets
+    }
+
+    for sheet in sheets:
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            sheet_df = pd.DataFrame(connection.execute(text(f'select * from "{sheet}" where source_file_id = {file_id}')).fetchall())
+            
+        colummns = [
+            {
+                'key': column.replace(' ', '_'), 
+                'label': column
+            } for column in sheet_df.columns]
+        source_file_table_data[sheet] = {}
+        source_file_table_data[sheet]['columns'] = colummns
+
+        sheet_df.columns = sheet_df.columns.str.replace(" ", "_")
+        sheet_df = sheet_df.replace({np.nan: None})
+        df_dict = sheet_df.to_dict(orient='records')
+        source_file_table_data[sheet]['data'] = df_dict
+    
+    return ServiceResponse.success(data=source_file_table_data)
+    
