@@ -60,3 +60,7 @@ export const editPfltSecMapping = (changes) => {
     const response = axios.post(`${ApiURL}/data_ingestion/edit_pflt_sec_mapping`, payload);
     return response;
 };
+
+export const postSourceFileData = (payload) => {
+    return axios.post(`${ApiURL}/data_ingestion/get_source_file_data`, payload);
+};
