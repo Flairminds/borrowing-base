@@ -37,6 +37,18 @@
 .headRow .th:first-child
 {
     border-top-left-radius: 9px;
+    /* z-index: 50; */
+}
+
+.sticky .th:first-child
+{
+    border-top-left-radius: 9px;
+    z-index: 50;
+}
+
+.sticky .th:last-child 
+{
+    border-top-right-radius: 9px;
 }
 
 .headRow .th:last-child 

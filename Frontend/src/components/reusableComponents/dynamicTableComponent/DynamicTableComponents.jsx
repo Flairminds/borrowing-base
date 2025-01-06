@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import tableStyles from './DynamicTableComponents.module.css';
 
-export const DynamicTableComponents = ({data, columns, additionalColumns = []}) => {
+export const DynamicTableComponents = ({data, columns, additionalColumns = [], sticky}) => {
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
     useEffect(() => {
@@ -14,9 +14,9 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = []}) 
     <>
     <table className={tableStyles.table}>
         <thead>
-        <tr className={tableStyles.headRow}>
+        <tr className={sticky ? tableStyles.sticky : tableStyles.headRow}>
             {updatedColumnsData?.map((col, index) => (
-            <th key={index} className={tableStyles.th}>
+            <th key={index} className={tableStyles.th} >
                 {col.label}
             </th>
             ))}
