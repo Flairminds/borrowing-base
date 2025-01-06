@@ -66,7 +66,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
                                         marginBottom: '5px'
                                     }}
                                 >
-                                    {file.file_name}
+                                    {file.file_name + file.extension}
                                 </div>
                             ))}
                         </div>
