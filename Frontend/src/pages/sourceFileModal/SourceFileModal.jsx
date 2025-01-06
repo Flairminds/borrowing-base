@@ -56,15 +56,16 @@ export const SourceFileModal = ({ isVisible, onClose, fileDetails }) => {
     title="File Details"
     open={isVisible}
     onCancel={onClose}
-    footer={[
-        <Button
-            key="cancel"
-            onClick={onClose}
-            className={styles.outlinedBtn}
-        >
-            Cancel
-        </Button>
-    ]}
+    // footer={[
+    //     <Button
+    //         key="cancel"
+    //         onClick={onClose}
+    //         className={styles.outlinedBtn}
+    //     >
+    //         Cancel
+    //     </Button>
+    // ]}
+    footer={null}
     width={'85%'}
     style={{height: '85vh'}}
     centered
@@ -90,7 +91,6 @@ export const SourceFileModal = ({ isVisible, onClose, fileDetails }) => {
             <DynamicTableComponents
                 data={sourceFileData?.data}
                 columns={sourceFileData?.columns}
-                sticky
             />
         </div>
     </div>
