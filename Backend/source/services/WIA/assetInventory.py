@@ -354,10 +354,10 @@ class AssetProcessor:
 
 def get_asset_inventry(what_if_analysis_id, what_if_analysis_type, fund_type):
     if what_if_analysis_type == "Update asset":
-        # what_if_analysis = ModifiedBaseDataFile.query.filter_by(
-        #     id=what_if_analysis_id
-        # ).first()
-        ServiceResponse.error(status_code=405, message="Asset inventory for update asset not available")
+        what_if_analysis = ModifiedBaseDataFile.query.filter_by(
+            id=what_if_analysis_id
+        ).first()
+        # ServiceResponse.error(status_code=405, message="Asset inventory for update asset not available")
     else:
         what_if_analysis = WhatIfAnalysis.query.filter_by(
             id=what_if_analysis_id
