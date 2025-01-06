@@ -29,7 +29,8 @@ export const UpdateAssetDetailsModal = ({
     setTablesData,
     setWhatifAnalysisPerformed,
     setSaveBtn,
-    fundType
+    fundType,
+    setWhatIfAnalysisType
 }) => {
 
 
@@ -182,6 +183,7 @@ export const UpdateAssetDetailsModal = ({
             setSaveBtn(true);
             setTablesData(res.data.result);
             handleCancel();
+            setWhatIfAnalysisType(res.data.result.what_if_analysis_type);
         } catch (err) {
             console.error(err);
         }
