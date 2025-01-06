@@ -5,16 +5,16 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = []}) 
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
     const [showSettingsDiv, setShowSettingsDiv] = useState(false);
-    const [breaks, setBreaks] = useState([]);
-    const [selectedColumns, setSelectedColumns] = useState([]);
-    const [activeRowIndex, setActiveRowIndex] = useState(-1);
+    const [breaks, setBreaks] = useState([])
+    const [selectedColumns, setSelectedColumns] = useState([])
+    const [activeRowIndex, setActiveRowIndex] = useState(-1)
 
     useEffect(() => {
         if (columns && columns?.length > 0) {
-            const temp = [...columns, ...additionalColumns];
+            let temp = [...columns, ...additionalColumns]
             setUpdatedColumnsData(temp);
-            setSelectedColumns(temp.map((t) => t.label));
-            setBreaks([0, parseInt(columns.length / 3) + 1, (2 * parseInt(columns.length / 3)) + 1, columns.length]);
+            setSelectedColumns(temp.map((t) => t.label))
+            setBreaks([0, parseInt(columns.length / 3) + 1, (2 * parseInt(columns.length / 3)) + 1, columns.length])
         }
     }, [columns]);
 
