@@ -258,6 +258,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info):
             db.session.commit()
             end_time = datetime.now()
             time_difference = (end_time - start_time).total_seconds() * 10**3
+            print('successfully stored base data')
         except Exception as e:
             Log.func_error(e)
             extracted_base_data_info.status = "failed"
@@ -507,18 +508,21 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id):
     for extracted_base_data in extracted_base_datas:
         source_files = SourceFiles.query.filter(SourceFiles.id.in_(extracted_base_data.files)).all()
         files = ''
+        file_details = []
         for file in source_files:
             if files == '':
                 files = file.file_name
             else:
                 files = files + '; ' + file.file_name
+            file_details.append({'file_id': file.id, 'file_name': file.file_name, 'file_type': file.file_type})
         extraction_result["data"].append({
             "id": extracted_base_data.id,
             "report_date": extracted_base_data.report_date.strftime("%Y-%m-%d"),
             "fund": extracted_base_data.fund_type,
             "extraction_status": extracted_base_data.status,
             "extraction_date": extracted_base_data.extraction_date.strftime("%Y-%m-%d"),
-            "source_files": files
+            "source_files": files,
+            "source_file_details":  file_details
         })
     
     return ServiceResponse.success(data=extraction_result)
@@ -528,8 +532,26 @@ def get_pflt_sec_mapping():
     with engine.connect() as connection:
         pflt_sec_mapping_df = pd.DataFrame(connection.execute(text('select * from pflt_security_mapping order by id ASC')).fetchall())
     
+    columns_data = [
+        {
+            'key': "soi_name",
+            'label': "Soi name"
+        }, {
+            'key': "master_comp_security_name",
+            'label': "Master comp security name"
+        },  {
+            'key': "family_name",
+            'label': "Family name"
+        }, {
+            'key': "security_type",
+            'label': "Security type"
+        }, {
+            'key': "cashfile_security_name",
+            'label': "Cash file security name"
+        }
+    ]
     pflt_sec_mapping_table = {
-        "columns": [{"key": column, "label": column.replace("_", " ")} for column in pflt_sec_mapping_df.columns],
+        "columns": columns_data,
         "data": []
     }
     pflt_sec_mapping_df.columns = pflt_sec_mapping_df.columns.str.replace(" ", "_")
@@ -553,35 +575,43 @@ def edit_pflt_sec_mapping(changes):
     
     return ServiceResponse.success(message="PFLT security mapping edited successfully")
 
-def get_source_file_data(file_id):    
-    sheets = [
-        "Borrower Stats (Quarterly)",
-        "Client Holdings",
-        "PFLT Borrowing Base",
-        "Securities Stats",
-        "US Bank Holdings",
-    ]
-    source_file_table_data = {
-        "sheets": sheets
-    }
+def get_source_file_data(file_id, file_type, sheet_name):
+    # ["US Bank Holdings", "Client Holdings"] for Cash
+    # ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"] for Master Comp
+    if file_type == "Cash" and sheet_name == None:
+        sheet_name = "US Bank Holdings"
+    if file_type == "Master Comp" and sheet_name == None:
+        sheet_name = "Borrower Stats"
+    print(sheet_name)
+    match sheet_name:
+        case "US Bank Holdings":
+            table_name = "pflt_us_bank_holdings"
+        case "Client Holdings":
+            table_name = "pflt_client_holdings"
+        case "Borrower Stats":
+            table_name = "pflt_borrower_stats"
+        case "Securities Stats":
+            table_name = "pflt_securities_stats"
+        case "PFLT Borrowing Base":
+            table_name = "pflt_pflt_borrowing_base"
 
-    for sheet in sheets:
-        engine = db.get_engine()
-        with engine.connect() as connection:
-            sheet_df = pd.DataFrame(connection.execute(text(f'select * from "{sheet}" where source_file_id = {file_id}')).fetchall())
-            
-        colummns = [
-            {
-                'key': column.replace(' ', '_'), 
-                'label': column
-            } for column in sheet_df.columns]
-        source_file_table_data[sheet] = {}
-        source_file_table_data[sheet]['columns'] = colummns
+    source_file_table_data = {}
 
-        sheet_df.columns = sheet_df.columns.str.replace(" ", "_")
-        sheet_df = sheet_df.replace({np.nan: None})
-        df_dict = sheet_df.to_dict(orient='records')
-        source_file_table_data[sheet]['data'] = df_dict
+    engine = db.get_engine()
+    with engine.connect() as connection:
+        sheet_df = pd.DataFrame(connection.execute(text(f'select * from "{table_name}" where source_file_id = {file_id}')).fetchall())
+
+    colummns = [
+        {
+            'key': column.replace(' ', '_'), 
+            'label': column
+        } for column in sheet_df.columns]
+    source_file_table_data['columns'] = colummns
+
+    sheet_df.columns = sheet_df.columns.str.replace(" ", "_")
+    sheet_df = sheet_df.replace({np.nan: None})
+    df_dict = sheet_df.to_dict(orient='records')
+    source_file_table_data['data'] = df_dict
     
     return ServiceResponse.success(data=source_file_table_data)
     

@@ -128,8 +128,10 @@ def edit_pflt_sec_mapping():
 def get_source_file_data():
     try:
         req_body = flask.request.get_json()
-        file_id = req_body.get('file_id')
-        service_response = diService.get_source_file_data(file_id)
+        source_file_id = req_body.get('source_file_id')
+        source_file_type = req_body.get('source_file_type')
+        sheet_name = req_body.get('sheet_name')
+        service_response = diService.get_source_file_data(source_file_id, source_file_type, sheet_name)
         if not service_response["success"]:
             return HTTPResponse.error(message="Could not get source file data")
         return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
