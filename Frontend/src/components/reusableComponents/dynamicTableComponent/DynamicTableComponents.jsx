@@ -2,7 +2,7 @@ import { Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import tableStyles from './DynamicTableComponents.module.css';
 
-export const DynamicTableComponents = ({data, columns, additionalColumns = [], showSettings = false}) => {
+export const DynamicTableComponents = ({data, columns, additionalColumns = [], showSettings = false, enableStickyColumns = false}) => {
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
     const [showSettingsDiv, setShowSettingsDiv] = useState(false);
@@ -61,7 +61,7 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
                     })}
                 </div>}
         </div>}
-        <table className={tableStyles.table}>
+        <table className={tableStyles.table} style={{tableLayout: enableStickyColumns ? 'fixed' : 'auto'}}>
             <thead>
             <tr className={tableStyles.headRow}>
                 {updatedColumnsData?.map((col, index) => {
@@ -69,7 +69,7 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
                         return (
                             <>
                                 <Tooltip placement="bottom" mouseEnterDelay={0.5} title={col.label}>
-                                    <th key={index} className={tableStyles.th}>
+                                    <th key={index} className={enableStickyColumns ? tableStyles.stickyColTh : tableStyles.th}>
                                         {col.label}
                                     </th>
                                 </Tooltip>
@@ -86,9 +86,9 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
                             {updatedColumnsData?.map((col) => {
                                 if (selectedColumns.includes(col.label)) {
                                 return (
-                                    <td key={col.key} className={tableStyles.td}
+                                    <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : tableStyles.td}
                                         style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
-                                        onClick={() => col.clickHandler && col.clickHandler(row[col.key], row)}>
+                                        onClick={() => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
                                         {col.render ? col.render(row[col.key], row) : (row[col.key] ? row[col.key] : '-') }
                                     </td>
                                 );

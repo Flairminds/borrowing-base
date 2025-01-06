@@ -19,7 +19,7 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData}) => {
         <div className={styles.previewPage}>
             <div className={styles.tableContainer}>
                 Base Data for {baseFilePreviewData.reportDate}
-                <DynamicTableComponents data={baseFilePreviewData?.baseData?.data} columns={baseFilePreviewData?.baseData?.columns} />
+                <DynamicTableComponents data={baseFilePreviewData?.baseData?.data} columns={baseFilePreviewData?.baseData?.columns} enableStickyColumns={true} />
             </div>
         </div>
         // <div>

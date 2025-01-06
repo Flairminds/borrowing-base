@@ -514,7 +514,7 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id):
                 files = file.file_name
             else:
                 files = files + '; ' + file.file_name
-            file_details.append({'file_id': file.id, 'file_name': file.file_name, 'file_type': file.file_type})
+            file_details.append({'file_id': file.id, 'file_name': file.file_name, 'file_type': file.file_type, 'extension': file.extension})
         extraction_result["data"].append({
             "id": extracted_base_data.id,
             "report_date": extracted_base_data.report_date.strftime("%Y-%m-%d"),
@@ -530,7 +530,9 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id):
 def get_pflt_sec_mapping():
     engine = db.get_engine()
     with engine.connect() as connection:
-        pflt_sec_mapping_df = pd.DataFrame(connection.execute(text('select id, soi_name, master_comp_security_name, family_name, security_type, cashfile_security_name from pflt_security_mapping where company_id = 1 order by id ASC')).fetchall())
+        pflt_sec_mapping_df = pd.DataFrame(connection.execute(text('select id, soi_name, master_comp_security_name, family_name, security_type, cashfile_security_name from pflt_security_mapping where company_id = 1 order by soi_name ASC')).fetchall())
+
+        unmapped_securities = pd.DataFrame(connection.execute(text('''select distinct "Security/Facility Name" as cashfile_securities from pflt_us_bank_holdings pubh left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" where psm.id is null''')).fetchall())
     
     columns_data = [
         {
@@ -558,6 +560,7 @@ def get_pflt_sec_mapping():
     pflt_sec_mapping_df = pflt_sec_mapping_df.replace({np.nan: None})
     df_dict = pflt_sec_mapping_df.to_dict(orient='records')
     pflt_sec_mapping_table["data"] = df_dict
+    pflt_sec_mapping_table["unmapped_securities"] = unmapped_securities.to_dict(orient='records')
 
     return ServiceResponse.success(data=pflt_sec_mapping_table, message="pflt security mapping")
 
