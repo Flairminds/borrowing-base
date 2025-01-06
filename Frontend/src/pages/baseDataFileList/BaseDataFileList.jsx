@@ -49,13 +49,13 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
 
 
     const injectRenderForSourceFiles = (columns) => {
-        return columns.map((col) => {
+        return columns?.map((col) => {
             if (col.key === 'source_files') {
                 return {
                     ...col,
                     render: (value, row) => (
                         <div>
-                            {row.source_file_details.map((file) => (
+                            {row.source_file_details?.map((file) => (
                                 <div
                                     key={file.file_id}
                                     onClick={() => handleSourceFileClick(file)}
