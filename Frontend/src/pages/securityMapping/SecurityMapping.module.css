@@ -5,12 +5,12 @@
 }
 
 .soiMappingPage {
-    width: 80%;
+    width: 90%;
 }
 
 .tableContainer
 {
-  max-height: 70vh;
+  max-height: 80vh;
   overflow-y: auto;
   margin: 0.5rem;
 }
@@ -21,8 +21,7 @@
 }
 
 .th{
-  padding: 8px;
-  padding-left: 15px;
+  padding: 8px 10px;
   text-align: left;
   border-bottom: 1px solid #DCDEDE;
   font-weight: 600;
@@ -31,17 +30,17 @@
   align-items: center;
   justify-content: center;
   background-color: #f2f2f2;
+  position: sticky;
 }
 
 .td {
-  padding: 8px;
-  padding-left: 15px;
+  padding: 8px 10px;
   text-align: left;
   border-bottom: 1px solid #DCDEDE;
-  font-weight: 400;
   font-size: 14px;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 200px;
 }
 
 .headRow .th:first-child
@@ -91,5 +90,5 @@
 }
 
 .emptyValue {
-  background-color: lightblue; 
+  background-color: rgb(255, 214, 214); 
 }
