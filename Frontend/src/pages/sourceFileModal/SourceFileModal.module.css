@@ -12,27 +12,27 @@
 }
 
 .sheetSelector {
-    padding: 20px; 
+    padding: 5px;
     position: sticky;
     top: 0;
     z-index: 10;
-    border-bottom: 1px solid #e0e0e0;
+    /* border-bottom: 1px solid #e0e0e0; */
 }
 
 .tableContainer {
-    border: 1px solid #DCDEDE;
+    /* border: 1px solid #DCDEDE; */
     border-radius: 8px;
-    max-height: 65vh;
-    overflow-x: auto; 
+    max-height: 75vh;
+    overflow-x: auto;
     overflow-y: auto; 
 }
 
-.tableContainer table {
+/* .tableContainer table {
     border-collapse: collapse;
     width: 100%;
-}
+} */
 
-.tableContainer th, 
+/* .tableContainer th, 
 .tableContainer td {
     padding: 8px 16px;
     text-align: left;
@@ -52,5 +52,5 @@
     top: 0;
     z-index: 5;
     background-color: #f5f5f5; 
-}
+} */
 

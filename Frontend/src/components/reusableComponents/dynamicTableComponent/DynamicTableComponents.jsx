@@ -1,7 +1,8 @@
+import { Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import tableStyles from './DynamicTableComponents.module.css';
 
-export const DynamicTableComponents = ({data, columns, additionalColumns = []}) => {
+export const DynamicTableComponents = ({data, columns, additionalColumns = [], showSettings = false}) => {
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
     const [showSettingsDiv, setShowSettingsDiv] = useState(false);
@@ -37,6 +38,7 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = []}) 
 
   return (
     <>
+        {showSettings &&
         <div style={{position: 'relative', textAlign: 'right'}}>
             <div style={{cursor: 'pointer'}} onClick={(e) => handleOpenSettings(e)}>Settings</div>
             {showSettingsDiv &&
@@ -58,16 +60,20 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = []}) 
                         }
                     })}
                 </div>}
-        </div>
+        </div>}
         <table className={tableStyles.table}>
             <thead>
             <tr className={tableStyles.headRow}>
                 {updatedColumnsData?.map((col, index) => {
                     if (selectedColumns.includes(col.label)) {
                         return (
-                            <th key={index} className={tableStyles.th}>
-                                {col.label}
-                            </th>
+                            <>
+                                <Tooltip placement="bottom" mouseEnterDelay={0.5} title={col.label}>
+                                    <th key={index} className={tableStyles.th}>
+                                        {col.label}
+                                    </th>
+                                </Tooltip>
+                            </>
                         );
                     }
                 })}
@@ -83,7 +89,7 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = []}) 
                                     <td key={col.key} className={tableStyles.td}
                                         style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
                                         onClick={() => col.clickHandler && col.clickHandler(row[col.key], row)}>
-                                        {col.render ? col.render(row[col.key], row) : row[col.key]}
+                                        {col.render ? col.render(row[col.key], row) : (row[col.key] ? row[col.key] : '-') }
                                     </td>
                                 );
                                 }
