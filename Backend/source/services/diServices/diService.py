@@ -496,7 +496,7 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id):
 def get_pflt_sec_mapping():
     engine = db.get_engine()
     with engine.connect() as connection:
-        pflt_sec_mapping_df = pd.DataFrame(connection.execute(text('select * from pflt_security_mapping order by id ASC')).fetchall())
+        pflt_sec_mapping_df = pd.DataFrame(connection.execute(text('select id, soi_name, master_comp_security_name, family_name, security_type, cashfile_security_name from pflt_security_mapping where company_id = 1 order by id ASC')).fetchall())
     
     pflt_sec_mapping_table = {
         "columns": [{"key": column, "label": column.replace("_", " ")} for column in pflt_sec_mapping_df.columns],
