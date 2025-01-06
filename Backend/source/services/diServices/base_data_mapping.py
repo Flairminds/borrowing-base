@@ -135,6 +135,8 @@ where usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AN
 	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon"
 order by usbh."Security/Facility Name"'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id':master_comp_file_details.id}).fetchall())
             df = cash_file
+            if df.empty:
+                raise Exception('Base data is empty')
             df["base_data_info_id"] = extracted_base_data_info.id
             df["company_id"] = master_comp_file_details.company_id
             df["report_date"] = master_comp_file_details.report_date
