@@ -46,6 +46,7 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
 
     useEffect(() => {
         blobFilesList();
+        selectedIds.current = []
     }, []);
 
     const handleCheckboxClick = (fileId) => {

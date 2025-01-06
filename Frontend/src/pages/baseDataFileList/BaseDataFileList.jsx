@@ -4,11 +4,12 @@ import { CustomButton } from '../../components/custombutton/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
-import styles from './BaseDataFileList.module.css';
 import { SourceFileModal } from '../sourceFileModal/SourceFileModal';
+import styles from './BaseDataFileList.module.css';
 
 export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
     const [baseDataFilesList, setBaseDataFilesList] = useState({});
+    const [extractionInProgress, setExtractionInProgress] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupContent, setPopupContent] = useState(null);
     const navigate = useNavigate();
@@ -21,15 +22,15 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
         navigate('/security-mapping');
     };
 
-    const handleBaseDataPreview = async (info_id) => {
+    const handleBaseDataPreview = async (infoId) => {
         try {
-            const previewDataResponse = await getBaseFilePreviewData(info_id);
-            let result = previewDataResponse.data?.result;
+            const previewDataResponse = await getBaseFilePreviewData(infoId);
+            const result = previewDataResponse.data?.result;
             if (result)
                 setBaseFilePreviewData({
                     baseData: result.base_data_table,
                     reportDate: result.report_date,
-                    baseDataMapping: result.base_data_mapping,
+                    baseDataMapping: result.base_data_mapping
                 });
             navigate('/base-data-preview');
         } catch (err) {
@@ -62,14 +63,14 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
                                         color: '#007BFF',
                                         cursor: 'pointer',
                                         textDecoration: 'underline',
-                                        marginBottom: '5px',
+                                        marginBottom: '5px'
                                     }}
                                 >
                                     {file.file_name}
                                 </div>
                             ))}
                         </div>
-                    ),
+                    )
                 };
             }
             return col;
@@ -96,7 +97,24 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
 
     useEffect(() => {
         getFilesList();
-    }, []);
+    }, [extractionInProgress]);
+
+    setInterval(() => {
+        if (extractionInProgress) {
+            setExtractionInProgress(false);
+        }
+    }, 15000);
+
+    useEffect(() => {
+        if (baseDataFilesList && baseDataFilesList.data) {
+            for (let i = 0; i < baseDataFilesList.data.length; i++) {
+                if (baseDataFilesList.data[i].extraction_status == 'in progress') {
+                    setExtractionInProgress(true);
+                    break;
+                }
+            }
+        }
+    }, [baseDataFilesList]);
 
     return (
         <div className={styles.pageContainer}>
