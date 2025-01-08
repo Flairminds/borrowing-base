@@ -4,7 +4,7 @@ import mmap
 from io import BytesIO
 import pandas as pd
 from datetime import datetime
-import azure.functions as func
+# import azure.functions as func
 from sqlalchemy import text
 import threading
 import numpy as np
