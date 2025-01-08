@@ -25,7 +25,7 @@
     background-color: #f2f2f2;
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 100;
     overflow: hidden;
     white-space: nowrap;
 }
@@ -53,7 +53,7 @@
     background-color: #f2f2f2;
     position: sticky;
     top: 0;
-    z-index: 50;
+    z-index: 100;
     overflow: hidden;
     white-space: nowrap;
 }
@@ -73,19 +73,25 @@
 .stickyColTd:first-child {
     position: sticky;
     left: 0;
-    z-index: 100;
+    z-index: 200;
 }
 
 .stickyColTh:nth-child(2),
 .stickyColTd:nth-child(2) {
     position: sticky;
     left: 150px;
-    z-index: 100;
+    z-index: 200;
 }
 
 .stickyColTh:nth-child(3),
 .stickyColTd:nth-child(3) {
     position: sticky;
     left: 300px;
-    z-index: 100;
+    z-index: 200;
+}
+
+.stickyColTh:first-child,
+.stickyColTh:nth-child(2),
+.stickyColTh:nth-child(3) {
+    z-index: 300;
 }

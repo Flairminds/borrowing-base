@@ -43,7 +43,7 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
         <div style={{position: 'relative', textAlign: 'right'}}>
             <div style={{cursor: 'pointer'}} onClick={(e) => handleOpenSettings(e)}><SettingOutlined style={{ fontSize: '20px', margin: '7px'}} /> </div>
             {showSettingsDiv &&
-                <div style={{position: 'absolute', display: 'flex', zIndex: '200', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
+                <div style={{position: 'absolute', display: 'flex', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
                     {breaks?.map((b, i) => {
                         if (i !== 0) {
                             return (
