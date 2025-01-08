@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlalchemy import text
-
+from models import db, PfltBaseData, PfltBaseDataMapping
 
 
 def rename_duplicate_columns(df):
@@ -45,23 +45,23 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
     try:
         with engine.connect() as connection:
             cash_file = pd.DataFrame(connection.execute(text('''select distinct
-	usbh."Issuer/Borrower Name" as "Obligor Name",
-	usbh."Security/Facility Name" as "Security",
-	ss."Security" as "Security Name",
-	null as "Purchase Date (Date Loan contributed to the facility)",
-	sum(ch."Par Amount (Deal Currency)"::float) as "Total Commitment (Issue Currency)",
-	sum(ch."Principal Balance (Deal Currency)"::float) as "Outstanding Principal Balance (Issue Currency)",
-	case when pbb."Defaulted Collateral Loan at Acquisition" = 0 then 'N' when pbb."Defaulted Collateral Loan at Acquisition" = 1 then 'Y' else null end as "Defaulted Collateral Loan / Material Mod (Y/N)",
-	case when pbb."Credit Improved Loan" = 0 then 'N' when pbb."Credit Improved Loan" = 1 then 'Y' else null end as "Credit Improved Loan (Y/N)",
-	usbh."Original Purchase Price" as "Purchase Price",
-	pbb."Stretch Senior (Y/N)" as "Stretch Senior Loan (Y/N)",
-	ch."Issue Name" as "Loan Type (Term / Delayed Draw / Revolver)",
-	ch."Deal Issue (Derived) Rating - Moody's" as "Current Moody's Rating",
-	ch."Deal Issue (Derived) Rating - S&P" as "Current S&P Rating",
-	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as "Initial Fixed Charge Coverage Ratio",
-	null as "Date of Default",
-	null as "Market Value",
-	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as "Current Fixed Charge Coverage Ratio",
+	usbh."Issuer/Borrower Name" as obligor_name,
+	usbh."Security/Facility Name" as security_name,
+	--ss."Security" as security_name,
+	null as purchase_date,
+	sum(ch."Par Amount (Deal Currency)"::float) as total_commitment,
+	sum(ch."Principal Balance (Deal Currency)"::float) as outstanding_principal,
+	case when pbb."Defaulted Collateral Loan at Acquisition" = 0 then 'N' when pbb."Defaulted Collateral Loan at Acquisition" = 1 then 'Y' else null end as defaulted_collateral_loan,
+	case when pbb."Credit Improved Loan" = 0 then 'N' when pbb."Credit Improved Loan" = 1 then 'Y' else null end as credit_improved_loan,
+	usbh."Original Purchase Price" as purchase_price,
+	pbb."Stretch Senior (Y/N)" as stretch_senior_loan,
+	ch."Issue Name" as loan_type,
+	ch."Deal Issue (Derived) Rating - Moody's" as current_moodys_rating,
+	ch."Deal Issue (Derived) Rating - S&P" as current_sp_rating,
+	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as initial_fixed_charge_coverage_ratio,
+	null as date_of_default,
+	null as market_value
+	/*bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as "Current Fixed Charge Coverage Ratio",
 	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA" as "Current Interest Coverage Ratio",
 	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization" as "Initial Debt to Capitalization Ratio",
 	bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA" as "Initial Senior Debt/EBITDA",
@@ -113,7 +113,7 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	pbb."Primarily Secured by Real Estate" as "Primarily Secured by Real Estate, Construction Loan or Project Finance Loan (Y/N)",
 	pbb."Interest Only Security" as "Interest Only Security (Y/N)",
 	pbb."Satisfies Other Criteria(1)" as "Satisfies all Other Eligibility Criteria (Y/N)",
-	null as "Excess Concentration Amount (HARD CODE on Last Day of Reinvestment Period)"
+	null as "Excess Concentration Amount (HARD CODE on Last Day of Reinvestment Period)"*/
 from pflt_us_bank_holdings usbh
 left join pflt_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
 	and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
@@ -141,7 +141,7 @@ order by usbh."Security/Facility Name"'''), {'cash_file_id': cash_file_details.i
             df["company_id"] = master_comp_file_details.company_id
             df["report_date"] = master_comp_file_details.report_date
             # df.to_csv('file1.csv')
-            df.to_sql("base_data", con=engine, if_exists='append', index=False, method='multi')
+            df.to_sql("pflt_base_data", con=engine, if_exists='append', index=False, method='multi')
         
 
     except Exception as e:

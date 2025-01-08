@@ -50,12 +50,12 @@ def get_base_data():
         service_response = diService.get_base_data(info_id)
         if not service_response["success"]:
             return HTTPResponse.error(message="Could not get base data")
-        base_data_map_res = diService.get_base_data_mapping(info_id)
+        # base_data_map_res = diService.get_base_data_mapping(info_id)
         result = {
             "base_data_table": service_response["data"]["base_data_table"],
             "report_date": service_response["data"]["report_date"],
             "fund_type": service_response["data"]["fund_type"],
-            "base_data_mapping": base_data_map_res["data"]
+            # "base_data_mapping": base_data_map_res["data"]
         }
         return HTTPResponse.success(message=service_response["message"], result=result)
     except Exception as e:

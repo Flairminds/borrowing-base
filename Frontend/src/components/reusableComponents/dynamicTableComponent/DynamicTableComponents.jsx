@@ -15,7 +15,7 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
         if (columns && columns?.length > 0) {
             const temp = [...columns, ...additionalColumns];
             setUpdatedColumnsData(temp);
-            const initalColumnsConsidered = [...columns.slice(0, 5), ...additionalColumns];
+            const initalColumnsConsidered = [...columns.slice(0, 10), ...additionalColumns];
             const intialColumns = initalColumnsConsidered.map((t) => t.label);
             setSelectedColumns(intialColumns);
             setBreaks([0, parseInt(columns.length / 3) + 1, (2 * parseInt(columns.length / 3)) + 1, columns.length]);
@@ -43,7 +43,7 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
         <div style={{position: 'relative', textAlign: 'right'}}>
             <div style={{cursor: 'pointer'}} onClick={(e) => handleOpenSettings(e)}><SettingOutlined style={{ fontSize: '20px', margin: '7px'}} /> </div>
             {showSettingsDiv &&
-                <div style={{position: 'absolute', display: 'flex', zIndex: '200', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '10px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
+                <div style={{position: 'absolute', display: 'flex', zIndex: '200', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
                     {breaks?.map((b, i) => {
                         if (i !== 0) {
                             return (
@@ -69,11 +69,9 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
                     if (selectedColumns.includes(col.label)) {
                         return (
                             <>
-                                <Tooltip placement="bottom" mouseEnterDelay={0.5} title={col.label}>
-                                    <th key={index} className={enableStickyColumns ? tableStyles.stickyColTh : tableStyles.th}>
-                                        {col.label}
-                                    </th>
-                                </Tooltip>
+                                <th key={index} className={enableStickyColumns ? tableStyles.stickyColTh : tableStyles.th} title={col.label}>
+                                    {col.label}
+                                </th>
                             </>
                         );
                     }
