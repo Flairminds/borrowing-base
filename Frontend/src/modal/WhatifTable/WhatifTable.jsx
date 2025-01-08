@@ -118,7 +118,7 @@ export const WhatifTable = ({simulationType,setSimulationType,data, columns, set
                           </span>
                         </Button>
                       ) : (
-                        <span>{row[col.key].replace("_", " ")}</span>
+                        <span>{row[col.key]?.replace("_", " ")}</span>
                       )}
                     </td>
                   ))}

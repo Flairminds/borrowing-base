@@ -1,0 +1,105 @@
+import { SettingOutlined } from '@ant-design/icons';
+import { Tooltip } from 'antd';
+import React, { useEffect, useState } from 'react';
+import tableStyles from './DynamicTableComponents.module.css';
+
+export const DynamicTableComponents = ({data, columns, additionalColumns = [], showSettings = false, enableStickyColumns = false}) => {
+
+    const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
+    const [showSettingsDiv, setShowSettingsDiv] = useState(false);
+    const [breaks, setBreaks] = useState([]);
+    const [selectedColumns, setSelectedColumns] = useState([]);
+    const [activeRowIndex, setActiveRowIndex] = useState(-1);
+
+    useEffect(() => {
+        if (columns && columns?.length > 0) {
+            const temp = [...columns, ...additionalColumns];
+            setUpdatedColumnsData(temp);
+            const initalColumnsConsidered = [...columns.slice(0, 10), ...additionalColumns];
+            const intialColumns = initalColumnsConsidered.map((t) => t.label);
+            setSelectedColumns(intialColumns);
+            setBreaks([0, parseInt(columns.length / 3) + 1, (2 * parseInt(columns.length / 3)) + 1, columns.length]);
+        }
+    }, [columns]);
+
+    const handleOpenSettings = (e) => {
+        e.preventDefault();
+        setShowSettingsDiv(!showSettingsDiv);
+    };
+
+    const handleCheckboxClick = (e, val) => {
+        const selectedColumnsArray = [...selectedColumns];
+        const index = selectedColumnsArray.indexOf(val);
+        if (index > -1) {
+            setSelectedColumns(selectedColumns?.filter((col) => col != val));
+        } else {
+            setSelectedColumns([...selectedColumns, val]);
+        }
+    };
+
+  return (
+    <>
+        {showSettings &&
+        <div style={{position: 'relative', textAlign: 'right'}}>
+            <div style={{cursor: 'pointer'}} onClick={(e) => handleOpenSettings(e)}><SettingOutlined style={{ fontSize: '20px', margin: '7px'}} /> </div>
+            {showSettingsDiv &&
+                <div style={{position: 'absolute', display: 'flex', zIndex: '200', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
+                    {breaks?.map((b, i) => {
+                        if (i !== 0) {
+                            return (
+                                <div className={tableStyles.columnSelectionContainer} key={i}>
+                                    {updatedColumnsData?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
+                                        return <>
+                                            <div key={index} className={tableStyles.columnContainer} style={{fontSize: 'small'}}>
+                                                <input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)}/>
+                                                <label htmlFor={col.key}>{col.label}</label>
+                                            </div>
+                                        </>;
+                                    }
+                                    )}
+                                </div>);
+                        }
+                    })}
+                </div>}
+        </div>}
+        <table className={tableStyles.table} style={{tableLayout: enableStickyColumns ? 'fixed' : 'auto'}}>
+            <thead>
+            <tr className={tableStyles.headRow}>
+                {updatedColumnsData?.map((col, index) => {
+                    if (selectedColumns.includes(col.label)) {
+                        return (
+                            <>
+                                <th key={index} className={enableStickyColumns ? tableStyles.stickyColTh : tableStyles.th} title={col.label}>
+                                    {col.label}
+                                </th>
+                            </>
+                        );
+                    }
+                })}
+            </tr>
+            </thead>
+            <tbody>
+                {data?.length > 0 ?
+                    data?.map((row, rowIndex) => (
+                        <tr key={rowIndex} onClick={() => setActiveRowIndex(rowIndex)}>
+                            {updatedColumnsData?.map((col) => {
+                                if (selectedColumns.includes(col.label)) {
+                                return (
+                                    <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : tableStyles.td}
+                                        style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
+                                        onClick={() => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
+                                        {col.render ? col.render(row[col.key], row) : (row[col.key] ? row[col.key] : '-') }
+                                    </td>
+                                );
+                                }
+                            })}
+                        </tr>
+                    ))
+                    : <tr>
+                        <td colSpan={updatedColumnsData?.length} className={tableStyles.td} style={{textAlign: 'center'}}>No data</td>
+                    </tr>}
+            </tbody>
+        </table>
+    </>
+  );
+};

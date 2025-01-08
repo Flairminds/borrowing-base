@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Route, Routes } from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -9,6 +9,10 @@ import { AssetSelectionPage } from './pages/assetSelection/AssetSelectionPage';
 import { ConcentrationTestMaster } from './pages/testMaster/ConcentrationTestMaster';
 import { landingPageData } from './services/api';
 import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
+import { DataIngestionPage } from './pages/dataIngestion/DataIngestionPage';
+import { BorrowingBasePreviewPage } from './pages/borrowingBasePreview/BorrowingBasePreviewPage';
+import { BaseDataFileList } from './pages/baseDataFileList/BaseDataFileList';
+import { SecurityMapping } from './pages/securityMapping/SecurityMapping';
 
 
 
@@ -26,6 +30,9 @@ export function App() {
   const [fundType, setFundType] = useState("");
   const [assetSelectionData, setAssetSelectionData] = useState([]);
   const [selectedAssets, setSelectedAssets] = useState(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
+  const [dataIngestionFileList, setDataIngestionFileList] = useState();
+  const [baseFilePreviewData, setBaseFilePreviewData] = useState([]);
+  const selectedIds = useRef([]);
 
   const getLandingPageData = async() => {
     try {
@@ -89,21 +96,58 @@ export function App() {
             path='/asset-selection'
             element={
               <AssetSelectionPage
-                baseFile={baseFile}
-                setBaseFile={setBaseFile}
-                setTablesData={setTablesData}
-                setAssetSelectionData={setAssetSelectionData}
-                assetSelectionData={assetSelectionData}
-                selectedAssets={selectedAssets}
-                setSelectedAssets={setSelectedAssets}
-                setIsAnalysisModalOpen={setIsAnalysisModalOpen}
-                setConstDate={setConstDate}
-                fundType={fundType}
+              baseFile={baseFile}
+              setBaseFile={setBaseFile}
+              setTablesData={setTablesData}
+              setAssetSelectionData={setAssetSelectionData}
+              assetSelectionData={assetSelectionData}
+              selectedAssets={selectedAssets}
+              setSelectedAssets={setSelectedAssets}
+              setIsAnalysisModalOpen={setIsAnalysisModalOpen}
+              setConstDate={setConstDate}
+              fundType={fundType}
+              />
+            }
+          />
+          <Route
+            path='/ingestion-files-list'
+            element={
+              <DataIngestionPage
+                dataIngestionFileList={dataIngestionFileList}
+                setDataIngestionFileList={setDataIngestionFileList}
+                baseFilePreviewData={baseFilePreviewData}
+                setBaseFilePreviewData= {setBaseFilePreviewData}
+                selectedIds={selectedIds}
+                // setSelectedIds={setSelectedIds}
               />
             }
           />
 
+          <Route
+            path='/base-data-list'
+            element={
+              <BaseDataFileList
+                setBaseFilePreviewData={setBaseFilePreviewData}
+             />
+            }
+          />
 
+          <Route
+            path='/base-data-preview'
+            element={
+              <BorrowingBasePreviewPage
+                baseFilePreviewData={baseFilePreviewData}
+                setBaseFilePreviewData={setBaseFilePreviewData}
+              />
+            }
+          />
+          <Route
+            path='/security-mapping'
+            element={
+              <SecurityMapping
+              />
+            }
+          />
 
         </Route>
       </Routes>

@@ -148,6 +148,9 @@ export const WhatIfAnalysis = (
       
     }
   
+    useEffect(()=>{
+    },[whatIfAnalysisType]);
+
     useEffect(() => {
       if(tableModal)
       {
@@ -518,6 +521,7 @@ export const WhatIfAnalysis = (
             setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
             setSaveBtn={setSaveBtn}
             fundType={fundType}
+            setWhatIfAnalysisType={setWhatIfAnalysisType}
           />
 
         <WhatIfAnalysisLib

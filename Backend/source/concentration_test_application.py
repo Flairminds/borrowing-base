@@ -467,9 +467,10 @@ class ConcentrationTestExecutor:
 
         actual = 0
         sum_of_BB = 0
+        bb_sum = test_required_col_df["Borrowing Base"].sum()
         for index, row in test_required_col_df.iterrows():
             if row["Tenor"] > 8:
-                actual = sum_of_BB + row["Borrowing Base"]
+                actual = sum_of_BB + row["Borrowing Base"] / bb_sum
         if actual < self.limit_percent:
             result = "Pass"
         else:

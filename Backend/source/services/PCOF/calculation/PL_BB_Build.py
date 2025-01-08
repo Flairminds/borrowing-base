@@ -1851,9 +1851,7 @@ def calculate_Eligible_Issuers(df_PL_BB_Build):
 
     l = len(df_PL_BB_Build[df_PL_BB_Build["Is Eligible Issuer"] == "Yes"])
 
-    df_PL_BB_Build[df_PL_BB_Build["Is Eligible Issuer"] == "Yes"][
-        "Eligible Issuers"
-    ] = 0  # Initialize the new column with zeros
+    df_PL_BB_Build["Eligible Issuers"] = 0  # Initialize the new column with zeros
 
     df_PL_BB_Build.loc[0, "Eligible Issuers"] = 1  # Set the value of the first row to 1
 
@@ -1864,10 +1862,10 @@ def calculate_Eligible_Issuers(df_PL_BB_Build):
             or (df_PL_BB_Build.at[i, "Issuer"] == 0)
         )
 
-        df_PL_BB_Build.at[i, "Eligible Issuers"] = (
-            df_PL_BB_Build.at[i - 1, "Eligible Issuers"]
-            if condition
-            else df_PL_BB_Build.at[i - 1, "Eligible Issuers"] + 1
-        )
+        if condition:
+            df_PL_BB_Build.at[i, "Eligible Issuers"] = df_PL_BB_Build.at[i - 1, "Eligible Issuers"]
+        else:
+            df_PL_BB_Build.at[i, "Eligible Issuers"] = df_PL_BB_Build.at[i - 1, "Eligible Issuers"] + 1
+
 
     return df_PL_BB_Build

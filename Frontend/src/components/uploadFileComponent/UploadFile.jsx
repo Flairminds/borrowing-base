@@ -1,19 +1,20 @@
-import { Modal, Button, Select, Popover} from 'antd';
+import { Modal, Button, Select, Popover } from 'antd';
 import { useEffect } from 'preact/hooks';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate } from 'react-router';
-import {toast} from 'react-toastify';
+import { toast } from 'react-toastify';
 import search from "../../assets/NavbarIcons/SearchIcon.svg";
 import cross from "../../assets/Portflio/cross.svg";
 import fileImg from "../../assets/Portflio/file.svg";
-import SampleFile from '../../assets/template File/10.31.2023_PCOF_IV_Borrowing_Base_Basedata 5.xlsx';
+import PCOFSampleFile from '../../assets/template File/10.31.2023_PCOF_IV_Borrowing_Base_Basedata 5.xlsx';
+import PFLTSampleFile from '../../assets/template File/PFLT 09.30.24 Borrowing Base Data.xlsx';
 import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
 import { ErrorMessage } from '../../modal/errorMessageModal/ErrorMessage';
 import { OverWriteDataModal } from '../../modal/overWriteDataModal/OverWriteDataModal';
-import {uploadedFileList, validateInitialFile, assetSelectionList } from '../../services/api';
+import { uploadedFileList, validateInitialFile, assetSelectionList } from '../../services/api';
 import { fundOptionsArray } from '../../utils/constants/constants';
-import {getFileListColumns} from "../../utils/get_fileList";
+import { getFileListColumns } from "../../utils/get_fileList";
 import { fundOptionValueToFundName } from '../../utils/helperFunctions/borrowing_base_functions';
 import { Calender } from '../calender/Calender';
 import { ProgressBar } from '../progressBar/ProgressBar';
@@ -63,21 +64,21 @@ export const UploadFile = ({
 
   const fetchFiles = async () => {
     try {
-        const response = await uploadedFileList();
-        setFetchFileList(response.data.files_list);
-        setDisplayFetchData(response.data.files_list);
+      const response = await uploadedFileList();
+      setFetchFileList(response.data.files_list);
+      setDisplayFetchData(response.data.files_list);
     } catch (error) {
-        console.error('Error fetching file list:', error);
+      console.error('Error fetching file list:', error);
     }
   };
 
-useEffect(() => {
-  if (isAnalysisModalOpen) {
-    fetchFiles();
-  }
-}, [isAnalysisModalOpen]);
+  useEffect(() => {
+    if (isAnalysisModalOpen) {
+      fetchFiles();
+    }
+  }, [isAnalysisModalOpen]);
 
-  const handleoverWriteFIle = async() => {
+  const handleoverWriteFIle = async () => {
     setDuplicateFileModalOpen(false);
     try {
       if (selectedFiles.length > 0) {
@@ -98,7 +99,7 @@ useEffect(() => {
           } catch (err) {
             console.error(err);
           }
-          setBaseFile({id: validateResponse.data.result.id, name: selectedFiles[0].name});
+          setBaseFile({ id: validateResponse.data.result.id, name: selectedFiles[0].name });
           setLoading(false);
         }
       }
@@ -123,49 +124,48 @@ useEffect(() => {
     setSelectedFiles([]);
   };
 
-// Function not currently in use
-//   const CalculateResultsPFLT = async (validateResponse) => {
-//     setLoading(true);
-//     setIsAnalysisModalOpen(false);
-//     let selectedAssetsList = [];
-//     // for (let i = 0; i < assetSelectionData.assetSelectionList?.data.length; i++) {
-//     //     if (selectedAssets[i]) {
-//     //         selectedAssetsList.push(assetSelectionData.assetSelectionList?.data[i].Investment_Name);
-//     //     }
-//     // }
+  // Function not currently in use
+  //   const CalculateResultsPFLT = async (validateResponse) => {
+  //     setLoading(true);
+  //     setIsAnalysisModalOpen(false);
+  //     let selectedAssetsList = [];
+  //     // for (let i = 0; i < assetSelectionData.assetSelectionList?.data.length; i++) {
+  //     //     if (selectedAssets[i]) {
+  //     //         selectedAssetsList.push(assetSelectionData.assetSelectionList?.data[i].Investment_Name);
+  //     //     }
+  //     // }
 
-//     try {
-//         const file_data = {
-//             'base_data_file': validateResponse.file_name,
-//             'base_data_file_id': validateResponse.data.id,
-//             'user_id': 1,
-//             'selected_assets': [],
-//         };
-//         const table_data_response = await uploadInitialFile(file_data);
-//         if (table_data_response.status === 200) {
-//             setTablesData(table_data_response?.data);
-//             setConstDate(table_data_response.data.closing_date);
-//             toast.success("Results Generated");
-//         }
-//     } catch (err) {
-//         setLoading(false);
-//         console.error(err);
-//     }
-//     setLoading(false);
-// };
+  //     try {
+  //         const file_data = {
+  //             'base_data_file': validateResponse.file_name,
+  //             'base_data_file_id': validateResponse.data.id,
+  //             'user_id': 1,
+  //             'selected_assets': [],
+  //         };
+  //         const table_data_response = await uploadInitialFile(file_data);
+  //         if (table_data_response.status === 200) {
+  //             setTablesData(table_data_response?.data);
+  //             setConstDate(table_data_response.data.closing_date);
+  //             toast.success("Results Generated");
+  //         }
+  //     } catch (err) {
+  //         setLoading(false);
+  //         console.error(err);
+  //     }
+  //     setLoading(false);
+  // };
 
 
   const handleFileUpload = async () => {
     // setLoading(true);
 
     if (!date) {
-        // toast.error('Select Report date');
-        showToast('error', "Select Report date")
-        return;
+      // toast.error('Select Report date');
+      showToast('error', "Select Report date")
+      return;
     }
 
-    if(!selectedOption)
-    {
+    if (!selectedOption) {
       showToast('error', "Select Fund")
       return;
     }
@@ -204,7 +204,7 @@ useEffect(() => {
             console.error(err);
           }
 
-          setBaseFile({id: validateResponse.data.result.id, name: selectedFiles[0].name});
+          setBaseFile({ id: validateResponse.data.result.id, name: selectedFiles[0].name });
 
         }
         setIsLoaderVisible(false);
@@ -213,21 +213,21 @@ useEffect(() => {
       console.error(err);
 
       if (err.response.status == 409) {
-          if (err.response.data.message == "This file already exists in the system. Do you want to replace it? You might lose what if analysis data.") {
-            // setIsLoaderVisible(false)
-            setDuplicateFileModalOpen(true);
-            return;
-          }
-        } else {
-          setSelectedFiles([]);
-          setErrorMessageData(err.response.data.error_message);
-          setErrorMessageModal(true);
+        if (err.response.data.message == "This file already exists in the system. Do you want to replace it? You might lose what if analysis data.") {
+          // setIsLoaderVisible(false)
+          setDuplicateFileModalOpen(true);
+          return;
         }
-
+      } else {
+        setSelectedFiles([]);
+        setErrorMessageData(err.response.data.error_message);
+        setErrorMessageModal(true);
       }
-      setLoading(false);
-      // setIsModalVisible(false);
-      // setIsAnalysisModalOpen(false)
+
+    }
+    setLoading(false);
+    // setIsModalVisible(false);
+    // setIsAnalysisModalOpen(false)
   };
 
 
@@ -260,18 +260,18 @@ useEffect(() => {
       const res = await assetSelectionList(fileId);
       if (res.status === 200) {
 
-          setAssetSelectionData({
-            'base_data_file': fileName,
-            'base_data_file_id': fileId,
-            'user_id': userId,
-            'assetSelectionList': res.data
-          });
-          setFundType(fund);
-          getTrendGraphData(fund);
-          navigate('asset-selection');
-          setBaseFile({name: fileName, id: fileId});
-          setReportDate(reportDate);
-          toast.success("File Loaded");
+        setAssetSelectionData({
+          'base_data_file': fileName,
+          'base_data_file_id': fileId,
+          'user_id': userId,
+          'assetSelectionList': res.data
+        });
+        setFundType(fund);
+        // getTrendGraphData(fund);
+        navigate('asset-selection');
+        setBaseFile({ name: fileName, id: fileId });
+        setReportDate(reportDate);
+        toast.success("File Loaded");
       }
     } catch (err) {
       console.error(err);
@@ -290,7 +290,7 @@ useEffect(() => {
   //   }
   // };
 
-   const handleSearch = (e) => {
+  const handleSearch = (e) => {
     setSearchTerm(e.target.value);
     const filteredData = fetchFileList.filter(file =>
       file.file_name.toLowerCase().includes(e.target.value.toLowerCase())
@@ -300,7 +300,7 @@ useEffect(() => {
   return (
     <div className={stylesUload.main}>
       {isLoaderVisible ?
-          <ProgressBar progressBarPercent={progressBarPercent} setProgressBarPercent={setProgressBarPercent} />
+        <ProgressBar progressBarPercent={progressBarPercent} setProgressBarPercent={setProgressBarPercent} />
         :
         <div className={stylesUload.modalDiv} >
           <Modal
@@ -329,8 +329,8 @@ useEffect(() => {
                 {/* <div className={stylesUload.uploadHeadingDiv} >
                   <p className={stylesUload.uploadHeading} >Upload File</p>
                 </div> */}
-                <div style={{display: 'flex', flexDirection: 'row', alignItems: 'baseline'}}>
-                  <div style={{padding: '0 5px 0 0'}}>
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+                  <div style={{ padding: '0 5px 0 0' }}>
                     <Calender
                       setReportDate={setReportDate}
                       setDate={setDate}
@@ -339,26 +339,35 @@ useEffect(() => {
                       availableClosingDates={availableClosingDates}
                     />
                   </div>
-                  <div style={{padding: '0 5px 0 0'}}>
-                <Select
-                  defaultValue="Select Fund"
-                  style={{ width: 140, borderRadius: '8px', margin: "0.5rem 0rem" }}
-                  // onChange={handleDropdownChange}
-                  value={selectedOption}
-                  onSelect={(value) => {
-                      setFundType(fundOptionValueToFundName(value)),
-                      setSelectedOption(value);
-                    }
-                  }
-                  options={fundOptionsArray}
-                  />
+                  <div style={{ padding: '0 5px 0 0' }}>
+                    <Select
+                      defaultValue="Select Fund"
+                      style={{ width: 140, borderRadius: '8px', margin: "0.5rem 0rem" }}
+                      // onChange={handleDropdownChange}
+                      value={selectedOption}
+                      onSelect={(value) => {
+                        setFundType(fundOptionValueToFundName(value)),
+                          setSelectedOption(value);
+                      }
+                      }
+                      options={fundOptionsArray}
+                    />
                   </div>
-                  <div style={{marginLeft: 'auto', order: '2'}}>
-              <Popover placement="bottomRight" open={guidePopupOpen} content={<>Refer to sample template file</>} >
-                  <a href={SampleFile} rel="noreferrer" download={'BaseFile_template.xlsx'}>Download sample file template</a>
-              </Popover>
-              </div>
+                  <div style={{ marginLeft: 'auto', order: '2' }}>
+                    {selectedOption != 0 && (
+                      <Popover placement="bottomRight" open={guidePopupOpen} content={<>Refer to sample template file</>}>
+                        <a
+                          href={fundType === "PCOF" ? PCOFSampleFile : PFLTSampleFile}
+                          rel="noreferrer"
+                          download={fundType === "PCOF" ? 'PCOFBaseFile_template.xlsx' : 'PFLTBaseFile_template.xlsx'}
+                        >
+                          Download sample file template
+                        </a>
+                      </Popover>
+                    )}
                   </div>
+
+                </div>
                 <div>
                   <div className={stylesUload.visible}>
                     <div {...getRootProps({ className: 'dropzone' })}>
@@ -408,7 +417,7 @@ useEffect(() => {
                 </div>
                 <div className={stylesUload.inputSearch}>
                   <img src={search}></img>
-                  <input type="text" placeholder="Search by file name" value={searchTerm} onChange={handleSearch} className={stylesUload.searchinputTag}/>
+                  <input type="text" placeholder="Search by file name" value={searchTerm} onChange={handleSearch} className={stylesUload.searchinputTag} />
                 </div>
                 {searchTerm === '' || displayFetchData.length > 0 ? (
                   <div className={stylesUload.tableContainer}>
@@ -441,10 +450,10 @@ useEffect(() => {
                   <div>No data available</div>
                 )}
               </div>
-                          </div>
-                        </Modal>
-                      </div>
-                    }
+            </div>
+          </Modal>
+        </div>
+      }
       <OverWriteDataModal
         duplicateFileModalOpen={duplicateFileModalOpen}
         handleoverWriteFIle={handleoverWriteFIle}

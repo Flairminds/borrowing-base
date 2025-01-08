@@ -1,0 +1,56 @@
+.outlinedBtn {
+    color: #2A2E34 !important;
+    border: none !important;
+    background-color: white !important;
+    border-radius: 20px !important;
+    margin: 0.2rem 0.5rem;
+}
+
+.modalContent {
+    display: flex;
+    flex-direction: column;
+}
+
+.sheetSelector {
+    padding: 5px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    /* border-bottom: 1px solid #e0e0e0; */
+}
+
+.tableContainer {
+    /* border: 1px solid #DCDEDE; */
+    border-radius: 8px;
+    max-height: 75vh;
+    overflow-x: auto;
+    overflow-y: auto; 
+}
+
+/* .tableContainer table {
+    border-collapse: collapse;
+    width: 100%;
+} */
+
+/* .tableContainer th, 
+.tableContainer td {
+    padding: 8px 16px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    background: #fff;
+}
+
+.tableContainer th:first-child,
+.tableContainer td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 10;  
+}
+
+.tableContainer th {
+    position: sticky; 
+    top: 0;
+    z-index: 5;
+    background-color: #f5f5f5; 
+} */
+

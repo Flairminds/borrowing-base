@@ -7,19 +7,21 @@ export const CustomButton = ({
   isFilled = false,
   text = 'Button',
   onClick = () => {},
-  type = 'text',
+  type = 'button',
   loading = false,
   loadingText = 'Loading...',
-  customStyle = {}
+  customStyle = {},
+  btnDisabled = false
 }) => {
   return (
 
     <Button
       onClick={onClick}
-      className={`${isFilled ? `${ButtonStyle.filledBtn}` : `${ButtonStyle.outlinedBtn}`}`}
+      className={`${btnDisabled ? `${ButtonStyle.DisabledBtn}` : isFilled ? `${ButtonStyle.filledBtn}` : `${ButtonStyle.outlinedBtn}`}`}
       style={customStyle}
       htmlType={type}
       loading={loading}
+      disabled={btnDisabled}
     >
       {loading ? loadingText : text}
     </Button >

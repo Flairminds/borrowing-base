@@ -13,31 +13,10 @@ from source.services.PCOF.WIA.util import PCOF_WIA
 from source.services.PFLT.WIA.util import PFLT_WIA
 import app
 from source.services.commons import commonServices
+from source.services.sheetUniques import sheet_uniques
 
 PCOF_FUND_WIA = PCOF_WIA()
 PFLT_FUND_WIA = PFLT_WIA()
-
-sheet_uniques = {
-    "Loan List": "Security Name",
-    "Inputs": "INPUTS",
-    "Cash Balance Projections": "Currency",
-    "Credit Balance Projection": "Currency",
-
-    "PL BB Build": "Investment Name",
-    "Other Metrics": "Other Metrics",
-    "Availability Borrower": "A",
-    "PL BB Results": "Concentration Tests",
-    "Subscription BB": "Investor",
-    "PL_BB_Results_Security": "Security",
-    "Inputs Industries": "Industries",
-    "Pricing": "Pricing",
-    "Portfolio LeverageBorrowingBase": "Investment Type",
-    "Obligors' Net Capital": "Obligors' Net Capital",
-    "Advance Rates": "Investor Type",
-    "Concentration Limits": "Investors",
-    "Principle Obligations": "Principal Obligations",
-
-}
 
 def get_asset_overview(excelfile):
     wia_ref_sheets_dict = pd.read_excel(excelfile, sheet_name=None)
@@ -162,6 +141,7 @@ def wia_library(user_id):
             "note": what_if_entry.note if what_if_entry.note else "",
             "what_if_analysis_id": what_if_entry.id,
             "simulation_type": what_if_entry.simulation_type,
+            "fund_type": base_data_file.fund_type,
             "last_updated": (
                 what_if_entry.updated_at.strftime("%m/%d/%Y")
                 if what_if_entry.updated_at
@@ -270,7 +250,7 @@ def update_add_df(data):
 
     updated_assets = changes.get("updated_assets")
     if updated_assets:
-        response_data = update_df(df, changes, sheet_name)
+        response_data = update_df(initial_df, df, changes, sheet_name)
         df = response_data["data"]
     return df, initial_df
 
@@ -491,7 +471,7 @@ def get_file_data(data):
         return ServiceResponse.error(message = "Internal Server Error")
     
 
-def update_df(sheet_df, changes, sheet_name):
+def update_df(initial_df, sheet_df, changes, sheet_name):
     values_to_update = changes["updated_assets"]
 
     try:
@@ -504,9 +484,10 @@ def update_df(sheet_df, changes, sheet_name):
                 row_index = commonServices.get_row_index(sheet_df, row_name, sheet_uniques_name)
                 if row_index != -1:
                     updated_value = value_to_update["updated_value"]
-                    updated_value = commonServices.get_updated_value(updated_value)
+                    prev_value = value_to_update["prev_value"]
+                    updated_value = commonServices.get_updated_value(prev_value, updated_value)
 
-                    col_type = sheet_df[col_name].dtype
+                    col_type = initial_df[col_name].dtype
 
                     updated_value = commonServices.get_raw_value(updated_value, col_type)
                     # print(col_type, col_name, updated_value)

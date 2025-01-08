@@ -1,0 +1,2 @@
+INSERT INTO public.column_metadata_master (fund_id,sheet_id,company_id,column_name,column_lookup,column_aliases,description,calculation_formula,data_type,unit,"sequence",is_raw_data_input,is_base_data_input,is_output,is_intermediate,is_index_column,is_mandatory,is_required,created_by,created_at) VALUES
+	 (1,(select smm_id from sheet_metadata_master where lookup='pl_bb_build'),1,'Investment Cost','investment_cost',NULL,'This is the first column',NULL,'float','currency',1,false,true,false,false,false,true,false,1,now());

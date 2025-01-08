@@ -1,5 +1,7 @@
 from models import ModifiedBaseDataFile, WhatIfAnalysis, db
 from source.utility.ServiceResponse import ServiceResponse
+from source.services.sheetUniques import sheet_uniques
+
 import pickle
 import numpy as np
 import pandas as pd
@@ -152,11 +154,11 @@ class AssetProcessor:
         new_data = []
         for idx, row in self.modified_df.iterrows():
             row_data = {}
-            unique_id = row[self.modified_df.columns[0]]
-            if unique_id not in self.initial_df[self.initial_df.columns[0]].tolist():
+            unique_id = row[sheet_uniques[sheet_name]]
+            if unique_id not in self.initial_df[sheet_uniques[sheet_name]].tolist():
                 for col, current_value in row.items():
                     key = col.replace(" ", "_")
-                    if col == self.modified_df.columns[0]:
+                    if col == sheet_uniques[sheet_name]:
                         self.data[sheet_name]["new_data"].append(current_value)
 
                     row_data[key] = {
@@ -171,7 +173,7 @@ class AssetProcessor:
                     key = col.replace(" ", "_")
                     # previous_value = self.initial_df[col].values[0]
                     previous_value = self.initial_df[
-                        self.initial_df[self.initial_df.columns[0]] == unique_id
+                        self.initial_df[sheet_uniques[sheet_name]] == unique_id
                     ][col].values[0]
 
                     # Format the values accordingly as per the data type of the column

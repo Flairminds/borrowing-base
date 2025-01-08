@@ -13,11 +13,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@reduxjs/toolkit": "^2.5.0",
     "antd": "^5.17.0",
     "axios": "^1.6.8",
     "html-react-parser": "^5.1.10",
     "preact": "^10.19.6",
     "react-dropzone": "^14.2.3",
+    "react-redux": "^9.2.0",
     "react-router": "^6.22.3",
     "react-router-dom": "^6.22.3",
     "react-toastify": "^10.0.5",
@@ -29,8 +31,8 @@
     ]
   },
   "devDependencies": {
-    "@preact/preset-vite": "^2.8.2",
     "@eslint/js": "^9.11.1",
+    "@preact/preset-vite": "^2.8.2",
     "@stylistic/eslint-plugin-js": "^2.8.0",
     "@types/react": "^18.3.8",
     "@types/react-dom": "^18.3.0",
