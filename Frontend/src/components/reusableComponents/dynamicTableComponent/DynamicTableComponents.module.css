@@ -1,3 +1,11 @@
+.columnContainer {
+    margin: 10px;
+}
+
+.checkbox {
+    margin: 5px 5px 0px 5px;
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;
