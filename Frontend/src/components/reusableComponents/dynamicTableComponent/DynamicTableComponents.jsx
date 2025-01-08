@@ -1,3 +1,4 @@
+import { SettingOutlined } from '@ant-design/icons';
 import { Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import tableStyles from './DynamicTableComponents.module.css';
@@ -14,8 +15,10 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
         if (columns && columns?.length > 0) {
             let temp = [...columns, ...additionalColumns]
             setUpdatedColumnsData(temp);
-            setSelectedColumns(temp.map((t) => t.label))
-            setBreaks([0, parseInt(columns.length / 3) + 1, (2 * parseInt(columns.length / 3)) + 1, columns.length])
+            const initalColumnsConsidered = [...columns.slice(0, 5), ...additionalColumns];
+            const intialColumns = initalColumnsConsidered.map((t) => t.label);
+            setSelectedColumns(intialColumns);
+            setBreaks([0, parseInt(columns.length / 3) + 1, (2 * parseInt(columns.length / 3)) + 1, columns.length]);
         }
     }, [columns]);
 
@@ -25,32 +28,30 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
     };
 
     const handleCheckboxClick = (e, val) => {
-        e.preventDefault();
-        const temp = [...selectedColumns];
-        const index = temp.indexOf(val);
+        const selectedColumnsArray = [...selectedColumns];
+        const index = selectedColumnsArray.indexOf(val);
         if (index > -1) {
-            temp.splice(index, 1);
+            setSelectedColumns(selectedColumns?.filter((col) => col != val));
         } else {
-            temp.push(val);
+            setSelectedColumns([...selectedColumns, val]);
         }
-        setSelectedColumns(temp);
     };
 
   return (
     <>
         {showSettings &&
         <div style={{position: 'relative', textAlign: 'right'}}>
-            <div style={{cursor: 'pointer'}} onClick={(e) => handleOpenSettings(e)}>Settings</div>
+            <div style={{cursor: 'pointer'}} onClick={(e) => handleOpenSettings(e)}><SettingOutlined style={{ fontSize: '20px', margin: '7px'}} /> </div>
             {showSettingsDiv &&
                 <div style={{position: 'absolute', display: 'flex', zIndex: '200', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '10px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
                     {breaks?.map((b, i) => {
                         if (i !== 0) {
                             return (
-                                <div key={i}>
+                                <div className={tableStyles.columnSelectionContainer} key={i}>
                                     {updatedColumnsData?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
                                         return <>
-                                            <div key={index} style={{fontSize: 'small'}}>
-                                                <input type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)}/>
+                                            <div key={index} className={tableStyles.columnContainer} style={{fontSize: 'small'}}>
+                                                <input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)}/>
                                                 <label htmlFor={col.key}>{col.label}</label>
                                             </div>
                                         </>;
