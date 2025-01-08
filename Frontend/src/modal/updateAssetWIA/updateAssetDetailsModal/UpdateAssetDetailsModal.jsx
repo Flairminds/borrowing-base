@@ -158,13 +158,24 @@ export const UpdateAssetDetailsModal = ({
         let totalChangesOnSheet = {
             updated_assets:{}
         };
+
         if (updateAssetTableData?.changes) {
            totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes , ...appliedChanges];
         } else {
             totalChangesOnSheet.updated_assets = [...appliedChanges];
         }
+
+        if (addedDeletedAssets.addedAssets.length > 0) {
+            totalChangesOnSheet.rows_to_add = addedDeletedAssets.addedAssets;
+        }
+
+        if (addedDeletedAssets?.deletedAssets?.length > 0) {
+            totalChangesOnSheet.rows_to_delete = addedDeletedAssets?.deletedAssets;
+        }
+
+        console.info(totalChangesOnSheet, 'test-81--');
         try {
-            if (totalChangesOnSheet.updated_assets.length > 0) {
+            if (appliedChanges.length > 0 || addedDeletedAssets?.addedAssets?.length > 0 || addedDeletedAssets?.deletedAssets?.length > 0) {
                 const res = await updateSheetValues(baseFile.id, selectedSheetNumber, totalChangesOnSheet, whatIfAnalysisId);
                 setWhatIfAnalysisId(res.data.result.modified_base_data_file_id);
                 currentAnalysisId = res.data.result.modified_base_data_file_id;
