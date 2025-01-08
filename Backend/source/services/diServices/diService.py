@@ -300,83 +300,53 @@ def extract_base_data(file_ids):
             "For Dropdown": (0, 6, 7)
         }
 
-    sheet_column_mapper = {
-        "Borrower Stats (Quarterly)": borrower_stats_column_level_map,
-        "Securities Stats": security_stats,
-        "US Bank Holdings": {},
-        "Client Holdings": {},
-        "SOI Mapping": SOI_Mapping,
-        "PFLT Borrowing Base": {}
-    }
-    #--------------------------------
-
-    # if not cash_file_id or not master_comp_file_id:
-    #     return ServiceResponse.error(message="Cash file and master company file ids are required.", status_code=400)
-    
-    FOLDER_PATH = "Penennt/PFLT/"
-    
-    blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
-
-    for source_file_id in files_list:
-        source_file = SourceFiles.query.filter_by(id=source_file_id).first()
-        if 'cash' in source_file.file_name.lower():
-            cash_file_details = source_file
-        elif 'master' in source_file.file_name.lower():
-            master_comp_file_details = source_file
-
-    if cash_file_details == None or master_comp_file_details == None:
-        return ServiceResponse.error(message="Please select cash file and master comp file")
-
-    if master_comp_file_details.is_extracted and cash_file_details.is_extracted:
-        return ServiceResponse.error(message="Data already extracted for the given files.")
-
-    cash_file_name = cash_file_details.file_name + cash_file_details.extension
-    master_comp_file_name = master_comp_file_details.file_name + master_comp_file_details.extension
-
-    cash_file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + cash_file_name).download_blob().readall())
-    
-    master_comp_file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + master_comp_file_name).download_blob().readall())
-
-    file_sheet_map = {
-        "cash": {
-            "file": cash_file,
-            "source_file_obj": cash_file_details,
-            "sheets": ["US Bank Holdings", "Client Holdings"], 
-            "is_extracted": cash_file_details.is_extracted
-        }, 
-        "master_comp": {
-            "file": master_comp_file,
-            "source_file_obj": master_comp_file_details,
-            "sheets": ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"],
-            "is_extracted": master_comp_file_details.is_extracted
+        sheet_column_mapper = {
+            "Borrower Stats": borrower_stats_column_level_map,
+            "Securities Stats": security_stats,
+            "US Bank Holdings": {},
+            "Client Holdings": {},
+            "SOI Mapping": SOI_Mapping,
+            "PFLT Borrowing Base": {}
         }
-    }
-    args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name"]
+        #--------------------------------
+        if len(file_ids) == 0:
+            return ServiceResponse.error(message='No files selected.')
+        ini_file = SourceFiles.query.filter_by(id = file_ids[0]).first()
+        report_date = ini_file.report_date
+        company_id = ini_file.company_id
+        extracted_base_data_info = ExtractedBaseDataInfo(report_date=report_date, fund_type="PFLT", status="in progress", company_id = 1, files = file_ids)
+        db.session.add(extracted_base_data_info)
+        db.session.commit()
+        db.session.refresh(extracted_base_data_info)
+        base_data_info_id = extracted_base_data_info.id
+
+        threading.Thread(target=extract_and_store, kwargs={
+            'file_ids': file_ids,
+            'sheet_column_mapper': sheet_column_mapper,
+            'extracted_base_data_info': extracted_base_data_info}
+        ).start()
+
+        # extract_and_store(file_ids = file_ids, sheet_column_mapper = sheet_column_mapper, extracted_base_data_info = extracted_base_data_info)
+
+        response_data = {
+            "id": extracted_base_data_info.id,
+            "report_date": report_date.strftime("%Y-%m-%d"),
+            "company_id": company_id
+        }
+        # put this following code in above function
+        return ServiceResponse.success(message="Base Data extraction might take few minutes", data=response_data)
+    except Exception as e:
+        Log.func_error(e)
+        if base_data_info_id:
+            extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(id = base_data_info_id).first()
+            extracted_base_data_info.status = 'failed'
+            extracted_base_data_info.comments = str(e)
+            db.session.add(extracted_base_data_info)
+            db.session.commit()
+        return ServiceResponse.error(message='Extraction failed')
 
 
-    extracted_base_data_status = ExtractedBaseDataStatus(report_date=master_comp_file_details.report_date, fund_type="PFLT", status="In Progress")
-    db.session.add(extracted_base_data_status)
-    db.session.commit()
-    db.session.refresh(extracted_base_data_status)
-
-    response_data = {
-        "id": extracted_base_data_status.id,
-        "report_date": master_comp_file_details.report_date.strftime("%Y-%m-%d"),
-        "company_id": master_comp_file_details.company_id
-    }
-    threading.Thread(target=extract_and_store, kwargs={
-        'master_comp_file_details': master_comp_file_details, 
-        'cash_file_details': cash_file_details,
-        'file_sheet_map': file_sheet_map,
-        'sheet_column_mapper': sheet_column_mapper,
-        'args': args,
-        'extracted_base_data_status': extracted_base_data_status}
-    ).start()
-    # put this following code in above function
-    return ServiceResponse.success(message="Base Data extraction might take few minutes", data=response_data)
-
-
-def get_base_data(report_date, company_id):
+def get_base_data(info_id):
     # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
     engine = db.get_engine()
     with engine.connect() as connection:
