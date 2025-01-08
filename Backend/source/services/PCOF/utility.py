@@ -4,7 +4,9 @@ import json
 def get_included_excluded_assets_map_json(df_PL_BB_Build):
     eligible_assets_mask = df_PL_BB_Build["Is Eligible Issuer"] == "Yes"
     all_assets_list = df_PL_BB_Build[eligible_assets_mask]["Investment Name"].tolist()
-
+    if "Cash" not in all_assets_list:
+        all_assets_list.append("Cash")
+        
     selected_assets = all_assets_list.copy()
     excluded_assets = all_assets_list.copy()
 
