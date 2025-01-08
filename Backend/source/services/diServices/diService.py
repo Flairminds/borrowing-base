@@ -360,7 +360,6 @@ def get_base_data(info_id):
         del t['_sa_instance_state']
         for key in t:
             val = t[key]
-            print(val, key)
             if isinstance(val, (int, float, complex)) and not isinstance(val, bool):
                 val = numerize.numerize(val, 2)
                 t[key] = val
