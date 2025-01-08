@@ -1,0 +1,91 @@
+.columnContainer {
+    margin: 1px;
+    overflow: hidden;
+}
+
+.checkbox {
+    margin: 0 1px;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: small;
+}
+
+.th{
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 600;
+    min-width: 4rem;
+    max-width: 200px;
+    align-items: center;
+    justify-content: center;
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    overflow: hidden;
+    white-space: nowrap;
+}
+  
+.td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    min-width: 4rem;
+    max-width: 200px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.stickyColTh{
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    font-weight: 600;
+    width: 150px;
+    align-items: center;
+    justify-content: center;
+    background-color: #f2f2f2;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.stickyColTd {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    width: 150px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.stickyColTh:first-child,
+.stickyColTd:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 100;
+}
+
+.stickyColTh:nth-child(2),
+.stickyColTd:nth-child(2) {
+    position: sticky;
+    left: 150px;
+    z-index: 100;
+}
+
+.stickyColTh:nth-child(3),
+.stickyColTd:nth-child(3) {
+    position: sticky;
+    left: 300px;
+    z-index: 100;
+}
