@@ -36,15 +36,25 @@ def process_and_store_data(data_dict, file_id, fund_name, engine):
         # if duplicates:
         #     print(f"Duplicate columns in sheet {sheet_name}: {duplicates}")
         
-        # Truncate and rename columns
-        df = truncate_and_rename_columns(df)
-        table_name = fund_name.lower() + '_' + sheet_name.lower().replace(" ", "_")
-        # Store in the database
         try:
+            # Truncate and rename columns
+            df = truncate_and_rename_columns(df)
+            table_name = fund_name.lower() + '_' + sheet_name.lower().replace(" ", "_")
+            # Store in the database
             with engine.connect() as connection:
                 data = pd.DataFrame(connection.execute(text(f'select * from {table_name} where source_file_id = :source_file_id limit 1'), {'source_file_id': file_id}).fetchall())
                 if len(data) > 0:
                     continue
+            with engine.connect() as connection:
+                columns = connection.execute(text(f'''SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = :table_name'''), {'table_name': table_name}).fetchall()
+            columns_list = []
+            for column in columns:
+                columns_list.append(column.column_name)
+            drop_columns = []
+            for column in df.columns:
+                if column not in columns_list:
+                    drop_columns.append(column)
+            df=df.drop(columns=drop_columns)
             df.to_sql(table_name, con=engine, if_exists='append', index=False, method='multi')
             print(f"Successfully stored sheet: {sheet_name}")
         except Exception as e:
