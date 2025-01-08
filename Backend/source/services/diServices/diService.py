@@ -8,11 +8,12 @@ import azure.functions as func
 from sqlalchemy import text
 import threading
 import numpy as np
+from numerize import numerize
 
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
@@ -348,72 +349,35 @@ def extract_base_data(file_ids):
 
 def get_base_data(info_id):
     # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
-    engine = db.get_engine()
-    with engine.connect() as connection:
-        base_data = pd.DataFrame(connection.execute(text('''select
-        "Obligor Name",
-        "Security",
-        "Security Name",
-        "Purchase Date (Date Loan contributed to the facility)",
-        "Total Commitment (Issue Currency)",
-        "Outstanding Principal Balance (Issue Currency)",
-        "Defaulted Collateral Loan / Material Mod (Y/N)",
-        "Credit Improved Loan (Y/N)",
-        "Purchase Price",
-        "Stretch Senior Loan (Y/N)",
-        "Loan Type (Term / Delayed Draw / Revolver)",
-        "Current Moody's Rating",
-        "Current S&P Rating",
-        "Initial Fixed Charge Coverage Ratio",
-        "Date of Default",
-        "Market Value",
-        "Current Fixed Charge Coverage Ratio",
-        "Current Interest Coverage Ratio",
-        "Initial Debt to Capitalization Ratio",
-        "Initial Senior Debt/EBITDA",
-        "Initial Total Debt/EBITDA",
-        "Current Senior Debt/EBITDA",
-        "Current Total Debt/EBITDA",
-        "Initial TTM EBITDA",
-        "Current TTM EBITDA",
-        "Current As of Date For Leverage and EBITDA",
-        "Maturity Date",
-        "Fixed Rate (Y/N)",
-        "Coupon incl. PIK and PIK'able (if Fixed)",
-        "Floor Obligation (Y/N)",
-        "Floor",
-        "Spread incl. PIK and PIK'able",
-        "Base Rate",
-        "For Revolvers/Delayed Draw, commitment or other unused fee",
-        "PIK / PIK'able For Floating Rate Loans",
-        "PIK / PIK'able For Fixed Rate Loans",
-        "Interest Paid",
-        "Obligor Industry",
-        "Currency (USD / CAD / AUD / EUR)",
-        "Obligor Country",
-        "DIP Loan (Y/N)",
-        "Warrants to Purchase Equity (Y/N)",
-        "Parti-cipation (Y/N)",
-        "Convertible to Equity (Y/N)",
-        "Equity Security (Y/N)",
-        "At Acquisition - Subject to offer or called for redemption (Y/N)",
-        "Margin Stock (Y/N)",
-        "Subject to withholding tax (Y/N)",
-        "At Acquisition - Defaulted Collateral Loan",
-        "Zero Coupon Obligation (Y/N)",
-        "Covenant Lite (Y/N)",
-        "Structured Finance Obligation, finance lease or chattel paper (Y/N)",
-        "Material Non-Credit Related Risk (Y/N)",
-        "Primarily Secured by Real Estate, Construction Loan or Project Finance Loan (Y/N)",
-        "Interest Only Security (Y/N)",
-        "Satisfies all Other Eligibility Criteria (Y/N)",
-        "Excess Concentration Amount (HARD CODE on Last Day of Reinvestment Period)" from base_data where base_data_info_id = :info_id'''), {"info_id": info_id}).fetchall())
-
+    base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).all()
     base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
+    base_data_mapping = PfltBaseDataMapping.query.filter(PfltBaseDataMapping.bd_column_lookup.is_not(None)).order_by(PfltBaseDataMapping.bdm_id).all()
+
+    temp = []
+    # print(base_data[0])
+    for b in base_data:
+        t = b.__dict__
+        del t['_sa_instance_state']
+        for key in t:
+            val = t[key]
+            print(val, key)
+            if isinstance(val, (int, float, complex)) and not isinstance(val, bool):
+                val = numerize.numerize(val, 2)
+                t[key] = val
+            elif isinstance(val, str):
+                if val.replace(".", "").isnumeric():
+                    val = numerize.numerize(float(val), 2)
+                    t[key] = val
+        # t['report_date'] = t['report_date'].strftime("%Y-%m-%d")
+        # t['created_at'] = t['created_at'].strftime("%Y-%m-%d")
+        temp.append(t)
+    # print(temp[0])
     base_data_table = {
-        "columns": [{"key": column.replace(" ", "_"), "label": column} for column in base_data.columns],
-        "data": []
+        "columns": [{"key": column.bd_column_lookup, "label": column.bd_column_name} for column in base_data_mapping],
+        "data": temp
     }
+
+    # print(type(base_data_table))
     
     
     # for index, row in base_data.iterrows():
@@ -429,10 +393,6 @@ def get_base_data(info_id):
     #         else:
     #             row_data[col.replace(" ", "_")] = value
     #     base_data_table["data"].append(row_data)
-    base_data.columns = base_data.columns.str.replace(" ", "_")
-    base_data = base_data.replace({np.nan: None})
-    df_dict = base_data.to_dict(orient='records')
-    base_data_table["data"] = df_dict
     result = {
         "base_data_table": base_data_table,
         "report_date": base_data_info.report_date.strftime("%Y-%m-%d"),
@@ -444,7 +404,7 @@ def get_base_data_mapping(info_id):
     try:
         engine = db.get_engine()
         with engine.connect() as connection:
-            base_data_map = pd.DataFrame(connection.execute(text('''select * from base_data_mapping''')).fetchall())
+            base_data_map = pd.DataFrame(connection.execute(text('''select * from pflt_base_data_mapping''')).fetchall())
             df_dict = base_data_map.to_dict(orient='records')
         return ServiceResponse.success(data=df_dict, message="Base Data Map")
     except Exception as e:
@@ -587,4 +547,3 @@ def get_source_file_data(file_id, file_type, sheet_name):
     source_file_table_data['data'] = df_dict
     
     return ServiceResponse.success(data=source_file_table_data)
-    
