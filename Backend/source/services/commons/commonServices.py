@@ -113,7 +113,7 @@ def find_is_NaT(previous_value):
 
 
 def get_updated_value(prev_value, updated_value):
-    if isinstance(updated_value, str):
+    if isinstance(updated_value, str) and isinstance(prev_value, str):
         try:
             if prev_value.endswith("%"):
                 updated_value = updated_value.replace("%", "")
