@@ -8,7 +8,7 @@ import search from "../../assets/NavbarIcons/SearchIcon.svg";
 import cross from "../../assets/Portflio/cross.svg";
 import fileImg from "../../assets/Portflio/file.svg";
 import PCOFSampleFile from '../../assets/template File/10.31.2023_PCOF_IV_Borrowing_Base_Basedata 5.xlsx';
-import PFLTSampleFile from '../../assets/template File/PFLT 09.30.24 Borrowing Base Data 3.xlsx';
+import PFLTSampleFile from '../../assets/template File/PFLT 09.30.24 Borrowing Base Data.xlsx';
 import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
 import { ErrorMessage } from '../../modal/errorMessageModal/ErrorMessage';
 import { OverWriteDataModal } from '../../modal/overWriteDataModal/OverWriteDataModal';
@@ -267,7 +267,7 @@ export const UploadFile = ({
           'assetSelectionList': res.data
         });
         setFundType(fund);
-        getTrendGraphData(fund);
+        // getTrendGraphData(fund);
         navigate('asset-selection');
         setBaseFile({ name: fileName, id: fileId });
         setReportDate(reportDate);
