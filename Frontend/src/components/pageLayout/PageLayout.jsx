@@ -8,6 +8,7 @@ import { lineChartData } from '../../services/api';
 import { previousSelectedAssetsArray } from '../../utils/helperFunctions/getSelectedAssets';
 import { TableGraph } from '../tableGraph/TableGraph';
 import { WhatIfAnalysis } from '../whatIfAnalysis/WhatIfAnalysis';
+import { useSelector } from 'react-redux'
 
 
 export const PageLayout = (
@@ -49,6 +50,8 @@ export const PageLayout = (
     }
   };
 
+  const value = useSelector(state => state.baseFileData);
+  console.info(value, 'redux test');
   return (
     <>
         {/* <Sidebar  />
