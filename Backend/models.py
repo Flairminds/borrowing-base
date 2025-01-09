@@ -310,6 +310,8 @@ class PfltBaseDataMapping(db.Model):
     sf_column_lookup = db.Column(db.String(255))
     sf_column_datatype = db.Column(db.String(255))
     sf_column_categories = db.Column(db.ARRAY(db.String))
+    sd_ref_table_name = db.Column(db.String)
+    formula = db.Column(db.String)
     created_by = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_by = db.Column(db.Integer, nullable=True)

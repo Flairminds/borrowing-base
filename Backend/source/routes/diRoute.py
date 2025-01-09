@@ -39,3 +39,7 @@ def edit_pflt_sec_mapping():
 @di_blueprint.route('/get_source_file_data', methods=["POST"])
 def get_source_file_data():
     return diController.get_source_file_data()
+
+@di_blueprint.route('/get_source_file_data_detail', methods=["POST"])
+def get_source_file_data_detail():
+    return diController.get_source_file_data_detail()

@@ -45,9 +45,9 @@ def upload_src_file_to_az_storage(files, report_date):
             uploaded_by = 1
             file_type = None
             if contains_cash(file.filename):
-                file_type = "Cash"
+                file_type = "cashfile"
             if contains_master_comp(file.filename):
-                file_type = "Master Comp"
+                file_type = "master_comp"
 
             # upload blob in container
             blob_client.upload_blob(name=blob_name, data=file)
@@ -546,3 +546,19 @@ def get_source_file_data(file_id, file_type, sheet_name):
     source_file_table_data['data'] = df_dict
     
     return ServiceResponse.success(data=source_file_table_data)
+
+
+def get_source_file_data_detail(ebd_id, column_key):
+    try:
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, case when pbdm.formula is null then pbdm.sf_column_name else pbdm.formula end as formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi) join pflt_base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
+        df = df.replace({np.nan: None})
+        df_dict = df.to_dict(orient='records')
+        if len(df_dict) == 0:
+            return ServiceResponse.error(message='No data found.', status_code=404)
+        if len(df_dict) > 1:
+            return ServiceResponse.error(message='Multiple records found.', status_code=409)
+        return ServiceResponse.success(data=df_dict[0])
+    except Exception as e:
+        raise Exception(e)
