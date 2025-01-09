@@ -1,15 +1,19 @@
 import { SettingOutlined } from '@ant-design/icons';
-import { Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
+import { CellDetailsModal } from '../../../pages/showCellDetails/CellDetailsModal';
 import tableStyles from './DynamicTableComponents.module.css';
 
-export const DynamicTableComponents = ({data, columns, additionalColumns = [], showSettings = false, enableStickyColumns = false}) => {
+
+export const DynamicTableComponents = ({data, columns, additionalColumns = [], ShowCellDetailsModal = false, showSettings = false, enableStickyColumns = false}) => {
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
     const [showSettingsDiv, setShowSettingsDiv] = useState(false);
     const [breaks, setBreaks] = useState([]);
     const [selectedColumns, setSelectedColumns] = useState([]);
     const [activeRowIndex, setActiveRowIndex] = useState(-1);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [cellDetails, setCellDetails] = useState({ rowIndex: -1, column: '' });
+
 
     useEffect(() => {
         if (columns && columns?.length > 0) {
@@ -36,6 +40,13 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
             setSelectedColumns([...selectedColumns, val]);
         }
     };
+
+    const handleCellClick = (rowIndex, column, cellValue) => {
+        if (ShowCellDetailsModal) {
+          setCellDetails({ rowIndex, column, cellValue});
+          setModalVisible(true);
+        }
+      };
 
   return (
     <>
@@ -87,7 +98,7 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
                                 return (
                                     <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : tableStyles.td}
                                         style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
-                                        onClick={() => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
+                                        onClick={ShowCellDetailsModal ? () => handleCellClick(rowIndex, col.label, row[col.key]) : () => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
                                         {col.render ? col.render(row[col.key], row) : (row[col.key] ? row[col.key] : '-') }
                                     </td>
                                 );
@@ -100,6 +111,11 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
                     </tr>}
             </tbody>
         </table>
+        <CellDetailsModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          cellDetails={cellDetails}
+        />
     </>
   );
 };

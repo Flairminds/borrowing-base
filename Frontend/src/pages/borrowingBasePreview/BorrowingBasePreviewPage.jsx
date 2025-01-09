@@ -6,8 +6,8 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData}) => {
     const [mapping, setMapping] = useState({});
     useEffect(() => {
         let col = [];
-        baseFilePreviewData.baseData.columns.forEach(c => {
-            let a = baseFilePreviewData.baseDataMapping.find(bd => bd.bd_column_name == c.label);
+        baseFilePreviewData.baseData?.columns.forEach(c => {
+            let a = baseFilePreviewData?.baseDataMapping?.find(bd => bd.bd_column_name == c.label);
             if (a) {
                 col[a.bd_column_name] = `${a.rd_file_name} -> ${a.rd_sheet_name} -> ${a.rd_column_name}`;
             }
@@ -21,7 +21,7 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData}) => {
                 <div style={{position: 'fixed'}}>
                     Base Data for {baseFilePreviewData.reportDate}
                 </div>
-                <DynamicTableComponents data={baseFilePreviewData?.baseData?.data} columns={baseFilePreviewData?.baseData?.columns} enableStickyColumns={true} showSettings={true} />
+                <DynamicTableComponents data={baseFilePreviewData?.baseData?.data} columns={baseFilePreviewData?.baseData?.columns} enableStickyColumns={true} showSettings={true} ShowCellDetailsModal={true} />
             </div>
         </div>
         // <div>
