@@ -162,8 +162,8 @@ export const SecurityMapping = () => {
                             </table>
                         </div>
                     </div>
-                    <div style={{margin: '0 2rem', border: '1px solid #DCDEDE'}}>
-                        <DynamicTableComponents data={unmappedSecurities} columns={[{'key': 'cashfile_securities', 'label': 'Unmapped Cashfile Securities'}]} />
+                    <div style={{margin: '0 2rem', height: '80vh', overflow: 'auto'}}>
+                        <DynamicTableComponents data={unmappedSecurities} columns={[{'key': 'cashfile_securities', 'label': `${unmappedSecurities.length} Unmapped Cashfile Securities`}]} />
                     </div>
                 </div>
             </div>

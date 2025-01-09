@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 
 export const BorrowingBasePreviewPage = ({baseFilePreviewData}) => {
-    const [maping, setMapping] = useState({});
+    const navigate = useNavigate();
+    const [mapping, setMapping] = useState({});
     useEffect(() => {
         let col = [];
+        if (!baseFilePreviewData.reportDate) {
+            showToast('info', 'No report date selected. Redirecting...');
+            setTimeout(() => {
+                navigate('/base-data-list');
+            }, 1500);
+        }
         baseFilePreviewData.baseData?.columns.forEach(c => {
             let a = baseFilePreviewData?.baseDataMapping?.find(bd => bd.bd_column_name == c.label);
             if (a) {
