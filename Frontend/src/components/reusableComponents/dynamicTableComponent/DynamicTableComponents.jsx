@@ -1,6 +1,6 @@
 import { SettingOutlined } from '@ant-design/icons';
 import React, { useEffect, useState } from 'react';
-import { CellDetailsModal } from '../../../pages/showCellDetails/CellDetailsModal';
+import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
 import tableStyles from './DynamicTableComponents.module.css';
 
 

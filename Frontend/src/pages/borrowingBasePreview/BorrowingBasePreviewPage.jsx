@@ -3,7 +3,7 @@ import { DynamicTableComponents } from '../../components/reusableComponents/dyna
 import styles from './BorrowingBasePreviewPage.module.css';
 
 export const BorrowingBasePreviewPage = ({baseFilePreviewData}) => {
-    const [mapping, setMapping] = useState({});
+    const [maping, setMapping] = useState({});
     useEffect(() => {
         let col = [];
         baseFilePreviewData.baseData?.columns.forEach(c => {
