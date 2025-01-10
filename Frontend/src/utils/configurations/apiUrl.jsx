@@ -26,10 +26,10 @@
 
 // const apiURL = 'http://127.0.0.1:5000/api';
 
-const apiURL = 'http://localhost:5000/api'
+// const apiURL = 'http://localhost:5000/api'
 
 // local backend link
-//const apiURL = `${window.location}/api`;
+const apiURL = `${window.location}/api`;
 
 // const apiURL ='https://4m3x42wn-5000.inc1.devtunnels.ms/api'
 

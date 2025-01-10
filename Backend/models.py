@@ -279,7 +279,10 @@ class ExtractedBaseDataInfo(db.Model):
     company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=False)
     files = db.Column(db.ARRAY(db.Integer))
     extraction_date = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
-    comments = db.Column(db.String)
+    failure_comments = db.Column(db.String)
+    user_comments = db.Column(db.String)
+    description = db.Column(db.String)
+    is_deleted = db.Column(db.Boolean, default=False)
 
 class PfltSecurityMapping(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -312,6 +315,8 @@ class PfltBaseDataMapping(db.Model):
     sf_column_categories = db.Column(db.ARRAY(db.String))
     sd_ref_table_name = db.Column(db.String)
     formula = db.Column(db.String)
+    description = db.Column(db.String)
+    comments = db.Column(db.String)
     created_by = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_by = db.Column(db.Integer, nullable=True)

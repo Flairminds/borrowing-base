@@ -77,7 +77,7 @@ export const SecurityMapping = () => {
     };
 
     const filterData = (val) => {
-        const temp = data.filter(d => (d.cashfile_security_name && d.cashfile_security_name.toLowerCase().includes(val.toLowerCase())) || (d.master_comp_security_name && d.master_comp_security_name.toLowerCase().includes(val.toLowerCase())));
+        const temp = data.filter(d => (d.cashfile_security_name && d.cashfile_security_name.toLowerCase().includes(val.toLowerCase())) || (d.master_comp_security_name && d.master_comp_security_name.toLowerCase().includes(val.toLowerCase())) || (d.family_name && d.family_name.toLowerCase().includes(val.toLowerCase())) || (d.soi_name && d.soi_name.toLowerCase().includes(val.toLowerCase())));
         setFilteredData(temp);
     };
 

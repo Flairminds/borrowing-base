@@ -4,7 +4,7 @@ import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetail
 import tableStyles from './DynamicTableComponents.module.css';
 
 
-export const DynamicTableComponents = ({data, columns, additionalColumns = [], ShowCellDetailsModal = false, showSettings = false, enableStickyColumns = false}) => {
+export const DynamicTableComponents = ({data, columns, additionalColumns = [], showCellDetailsModal = false, showSettings = false, enableStickyColumns = false, getCellDetailFunc = () => {}, cellDetail = null}) => {
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
     const [showSettingsDiv, setShowSettingsDiv] = useState(false);
@@ -12,7 +12,7 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], S
     const [selectedColumns, setSelectedColumns] = useState([]);
     const [activeRowIndex, setActiveRowIndex] = useState(-1);
     const [modalVisible, setModalVisible] = useState(false);
-    const [cellDetails, setCellDetails] = useState({ rowIndex: -1, column: '' });
+    // const [cellDetails, setCellDetails] = useState({ rowIndex: -1, column: '' });
 
 
     useEffect(() => {
@@ -41,12 +41,12 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], S
         }
     };
 
-    const handleCellClick = (rowIndex, column, cellValue) => {
-        if (ShowCellDetailsModal) {
-          setCellDetails({ rowIndex, column, cellValue});
-          setModalVisible(true);
-        }
-      };
+    const handleCellClick = (rowIndex, columnKey, columnName, cellValue) => {
+		if (showCellDetailsModal) {
+			getCellDetailFunc(rowIndex, columnKey, columnName, cellValue);
+			setModalVisible(true);
+		}
+	};
 
   return (
     <>
@@ -98,7 +98,7 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], S
                                 return (
                                     <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : tableStyles.td}
                                         style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
-                                        onClick={ShowCellDetailsModal ? () => handleCellClick(rowIndex, col.label, row[col.key]) : () => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
+                                        onClick={showCellDetailsModal ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]) : () => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
                                         {col.render ? col.render(row[col.key], row) : (row[col.key] ? row[col.key] : '-') }
                                     </td>
                                 );
@@ -114,7 +114,7 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], S
         <CellDetailsModal
           visible={modalVisible}
           onClose={() => setModalVisible(false)}
-          cellDetails={cellDetails}
+          cellDetails={cellDetail}
         />
     </>
   );
