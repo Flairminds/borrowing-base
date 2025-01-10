@@ -3,7 +3,9 @@ import { useNavigate } from 'react-router';
 import CrossIcon from '../../assets/CrossIcon.svg';
 import RightIcon from '../../assets/RightIcon.svg';
 import { BackOption } from '../../components/BackOption/BackOption';
+import { CustomButton } from "../../components/custombutton/CustomButton";
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { AddSecurityMapping } from "../../modal/addSecurityMapping/AddSecurityMapping";
 import { getSecurityMappingData, editPfltSecMapping } from "../../services/dataIngestionApi";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./SecurityMapping.module.css";
@@ -16,6 +18,7 @@ export const SecurityMapping = () => {
     const [tempValue, setTempValue] = useState("");
     const [unmappedSecurities, setUnmappedSecurities] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     // Fetch mapping data
     const getMappingData = async () => {
@@ -84,15 +87,16 @@ export const SecurityMapping = () => {
     return (
         <div className={styles.pageContainer}>
             <div className={styles.soiMappingPage}>
-                <div style={{display: 'flex'}}>
+                <div style={{ display: 'flex' }}>
                     <div className={styles.mappingContainer}>
                         <div className={styles.navContainer}>
                             <div className={styles.backOptionContainer}>
                                 <BackOption onClick={() => navigate('/base-data-list')}
-                                    text={`<- Base Data`}/>
+                                    text={`<- Base Data`} />
                             </div>
-                            <div style={{minWidth: '300px'}}>
-                                <input type="text" style={{outline: 'none', border: '1px solid #DCDEDE', borderRadius: '5px', width: '100%', fontSize: 'small', padding: '0.5rem'}} onChange={(e) => filterData(e.target.value)} placeholder="Search by security name"/>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: '300px' }}>
+                                <input type="text" style={{ outline: 'none', border: '1px solid #DCDEDE', borderRadius: '5px', width: '100%', fontSize: 'small', padding: '0.5rem' }} onChange={(e) => filterData(e.target.value)} placeholder="Search by security name" />
+                                <CustomButton isFilled={true} text="Add" onClick={() => setIsModalOpen(true)} />
                             </div>
                         </div>
                         <div className={styles.tableContainer}>
@@ -162,11 +166,12 @@ export const SecurityMapping = () => {
                             </table>
                         </div>
                     </div>
-                    <div style={{margin: '0 2rem', height: '80vh', overflow: 'auto'}}>
-                        <DynamicTableComponents data={unmappedSecurities} columns={[{'key': 'cashfile_securities', 'label': `${unmappedSecurities.length} Unmapped Cashfile Securities`}]} />
+                    <div style={{ margin: '0 2rem', border: '1px solid #DCDEDE' }}>
+                        <DynamicTableComponents data={unmappedSecurities} columns={[{ 'key': 'cashfile_securities', 'label': 'Unmapped Cashfile Securities' }]} />
                     </div>
                 </div>
             </div>
+            <AddSecurityMapping isOpen={isModalOpen} columns={columns} onClose={() => setIsModalOpen(false)} />
         </div>
     );
 };
