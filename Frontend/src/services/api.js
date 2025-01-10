@@ -352,3 +352,8 @@ export const changeConcentrationTestMasterData =(changes)=>{
     const res = axios.post(`${ApiURL}/fund_setup/change_limit_percent` , payload)
     return res
 }
+
+export const getBaseDataCellDetail = (payload) => {
+    const res = axios.post(`${ApiURL}/data_ingestion/get_source_file_data_detail`, payload);
+    return res;
+};

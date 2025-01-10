@@ -30,7 +30,8 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
                 setBaseFilePreviewData({
                     baseData: result.base_data_table,
                     reportDate: result.report_date,
-                    baseDataMapping: result.base_data_mapping
+                    baseDataMapping: result.base_data_mapping,
+                    infoId: infoId
                 });
             navigate('/base-data-preview');
         } catch (err) {
@@ -63,7 +64,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
                                         color: '#007BFF',
                                         cursor: 'pointer',
                                         textDecoration: 'underline',
-                                        marginBottom: '5px'
+                                        marginBottom: '2px'
                                     }}
                                 >
                                     {file.file_name + file.extension}

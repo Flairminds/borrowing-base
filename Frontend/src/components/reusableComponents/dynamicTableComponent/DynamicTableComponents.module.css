@@ -13,6 +13,37 @@
     font-size: small;
 }
 
+.th::-webkit-scrollbar,
+.stickyColTh::-webkit-scrollbar,
+.td::-webkit-scrollbar,
+.stickyColTd::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+.th::-webkit-scrollbar-track,
+.stickyColTh::-webkit-scrollbar-track,
+.td::-webkit-scrollbar-track,
+.stickyColTd::-webkit-scrollbar-track {
+    box-shadow: inset 0 0 5px white; 
+}
+
+.th::-webkit-scrollbar-thumb,
+.stickyColTh::-webkit-scrollbar-thumb,
+.td::-webkit-scrollbar-thumb,
+.stickyColTd::-webkit-scrollbar-thumb {
+    background: #DCDEDE;
+    border-radius: 0.25rem;
+}
+
+.th::-webkit-scrollbar-thumb:hover,
+.stickyColTh::-webkit-scrollbar-thumb:hover,
+.td::-webkit-scrollbar-thumb:hover,
+.stickyColTd::-webkit-scrollbar-thumb:hover {
+    background: #777777; 
+    border-radius: 0.25rem;
+}
+
 .th{
     padding: 8px;
     text-align: left;
@@ -26,7 +57,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    overflow: hidden;
+    overflow-x: auto;
     white-space: nowrap;
 }
   
@@ -34,11 +65,13 @@
     padding: 8px;
     text-align: left;
     border-bottom: 1px solid #DCDEDE;
+    border-left: 1px solid #DCDEDE;
+    border-right: 1px solid #DCDEDE;
     min-width: 4rem;
     max-width: 200px;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow-x: auto;
     white-space: nowrap;
 }
 
@@ -54,7 +87,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    overflow: hidden;
+    overflow-x: auto;
     white-space: nowrap;
 }
 
@@ -62,10 +95,12 @@
     padding: 8px;
     text-align: left;
     border-bottom: 1px solid #DCDEDE;
+    border-left: 1px solid #DCDEDE;
+    border-right: 1px solid #DCDEDE;
     width: 150px;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
+    overflow-x: auto;
     white-space: nowrap;
 }
 

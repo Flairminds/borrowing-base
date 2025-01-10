@@ -91,6 +91,7 @@ export const SourceFileModal = ({ isVisible, onClose, fileDetails }) => {
             <DynamicTableComponents
                 data={sourceFileData?.data}
                 columns={sourceFileData?.columns}
+                showSettings={true}
             />
         </div>
     </div>
