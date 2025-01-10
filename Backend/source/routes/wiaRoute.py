@@ -9,11 +9,9 @@ wia_blueprint = Blueprint("wia_blueprint", __name__)
 def get_asset_overview():
     return wiaControllers.get_asset_overview()
 
-
 @wia_blueprint.route("/add_asset", methods=["POST"])
 def add_asset():
     return wiaControllers.add_assets()
-
 
 @wia_blueprint.route('/get_parameters', methods=["POST"])
 def get_ebitda_leverage():
