@@ -59,20 +59,26 @@ def get_raw_value(updated_value, col_type):
         match col_type:
             case np.int64:
                 if type(updated_value) == str:
-                    updated_value = int(updated_value.replace(",", ""))
+                    if updated_value != "":
+                        updated_value = int(updated_value.replace(",", ""))
+                    else:
+                        updated_value = None    
                 else:
                     updated_value = int(updated_value)
 
             case np.float64:
                 if type(updated_value) == str:
-                    updated_value = float(updated_value.replace(",", ""))
+                    if updated_value != "":
+                        updated_value = float(updated_value.replace(",", ""))
+                    else:
+                        updated_value = None   
                 else:
                     updated_value = float(updated_value)
 
             case "<M8[ns]":
                 if type(updated_value) == str:
                     if find_is_NaT(updated_value):
-                        updated_value = ""
+                        updated_value = None
                     else:
                         updated_value = pd.to_datetime(updated_value, format="%Y-%m-%d", errors="coerce")
                 else:
@@ -115,7 +121,7 @@ def find_is_NaT(previous_value):
 def get_updated_value(prev_value, updated_value):
     if isinstance(updated_value, str) and isinstance(prev_value, str):
         try:
-            if prev_value.endswith("%"):
+            if  prev_value.endswith("%") or updated_value.endswith("%"):
                 updated_value = updated_value.replace("%", "")
                 updated_value = float(updated_value) / 100
         except ValueError:

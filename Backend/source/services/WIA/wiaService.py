@@ -172,12 +172,13 @@ def validate_get_sheet_data_request(data):
     if not sheet_name:
         return ServiceResponse.error(message=ErrorConstants.SHEET_NAME_REQUIRED_MSG)
     
-def add_row_at_index(sheet_df, changes):
+def add_row_at_index(sheet_df, changes, sheet_name):
     rows_to_add = changes["rows_to_add"]
     for row_to_add in rows_to_add:
         row_index = row_to_add["row_index"]
+        sheet_uniques_name = sheet_uniques.get(sheet_name)
         row = pd.DataFrame(
-            {sheet_df.columns[0]: row_to_add["row_identifier"]}, index=[row_index]
+            {sheet_uniques_name: row_to_add["row_identifier"]}, index=[row_index]
         )
         sheet_df = pd.concat(
             [sheet_df.iloc[:row_index], row, sheet_df.iloc[row_index:]],
@@ -186,10 +187,11 @@ def add_row_at_index(sheet_df, changes):
     return sheet_df
 
 
-def delete_rows(df, changes):
+def delete_rows(df, changes, sheet_name):
     rows_to_delete = changes["rows_to_delete"]
+    sheet_uniques_name = sheet_uniques.get(sheet_name)
     for row_to_delete in rows_to_delete:
-        df = df.drop(df[df[df.columns[0]] == row_to_delete["row_identifier"]].index)
+        df = df[df[sheet_uniques_name] != row_to_delete["row_identifier"]]
     return df
     
 
@@ -242,16 +244,18 @@ def update_add_df(data):
     # add new line in dataframe
     added_rows = changes.get("rows_to_add")
     if added_rows:
-        df = add_row_at_index(df, changes)
+        df = add_row_at_index(df, changes, sheet_name)
 
     rows_to_delete = changes.get("rows_to_delete")
     if rows_to_delete:
-        df = delete_rows(df, changes)
+        df = delete_rows(df, changes, sheet_name)
 
     updated_assets = changes.get("updated_assets")
     if updated_assets:
         response_data = update_df(initial_df, df, changes, sheet_name)
         df = response_data["data"]
+    
+    df = df.reset_index(drop=True)
     return df, initial_df
 
   
@@ -484,7 +488,7 @@ def update_df(initial_df, sheet_df, changes, sheet_name):
                 row_index = commonServices.get_row_index(sheet_df, row_name, sheet_uniques_name)
                 if row_index != -1:
                     updated_value = value_to_update["updated_value"]
-                    prev_value = value_to_update["prev_value"]
+                    prev_value = value_to_update.get("prev_value") or ''
                     updated_value = commonServices.get_updated_value(prev_value, updated_value)
 
                     col_type = initial_df[col_name].dtype
