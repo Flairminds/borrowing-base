@@ -11,6 +11,7 @@ def get_concentration_tests(fund_name):
     fund = Fund.query.filter_by(fund_name=fund_name).first()
     fund_tests = (
         db.session.query(
+            ConcentrationTest.id,
             ConcentrationTest.test_name,
             ConcentrationTest.description,
             ConcentrationTest.mathematical_formula,
@@ -19,7 +20,7 @@ def get_concentration_tests(fund_name):
             ConcentrationTest.data_type,
             FundConcentrationTest.limit_percentage,
             FundConcentrationTest.show_on_dashboard,
-            FundConcentrationTest.id,
+            # FundConcentrationTest.id,
         )
         .join(FundConcentrationTest)
         .filter(FundConcentrationTest.fund_id == fund.id)
@@ -40,7 +41,8 @@ def get_concentration_tests(fund_name):
             limit_percentage = ""
         test_list.append(
             {
-                "fund_test_id": test.id,
+                "test_id": test.id,
+                "fund_id": fund.id,
                 "test_name": test.test_name,
                 "description": test.description,
                 "mathematical_formula": test.mathematical_formula,
@@ -81,28 +83,29 @@ def update_limit(test_changes):
     try:
         changed_records = []
         for test in test_changes:
-            test_id = test["fund_test_id"]
+            test_id = test["test_id"]
+            fund_id = test["fund_id"]
             limit_percentage = test.get("limit_percentage")
             show_on_dashboard = test.get("show_on_dashboard")
             
             if limit_percentage is not None or show_on_dashboard is not None:
-                fund_test = FundConcentrationTest.query.filter_by(id=test_id).first()
-                fund_tests = FundConcentrationTest.query.filter_by(test_id=fund_test.test_id)
-                for fund_type in fund_tests:
-                    if limit_percentage is not None:
-                        val = float(limit_percentage)
-                        concentration_test = ConcentrationTest.query.filter_by(id=fund_type.test_id).first()
-                        if concentration_test.data_type == 'integer' and not int(val) == val:
-                            return ServiceResponse.error(message="Integer value expected for certain tests.", status_code=400)
-                        
-                        if concentration_test.unit == 'percentage':
-                            val /= 100
-                        fund_type.limit_percentage = val
+                fund_test = FundConcentrationTest.query.filter_by(fund_id=fund_id, test_id=test_id).first()
+                # fund_tests = FundConcentrationTest.query.filter_by(test_id=fund_test.test_id)
+                # for fund_type in fund_tests:
+                if limit_percentage is not None:
+                    val = float(limit_percentage)
+                    concentration_test = ConcentrationTest.query.filter_by(id=test_id).first()
+                    if concentration_test.data_type == 'integer' and not int(val) == val:
+                        return ServiceResponse.error(message="Integer value expected for certain tests.", status_code=400)
+                    
+                    if concentration_test.unit == 'percentage':
+                        val /= 100
+                    fund_test.limit_percentage = val
 
-                    if show_on_dashboard is not None:
-                        fund_type.show_on_dashboard = show_on_dashboard
+                if show_on_dashboard is not None:
+                    fund_test.show_on_dashboard = show_on_dashboard
 
-                    fund_type.modified_at = datetime.now()
+                fund_test.modified_at = datetime.now()
                 changed_records.append(fund_test)
         if len(changed_records) == 0:
             return ServiceResponse.success(message="No changes done in test config")
