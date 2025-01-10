@@ -31,7 +31,7 @@ export const ConcentrationTestMaster = () => {
 
     let index = -1;
     for (let i = 0; i < displaydata.length; i++) {
-      if ( displaydata[i].fund_test_id == fundId ) {
+      if ( displaydata[i].test_id == fundId ) {
         index = i;
         break;
       }
@@ -76,7 +76,7 @@ export const ConcentrationTestMaster = () => {
 
     let index = -1;
     for (let i = 0; i < displaydata.length; i++) {
-      if (displaydata[i].fund_test_id == fundId) {
+      if (displaydata[i].test_id == fundId) {
         index = i;
         break;
       }
@@ -160,7 +160,7 @@ export const ConcentrationTestMaster = () => {
                   <tr
                     key={rowIndex}
                     className={
-                      activeRowFundData?.hightlightIds.includes(row.fund_test_id) ?
+                      activeRowFundData?.hightlightIds.includes(row.test_id) ?
                       activeRowFundData?.hightlightType == 'testHightlight' ?
                         `${styles.testActiveRow} ${styles.td}`
                         :
@@ -173,7 +173,7 @@ export const ConcentrationTestMaster = () => {
                       <>
                         <td key={colIndex} className={styles.td}>
                         {column.key == "limit_percentage" ?
-                          <div className={styles.inputDiv}><input className={styles.input} value={row[column.key]} onChange={(e) => handleLimitInputChange(e, row.fund_test_id)} /><span>{row.unit == 'percentage' ? '%' : ''}</span></div>
+                          <div className={styles.inputDiv}><input className={styles.input} value={row[column.key]} onChange={(e) => handleLimitInputChange(e, row.test_id)} /><span>{row.unit == 'percentage' ? '%' : ''}</span></div>
                         :
                         column.key == "eligible_funds" ?
                         <>
@@ -183,7 +183,7 @@ export const ConcentrationTestMaster = () => {
                         </>
                         :
                         column.key == "show_on_dashboard" ?
-                        <Switch style={{zIndex: 1}} value={row[column.key]} onChange={(cheked) => onVisibilityChange(cheked, row.fund_test_id)} />
+                        <Switch style={{zIndex: 1}} value={row[column.key]} onChange={(cheked) => onVisibilityChange(cheked, row.test_id)} />
                         :
                         <>
                         {row[column.key]}

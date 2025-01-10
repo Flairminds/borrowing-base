@@ -18,14 +18,15 @@ export const getConcTestChnages = (oldData, newData) => {
         // if (oldItem) {
             let diff = {};
             Object.keys(newItem).forEach(key => {
-                if (newItem[key] !== oldData?.data[index][key] && key !== "fund_test_id") {
+                if (newItem[key] !== oldData?.data[index][key] && key !== "test_id") {
                     diff[key] = newItem[key];
                 }
             });
 
             if (Object.keys(diff).length > 0) {
                 changes.push({
-                    fund_test_id: newItem.fund_test_id,
+                    test_id: newItem.test_id,
+                    fund_id: newItem.fund_id,
                     ...diff
                 });
             }
@@ -39,8 +40,8 @@ export const styledDropdownOptions = (data) => {
     const resultOptionArray = data.map((el) => ({
         label: el.test_name,
         description: el.description,
-        fund_test_id: el.fund_test_id,
-        value: `${el.test_name}||${el.fund_test_id}`
+        test_id: el.test_id,
+        value: `${el.test_name}||${el.test_id}`
     }));
 
     return resultOptionArray;

@@ -45,9 +45,9 @@ def upload_src_file_to_az_storage(files, report_date):
             uploaded_by = 1
             file_type = None
             if contains_cash(file.filename):
-                file_type = "Cash"
+                file_type = "cashfile"
             if contains_master_comp(file.filename):
-                file_type = "Master Comp"
+                file_type = "master_comp"
 
             # upload blob in container
             blob_client.upload_blob(name=blob_name, data=file)
@@ -217,7 +217,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info):
                 file_name = file_details.file_name + file_details.extension
                 file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + file_name).download_blob().readall())
                 file_type = file_details.file_type
-                if (file_type == 'Cash'):
+                if (file_type == 'cashfile'):
                     cash_file_details = file_details
                     file_sheet_map = {
                         "cash": {
@@ -227,7 +227,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info):
                             "is_extracted": file_details.is_extracted
                         }
                     }
-                elif file_type == 'Master Comp':
+                elif file_type == 'master_comp':
                     master_comp_file_details = file_details
                     file_sheet_map = {
                         "master_comp": {
@@ -263,7 +263,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info):
         except Exception as e:
             Log.func_error(e)
             extracted_base_data_info.status = "failed"
-            extracted_base_data_info.comments = str(e)
+            extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
 
@@ -341,7 +341,7 @@ def extract_base_data(file_ids):
         if base_data_info_id:
             extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(id = base_data_info_id).first()
             extracted_base_data_info.status = 'failed'
-            extracted_base_data_info.comments = str(e)
+            extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
         return ServiceResponse.error(message='Extraction failed')
@@ -360,11 +360,13 @@ def get_base_data(info_id):
         del t['_sa_instance_state']
         for key in t:
             val = t[key]
+            if key == 'current_interest_coverage_ratio':
+                print(val)
             if isinstance(val, (int, float, complex)) and not isinstance(val, bool):
                 val = numerize.numerize(val, 2)
                 t[key] = val
             elif isinstance(val, str):
-                if val.replace(".", "").isnumeric():
+                if val.replace(".", "").replace("-", "").isnumeric():
                     val = numerize.numerize(float(val), 2)
                     t[key] = val
         # t['report_date'] = t['report_date'].strftime("%Y-%m-%d")
@@ -546,3 +548,19 @@ def get_source_file_data(file_id, file_type, sheet_name):
     source_file_table_data['data'] = df_dict
     
     return ServiceResponse.success(data=source_file_table_data)
+
+
+def get_source_file_data_detail(ebd_id, column_key):
+    try:
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi) join pflt_base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
+        df = df.replace({np.nan: None})
+        df_dict = df.to_dict(orient='records')
+        if len(df_dict) == 0:
+            return ServiceResponse.error(message='No data found.', status_code=404)
+        if len(df_dict) > 1:
+            return ServiceResponse.error(message='Multiple records found.', status_code=409)
+        return ServiceResponse.success(data=df_dict[0])
+    except Exception as e:
+        raise Exception(e)
