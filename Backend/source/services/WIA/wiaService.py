@@ -39,7 +39,7 @@ def get_asset_overview(excelfile):
         preview_table_data["sheet1"]["data"].append(row_data)
     # Convert preview_table_data to JSON string and then parse it to a dictionary
     response_dict = json.loads(json.dumps(preview_table_data))
-    return jsonify(response_dict), 200
+    return response_dict
 
 
 def save_what_if_analysis(

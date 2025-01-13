@@ -1,93 +1,6 @@
 from datetime import datetime
 import pandas as pd
 
-std_file_format1 = {
-    "Availability Borrower": {"A": "object", "B": "object"},
-    "Principle Obligations": {
-        "Principal Obligations": "object",
-        "Currency": "object",
-        "Amount": "Number",
-        "Spot Rate": "Number",
-        "Dollar Equivalent": "Number",
-    },
-    "Subscription BB": {
-        "Investor": "object",
-        "Master/Feeder": "Number",
-        "Ultimate Investor Parent": "Number",
-        "Designation": "object",
-        "Commitment": "Number",
-        "Capital Called": "Number",
-    },
-    "PL BB Build": {
-        "Investment Name": "object",
-        "Issuer": "object",
-        "Investment Investment Type": "object",
-        "Investment Industry": "object",
-        "Investment Closing Date": "datetime64[ns]",
-        "Investment Maturity": "datetime64[ns]",
-        "Investment Par": "Number",
-        "Investment Cost": "Number",
-        "Investment External Valuation": "Number",
-        "Investment Internal Valuation": "Number",
-        "Rates Fixed Coupon": "Number",
-        "Rates Floating Cash Spread": "Number",
-        "Rates Current LIBOR/Floor": "Number",
-        "Rates PIK": "Number",
-        "Rates Fixed / Floating": "object",
-        "Classifications Quoted / Unquoted": "object",
-        "Classifications Warehouse Asset": "object",
-        "Classifications Warehouse Asset Inclusion Date": "Number",
-        "Classifications Warehouse Asset Expected Rating": "Number",
-        "Classifications Approved Foreign Jurisdiction": "Number",
-        "Classifications LTV Transaction": "object",
-        "Classifications Noteless Assigned Loan": "object",
-        "Classifications Undelivered Note": "object",
-        "Classifications Structured Finance Obligation": "object",
-        "Classifications Third Party Finance Company": "object",
-        "Classifications Affiliate Investment": "object",
-        "Classifications Defaulted / Restructured": "object",
-        "Financials LTM Revenue ($MMs)": "Number",
-        "Financials LTM EBITDA ($MMs)": "Number",
-        "Leverage Revolver Commitment": "Number",
-        "Leverage Total Enterprise Value": "Number",
-        "Leverage Total Leverage": "Number",
-        "Leverage PCOF IV Leverage": "Number",
-        "Leverage Attachment Point": "Number",
-        "Leverage Total Capitalization": "Number",
-        "Leverage LTV Thru PCOF IV": "Number",
-        "Final Eligibility Override": "Number",
-        "Final Comment": "Number",
-        "Concentration Adjustment": "Number",
-        "Concentration Comment": "Number",
-        "Borrowing Base Other Adjustment": "Number",
-        "Borrowing Base Industry Concentration": "Number",
-        "Borrowing Base Comment": "Number",
-        "Is Eligible Issuer": "object",
-    },
-    "PL BB Results": {"Concentration Tests": "object", "Concentration Limit": "Number"},
-    "PL_BB_Results_Concentrations": {
-        "Concentration Tests": "object",
-        "Concentration Limit": "Number",
-    },
-    "PL_BB_Results_Security": {"Security": "object"},
-    "Obligors' Net Capital": {"Obligors' Net Capital": "object", "Values": "Number"},
-    "Pricing": {"Pricing": "object", "percent": "Number"},
-    "Advance Rates": {"Investor Type": "object", "Advance Rate": "Number"},
-    "Portfolio LeverageBorrowingBase": {
-        "Investment Type": "object",
-        "Unquoted": "Number",
-        "Quoted": "Number",
-    },
-    "Concentration Limits": {
-        "Investors": "object",
-        "Rank": "Number",
-        "Concentration Limit": "Number",
-    },
-    "Inputs Industries": {"Industries": "object"},
-    "Other Metrics": {"Other Metrics": "object", "values": "Number"},
-}
-
-
 def excel_to_df(excel):
     sheet_df_map = pd.read_excel(excel, sheet_name=None, na_values=["N/A"])
     return sheet_df_map
@@ -213,7 +126,7 @@ def find_missing_columns(
     return missing_columns, xl_sheet_df_map
 
 
-def validate_file(excel, fund_type):
+def validate_file(excel, std_file_format):
     error_map = {
         "Sheet Modifications": [],
         "Column Modifications": [],
@@ -221,14 +134,6 @@ def validate_file(excel, fund_type):
     }
     xl_sheet_df_map = excel_to_df(excel)
 
-    if fund_type == "PCOF":
-        std_file_format = std_file_format1
-    else:
-        from source.PFLT_Borrowing_Base.PFLT_std_file_format import (
-            std_file_format as PFLT_std_file_format,
-        )
-
-        std_file_format = PFLT_std_file_format
     # find missing sheets
     xl_sheet_df_map, sheet_modifications = find_missing_sheets(
         xl_sheet_df_map, std_file_format

@@ -326,10 +326,10 @@ class PcofDashboardService:
             200,
         )
     
-    def pcof_validate_file(self, excel_file, fund_type):
+    def validate_standard_file_format(self, excel_file, std_file_format):
         try:
             error_map, xl_sheet_df_map = Standard_File_Formater.validate_file(
-                    excel_file, fund_type
+                    excel_file, std_file_format
                 )
             error_map["Row Modifications"] = []
         except Exception as e:
