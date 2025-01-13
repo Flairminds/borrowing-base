@@ -4,6 +4,7 @@ import mmap
 from io import BytesIO
 import pandas as pd
 from datetime import datetime
+import pytz
 # import azure.functions as func
 from sqlalchemy import text
 import threading
@@ -13,7 +14,7 @@ from numerize import numerize
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping, PfltSecurityMapping
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
@@ -507,12 +508,36 @@ def edit_pflt_sec_mapping(changes):
     
     return ServiceResponse.success(message="PFLT security mapping edited successfully")
 
+def add_pflt_sec_mapping(cashfile_security_name, family_name, master_comp_security_name, security_type, soi_name):
+    company_id = 1
+    modified_by = 1
+    timestamp = datetime.now(pytz.UTC)
+
+    # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=True)
+    # soi_name = db.Column(db.String)
+    # master_comp_security_name = db.Column(db.String)
+    # family_name = db.Column(db.String)
+    # security_type = db.Column(db.String)
+    # cashfile_security_name = db.Column(db.String)
+    # created_by = db.Column(db.Integer, nullable=True)
+    # created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    # modified_by = db.Column(db.Integer, nullable=True)
+    # modified_at = db.Column(db.DateTime(timezone=True))
+
+    pfltSecurityMapping = PfltSecurityMapping(company_id=company_id, soi_name=soi_name, master_comp_security_name=master_comp_security_name, family_name=family_name, security_type=security_type, cashfile_security_name=cashfile_security_name, modified_by=modified_by, modified_at=timestamp)
+
+    db.session.add(pfltSecurityMapping)
+    db.session.commit()
+    
+    return ServiceResponse.success(message="PFLT security mapping added successfully")
+
 def get_source_file_data(file_id, file_type, sheet_name):
     # ["US Bank Holdings", "Client Holdings"] for Cash
     # ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"] for Master Comp
-    if file_type == "Cash" and sheet_name == None:
+    if file_type == "cashfile" and sheet_name == None:
         sheet_name = "US Bank Holdings"
-    if file_type == "Master Comp" and sheet_name == None:
+    if file_type == "master_comp" and sheet_name == None:
         sheet_name = "Borrower Stats"
     print(sheet_name)
     match sheet_name:

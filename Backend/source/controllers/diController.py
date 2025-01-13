@@ -125,6 +125,23 @@ def edit_pflt_sec_mapping():
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
 
+def add_sec_mapping():
+    try:
+        req_body = flask.request.get_json()
+        cashfile_security_name = req_body.get("cashfile_security_name")
+        family_name = req_body.get("family_name")
+        master_comp_security_name = req_body.get("master_comp_security_name")
+        security_type = req_body.get("security_type")
+        soi_name = req_body.get("soi_name")
+
+        service_response = diService.add_pflt_sec_mapping(cashfile_security_name, family_name, master_comp_security_name, security_type, soi_name)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not add Security Mapping")
+        return HTTPResponse.success(message=service_response.get("message"))
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
 def get_source_file_data():
     try:
         req_body = flask.request.get_json()
