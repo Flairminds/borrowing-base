@@ -194,21 +194,21 @@ def generating_data_in_required_format_for_result(
     segmentation_df = segmentation_df.sort_values("Unadjusted BB", ascending=False)
     segmentation_df = segmentation_df[segmentation_df["Industry"] != "Total"]
     segmentation_Overview_data = {
-        "columns": [{"data": ["Industry", "Unadjusted BB", "Unadjusted % of BB"]}],
+        "columns": [{"data": ["Industry", "Borrowing Base", "% Borrowing Base"]}],
         "Industry": [{"data": val} for val in segmentation_df["Industry"]],
-        "Unadjusted BB": [
+        "Borrowing Base": [
             {"data": "$" + numerize.numerize(val)}
             for val in segmentation_df["Unadjusted BB"]
         ],
-        "Unadjusted % of BB": [
+        "% Borrowing Base": [
             {"data": "{:.2f}%".format(val * 100)}
             for val in segmentation_df["Unadjusted % of BB"]
         ],
         "Total": {
             "data": {
                 "Industry": industry[-1],
-                "Unadjusted BB": "$" + numerize.numerize(unadjusted_BB[-1]),
-                "Unadjusted % of BB": "{:.2f}%".format(
+                "Borrowing Base": "$" + numerize.numerize(unadjusted_BB[-1]),
+                "% Borrowing Base": "{:.2f}%".format(
                     percent_of_unadjusted_BB[-1] * 100
                 ),
             }
@@ -221,17 +221,17 @@ def generating_data_in_required_format_for_result(
     security_df = security_df.sort_values("BB", ascending=False)
     security_df = security_df[security_df["Security"] != "Total"]
     security_data = {
-        "columns": [{"data": ["Security", "BB", "% of BB"]}],
+        "columns": [{"data": ["Security", "Borrowing Base", "% Borrowing Base"]}],
         "Security": [{"data": val} for val in security_df["Security"]],
-        "BB": [{"data": "$" + numerize.numerize(val)} for val in security_df["BB"]],
-        "% of BB": [
+        "Borrowing Base": [{"data": "$" + numerize.numerize(val)} for val in security_df["BB"]],
+        "% Borrowing Base": [
             {"data": "{:.2f}%".format(val * 100)} for val in security_df["% of BB"]
         ],
         "Total": {
             "data": {
                 "Security": security[-1],
-                "BB": "$" + numerize.numerize(security_df["BB"].sum()),
-                "% of BB": "{:.2f}%".format(security_df["% of BB"].sum() * 100),
+                "Borrowing Base": "$" + numerize.numerize(security_df["BB"].sum()),
+                "% Borrowing Base": "{:.2f}%".format(security_df["% of BB"].sum() * 100),
             }
         },
     }
@@ -273,19 +273,19 @@ def generating_data_in_required_format_for_result(
     # Create required format for chart data
     segmentation_chart_data = {
         "segmentation_chart_data": [
-            {"name": name, "Unadjusted BB": val}
+            {"name": name, "Borrowing Base": val}
             for name, val in zip(name_of_industry, unadjusted_BB_for_chart)
         ],
         "y_axis": "name",
-        "x_axis": ["Unadjusted BB"],
+        "x_axis": ["Borrowing Base"],
     }
 
     security_chart_data = {
         "security_chart_data": [
-            {"name": name, "BB": val}
+            {"name": name, "Borrowing Base": val}
             for name, val in zip(name_of_security, BB_for_chart)
         ],
-        "x_axis": ["BB"],
+        "x_axis": ["Borrowing Base"],
         "y_axis": "name",
     }
 
