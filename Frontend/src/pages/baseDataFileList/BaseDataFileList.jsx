@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { CustomButton } from '../../components/custombutton/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { SourceFileModal } from '../../modal/sourceFileModal/SourceFileModal';
 import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
-import { SourceFileModal } from '../sourceFileModal/SourceFileModal';
 import styles from './BaseDataFileList.module.css';
 
 export const BaseDataFileList = ({ setBaseFilePreviewData }) => {

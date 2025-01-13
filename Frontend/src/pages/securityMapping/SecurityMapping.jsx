@@ -171,7 +171,7 @@ export const SecurityMapping = () => {
                     </div>
                 </div>
             </div>
-            <AddSecurityMapping isOpen={isModalOpen} columns={columns} onClose={() => setIsModalOpen(false)} />
+            <AddSecurityMapping isOpen={isModalOpen} columns={columns} onClose={() => setIsModalOpen(false)} getMappingData={getMappingData}/>
         </div>
     );
 };
