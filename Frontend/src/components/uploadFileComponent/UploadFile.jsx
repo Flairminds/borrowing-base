@@ -240,11 +240,10 @@ export const UploadFile = ({
   };
 
   const { getRootProps, getInputProps } = useDropzone({
-    accept: [
-      'text/csv',
-      'document/csv',
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    ],
+    accept: {
+      'text/csv': [],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': []
+    },
     multiple: true,
     onDrop: (acceptedFiles) => {
       setSelectedFiles([...selectedFiles, ...acceptedFiles]);
