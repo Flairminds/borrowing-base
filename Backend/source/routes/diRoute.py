@@ -47,3 +47,7 @@ def get_source_file_data():
 @di_blueprint.route('/get_source_file_data_detail', methods=["POST"])
 def get_source_file_data_detail():
     return diController.get_source_file_data_detail()
+
+@di_blueprint.route('/trigger_bb_calculation', methods=["POST"])
+def trigger_bb_calculation():
+    return diController.trigger_bb_calculation()

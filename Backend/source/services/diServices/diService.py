@@ -10,6 +10,8 @@ from sqlalchemy import text
 import threading
 import numpy as np
 from numerize import numerize
+from openpyxl import load_workbook
+import openpyxl
 
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
@@ -587,3 +589,114 @@ def get_source_file_data_detail(ebd_id, column_key):
         return ServiceResponse.success(data=df_dict[0])
     except Exception as e:
         raise Exception(e)
+
+def trigger_bb_calculation(bdi_id):
+    try:
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
+            df2 = pd.DataFrame(connection.execute(text(f'select bd_column_name, bd_column_lookup from pflt_base_data_mapping where bd_column_lookup is not null')).fetchall())
+        df = df.replace({np.nan: None})
+        df = df.drop('report_date', axis=1)
+        df = df.drop('created_at', axis=1)
+        df = df.drop('base_data_info_id', axis=1)
+        df = df.drop('id', axis=1)
+        df = df.drop('company_id', axis=1)
+        df = df.drop('created_by', axis=1)
+        df = df.drop('modified_by', axis=1)
+        df = df.drop('modified_at', axis=1)
+        # df['report_date'] = df['report_date'].astype(str)
+        # df['created_at'] = df['created_at'].astype(str)
+        rename_df_col = {}
+        for index, row in df2.iterrows():
+            rename_df_col[row['bd_column_lookup']] = row['bd_column_name']
+        df.rename(columns=rename_df_col, inplace=True)
+        # print(df.dtypes)
+        # for c in df.columns:
+            # print(c, df[c].dtype)
+
+        # Load existing workbook
+        wb = openpyxl.Workbook() 
+  
+        sheet = wb.active
+        sheet.title = "Loan List"
+
+        file_name = "output5.xlsx"
+        wb.save(file_name)
+
+        book = load_workbook(file_name)
+        writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        writer.book = book
+        df.to_excel(writer, sheet_name="Loan List", index=False, header=True)
+        writer.save()
+
+        data = {'INPUTS': ['Determination Date', 'Minimum Equity Amount Floor'],
+                '': ['', ''],
+        'Values': ['9-30-24', '30000000']}
+
+        df2 = pd.DataFrame(data)
+
+        book = load_workbook(file_name)
+        writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        writer.book = book
+        df2.to_excel(writer, sheet_name="Inputs", index=False, header=True)
+        writer.save()
+
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'],
+        'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
+
+        df3 = pd.DataFrame(data)
+
+        book = load_workbook(file_name)
+        writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        writer.book = book
+        df3.to_excel(writer, sheet_name="Exchange Rates", index=False, header=True)
+        writer.save()
+
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'],
+        'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
+
+        df4 = pd.DataFrame(data)
+
+        book = load_workbook(file_name)
+        writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        writer.book = book
+        df4.to_excel(writer, sheet_name="Haircut", index=False, header=True)
+        writer.save()
+
+        data = {'Industry No': ['1'],
+        'Industry': ['Aerospace & Defense']}
+
+        df5 = pd.DataFrame(data)
+
+        book = load_workbook(file_name)
+        writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        writer.book = book
+        df5.to_excel(writer, sheet_name="Industry", index=False, header=True)
+        writer.save()
+
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'],
+        'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
+
+        df6 = pd.DataFrame(data)
+
+        book = load_workbook(file_name)
+        writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        writer.book = book
+        df6.to_excel(writer, sheet_name="Cash Balance Projections", index=False, header=True)
+        writer.save()
+
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'],
+        'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
+
+        df7 = pd.DataFrame(data)
+
+        book = load_workbook(file_name)
+        writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        writer.book = book
+        df7.to_excel(writer, sheet_name="Credit Balance Projection", index=False, header=True)
+        writer.save()
+
+        # print(df2)
+    except Exception as e:
+        print(e)
