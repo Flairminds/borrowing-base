@@ -1,19 +1,38 @@
 import Modal from "antd/es/modal/Modal";
-import React, { useState } from "react";
+import React, {useState } from "react";
 import { CustomButton } from "../../components/custombutton/CustomButton";
+import {postAddSecurityMapping } from "../../services/dataIngestionApi";
+import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./AddSecurityMapping.module.css";
 
-export const AddSecurityMapping = ({ isOpen, columns, onClose }) => {
+export const AddSecurityMapping = ({ isOpen, columns, onClose, getMappingData }) => {
     const [formValues, setFormValues] = useState({});
-
     const handleInputChange = (key, value) => {
         setFormValues((prev) => ({ ...prev, [key]: value }));
     };
 
-    const handleSave = () => {
-        setFormValues({});
-        onClose();
+    const handleSave = async () => {
+        try {
+            const payload = formValues;
+            const response = await postAddSecurityMapping(payload);
+
+            if (response.data.success) {
+
+                const successMessage = response.data.message || 'Security mapping added successfully';
+                showToast('success', successMessage);
+                getMappingData();
+                setFormValues({});
+                onClose();
+            } else {
+                const errorMessage = response.data.message || 'Failed to add security mapping';
+                showToast('error', errorMessage);
+            }
+        } catch (error) {
+            showToast('error', `Error: ${error.message}`);
+        }
     };
+
+
 
     const handleCancel = () => {
         setFormValues({});

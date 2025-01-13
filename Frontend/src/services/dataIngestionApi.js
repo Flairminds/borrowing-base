@@ -64,3 +64,7 @@ export const editPfltSecMapping = (changes) => {
 export const postSourceFileData = (payload) => {
     return axios.post(`${ApiURL}/data_ingestion/get_source_file_data`, payload);
 };
+
+export const postAddSecurityMapping = (payload) => {
+    return axios.post(`${ApiURL}/data_ingestion/add_sec_mapping`, payload);
+};
