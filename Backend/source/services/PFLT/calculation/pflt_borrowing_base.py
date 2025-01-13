@@ -130,16 +130,16 @@ class PFLTBorrowingBase(PFLTCalculationInitiator):
             "Industry": [
                 {"data": industry} for industry in industry_group["Obligor Industry"]
             ],
-            "Unadjusted BB": [{"data": bb} for bb in industry_group["Borrowing Base"]],
-            "Unadjusted % of BB": [
+            "Borrowing Base": [{"data": bb} for bb in industry_group["Borrowing Base"]],
+            "% Borrowing Base": [
                 {"data": pct} for pct in industry_group["Unadjusted % of BB"]
             ],
-            "columns": [{"data": ["Industry", "Unadjusted BB", "Unadjusted % of BB"]}],
+            "columns": [{"data": ["Industry", "Borrowing Base", "% Borrowing Base"]}],
             "Total": {
                 "data": {
                     "Industry": "Total",
-                    "Unadjusted % of BB": "100.00%",
-                    "Unadjusted BB": f"${total_borrowing_base / 1e6:.2f}M",
+                    "% Borrowing Base": "100.00%",
+                    "Borrowing Base": f"${total_borrowing_base / 1e6:.2f}M",
                 }
             },
         }

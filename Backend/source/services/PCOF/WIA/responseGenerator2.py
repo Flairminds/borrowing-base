@@ -253,15 +253,15 @@ def get_security_data(initial_xl_df_map, calculated_xl_df_map):
     total = {
         "data": {
             "Security": "Total",
-            "% of Borrowing Base": "{:.2f}%".format(merged_security_bb_df["Updated Percent of BB"].sum()),
+            "% Borrowing Base": "{:.2f}%".format(merged_security_bb_df["Updated Percent of BB"].sum()),
             "Borrowing Base": "$" + numerize.numerize(merged_security_bb_df["Updated Borrowing Base"].sum()),
         }
     }
 
-    columns = [{"data": ["Security", "Borrowing Base", "% of Borrowing Base"]}]
+    columns = [{"data": ["Security", "Borrowing Base", "% Borrowing Base"]}]
 
     security_data = {
-        "% of Borrowing Base": percent_of_borrowing_base,
+        "% Borrowing Base": percent_of_borrowing_base,
         "Borrowing Base": borrowing_base,
         "Security": secuity,
         "Total": total,
@@ -348,22 +348,22 @@ def get_segmentation_overview_data(initial_xl_df_map, calculated_xl_df_map):
     total = {
         "data": {
             "Industry": "Total",
-            "Unadjusted % of BB": "{:.2f}%".format(
+            "% Borrowing Base": "{:.2f}%".format(
                 merged_segmentation_bb_df["Updated percent of BB"].sum() * 100
             ),
-            "Unadjusted BB": "$"
+            "Borrowing Base": "$"
             + numerize.numerize(
                 merged_segmentation_bb_df["Updated Borrowing Base"].sum()
             ),
         }
     }
 
-    columns = [{"data": ["Industry", "Unadjusted BB", "Unadjusted % of BB"]}]
+    columns = [{"data": ["Industry", "Borrowing Base", "% Borrowing Base"]}]
 
     segmentation_overview_data = {
         "Industry": industries,
-        "Unadjusted BB": borrowing_base,
-        "Unadjusted % of BB": unadjusted_percent_of_bb,
+        "Borrowing Base": borrowing_base,
+        "% Borrowing Base": unadjusted_percent_of_bb,
         "Total": total,
         "columns": columns,
     }

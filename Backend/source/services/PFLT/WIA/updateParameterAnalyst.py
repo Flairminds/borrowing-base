@@ -60,7 +60,11 @@ def update_parameters(base_data_file, type, asset_percent_list):
         opposite_type_col = "Current TTM EBITDA"
 
     for asset_percent in asset_percent_list:
-        asset_percent["percent"] = float(asset_percent["percent"])
+        if asset_percent.get("percent"):
+            percent = float(asset_percent.get("percent"))
+        else:
+            percent = float("0")
+        asset_percent["percent"] = percent
 
     asset_percent_df = pd.DataFrame.from_records(asset_percent_list)
     
