@@ -6,6 +6,8 @@ import { SourceFileModal } from '../../modal/sourceFileModal/SourceFileModal';
 import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
+import { Select } from 'antd';
+import { fundOptionsArray } from '../../utils/constants/constants';
 
 export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
     const [baseDataFilesList, setBaseDataFilesList] = useState({});
@@ -125,8 +127,19 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
                     <CustomButton isFilled={true} onClick={handleExtractNew} text="Extract New Base Data" />
                 </div>
 
-                <div className={styles.tableHeading}>
+
+                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+                 <div className={styles.tableHeading}>
                     Base Data
+                </div>
+                <div style={{ padding: '0 5px 0 0' }}>
+            <Select
+            defaultValue="Select Fund"
+            style={{ width: 140, borderRadius: '8px', margin: '1rem 1rem' }}
+            options={fundOptionsArray}
+          />
+        </div>
+
                 </div>
             <div className={styles.baseDataTableContainer}>
                 <DynamicTableComponents data={baseDataFilesList?.data} columns={baseDataFilesList?.columns} additionalColumns={columnsToAdd} />
