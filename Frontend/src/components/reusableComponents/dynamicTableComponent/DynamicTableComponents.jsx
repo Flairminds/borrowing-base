@@ -1,10 +1,25 @@
 import { SettingOutlined } from '@ant-design/icons';
 import React, { useEffect, useState } from 'react';
+import CrossIcon from '../../../assets/CrossIcon.svg';
+import RightIcon from '../../../assets/RightIcon.svg';
 import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
+import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import tableStyles from './DynamicTableComponents.module.css';
 
 
-export const DynamicTableComponents = ({data, columns, additionalColumns = [], showCellDetailsModal = false, showSettings = false, enableStickyColumns = false, getCellDetailFunc = () => {}, cellDetail = null}) => {
+export const DynamicTableComponents = (
+    {
+        data,
+        columns,
+        additionalColumns = [],
+        showCellDetailsModal = false,
+        showSettings = false,
+        enableStickyColumns = false,
+        enableColumnEditing = false,
+        onChangeSave,
+        getCellDetailFunc = () => {},
+        cellDetail = null
+    }) => {
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
     const [showSettingsDiv, setShowSettingsDiv] = useState(false);
@@ -13,6 +28,8 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
     const [activeRowIndex, setActiveRowIndex] = useState(-1);
     const [modalVisible, setModalVisible] = useState(false);
     // const [cellDetails, setCellDetails] = useState({ rowIndex: -1, column: '' });
+    const [editingCell, setEditingCell] = useState(null);
+    const [inputValue, setInputValue] = useState("");
 
 
     useEffect(() => {
@@ -46,7 +63,46 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
 			getCellDetailFunc(rowIndex, columnKey, columnName, cellValue);
 			setModalVisible(true);
 		}
-	};
+      };
+
+    const handleCellEdit = (rowIndex, columnkey, cellValue) => {
+        setEditingCell({ rowIndex, columnkey });
+        setInputValue(cellValue);
+    };
+
+    const handleInputChange = (e) => {
+        setInputValue(e.target.value);
+    };
+
+    const handleSaveEdit = async () => {
+
+        const { rowIndex, columnkey } = editingCell;
+        const saveStatus = await onChangeSave(rowIndex, columnkey, inputValue);
+
+        if (saveStatus.success) {
+            setEditingCell(null);
+            setInputValue("");
+            showToast("success", "Data updated successfully");
+        } else {
+            showToast("error", saveStatus.msg);
+        }
+        // try {
+        //     await editPfltSecMapping(changes);
+        //     updatedData[rowIndex][columnkey] = inputValue;
+            // setData(updatedData);
+        //     setEditingCell(null);
+        //     setInputValue("");
+        //     showToast("success", "Data updated successfully");
+        // } catch (error) {
+        //     showToast("error", error?.response?.data?.message || "Failed to update data");
+        // }
+    };
+
+    const handleCancelEdit = (e) => {
+        e.stopPropagation();
+        setEditingCell(null);
+        setInputValue("");
+    };
 
   return (
     <>
@@ -95,11 +151,39 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
                         <tr key={rowIndex} onClick={() => setActiveRowIndex(rowIndex)}>
                             {updatedColumnsData?.map((col) => {
                                 if (selectedColumns.includes(col.label)) {
+                                    const isEditable = enableColumnEditing && col.isEditable;
+                                    const isValueEmpty = isEditable && !row[col.key];
                                 return (
-                                    <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : tableStyles.td}
+                                    <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
                                         style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
-                                        onClick={showCellDetailsModal ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]) : () => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
-                                        {col.render ? col.render(row[col.key], row) : (row[col.key] ? row[col.key] : '-') }
+                                        onClick={ShowCellDetailsModal ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]) : isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]) : () => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
+                                        {enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
+                                            (
+                                                <div className={tableStyles.editIconsContainer}>
+                                                    <input
+                                                        type="text"
+                                                        value={inputValue}
+                                                        onChange={handleInputChange}
+                                                        className={tableStyles.updateInput}
+                                                        autoFocus
+                                                    />
+                                                    <img
+                                                        src={RightIcon}
+                                                        alt="Save"
+                                                        className={tableStyles.iconButton}
+                                                        onClick={handleSaveEdit}
+                                                    />
+                                                    <img
+                                                        src={CrossIcon}
+                                                        alt="Cancel"
+                                                        className={tableStyles.iconButton}
+                                                        onClick={handleCancelEdit}
+                                                    />
+                                                </div>
+                                            )
+                                            :
+                                                col.render ? col.render(row[col.key], row) : (row[col.key] ? row[col.key] : '-')
+                                        }
                                     </td>
                                 );
                                 }

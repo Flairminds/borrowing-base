@@ -130,3 +130,37 @@
 .stickyColTh:nth-child(3) {
     z-index: 300;
 }
+
+.emptyValue
+{
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #DCDEDE;
+    min-width: 4rem;
+    max-width: 200px;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    white-space: nowrap;
+    background-color: rgb(255, 214, 214) !important;
+}
+
+.editIconsContainer {
+    display: flex;
+    align-items: center;
+}
+
+.updateInput {
+    outline: none;
+    border: 0px;
+}
+
+.updateInput:focus {
+    outline: none;
+    border-bottom: 1px solid black;
+}
+
+.iconButton {
+    cursor: pointer;
+    margin-left: 5px;
+}
