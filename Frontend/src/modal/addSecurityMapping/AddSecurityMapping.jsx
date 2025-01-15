@@ -23,12 +23,9 @@ export const AddSecurityMapping = ({ isOpen, columns, onClose, getMappingData })
                 getMappingData();
                 setFormValues({});
                 onClose();
-            } else {
-                const errorMessage = response.data.message || 'Failed to add security mapping';
-                showToast('error', errorMessage);
             }
         } catch (error) {
-            showToast('error', `Error: ${error.message}`);
+            showToast('error', error.response.data.message || 'Error: Failed to add security mapping');
         }
     };
 
