@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { CustomButton } from '../../components/custombutton/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
-import { getBaseDataCellDetail } from '../../services/api';
+import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api';
 import { editBaseData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
@@ -86,23 +87,39 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
             }
         };
 
+    const generateBaseData = async(e) => {
+        // e.preventDefault();
+        try {
+            const response = await generateBaseDataFile({ 'bdi_id': baseFilePreviewData.infoId});
+            const detail = response?.data;
+            showToast('success', 'File generated');
+        } catch (error) {
+            showToast('error', error.message);
+        }
+    };
+
     return (
         <div className={styles.previewPage}>
             <div className={styles.tableContainer}>
-                <div style={{position: 'fixed'}}>
-                    Base Data for {baseFilePreviewData.reportDate}
+                <div style={{display: 'flex', justifyItems: 'baseline'}}>
+                    <div>
+                        Base Data for {baseFilePreviewData.reportDate} ({baseFilePreviewData?.baseData?.data ? baseFilePreviewData?.baseData?.data.length : ''})
+                    </div>
+                    {/* <button onClick={(e) => generateBaseData(e)} style={{outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px'}}> Generate base data file</button> */}
                 </div>
-                <DynamicTableComponents
-                    data={baseFilePreviewData?.baseData?.data}
-                    columns={baseFilePreviewData?.baseData?.columns}
-                    enableStickyColumns={true}
-                    showSettings={true}
-                    showCellDetailsModal={true}
-                    enableColumnEditing={true}
-                    onChangeSave={handleSaveEdit}
-                    getCellDetailFunc={getCellDetail}
-                    cellDetail={cellDetail}
-                 />
+                <div>
+                    <DynamicTableComponents
+                        data={baseFilePreviewData?.baseData?.data}
+                        columns={baseFilePreviewData?.baseData?.columns}
+                        enableStickyColumns={true}
+                        showSettings={true}
+                        showCellDetailsModal={true}
+                        enableColumnEditing={true}
+                        onChangeSave={handleSaveEdit}
+                        getCellDetailFunc={getCellDetail}
+                        cellDetail={cellDetail}
+                    />
+                </div>
             </div>
         </div>
         // <div>

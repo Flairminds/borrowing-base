@@ -102,7 +102,7 @@ export const SecurityMapping = () => {
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: '300px' }}>
                                 <input type="text" style={{ outline: 'none', border: '1px solid #DCDEDE', borderRadius: '5px', width: '100%', fontSize: 'small', padding: '0.5rem' }} onChange={(e) => filterData(e.target.value)} placeholder="Search by security name" />
-                                <CustomButton isFilled={true} text="Add" onClick={() => setIsModalOpen(true)} />
+                                <CustomButton isFilled={true} text="+ Add" onClick={() => setIsModalOpen(true)} />
                             </div>
                         </div>
                         <div className={styles.tableContainer}>
@@ -116,8 +116,8 @@ export const SecurityMapping = () => {
                             />
                         </div>
                     </div>
-                    <div style={{ margin: '0 2rem', border: '1px solid #DCDEDE' }}>
-                        <DynamicTableComponents data={unmappedSecurities} columns={[{ 'key': 'cashfile_securities', 'label': 'Unmapped Cashfile Securities' }]} />
+                    <div style={{ margin: '0 2rem', border: '1px solid #DCDEDE', height: '80vh', overflow: 'auto' }}>
+                        <DynamicTableComponents data={unmappedSecurities} columns={[{ 'key': 'cashfile_securities', 'label': `${unmappedSecurities.length} Unmapped Cashfile Securities` }]} />
                     </div>
                 </div>
             </div>

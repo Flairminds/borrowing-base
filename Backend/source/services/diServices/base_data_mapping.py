@@ -81,7 +81,7 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	null as for_unused_fee,
 	null as pik_pikable_for_floating_rate_loans,
 	null as pik_pikable_for_fixed_rate_loans,
-	null as interest_paid,
+	'Quarterly' as interest_paid,
 	bs."[ACM] [COI/LC] S&P Industry" as obligor_industry,
 	ss."[SI] Currency" as currency,
 	ss."[SI] Obligor Country" as obligor_country,
