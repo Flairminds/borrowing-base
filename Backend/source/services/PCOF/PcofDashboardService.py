@@ -317,14 +317,7 @@ class PcofDashboardService:
         return jsonify(trend_graph_response), 200
 
     def calculate_bb(self, base_data_file, selected_assets, user_id):
-        return (
-            jsonify(
-                pcofBBCalculator.get_bb_calculation(
-                    base_data_file, selected_assets, user_id
-                )
-            ),
-            200,
-        )
+        return pcofBBCalculator.get_bb_calculation(base_data_file, selected_assets, user_id)
     
     def pcof_validate_file(self, excel_file, fund_type):
         try:
