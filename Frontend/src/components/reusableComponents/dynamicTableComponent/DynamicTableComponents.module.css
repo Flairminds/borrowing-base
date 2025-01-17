@@ -151,6 +151,7 @@
 }
 
 .updateInput {
+    width: 90%;
     outline: none;
     border: 0px;
 }

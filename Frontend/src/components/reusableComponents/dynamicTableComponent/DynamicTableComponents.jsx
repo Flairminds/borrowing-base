@@ -5,6 +5,7 @@ import RightIcon from '../../../assets/RightIcon.svg';
 import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import tableStyles from './DynamicTableComponents.module.css';
+import { Switch } from 'antd';
 
 
 export const DynamicTableComponents = (
@@ -30,6 +31,7 @@ export const DynamicTableComponents = (
     // const [cellDetails, setCellDetails] = useState({ rowIndex: -1, column: '' });
     const [editingCell, setEditingCell] = useState(null);
     const [inputValue, setInputValue] = useState("");
+    const [isInUpdateMode, setIsInUpdateMode] = useState(false);
 
 
     useEffect(() => {
@@ -86,16 +88,6 @@ export const DynamicTableComponents = (
         } else {
             showToast("error", saveStatus.msg);
         }
-        // try {
-        //     await editPfltSecMapping(changes);
-        //     updatedData[rowIndex][columnkey] = inputValue;
-            // setData(updatedData);
-        //     setEditingCell(null);
-        //     setInputValue("");
-        //     showToast("success", "Data updated successfully");
-        // } catch (error) {
-        //     showToast("error", error?.response?.data?.message || "Failed to update data");
-        // }
     };
 
     const handleCancelEdit = (e) => {
@@ -104,11 +96,28 @@ export const DynamicTableComponents = (
         setInputValue("");
     };
 
+    const handleToggleChange = (value) => {
+        setIsInUpdateMode(value);
+        if (!value) {
+            setEditingCell(null);
+            setInputValue("");
+        }
+    };
+
+
   return (
     <>
         {showSettings &&
         <div style={{position: 'relative', textAlign: 'right'}}>
-            <div style={{cursor: 'pointer'}} onClick={(e) => handleOpenSettings(e)}><SettingOutlined style={{ fontSize: '20px', margin: '7px'}} /> </div>
+            <div style={{cursor: 'pointer', padding: '0px 10px'}}>
+                {(ShowCellDetailsModal && enableColumnEditing) &&
+                <>
+                    <span style={{margin: '7px'}}>{isInUpdateMode ? <> Update Mode </> : <> View Mode </>}</span>
+                    <Switch size='small' style={{margin: '0px 10px 4px 0px', backgroundColor: '#0EB198' }} onChange={handleToggleChange} />
+                    <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px', margin: '7px'}} />
+                </>
+                }
+            </div>
             {showSettingsDiv &&
                 <div style={{position: 'absolute', display: 'flex', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
                     {breaks?.map((b, i) => {
@@ -156,7 +165,7 @@ export const DynamicTableComponents = (
                                 return (
                                     <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
                                         style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
-                                        onClick={ShowCellDetailsModal ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]) : isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]) : () => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
+                                        onClick={ShowCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]) : isEditable && isInUpdateMode ? () => handleCellEdit(rowIndex, col.key, row[col.key]) : () => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
                                         {enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
                                             (
                                                 <div className={tableStyles.editIconsContainer}>

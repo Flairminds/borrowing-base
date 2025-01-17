@@ -68,3 +68,9 @@ export const postSourceFileData = (payload) => {
 export const postAddSecurityMapping = (payload) => {
     return axios.post(`${ApiURL}/data_ingestion/add_sec_mapping`, payload);
 };
+
+export const editBaseData = (changes) => {
+    const payload = { changes };
+    const response = axios.post(`${ApiURL}/data_ingestion/edit_base_data`, payload);
+    return response;
+};

@@ -7,7 +7,7 @@
 // const apiURL = 'https://4m3x42wn-5000.inc1.devtunnels.ms/api'
 // Abhinav
 
-// const apiURL = 'https://ts3pl306-5000.inc1.devtunnels.ms/api'
+const apiURL = 'https://ts3pl306-5000.inc1.devtunnels.ms/api'
 
 // const apiURL = 'https://ts3pl306-5000.inc1.devtunnels.ms/api';
 
@@ -20,7 +20,7 @@
 // const apiURL = 'https://qgt25b0c-5000.inc1.devtunnels.ms/api';
 
 // Deployed link
-const apiURL = 'https://borrowing-base-uat.azurewebsites.net/api'
+// const apiURL = 'https://borrowing-base-uat.azurewebsites.net/api'
 // local link
 // const apiURL = 'http://192.168.1.78:5000/api'
 

@@ -16,37 +16,34 @@ export const SecurityMapping = () => {
     const [filteredData, setFilteredData] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const tempColumnData = [
-        {
-            "key": "soi_name",
-            "label": "Soi name",
-            "isEditable": false
-        },
-        {
-            "key": "master_comp_security_name",
-            "label": "Master comp security name",
-            "isEditable": false
-        },
-        {
-            "key": "family_name",
-            "label": "Family name",
-            "isEditable": true
-        },
-        {
-            "key": "security_type",
-            "label": "Security type",
-            "isEditable": false
-        },
-        {
-            "key": "cashfile_security_name",
-            "label": "Cash file security name",
-            "isEditable": true
-        }
-    ];
+    // const tempColumnData = [
+    //     {
+    //         "key": "soi_name",
+    //         "label": "Soi name",
+    //         "isEditable": false
+    //     },
+    //     {
+    //         "key": "master_comp_security_name",
+    //         "label": "Master comp security name",
+    //         "isEditable": false
+    //     },
+    //     {
+    //         "key": "family_name",
+    //         "label": "Family name",
+    //         "isEditable": true
+    //     },
+    //     {
+    //         "key": "security_type",
+    //         "label": "Security type",
+    //         "isEditable": false
+    //     },
+    //     {
+    //         "key": "cashfile_security_name",
+    //         "label": "Cash file security name",
+    //         "isEditable": true
+    //     }
+    // ];
 
-    useEffect(() => {
-        console.info(columns, 'cols');
-    }, [columns]);
 
     // Fetch mapping data
     const getMappingData = async () => {
@@ -55,11 +52,7 @@ export const SecurityMapping = () => {
             const { data, columns, unmapped_securities } = mappingRes.data.result;
             setData(data);
             setFilteredData(data);
-
-            // Temperorily adding static column until api changes are made
-            setColumns(tempColumnData);
-
-            // setColumns(columns);
+            setColumns(columns);
             setUnmappedSecurities(unmapped_securities);
         } catch (err) {
             showToast("error", err?.response?.data?.message || "Failed to load data");
