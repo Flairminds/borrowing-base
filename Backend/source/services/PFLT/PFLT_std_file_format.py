@@ -93,7 +93,7 @@ add_asset_std_file_format = {
     "Sheet1": {
         "Obligor Name": "object",
         "Security Name": "object",
-        "Purchase Date (Date Loan contributed to the facility)": "Number",
+        "Purchase Date (Date Loan contributed to the facility)": "datetime64[ns]",
         "Total Commitment (Issue Currency)": "Number",
         "Outstanding Principal Balance (Issue Currency)": "Number",
         "Defaulted Collateral Loan / Material Mod (Y/N)": "object",

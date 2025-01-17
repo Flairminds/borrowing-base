@@ -1,5 +1,10 @@
 from datetime import datetime
 import pandas as pd
+import copy
+import numpy as np
+
+from source.utility.Util import remove_special_characters_and_spaces, remove_special_characters_and_spaces_in_df
+from source.utility.Constant import NOT_A_VALUE
 
 def excel_to_df(excel):
     sheet_df_map = pd.read_excel(excel, sheet_name=None, na_values=["N/A"])
@@ -35,37 +40,51 @@ def find_missing_sheets(xl_sheet_df_map, std_file_format):
 
 def update_column_name(df, std_column, std_file_format):
     matched_index = [column.lower() for column in df.columns].index(std_column.lower())
-    replacable_column = df.columns[matched_index]
+    replacable_column = df.columns[matched_index].trim()
 
     df.rename(columns={replacable_column: std_column}, inplace=True)
     return df
 
+def is_valid_value(value):
+    invalid_values = NOT_A_VALUE
+    
+    if pd.isna(value):
+        return False
+    
+    if value in invalid_values:
+        return False
+    
+    return True
 
 def find_error_row(df, std_column, std_dtype):
     series = df[std_column]
+    
     error_rows_list = []
+    
     for index, value in series.items():
         xl_col_dtype = type(value)
-        # if xl_col_dtype == 'float64' or xl_col_dtype == 'int64':
-        if xl_col_dtype == int or xl_col_dtype == float:
-            if value != value:  # to check nan value
-                error_rows_list.append(index)
-            else:
-                xl_col_dtype = "Number"
+
+        if is_valid_value(value):
+            if xl_col_dtype == int or xl_col_dtype == float:
+                if value != value:  # to check nan value
+                    error_rows_list.append(index)
+                else:
+                    xl_col_dtype = "Number"
+                    if xl_col_dtype != std_dtype:
+                        error_rows_list.append(index)
+
+            if xl_col_dtype == str:
+                xl_col_dtype = "object"
                 if xl_col_dtype != std_dtype:
                     error_rows_list.append(index)
 
-        if xl_col_dtype == str:
-            xl_col_dtype = "object"
-            if xl_col_dtype != std_dtype:
-                error_rows_list.append(index)
+            if xl_col_dtype == datetime:
+                xl_col_dtype = "datetime64[ns]"
 
-        if xl_col_dtype == datetime:
-            xl_col_dtype = "datetime64[ns]"
             if xl_col_dtype != std_dtype:
                 error_rows_list.append(index)
+    
     return error_rows_list
-
 
 def find_dtype_error(df, std_sheet_name, std_column, std_dtype):
     xl_col_dtype = df[std_column].dtype
@@ -80,19 +99,25 @@ def find_dtype_error(df, std_sheet_name, std_column, std_dtype):
 def find_missing_columns(
     df, std_sheet_name, xl_sheet_df_map, error_map, std_file_format
 ):
-    missing_columns = []
     std_seleced_sheet_data = std_file_format[std_sheet_name]
     for std_column in std_seleced_sheet_data.keys():
-        if std_column.lower() in [column.lower() for column in df.columns]:
-            if std_column not in df.columns:
+        copy_std_column = copy.copy(std_column)
+        updated_std_column = remove_special_characters_and_spaces(copy_std_column)
+
+        copy_df = df.copy()
+        updated_df = remove_special_characters_and_spaces_in_df(copy_df)
+        
+        if updated_std_column in [column for column in updated_df.columns]:
+        # if updated_std_column in updated_df.columns:
+            if updated_std_column not in updated_df.columns:
                 updated_dframe = update_column_name(df, std_column, std_file_format)
                 xl_sheet_df_map[std_sheet_name] = updated_dframe
 
             # finding datatype error
             dtype_error = find_dtype_error(
-                df,
+                updated_df,
                 std_sheet_name,
-                std_column,
+                updated_std_column,
                 std_file_format[std_sheet_name][std_column],
             )
             if dtype_error is not None:
@@ -101,9 +126,9 @@ def find_missing_columns(
                     df, std_column, std_file_format[std_sheet_name][std_column]
                 )
 
-                dtype_error_msg = f"<div><b>{std_column}</b> column of <b>{std_sheet_name}</b> sheet must be in <b>{std_file_format[std_sheet_name][std_column]}</b> format.</div> "
 
-                if error_row_list:
+                if len(error_row_list) > 0:
+                    dtype_error_msg = f"<div><b>{std_column}</b> column of <b>{std_sheet_name}</b> sheet must be in <b>{std_file_format[std_sheet_name][std_column]}</b> format.</div> "
                     dtype_error_msg += (
                         "<div>Please check values corresponding to following rows"
                     )
@@ -117,13 +142,13 @@ def find_missing_columns(
                             dtype_error_msg += " ,"
                     dtype_error_msg += "</div>"
 
-                error_map["Data Format Modifications"].append(dtype_error_msg)
+                    error_map["Data Format Modifications"].append(dtype_error_msg)
         else:
             error_map["Column Modifications"].append(
                 f"<b>{std_column}</b> is not present in {std_sheet_name}"
             )
 
-    return missing_columns, xl_sheet_df_map
+    return xl_sheet_df_map
 
 
 def validate_file(excel, std_file_format):
@@ -131,6 +156,7 @@ def validate_file(excel, std_file_format):
         "Sheet Modifications": [],
         "Column Modifications": [],
         "Data Format Modifications": [],
+        "Row Modifications": []
     }
     xl_sheet_df_map = excel_to_df(excel)
 
@@ -143,7 +169,7 @@ def validate_file(excel, std_file_format):
     # find missing cols and check datatype
     for sheet_name in xl_sheet_df_map.keys():
         if sheet_name in std_file_format.keys():
-            missing_columns, xl_sheet_df_map = find_missing_columns(
+            xl_sheet_df_map = find_missing_columns(
                 xl_sheet_df_map[sheet_name],
                 sheet_name,
                 xl_sheet_df_map,

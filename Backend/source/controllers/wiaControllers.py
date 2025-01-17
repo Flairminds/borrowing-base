@@ -42,7 +42,7 @@ def get_asset_overview():
             return HTTPResponse.error(message="No file part", status_code=400)
         
         excelfile = request.files["file"]
-        fund_type = "PFLT"
+        fund_type = request.form["fund_type"]
 
         if fund_type == "PCOF":
             std_file_format = PCOF_STANDARD_FILE_FORMAT
