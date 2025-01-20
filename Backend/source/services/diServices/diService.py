@@ -10,14 +10,22 @@ from sqlalchemy import text
 import threading
 import numpy as np
 from numerize import numerize
+from openpyxl import load_workbook
+import openpyxl
+import pickle
+import json
+from datetime import datetime
 
+from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping, PfltSecurityMapping
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping, PfltSecurityMapping, BaseDataFile
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
+
+pfltDashboardService = PfltDashboardService()
 
 def upload_src_file_to_az_storage(files, report_date):
     if len(files) == 0:
@@ -587,3 +595,174 @@ def get_source_file_data_detail(ebd_id, column_key):
         return ServiceResponse.success(data=df_dict[0])
     except Exception as e:
         raise Exception(e)
+
+def trigger_bb_calculation(bdi_id):
+    try:
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
+            df2 = pd.DataFrame(connection.execute(text(f'select bd_column_name, bd_column_lookup from pflt_base_data_mapping where bd_column_lookup is not null')).fetchall())
+            # haircut_config = pd.DataFrame(connection.execute(text(f'select haircut_level, obligor_tier, "position", value from pflt_haircut_config')).fetchall())
+            industry_list = pd.DataFrame(connection.execute(text(f'select industry_no as "Industry No", industry_name as "Industry" from pflt_industry_list')).fetchall())
+        df = df.replace({np.nan: None})
+        report_date = df['report_date'][0].strftime("%Y-%m-%d")
+        df = df.drop('report_date', axis=1)
+        df = df.drop('created_at', axis=1)
+        df = df.drop('base_data_info_id', axis=1)
+        df = df.drop('id', axis=1)
+        df = df.drop('company_id', axis=1)
+        df = df.drop('created_by', axis=1)
+        df = df.drop('modified_by', axis=1)
+        df = df.drop('modified_at', axis=1)
+        # df['report_date'] = df['report_date'].astype(str)
+        # df['created_at'] = df['created_at'].astype(str)
+        
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.title = "Loan List"
+        file_name = "PFLT Base data - " + report_date + ".xlsx"
+        wb.save(file_name)
+
+        path1 = 'PFLT Base data.xlsx'
+        path2 = file_name
+        wb1 = openpyxl.load_workbook(filename=path1)
+        for index, sheet in enumerate(wb1.worksheets):
+            ws1 = wb1.worksheets[index]
+
+            wb2 = openpyxl.load_workbook(filename=path2)
+            ws2 = wb2.create_sheet(ws1.title)
+            for row in ws1:
+                for cell in row:
+                    ws2[cell.coordinate].value = cell.value
+            wb2.save(path2)
+        
+        rename_df_col = {}
+        for index, row in df2.iterrows():
+            rename_df_col[row['bd_column_lookup']] = row['bd_column_name']
+        df.rename(columns=rename_df_col, inplace=True)
+        # print(df.dtypes)
+        # for c in df.columns:
+            # print(c, df[c].dtype)
+
+        # df["Initial TTM EBITDA"] = df["Initial TTM EBITDA"].astype(float)
+        # df["Current TTM EBITDA"] = df["Current TTM EBITDA"].astype(float)
+        # df["Current Fixed Charge Coverage Ratio"] = df["Current Fixed Charge Coverage Ratio"].astype(float)
+        # df["Initial Fixed Charge Coverage Ratio"] = df["Current Fixed Charge Coverage Ratio"].astype(float)
+
+        # df["Spread incl. PIK and PIK'able"].fillna(0, inplace=True)
+        # df["PIK / PIK'able For Floating Rate Loans"].fillna(0, inplace=True)
+        # df["PIK / PIK'able For Fixed Rate Loans"].fillna(0, inplace=True)
+        # df["Base Rate"].fillna(0, inplace=True)
+
+        xl_df_map = {}
+        xl_df_map['Loan List'] = df
+
+        book = load_workbook(file_name)
+        writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        writer.book = book
+        df.to_excel(writer, sheet_name="Loan List", index=False, header=True)
+        writer.save()
+
+
+        data = {'INPUTS': ['Determination Date', 'Minimum Equity Amount Floor'], '': ['', ''], 'Values': ['9-30-24', '30000000']}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Inputs'] = data
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # data.to_excel(writer, sheet_name="Inputs", index=False, header=True)
+        # writer.save()
+
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Exchange Rates'] = data
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # data.to_excel(writer, sheet_name="Exchange Rates", index=False, header=True)
+        # writer.save()
+
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': [1.000000, 0.739350, 0.691310, 1.113500], 'Cash - Current & PreBorrowing': [50958522.16, 265552.25, 0, 0], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': [0, 0, 0, 0], 'Additional Expences 2': [0, 0, 0, 0], 'Additional Expences 3': [0, 0, 0, 0]}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Cash Balance Projections'] = data
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # data.to_excel(writer, sheet_name="Cash Balance Projections", index=False, header=True)
+        # writer.save()
+
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Current Credit Facility Balance': [442400000, 2000000, 0, 0]}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Credit Balance Projection'] = data
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # data.to_excel(writer, sheet_name="Credit Balance Projection", index=False, header=True)
+        # writer.save()
+
+        data = {'Haircut': ['', 'SD/EBITDA', 'TD/EBITDA', 'UD/EBITDA'], '20% Conc. Limit': ['Tier 1 Obligor', 5, 7, 6], 'Unnamed: 2': ['Tier 2 Obligor', 4.25, 6, 5.25], 'Unnamed: 3': ['Tier 3 Obligor', 3.75, 5, 4.5], 'Level 1 - 10% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 5': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 6': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 2 - 20% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 8': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 9': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 3 - 35% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 11': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 12': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 4 - Max Eligibility - 50% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 14': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 15': ['Tier 3 Obligor', 4.25, 5.5, 5]}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Haircut'] = data
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # data.to_excel(writer, sheet_name="Haircut", index=False, header=True)
+        # writer.save()
+
+        # # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Current Credit Facility Balance': ['442400000', '2000000', '0', '0']}
+        # # data = pd.DataFrame.from_dict(data)
+        xl_df_map['Industry'] = industry_list
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # industry_list.to_excel(writer, sheet_name="Industry", index=False, header=True)
+        # writer.save()
+        # print(industry_list)
+
+        # print(xl_df_map)
+
+        # df.to_excel("output.xlsx")
+
+        xl_df_map = pd.read_excel(file_name, sheet_name=['Loan List', 'Inputs', 'Exchange Rates', 'Cash Balance Projections', 'Credit Balance Projection', 'Haircut', 'Industry'])
+        pickled_xl_sheet_df_map = pickle.dumps(xl_df_map)
+
+        included_excluded_assets_map = pfltDashboardService.pflt_included_excluded_assets(xl_df_map)
+
+        # datetime object containing current date and time
+        now = datetime.now()
+        
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+        base_data_file = BaseDataFile(
+            user_id=1,
+            closing_date=report_date,
+            fund_type='PFLT',
+            file_data=pickled_xl_sheet_df_map,
+            file_name='Generated Data ' + dt_string,
+            included_excluded_assets_map=json.dumps(included_excluded_assets_map),
+        )
+
+        db.session.add(base_data_file)
+        db.session.commit()
+
+        base_data_file = commonServices.get_base_data_file(
+            base_data_file_id=base_data_file.id
+        )
+        # if base_data_file.fund_type == "PCOF":
+            # return pcofDashboardService.calculate_bb(
+            #     base_data_file, selected_assets, user_id
+            # )
+        # else:
+        selected_assets = included_excluded_assets_map['included_assets']
+        wb2.close()
+        writer.close()
+        os.remove(file_name)
+        return pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
+
+    except Exception as e:
+        print(e)
