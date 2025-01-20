@@ -8,6 +8,11 @@
     width: 80%;
 }
 
+.headerContainer {
+    display: flex; 
+    justify-content: space-between; 
+}
+
 .buttonsContainer {
     display: flex; 
     justify-content: flex-end; 

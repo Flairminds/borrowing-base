@@ -122,9 +122,14 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
     return (
         <div className={styles.pageContainer}>
             <div className={styles.baseFileListPage}>
-                <div className={styles.buttonsContainer}>
-                    <CustomButton isFilled={true} onClick={handleSecurityMapping} text="Security Mapping" />
-                    <CustomButton isFilled={true} onClick={handleExtractNew} text="Extract New Base Data" />
+            <div className={styles.headerContainer}>
+                    <div className={styles.tableHeading}>
+                        Base Data
+                    </div>
+                    <div className={styles.buttonsContainer}>
+                        <CustomButton isFilled={true} onClick={handleSecurityMapping} text="Security Mapping" />
+                        <CustomButton isFilled={true} onClick={handleExtractNew} text="Extract New Base Data" />
+                    </div>
                 </div>
 
 
@@ -139,7 +144,6 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
             options={fundOptionsArray}
           />
         </div>
-
                 </div>
             <div className={styles.baseDataTableContainer}>
                 <DynamicTableComponents data={baseDataFilesList?.data} columns={baseDataFilesList?.columns} additionalColumns={columnsToAdd} />

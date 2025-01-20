@@ -14,7 +14,9 @@ from openpyxl import load_workbook
 import openpyxl
 import pickle
 import json
+from datetime import datetime
 
+from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
@@ -642,6 +644,16 @@ def trigger_bb_calculation(bdi_id):
         # for c in df.columns:
             # print(c, df[c].dtype)
 
+        # df["Initial TTM EBITDA"] = df["Initial TTM EBITDA"].astype(float)
+        # df["Current TTM EBITDA"] = df["Current TTM EBITDA"].astype(float)
+        # df["Current Fixed Charge Coverage Ratio"] = df["Current Fixed Charge Coverage Ratio"].astype(float)
+        # df["Initial Fixed Charge Coverage Ratio"] = df["Current Fixed Charge Coverage Ratio"].astype(float)
+
+        # df["Spread incl. PIK and PIK'able"].fillna(0, inplace=True)
+        # df["PIK / PIK'able For Floating Rate Loans"].fillna(0, inplace=True)
+        # df["PIK / PIK'able For Fixed Rate Loans"].fillna(0, inplace=True)
+        # df["Base Rate"].fillna(0, inplace=True)
+
         xl_df_map = {}
         xl_df_map['Loan List'] = df
 
@@ -652,9 +664,9 @@ def trigger_bb_calculation(bdi_id):
         writer.save()
 
 
-        # data = {'INPUTS': ['Determination Date', 'Minimum Equity Amount Floor'], '': ['', ''], 'Values': ['9-30-24', '30000000']}
-        # data = pd.DataFrame.from_dict(data)
-        # xl_df_map['Inputs'] = data
+        data = {'INPUTS': ['Determination Date', 'Minimum Equity Amount Floor'], '': ['', ''], 'Values': ['9-30-24', '30000000']}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Inputs'] = data
 
         # book = load_workbook(file_name)
         # writer = pd.ExcelWriter(file_name, engine="openpyxl")
@@ -662,9 +674,9 @@ def trigger_bb_calculation(bdi_id):
         # data.to_excel(writer, sheet_name="Inputs", index=False, header=True)
         # writer.save()
 
-        # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
-        # data = pd.DataFrame.from_dict(data)
-        # xl_df_map['Exchange Rates'] = data
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Exchange Rates'] = data
 
         # book = load_workbook(file_name)
         # writer = pd.ExcelWriter(file_name, engine="openpyxl")
@@ -672,9 +684,9 @@ def trigger_bb_calculation(bdi_id):
         # data.to_excel(writer, sheet_name="Exchange Rates", index=False, header=True)
         # writer.save()
 
-        # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': ['1.000000', '0.739350', '0.691310', '1.113500'], 'Cash - Current & PreBorrowing': ['50958522.16', '265552.25', '', ''], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': ['', '', '', ''], 'Additional Expences 2': ['', '', '', ''], 'Additional Expences 3': ['', '', '', '']}
-        # data = pd.DataFrame.from_dict(data)
-        # xl_df_map['Cash Balance Projections'] = data
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': [1.000000, 0.739350, 0.691310, 1.113500], 'Cash - Current & PreBorrowing': [50958522.16, 265552.25, 0, 0], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': [0, 0, 0, 0], 'Additional Expences 2': [0, 0, 0, 0], 'Additional Expences 3': [0, 0, 0, 0]}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Cash Balance Projections'] = data
 
         # book = load_workbook(file_name)
         # writer = pd.ExcelWriter(file_name, engine="openpyxl")
@@ -682,9 +694,9 @@ def trigger_bb_calculation(bdi_id):
         # data.to_excel(writer, sheet_name="Cash Balance Projections", index=False, header=True)
         # writer.save()
 
-        # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Current Credit Facility Balance': ['442400000', '2000000', '0', '0']}
-        # data = pd.DataFrame.from_dict(data)
-        # xl_df_map['Credit Balance Projection'] = data
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Current Credit Facility Balance': [442400000, 2000000, 0, 0]}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Credit Balance Projection'] = data
 
         # book = load_workbook(file_name)
         # writer = pd.ExcelWriter(file_name, engine="openpyxl")
@@ -692,9 +704,9 @@ def trigger_bb_calculation(bdi_id):
         # data.to_excel(writer, sheet_name="Credit Balance Projection", index=False, header=True)
         # writer.save()
 
-        # data = {'Haircut': ['', 'SD/EBITDA', 'TD/EBITDA', 'UD/EBITDA'], '20% Conc. Limit': ['Tier 1 Obligor', '5', '7', '6'], '': ['Tier 2 Obligor', '4.25', '6', '5.25'], '': ['Tier 3 Obligor', '3.75', '5', '4.5'], 'Level 1 - 10% Haircut': ['Tier 1 Obligor', '5.5', '7.5', '6.5'], '': ['Tier 2 Obligor', '4.75', '6.5', '5.75'], '': ['Tier 3 Obligor', '4.25', '5.5', '5'], 'Level 2 - 20% Haircut': ['Tier 1 Obligor', '5.5', '7.5', '6.5'], '': ['Tier 2 Obligor', '4.75', '6.5', '5.75'], '': ['Tier 3 Obligor', '4.25', '5.5', '5'], 'Level 3 - 35% Haircut': ['Tier 1 Obligor', '5.5', '7.5', '6.5'], '': ['Tier 2 Obligor', '4.75', '6.5', '5.75'], '': ['Tier 3 Obligor', '4.25', '5.5', '5'], 'Level 4 - Max Eligibility - 50% Haircut': ['Tier 1 Obligor', '5.5', '7.5', '6.5'], '': ['Tier 2 Obligor', '4.75', '6.5', '5.75'], '': ['Tier 3 Obligor', '4.25', '5.5', '5']}
-        # data = pd.DataFrame.from_dict(data)
-        # xl_df_map['Haircut'] = data
+        data = {'Haircut': ['', 'SD/EBITDA', 'TD/EBITDA', 'UD/EBITDA'], '20% Conc. Limit': ['Tier 1 Obligor', 5, 7, 6], 'Unnamed: 2': ['Tier 2 Obligor', 4.25, 6, 5.25], 'Unnamed: 3': ['Tier 3 Obligor', 3.75, 5, 4.5], 'Level 1 - 10% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 5': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 6': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 2 - 20% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 8': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 9': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 3 - 35% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 11': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 12': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 4 - Max Eligibility - 50% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 14': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 15': ['Tier 3 Obligor', 4.25, 5.5, 5]}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Haircut'] = data
 
         # book = load_workbook(file_name)
         # writer = pd.ExcelWriter(file_name, engine="openpyxl")
@@ -704,7 +716,7 @@ def trigger_bb_calculation(bdi_id):
 
         # # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Current Credit Facility Balance': ['442400000', '2000000', '0', '0']}
         # # data = pd.DataFrame.from_dict(data)
-        # xl_df_map['Industry'] = industry_list
+        xl_df_map['Industry'] = industry_list
 
         # book = load_workbook(file_name)
         # writer = pd.ExcelWriter(file_name, engine="openpyxl")
@@ -717,64 +729,40 @@ def trigger_bb_calculation(bdi_id):
 
         # df.to_excel("output.xlsx")
 
-        # pickled_xl_sheet_df_map = pickle.dumps(xl_df_map)
+        xl_df_map = pd.read_excel(file_name, sheet_name=['Loan List', 'Inputs', 'Exchange Rates', 'Cash Balance Projections', 'Credit Balance Projection', 'Haircut', 'Industry'])
+        pickled_xl_sheet_df_map = pickle.dumps(xl_df_map)
 
-        # included_excluded_assets_map = pfltDashboardService.pflt_included_excluded_assets(xl_df_map)
-        # base_data_file = BaseDataFile(
-        #     user_id=1,
-        #     closing_date='2025-01-10',
-        #     fund_type='PFLT',
-        #     file_data=pickled_xl_sheet_df_map,
-        #     file_name='Generated Data 2025-01-13',
-        #     included_excluded_assets_map=json.dumps(included_excluded_assets_map),
-        # )
+        included_excluded_assets_map = pfltDashboardService.pflt_included_excluded_assets(xl_df_map)
 
-        # db.session.add(base_data_file)
-        # db.session.commit()
-        # return base_data_file
-
-        # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'],
-        # 'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
-
-        # df3 = pd.DataFrame(data)
-
+        # datetime object containing current date and time
+        now = datetime.now()
         
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+        base_data_file = BaseDataFile(
+            user_id=1,
+            closing_date=report_date,
+            fund_type='PFLT',
+            file_data=pickled_xl_sheet_df_map,
+            file_name='Generated Data ' + dt_string,
+            included_excluded_assets_map=json.dumps(included_excluded_assets_map),
+        )
 
-        # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'],
-        # 'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
+        db.session.add(base_data_file)
+        db.session.commit()
 
-        # df4 = pd.DataFrame(data)
+        base_data_file = commonServices.get_base_data_file(
+            base_data_file_id=base_data_file.id
+        )
+        # if base_data_file.fund_type == "PCOF":
+            # return pcofDashboardService.calculate_bb(
+            #     base_data_file, selected_assets, user_id
+            # )
+        # else:
+        selected_assets = included_excluded_assets_map['included_assets']
+        wb2.close()
+        writer.close()
+        os.remove(file_name)
+        return pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
 
-        # book = load_workbook(file_name)
-        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
-        # writer.book = book
-        # df4.to_excel(writer, sheet_name="Haircut", index=False, header=True)
-        # writer.save()
-
-        # data = {'Industry No': ['1'],
-        # 'Industry': ['Aerospace & Defense']}
-
-        # df5 = pd.DataFrame(data)
-
-        # book = load_workbook(file_name)
-        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
-        # writer.book = book
-        # df5.to_excel(writer, sheet_name="Industry", index=False, header=True)
-        # writer.save()
-
-        # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'],
-        # 'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
-
-        # df6 = pd.DataFrame(data)
-
-        # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'],
-        # 'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
-
-        # df7 = pd.DataFrame(data)
-
-        
-
-        # print(df2)
-        return ServiceResponse.success(message="File generated.")
     except Exception as e:
         print(e)

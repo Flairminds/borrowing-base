@@ -388,7 +388,6 @@ class PfltBaseData(db.Model):
     structured_finance_obligation = db.Column(db.String)
     material_non_credit_related_risk = db.Column(db.String)
     primarily_secured_by_real_estate_or_loan = db.Column(db.String)
-    minimum_equity_amount_floor = db.Column(db.String)
     interest_only_security = db.Column(db.String)
     satisfies_all_other_eligibility_criteria = db.Column(db.String)
     excess_concentration_amount = db.Column(db.String)

@@ -105,7 +105,7 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
                     <div>
                         Base Data for {baseFilePreviewData.reportDate} ({baseFilePreviewData?.baseData?.data ? baseFilePreviewData?.baseData?.data.length : ''})
                     </div>
-                    {/* <button onClick={(e) => generateBaseData(e)} style={{outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px'}}> Generate base data file</button> */}
+                    <button onClick={(e) => generateBaseData(e)} style={{outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px'}}>Trigger BB Calculation</button>
                 </div>
                 <div>
                     <DynamicTableComponents
