@@ -1,4 +1,4 @@
-export const assetInventory ={
+export const assetInventory = {
 
     "Included": {
       "columns": [
@@ -9,8 +9,8 @@ export const assetInventory ={
         {
           "key": "Eligible",
           "title": "Eligible"
-        },
-        
+        }
+
       ],
       "data": [
         {
@@ -63,7 +63,7 @@ export const assetInventory ={
           "Maturity": "2028-12-22",
           "Quoted_/_Unquoted": "Unquoted",
           "Security": "First Lien"
-        },
+        }
       ]
     },
     "Assest": {
@@ -75,8 +75,8 @@ export const assetInventory ={
         {
           "key": "EligIneligible_Investmentsible",
           "title": "Ineligible_Investments"
-        },
-        
+        }
+
       ],
       "data": [
         {
@@ -129,7 +129,7 @@ export const assetInventory ={
           "Maturity": "2028-12-22",
           "Quoted_/_Unquoted": "Unquoted",
           "Security": "First Lien"
-        },
+        }
       ]
     },
     "Not Included": {
@@ -141,8 +141,8 @@ export const assetInventory ={
         {
           "key": "Contribution",
           "title": "Contribution"
-        },
-        
+        }
+
       ],
       "data": [
         {
@@ -195,8 +195,8 @@ export const assetInventory ={
           "Maturity": "2028-12-22",
           "Quoted_/_Unquoted": "Unquoted",
           "Security": "First Lien"
-        },
-        
+        }
+
       ]
     }
-}
+};

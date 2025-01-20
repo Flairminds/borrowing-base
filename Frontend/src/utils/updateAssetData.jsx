@@ -1,4 +1,4 @@
-// data of around 10 lenght 
+// data of around 10 lenght
     // export const updateAssetData = {
     //     "PL BB Build": {
     //         "columns": [
@@ -4502,5 +4502,5 @@ export const sheetClickData = {
             }
         ]
     },
-    "sheets":['Included','Others']
-}
+    "sheets": ['Included', 'Others']
+};

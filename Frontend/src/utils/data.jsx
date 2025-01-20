@@ -21,7 +21,7 @@
 //         {data:'6%'},
 //         {data:'8.5%'},
 //         {data:'11%'},
-//         {data:'100.0%'}    
+//         {data:'100.0%'}
 //     ]
 
 
@@ -508,265 +508,265 @@ export const SegmentationOverviewData = {
         ]
       }
     ]
-  }
+  };
 
 export const SegmentationOverviewDataUpdated = {
-    'Industry' : [
-        {data:'Aerospace & Defense',changeInValue:true},
-        {data:'Auto sector',changeInValue:true},
-        {data:'Beverage food &Tobacco',changeInValue:true},
-        {data:'Broadcasting &Entertainment',changeInValue:true},
-        {data:'Building materials',changeInValue:true},
-        {data:'Total'}
+    'Industry': [
+        {data: 'Aerospace & Defense', changeInValue: true},
+        {data: 'Auto sector', changeInValue: true},
+        {data: 'Beverage food &Tobacco', changeInValue: true},
+        {data: 'Broadcasting &Entertainment', changeInValue: true},
+        {data: 'Building materials', changeInValue: true},
+        {data: 'Total'}
     ],
-    'Unadjusted BB' : [
-        {data:'$6,650,00',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'9,078,856',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'2,345,632',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'2,984,687',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'9,768,937',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'27,987,876.678'}
+    'Unadjusted BB': [
+        {data: '$6,650,00', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '9,078,856', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '2,345,632', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '2,984,687', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '9,768,937', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '27,987,876.678'}
     ],
-    'Unadjusted % of BB' : [
-        {data:'7.06%',prevValue:'12%' ,percentageChange:'+5.75%'},
-        {data:'10%',prevValue:'12%' ,percentageChange:'+5.75%'},
-        {data:'6%',prevValue:'12%' ,percentageChange:'+5.75%'},
-        {data:'8.5%',prevValue:'12%' ,percentageChange:'+5.75%'},
-        {data:'11%',prevValue:'12%' ,percentageChange:'+5.75%'},
-        {data:'100.0%'}
+    'Unadjusted % of BB': [
+        {data: '7.06%', prevValue: '12%', percentageChange: '+5.75%'},
+        {data: '10%', prevValue: '12%', percentageChange: '+5.75%'},
+        {data: '6%', prevValue: '12%', percentageChange: '+5.75%'},
+        {data: '8.5%', prevValue: '12%', percentageChange: '+5.75%'},
+        {data: '11%', prevValue: '12%', percentageChange: '+5.75%'},
+        {data: '100.0%'}
     ]
 
 
-}
+};
 
 export const SegmentationOverviewColumns = [
     'Industry',
     'Unadjusted BB',
     'Unadjusted % of BB'
-]
+];
 
 export const SecurityData = {
-    'Security' : [
-        {data:'Cash'},
-        {data:'First Lien'},
-        {data:'Last out'},
-        {data:'Second Lien'},
-        {data:'High Yeild'},
-        {data:'Mezzanine'},
-        {data:'DIP'},
-        {data:'Total'}
+    'Security': [
+        {data: 'Cash'},
+        {data: 'First Lien'},
+        {data: 'Last out'},
+        {data: 'Second Lien'},
+        {data: 'High Yeild'},
+        {data: 'Mezzanine'},
+        {data: 'DIP'},
+        {data: 'Total'}
     ],
-    'BB' : [
-        {data:'23,098,787'},
-        {data:'45,987,987'},
-        {data:'3,987,5647'},
-        {data:'3,754,262'},
-        {data:'3,945,555'},
-        {data:'1,243,435'},
-        {data:'-'},
-        {data:'27,987,876.678'}
+    'BB': [
+        {data: '23,098,787'},
+        {data: '45,987,987'},
+        {data: '3,987,5647'},
+        {data: '3,754,262'},
+        {data: '3,945,555'},
+        {data: '1,243,435'},
+        {data: '-'},
+        {data: '27,987,876.678'}
     ],
-    '% of BB' : [
-        {data:'2%'},
-        {data:'3%'},
-        {data:'4.5%'},
-        {data:'11.0%'},
-        {data:'12%'},
-        {data:'6%'},
-        {data:'-'},
-        {data:'100%'}
+    '% of BB': [
+        {data: '2%'},
+        {data: '3%'},
+        {data: '4.5%'},
+        {data: '11.0%'},
+        {data: '12%'},
+        {data: '6%'},
+        {data: '-'},
+        {data: '100%'}
 
     ]
-}
+};
 
 export const SecurityDataUpdated = {
-    'Security' : [
-        {data:'Cash', changeInValue:true},
-        {data:'First Lien', changeInValue:true},
-        {data:'Last out', changeInValue:true},
-        {data:'Second Lien', changeInValue:true},
-        {data:'High Yeild', changeInValue:true},
-        {data:'Mezzanine', changeInValue:true},
-        {data:'DIP', changeInValue:true},
-        {data:'Total'}
+    'Security': [
+        {data: 'Cash', changeInValue: true},
+        {data: 'First Lien', changeInValue: true},
+        {data: 'Last out', changeInValue: true},
+        {data: 'Second Lien', changeInValue: true},
+        {data: 'High Yeild', changeInValue: true},
+        {data: 'Mezzanine', changeInValue: true},
+        {data: 'DIP', changeInValue: true},
+        {data: 'Total'}
     ],
-    'BB' : [
-        {data:'23,098,787',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'45,987,987',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'3,987,5647',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'3,754,262',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'3,945,555',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'1,243,435',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'-'},
-        {data:'27,987,876.678'}
+    'BB': [
+        {data: '23,098,787', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '45,987,987', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '3,987,5647', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '3,754,262', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '3,945,555', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '1,243,435', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '-'},
+        {data: '27,987,876.678'}
     ],
-    '% of BB' : [
-        {data:'2%',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'3%',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'4.5%',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'11.0%',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'12%',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'6%',prevValue:'$5,804,875' ,percentageChange:'+5.75%'},
-        {data:'-'},
-        {data:'100%'}
+    '% of BB': [
+        {data: '2%', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '3%', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '4.5%', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '11.0%', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '12%', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '6%', prevValue: '$5,804,875', percentageChange: '+5.75%'},
+        {data: '-'},
+        {data: '100%'}
 
     ]
-}
+};
 
 export const SecurityColumns = [
     'Security',
     'BB',
     '% of BB'
-]
+];
 
 export const SegmentationData = [
     {
       name: 'AeroSpace',
-      'Unadjusted BB': 4000,
+      'Unadjusted BB': 4000
     },
     {
       name: 'Auto Sector',
-      'Unadjusted BB': 3000,
+      'Unadjusted BB': 3000
     },
     {
       name: 'Beverage and Fods',
-      'Unadjusted BB': 2000,
+      'Unadjusted BB': 2000
     },
     {
       name: 'Broadcasting and Entertainment',
-      'Unadjusted BB': 2780,
+      'Unadjusted BB': 2780
     },
     {
       name: 'Building Materials',
-      'Unadjusted BB': 3490,
+      'Unadjusted BB': 3490
     },
     {
       name: 'Cargo Transport',
-      'Unadjusted BB': 1890,
+      'Unadjusted BB': 1890
     },
     {
       name: 'Chemical Transport',
-      'Unadjusted BB': 2390,
-    },
+      'Unadjusted BB': 2390
+    }
   ];
 
 export const SecutityData = [
     {
       name: 'Cash',
-      'BB': 4000,
+      'BB': 4000
     },
     {
       name: 'First Lien',
-      'BB': 3000,
+      'BB': 3000
     },
     {
       name: 'Last out',
-      'BB': 2000,
+      'BB': 2000
     },
     {
       name: 'High Yeild',
-      'BB': 2780,
+      'BB': 2780
     },
     {
       name: 'Mezzanine',
-      'BB': 3490,
+      'BB': 3490
     },
     {
       name: 'DIP',
-      'BB': 1890,
+      'BB': 1890
     },
     {
       name: 'PIK',
-      'BB': 2390,
-    },
+      'BB': 2390
+    }
   ];
-  
+
 export const LineChartdata = [
   {
     date: '2023-7-1',
     'Tot BB': 4000,
     'Sub BB': 2400,
-    'Lev BB':4500,
-    amt: 2400,
+    'Lev BB': 4500,
+    amt: 2400
   },
   {
     date: '2023-7-11',
     'Tot BB': 3000,
     'Sub BB': 1398,
-    'Lev BB':5800,
-    amt: 2210,
+    'Lev BB': 5800,
+    amt: 2210
   },
   {
     date: '2023-7-15',
     'Tot BB': 2000,
     'Sub BB': 5000,
-    'Lev BB':2300,
-    amt: 2290,
+    'Lev BB': 2300,
+    amt: 2290
   },
   {
     date: '2023-7-21',
     'Tot BB': 2780,
     'Sub BB': 3908,
-    'Lev BB':1000,
-    amt: 2000,
+    'Lev BB': 1000,
+    amt: 2000
   },
   {
     date: '2023-7-27',
     'Tot BB': 1890,
     'Sub BB': 4800,
-    'Lev BB':4800,
-    amt: 2181,
+    'Lev BB': 4800,
+    amt: 2181
   },
   {
     date: '2023-7-31',
     'Tot BB': 2390,
     'Sub BB': 3800,
-    'Lev BB':3500,
-    amt: 2500,
+    'Lev BB': 3500,
+    amt: 2500
   },
   {
     date: '2023-8-1',
     'Tot BB': 3490,
     'Sub BB': 4300,
-    'Lev BB':7500,
-    amt: 2100,
-  },
+    'Lev BB': 7500,
+    amt: 2100
+  }
 ];
 
-export const StackedGraphData =[
+export const StackedGraphData = [
   {
     name: 'Cash',
     'BB': 4000,
-    'Updated BB': 2400,
+    'Updated BB': 2400
   },
   {
     name: 'First Lien',
     'BB': 3000,
-    'Updated BB': 1390,
+    'Updated BB': 1390
   },
   {
     name: 'Last out',
     'BB': 2000,
-    'Updated BB': 2290,
+    'Updated BB': 2290
   },
   {
     name: 'High Yeild',
     'BB': 2780,
-    'Updated BB': 3908,
+    'Updated BB': 3908
   },
   {
     name: 'Mezzanine',
     'BB': 3490,
-    'Updated BB': 4390,
+    'Updated BB': 4390
   },
   {
     name: 'DIP',
     'BB': 1890,
-    'Updated BB': 2190,
+    'Updated BB': 2190
   },
   {
     name: 'PIK',
     'BB': 2390,
-    'Updated BB': 2500,
-  },
-] 
+    'Updated BB': 2500
+  }
+];

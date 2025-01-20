@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { BBConcentration } from '../../../utils/BBData';
-import {Concentration_Coloum} from '../../../utils/BBData';
-import styleCCTable from './Concentration_testTable.module.css';
 import { TableComponent } from '../TableComponent';
+import styleCCTable from './Concentration_testTable.module.css';
 
 export const  Concentration_testTable = ({title,tablesData,baseFile,setTablesData,setWhatIfAnalysisListData}) => {
   const concentrationTest = "Concentration Test";

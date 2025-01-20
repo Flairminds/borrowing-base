@@ -13,10 +13,10 @@ export const convertToDropdownOptions = (dropdownValues) => {
 export const getConcTestChnages = (oldData, newData) => {
     const changes = [];
 
-    newData.data.forEach((newItem ,index) => {
+    newData.data.forEach((newItem, index) => {
         // const oldItem = oldData.data.find(item => item.fund_test_id === newItem.fund_test_id);
         // if (oldItem) {
-            let diff = {};
+            const diff = {};
             Object.keys(newItem).forEach(key => {
                 if (newItem[key] !== oldData?.data[index][key] && key !== "test_id") {
                     diff[key] = newItem[key];
@@ -34,7 +34,7 @@ export const getConcTestChnages = (oldData, newData) => {
     });
 
     return changes;
-}
+};
 
 export const styledDropdownOptions = (data) => {
     const resultOptionArray = data.map((el) => ({
@@ -45,7 +45,7 @@ export const styledDropdownOptions = (data) => {
     }));
 
     return resultOptionArray;
-}
+};
 
 
 export const ConcentrationTestTableData = {
