@@ -324,11 +324,13 @@ class PfltBaseDataMapping(db.Model):
     modified_at = db.Column(db.DateTime(timezone=True))
     is_editable = db.Column(db.Boolean, server_default=db.sql.expression.false())
 
-class BaseDataMappingColumnSequence(db.Model):
+class BaseDataMappingColumnInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     fund_type = db.Column(db.String(15), nullable=False)
     bdm_id = db.Column(db.Integer, db.ForeignKey("pflt_base_data_mapping.bdm_id"), nullable=False)
     sequence = db.Column(db.Integer, nullable=False)
+    modified_at = db.Column(db.DateTime(timezone=True))
+    modified_by = db.Column(db.Integer, nullable=True)
 
 class PfltBaseData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
