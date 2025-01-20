@@ -9,8 +9,8 @@ def upload_source_files():
     try:
         files = flask.request.files.getlist("files")
         reporting_date = flask.request.form.get("reporting_date")
-        
-        service_response = diService.upload_src_file_to_az_storage(files, reporting_date)
+        fund_type = flask.request.form.getlist("fund_type")
+        service_response = diService.upload_src_file_to_az_storage(files, reporting_date, fund_type)
         
         if not service_response["success"]:
             return HTTPResponse.error(message = service_response["message"], status_code = service_response["status_code"])
@@ -24,7 +24,9 @@ def upload_source_files():
 
 def get_blobs():
     try:
-        service_response = diService.get_blob_list()
+        req_body = flask.request.get_json()
+        fund_type = req_body.get("fund_type")
+        service_response = diService.get_blob_list(fund_type)
         return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
     except Exception as e:
         Log.func_error(e)
@@ -58,6 +60,18 @@ def get_base_data():
             # "base_data_mapping": base_data_map_res["data"]
         }
         return HTTPResponse.success(message=service_response["message"], result=result)
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+def edit_base_data():
+    try:
+        req_body = flask.request.get_json()
+        changes = req_body.get("changes")
+        service_response = diService.edit_base_data(changes)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not edit base data")
+        return HTTPResponse.success(message=service_response["message"])
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
