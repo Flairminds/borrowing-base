@@ -88,6 +88,9 @@ def find_error_row(df, std_column, std_dtype):
 
 def find_dtype_error(df, std_sheet_name, std_column, std_dtype):
     xl_col_dtype = df[std_column].dtype
+    # revert after demo
+    return None
+
     if xl_col_dtype == "float64" or xl_col_dtype == "int64":
         xl_col_dtype = "Number"
 
@@ -130,17 +133,17 @@ def find_missing_columns(
                 if len(error_row_list) > 0:
                     dtype_error_msg = f"<div><b>{std_column}</b> column of <b>{std_sheet_name}</b> sheet must be in <b>{std_file_format[std_sheet_name][std_column]}</b> format.</div> "
                     dtype_error_msg += (
-                        "<div>Please check values corresponding to following rows"
+                        "<div>Please check values corresponding to following rows<ul style='list-style-type:disc;'>"
                     )
                     for error_row_id in error_row_list:
                         row_name = df[df.columns[0]].iloc[error_row_id]
-                        dtype_error_msg += f"<ul style='list-style-type:disc;'><li><b>{row_name}</b></li></ul>"
-                        if (
-                            error_row_list.index(error_row_id)
-                            != len(error_row_list) - 1
-                        ):
-                            dtype_error_msg += " ,"
-                    dtype_error_msg += "</div>"
+                        dtype_error_msg += f"<li><b>{row_name}</b></li>"
+                        # if (
+                        #     error_row_list.index(error_row_id)
+                        #     != len(error_row_list) - 1
+                        # ):
+                        #     dtype_error_msg += " ,"
+                    dtype_error_msg += "</ul></div>"
 
                     error_map["Data Format Modifications"].append(dtype_error_msg)
         else:

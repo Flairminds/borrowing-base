@@ -357,3 +357,8 @@ export const getBaseDataCellDetail = (payload) => {
     const res = axios.post(`${ApiURL}/data_ingestion/get_source_file_data_detail`, payload);
     return res;
 };
+
+export const generateBaseDataFile = (payload) => {
+    const res = axios.post(`${ApiURL}/data_ingestion/trigger_bb_calculation`, payload);
+    return res;
+};
