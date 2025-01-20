@@ -6,8 +6,6 @@ import { SourceFileModal } from '../../modal/sourceFileModal/SourceFileModal';
 import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
-import { Select } from 'antd';
-import { fundOptionsArray } from '../../utils/constants/constants';
 
 export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
     const [baseDataFilesList, setBaseDataFilesList] = useState({});
@@ -131,9 +129,6 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
                         <CustomButton isFilled={true} onClick={handleExtractNew} text="Extract New Base Data" />
                     </div>
                 </div>
-
-
-                <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
                  <div className={styles.tableHeading}>
                     Base Data
                 </div>

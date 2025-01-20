@@ -1,26 +1,29 @@
-import { DatePicker } from 'antd';
+import { DatePicker, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
+import { BackOption } from '../../components/BackOption/BackOption';
 import { CustomButton } from '../../components/custombutton/CustomButton';
+import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { UploadExtractionFiles } from '../../modal/dataIngestionModals/uploadFilesModal/UploadExtractionFiles';
 import { exportBaseDataFile, getBaseDataFilesList, getBaseFilePreviewData, getBlobFilesList } from '../../services/dataIngestionApi';
+import { fundOptionsArray } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './DataIngestionPage.module.css';
-import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
-import { BackOption } from '../../components/BackOption/BackOption';
 
 export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileList, setBaseFilePreviewData, selectedIds}) => {
 
     const [uploadFilesPopupOpen, setUploadFilesPopupOpen] = useState(false);
     const [previewBaseDataLoading, setPreviewBaseDataLoading] = useState(false);
     const [previewReportDate, setPreviewReportDate] = useState('');
+    const [selectedFundType, setSelectedFundType] = useState(1);
 
     const navigate = useNavigate();
     let extractionInterval;
 
-    const blobFilesList = async() => {
+    const blobFilesList = async(fundType) => {
         try {
-            const fileresponse = await getBlobFilesList();
+            const payload = fundType === 1 ? 'PCOF' : 'PFLT';
+            const fileresponse = await getBlobFilesList(payload);
             const responseData = fileresponse.data.result;
 
             const columnsToAdd = [{
@@ -44,9 +47,16 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
         }
     };
 
+    const handleDropdownChange = (value) => {
+        setSelectedFundType(value);
+        if (value !== 0) {
+            blobFilesList(value);
+        }
+    };
+
     useEffect(() => {
-        blobFilesList();
-        selectedIds.current = []
+        blobFilesList(selectedFundType);
+        selectedIds.current = [];
     }, []);
 
     const handleCheckboxClick = (fileId) => {
@@ -125,9 +135,19 @@ export const DataIngestionPage = ({dataIngestionFileList, setDataIngestionFileLi
         <div className={styles.ingestionPageContainer}>
             <div className={styles.ingestionPage}>
                     <div className={styles.buttonsContainer}>
-                        <div className={styles.backOptionContainer}>
-                            <BackOption onClick={() => navigate('/base-data-list')}
-                                text={`<- Base Data`}/>
+                    <div className={styles.backOptionContainer}>
+                            <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+                                <BackOption onClick={() => navigate('/base-data-list')}
+                                    text={`<- Base Data`} />
+
+                                <div style={{ padding: '0 5px 0 0' }}></div>
+                                <Select
+                                   defaultValue={selectedFundType}
+                                   style={{ width: 140, borderRadius: '8px', margin: '1rem 1rem' }}
+                                   options={fundOptionsArray}
+                                   onChange={handleDropdownChange}
+                                />
+                            </div>
                         </div>
                         <div className={styles.uploadFileBtnContainer}>
                             <CustomButton isFilled={true} onClick={() => setUploadFilesPopupOpen(true)} text='+ Upload Files' />

@@ -2,27 +2,36 @@ import axios from 'axios';
 import { ApiURL } from '../utils/configurations/apiUrl';
 
 
-export const getBlobFilesList = () => {
+export const getBlobFilesList = (fundType) => {
+    const payload = {
+        fund_type: fundType
+    };
 
-        const response = axios.get(`${ApiURL}/data_ingestion/get_blobs`, {
-            withCredentials: true
-        });
-        return response;
+    const response = axios.post(`${ApiURL}/data_ingestion/get_blobs`, payload, {
+        withCredentials: true
+    });
+    return response;
 };
 
-export const uploadNewFile = (files, reportDate) => {
+export const uploadNewFile = (files, reportDate, selectedFunds) => {
 
     const formData = new FormData();
     files.forEach((file) => {
         formData.append('files', file);
     });
     formData.append("reporting_date", reportDate);
+    selectedFunds.forEach((fund) => {
+        formData.append('fund_type', fund);
+    })
+    // formData.append("fund_type", selectedFunds);
+
 
     const response = axios.post(`${ApiURL}/data_ingestion/upload_source`, formData, {
         withCredentials: true
     });
     return response;
 };
+
 
 export const exportBaseDataFile = (uploadedFilesData) => {
     const uploadedData = {
