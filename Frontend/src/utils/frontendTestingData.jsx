@@ -11,7 +11,7 @@ export const ingestionTableCols = [
         key: 'fund_type',
         label: 'Fund Type'
     }
-]
+];
 
 export const ingestionTableData = [
     {
@@ -161,5 +161,5 @@ export const ingestionTableData = [
       "fund_type": "PCOF",
       "user_id": 1
     }
-  ]
+  ];
 

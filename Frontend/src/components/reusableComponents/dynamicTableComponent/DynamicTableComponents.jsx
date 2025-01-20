@@ -109,12 +109,17 @@ export const DynamicTableComponents = (
     <>
         {showSettings &&
         <div style={{position: 'relative', textAlign: 'right'}}>
-            <div style={{cursor: 'pointer', padding: '0px 10px'}}>
+            <div style={{cursor: 'pointer'}}>
                 {(showCellDetailsModal && enableColumnEditing) &&
                 <>
-                    <span style={{margin: '7px'}}>{isInUpdateMode ? <> Update Mode </> : <> View Mode </>}</span>
-                    <Switch size='small' style={{margin: '0px 10px 4px 0px', backgroundColor: '#0EB198' }} onChange={handleToggleChange} />
-                    <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px', margin: '7px'}} />
+                    <div style={{display: 'inline-block'}}>
+                        <span style={{margin: '7px'}}>View Only</span>
+                        <Switch size='small' style={{backgroundColor: '#0EB198' }} onChange={handleToggleChange} />
+                        <span style={{margin: '7px'}}>Edit Mode</span>
+                    </div>
+                    <div style={{display: 'inline-block', margin: '7px 25px'}}>
+                        <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px'}} />
+                    </div>
                 </>
                 }
             </div>

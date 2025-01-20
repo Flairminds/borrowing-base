@@ -235,234 +235,234 @@ export const assetFormData = [
     {
       "key": "Investment_Name",
       "title": "Investment Name",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Issuer",
       "title": "Issuer",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Investment_Investment_Type",
       "title": "Investment Investment Type",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Investment_Industry",
       "title": "Investment Industry",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Investment_Closing_Date",
       "title": "Investment Closing Date",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Investment_Maturity",
       "title": "Investment Maturity",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Investment_Par",
       "title": "Investment Par",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Investment_Cost",
       "title": "Investment Cost",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Investment_External_Valuation",
       "title": "Investment External Valuation",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Investment_Internal_Valuation",
       "title": "Investment Internal Valuation",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Rates_Fixed_Coupon",
       "title": "Rates Fixed Coupon",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Rates_Floating_Cash_Spread",
       "title": "Rates Floating Cash Spread",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Rates_Current_LIBOR/Floor",
       "title": "Rates Current LIBOR/Floor",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Rates_PIK",
       "title": "Rates PIK",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Rates_Fixed_/_Floating",
       "title": "Rates Fixed / Floating",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_Quoted_/_Unquoted",
       "title": "Classifications Quoted / Unquoted",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_Warehouse_Asset",
       "title": "Classifications Warehouse Asset",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_Warehouse_Asset_Inclusion_Date",
       "title": "Classifications Warehouse Asset Inclusion Date",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_Warehouse_Asset_Expected_Rating",
       "title": "Classifications Warehouse Asset Expected Rating",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_Approved_Foreign_Jurisdiction",
       "title": "Classifications Approved Foreign Jurisdiction",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_LTV_Transaction",
       "title": "Classifications LTV Transaction",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_Noteless_Assigned_Loan",
       "title": "Classifications Noteless Assigned Loan",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_Undelivered_Note",
       "title": "Classifications Undelivered Note",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_Structured_Finance_Obligation",
       "title": "Classifications Structured Finance Obligation",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_Third_Party_Finance_Company",
       "title": "Classifications Third Party Finance Company",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_Affiliate_Investment",
       "title": "Classifications Affiliate Investment",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Classifications_Defaulted_/_Restructured",
       "title": "Classifications Defaulted / Restructured",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Financials_LTM_Revenue_($MMs)",
       "title": "Financials LTM Revenue ($MMs)",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Financials_LTM_EBITDA_($MMs)",
       "title": "Financials LTM EBITDA ($MMs)",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Leverage_Revolver_Commitment",
       "title": "Leverage Revolver Commitment",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Leverage_Total_Enterprise_Value",
       "title": "Leverage Total Enterprise Value",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Leverage_Total_Leverage",
       "title": "Leverage Total Leverage",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Leverage_PCOF_IV_Leverage",
       "title": "Leverage PCOF IV Leverage",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Leverage_Attachment_Point",
       "title": "Leverage Attachment Point",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Leverage_Total_Capitalization",
       "title": "Leverage Total Capitalization",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Leverage_LTV_Thru_PCOF_IV",
       "title": "Leverage LTV Thru PCOF IV",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Final_Eligibility_Override",
       "title": "Final Eligibility Override",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Final_Comment",
       "title": "Final Comment",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Concentration_Adjustment",
       "title": "Concentration Adjustment",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Concentration_Comment",
       "title": "Concentration Comment",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Borrowing_Base_Other_Adjustment",
       "title": "Borrowing Base Other Adjustment",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Borrowing_Base_Industry_Concentration",
       "title": "Borrowing Base Industry Concentration",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Borrowing_Base_Comment",
       "title": "Borrowing Base Comment",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Is_Eligible_Issuer",
       "title": "Is Eligible Issuer",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Unnamed:_44",
       "title": "Unnamed: 44",
-      "value":'',
+      "value": ''
     },
     {
       "key": "Unnamed:_45",
       "title": "Unnamed: 45",
-      "value":'',
+      "value": ''
     }
-]
+];
 
 // const data = {
 //   "Borrowing_Base_Comment": "",
@@ -532,26 +532,26 @@ export const generateEmptyAssetFormData = () => {
       item.value = '';
   });
   return assetFormData;
-}
+};
 
 export const generateAssetFormData = (data) => {
-  if(data != {} ? data : {});
+  if (data != {} ? data : {});
    assetFormData.forEach(item => {
     if (data?.hasOwnProperty(item.key)) {
       item.value = data[item.key];
     }
   });
   return assetFormData;
-}
+};
 
-export const generateAssetData =(assetFormData) => {
+export const generateAssetData = (assetFormData) => {
   let assetdata = {};
-  for(let i = 0; i < assetFormData.length; i++) {
-    let key = assetFormData[i].key;
-    let value = assetFormData[i].value
-    assetdata = {...assetdata , [key]:value}
+  for (let i = 0; i < assetFormData.length; i++) {
+    const key = assetFormData[i].key;
+    const value = assetFormData[i].value;
+    assetdata = {...assetdata, [key]: value};
   }
   return assetdata;
-}
+};
 
 // export const modifyData = createAssetFormData(data);

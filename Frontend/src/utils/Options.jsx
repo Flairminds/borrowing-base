@@ -14,12 +14,12 @@ export const ebitdaColumns = [
         value: "Additive EBIDTA change %"
     },
     {
-        key:"Updated_EBITDA",
-        value:"Updated EBITDA"
+        key: "Updated_EBITDA",
+        value: "Updated EBITDA"
     },
     {
-        key:"Updated_Leverage",
-        value:"Updated Leverage"
+        key: "Updated_Leverage",
+        value: "Updated Leverage"
     }
 ];
 
@@ -37,11 +37,11 @@ export const leverageColumns = [
         value: "Additive leverage change %"
     },
     {
-        key:"Updated_Leverage",
-        value:"Updated Leverage"
+        key: "Updated_Leverage",
+        value: "Updated Leverage"
     },
     {
-        key:"Updated_Ebita",
-        value:"Updated EBITDA"
+        key: "Updated_Ebita",
+        value: "Updated EBITDA"
     }
 ];

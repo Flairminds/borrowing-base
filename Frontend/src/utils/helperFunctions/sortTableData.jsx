@@ -6,7 +6,7 @@ export const sortData = (originalData, columnName, sortOrder = 'asc') => {
     function parseValue(value) {
         if (typeof value === 'string') {
             if (value.includes('$')) {
-                let num = parseFloat(value.replace(/[$,]/g, '')); // Remove dollar signs and commas
+                const num = parseFloat(value.replace(/[$,]/g, '')); // Remove dollar signs and commas
                 if (value.includes('M')) {
                     return num * 1_000_000; // Convert M to millions
                 } else if (value.includes('K')) {
@@ -37,13 +37,13 @@ export const sortData = (originalData, columnName, sortOrder = 'asc') => {
 
     // Create a new object to store sorted data without modifying the original data
     const sortedData = {};
-    for (let key in data) {
+    for (const key in data) {
         sortedData[key] = indices.map(index => data[key][index]);
     }
 
     // Create result object keeping columns and total intact
-    let result = {};
-    for (let key in sortedData) {
+    const result = {};
+    for (const key in sortedData) {
         if (key === 'columns' || key === 'Total') {
             result[key] = originalData[key];
         } else {

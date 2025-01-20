@@ -6,6 +6,6 @@ export const showToast = (type, message, duration = 1500) => {
   if (toast[type]) {
     toast[type](message, options);
   } else {
-    toast(message, options); 
+    toast(message, options);
   }
 };

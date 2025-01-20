@@ -92,7 +92,7 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
         try {
             const response = await generateBaseDataFile({ 'bdi_id': baseFilePreviewData.infoId});
             const detail = response?.data;
-            showToast('success', 'File generated');
+            showToast('success', detail?.message);
         } catch (error) {
             showToast('error', error.message);
         }

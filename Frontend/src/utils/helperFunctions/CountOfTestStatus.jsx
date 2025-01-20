@@ -5,4 +5,4 @@ export const countOccurrencesOfTest = (array, searchString) => {
     }, 0);
 
     return matchCount;
-}
+};

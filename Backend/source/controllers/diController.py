@@ -192,9 +192,10 @@ def trigger_bb_calculation():
         req_body = flask.request.get_json()
         bdi_id = req_body.get('bdi_id')
         service_response = diService.trigger_bb_calculation(bdi_id)
-        if not service_response["success"]:
-            return HTTPResponse.error(message="Could not get source file data")
-        return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
+        # if not service_response["success"]:
+        #     return HTTPResponse.error(message="Could not get source file data")
+        return HTTPResponse.success(message="Successfully processed.", result=[])
     except Exception as e:
-        Log.func_error(e)
+        # Log.func_error(e)
+        print("here",e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
