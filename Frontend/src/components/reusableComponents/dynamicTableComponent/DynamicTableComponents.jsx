@@ -110,7 +110,7 @@ export const DynamicTableComponents = (
         {showSettings &&
         <div style={{position: 'relative', textAlign: 'right'}}>
             <div style={{cursor: 'pointer', padding: '0px 10px'}}>
-                {(ShowCellDetailsModal && enableColumnEditing) &&
+                {(showCellDetailsModal && enableColumnEditing) &&
                 <>
                     <span style={{margin: '7px'}}>{isInUpdateMode ? <> Update Mode </> : <> View Mode </>}</span>
                     <Switch size='small' style={{margin: '0px 10px 4px 0px', backgroundColor: '#0EB198' }} onChange={handleToggleChange} />
@@ -165,7 +165,7 @@ export const DynamicTableComponents = (
                                 return (
                                     <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
                                         style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
-                                        onClick={ShowCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]) : isEditable && isInUpdateMode ? () => handleCellEdit(rowIndex, col.key, row[col.key]) : () => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
+                                        onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]) : isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]) : () => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
                                         {enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
                                             (
                                                 <div className={tableStyles.editIconsContainer}>

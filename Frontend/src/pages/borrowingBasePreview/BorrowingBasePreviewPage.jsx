@@ -2,10 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { getBaseDataCellDetail } from '../../services/api';
+import { editBaseData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
-import { showToast } from '../../utils/helperFunctions/toastUtils';
-import { editBaseData } from '../../services/dataIngestionApi';
 
 export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePreviewData}) => {
     const navigate = useNavigate();
@@ -98,7 +97,7 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
                     columns={baseFilePreviewData?.baseData?.columns}
                     enableStickyColumns={true}
                     showSettings={true}
-                    ShowCellDetailsModal={true}
+                    showCellDetailsModal={true}
                     enableColumnEditing={true}
                     onChangeSave={handleSaveEdit}
                     getCellDetailFunc={getCellDetail}
