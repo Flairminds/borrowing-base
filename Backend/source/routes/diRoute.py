@@ -8,7 +8,7 @@ di_blueprint = Blueprint("di_blueprint", __name__)
 def get_concentration_tests():
     return diController.upload_source_files()
     
-@di_blueprint.route("/get_blobs", methods=["GET"])
+@di_blueprint.route("/get_blobs", methods=["POST"])
 def get_blobs():
     return diController.get_blobs()
 
@@ -23,6 +23,11 @@ def get_base_data():
 # @di_blueprint.route("/create_base_data", methods=["POST"])
 # def create_base_data():
 #     return diController.create_base_data()
+
+
+@di_blueprint.route('/edit_base_data', methods=['POST'])
+def edit_base_data():
+    return diController.edit_base_data()
 
 @di_blueprint.route('get_extracted_base_data_info', methods=["POST"])
 def get_extracted_base_data_info():

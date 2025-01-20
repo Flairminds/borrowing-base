@@ -20,59 +20,102 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping, PfltSecurityMapping, BaseDataFile
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnSequence, BaseDataFile
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 
 pfltDashboardService = PfltDashboardService()
 
-def upload_src_file_to_az_storage(files, report_date):
+def upload_src_file_to_az_storage(files, report_date, fund_type):
     if len(files) == 0:
         return ServiceResponse.error(message = "Please select files.", status_code = 400)
+    if not fund_type:
+        return ServiceResponse.error(message = "Please select Fund.", status_code = 400)
     
     blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
     company_name = "Pennant"
-    fund_name = "PFLT"
+    fund_names = fund_type
     report_date = datetime.strptime(report_date, "%Y-%m-%d").date()
 
-    source_files = []
+    source_files_list = []
     try:
         for file in files:
             print(file.filename)
-            blob_name = f"{company_name}/{fund_name}/{file.filename}"
-            
-            # setting SourceFiles object
-            file_name = os.path.splitext(file.filename)[0]
-            extension = os.path.splitext(file.filename)[1]
-            file.seek(0, 2)  # Move to the end of the file
-            file_size = file.tell()  # Get the size in bytes
-            file.seek(0)
-            company_id = 1
-            is_validated = False
-            is_extracted = False
-            uploaded_by = 1
-            file_type = None
-            if contains_cash(file.filename):
-                file_type = "cashfile"
-            if contains_master_comp(file.filename):
-                file_type = "master_comp"
+            for fund_name in fund_names:
+                blob_name = f"{company_name}/{fund_name}/{file.filename}"
+                
+                # setting SourceFiles object
+                file_name = os.path.splitext(file.filename)[0]
+                extension = os.path.splitext(file.filename)[1]
+                file.seek(0, 2)  # Move to the end of the file
+                file_size = file.tell()  # Get the size in bytes
+                file.seek(0)
+                company_id = 1
+                is_validated = False
+                is_extracted = False
+                uploaded_by = 1
+                file_type = None
+                if contains_cash(file.filename):
+                    file_type = "cashfile"
+                if contains_master_comp(file.filename):
+                    file_type = "master_comp"
 
-            # upload blob in container
-            blob_client.upload_blob(name=blob_name, data=file)
-            file_url = blob_client.url + '/' + blob_name
-            # add details of files in db
-            source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_type=fund_name, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
+                # upload blob in container
+                blob_client.upload_blob(name=blob_name, data=file)
+                file_url = blob_client.url + '/' + blob_name
+                # add details of files in db
+            source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
 
             db.session.add(source_file)
             db.session.commit()
-                # source_files.append(source_file)
-            # try:
-            #     db.session.add_all(source_files)
-            #     db.session.commit()
-            # except Exception as e:
-            #     Log.func_error(e=e)
-            #     return ServiceResponse.error(message="Could not save files to database.", status_code = 500)
+                    # source_files.append(source_file)
+                # try:
+        #         #     db.session.add_all(source_files)
+        #         #     db.session.commit()
+        #         # except Exception as e:
+        #         #     Log.func_error(e=e)
+        #         #     return ServiceResponse.error(message="Could not save files to database.", status_code = 500)
+
+        # for file in files:
+        #     for fund_name in fund_names:
+        #         blob_name = f"{company_name}/{fund_name}/{file.filename}"
+                
+        #         # setting SourceFiles object
+        #         file_name = os.path.splitext(file.filename)[0]
+        #         extension = os.path.splitext(file.filename)[1]
+        #         file.seek(0, 2)  # Move to the end of the file
+        #         file_size = file.tell()  # Get the size in bytes
+        #         file.seek(0)
+        #         company_id = 1
+        #         is_validated = False
+        #         is_extracted = False
+        #         uploaded_by = 1
+        #         file_type = None
+        #         if contains_cash(file.filename):
+        #             file_type = "cashfile"
+        #         if contains_master_comp(file.filename):
+        #             file_type = "master_comp"
+
+        #         # upload blob in container
+        #         blob_client.upload_blob(name=blob_name, data=file)
+        #         file_url = blob_client.url + '/' + blob_name
+        #         # add details of files in db
+        #         source_file = SourceFile(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
+
+        #         db.session.add(source_file)
+        #         db.session.commit()
+        #         db.session.refresh(source_file)
+        #         source_file_fund = SourceFileFund(sf_id=source_file.id, fund_type=fund_name)
+        #         db.session.add(source_file_fund)
+        #         db.session.commit()
+        #         source_files_list.append(source_file)
+
+        # for fund_name in fund_names:
+        #     for uploaded_file in source_file:
+        #         source_file_fund = SourceFileFund(sf_id=uploaded_file.id, fund_type=fund_name)
+        #         db.session.add(source_file_fund)
+        #         db.session.commit()
             
         return ServiceResponse.success(message = "Files uploaded successfully")
 
@@ -83,21 +126,27 @@ def upload_src_file_to_az_storage(files, report_date):
         Log.func_error(e=e)
         return ServiceResponse.error(message="Could not upload files.", status_code = 500)
     
-def get_blob_list():
+def get_blob_list(fund_type):
     company_id = 1 # for Penennt
-    fund_type = "PFLT"
-    source_files = db.session.query(
+
+    # If fund type is not provided -> fetching all records 
+    source_files_query = db.session.query(
             SourceFiles.id,
             SourceFiles.file_name,
             SourceFiles.extension,
             SourceFiles.uploaded_at,
             SourceFiles.uploaded_by,
-            SourceFiles.fund_type,
+            SourceFiles.fund_types,
             SourceFiles.file_type,
             SourceFiles.report_date,
             Users.display_name
-        ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id, SourceFiles.fund_type == fund_type).order_by(SourceFiles.uploaded_at.desc()).all()
-    # SourceFiles.query.join(Users).filter_by(is_deleted=False, company_id=company_id, fund_type=fund_type).order_by(SourceFiles.uploaded_at.desc()).all()
+        ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id)
+    
+    if fund_type:
+        source_files_query = source_files_query.filter(SourceFiles.fund_types.any(fund_type))
+
+    source_files = source_files_query.order_by(SourceFiles.uploaded_at.desc()).all()
+
     list_table = {
         "columns": [{
             "key": "fund", 
@@ -124,10 +173,11 @@ def get_blob_list():
             "file_name": source_file.file_name + source_file.extension, 
             "uploaded_at": source_file.uploaded_at.strftime("%Y-%m-%d"),
             "report_date": source_file.report_date.strftime("%Y-%m-%d"),
-            "fund": source_file.fund_type,
+            "fund": source_file.fund_types,
             "source_file_type": source_file.file_type,
             "uploaded_by": source_file.display_name
         })
+        print(source_file.fund_types)
     
     return ServiceResponse.success(data=list_table)
 
@@ -358,7 +408,7 @@ def extract_base_data(file_ids):
 
 def get_base_data(info_id):
     # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
-    base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).all()
+    base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).order_by(PfltBaseData.id).all()
     base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
     base_data_mapping = PfltBaseDataMapping.query.filter(PfltBaseDataMapping.bd_column_lookup.is_not(None)).order_by(PfltBaseDataMapping.bdm_id).all()
 
@@ -381,7 +431,7 @@ def get_base_data(info_id):
         temp.append(t)
     # print(temp[0])
     base_data_table = {
-        "columns": [{"key": column.bd_column_lookup, "label": column.bd_column_name} for column in base_data_mapping],
+        "columns": [{"key": column.bd_column_lookup, "label": column.bd_column_name, "isEditable": column.is_editable} for column in base_data_mapping],
         "data": temp
     }
 
@@ -407,6 +457,21 @@ def get_base_data(info_id):
         "fund_type": base_data_info.fund_type
     }
     return ServiceResponse.success(data=result, message="Base Data")
+
+def edit_base_data(changes):
+    if not changes:
+        return ServiceResponse.error(message = "Please provide changes.", status_code = 400)
+    for change in changes:
+        id = int(change.get("id"))
+        for key in change.keys():
+            if key != "id":
+                value = change.get(key)
+                # column = key.replace('_', " ")
+                base_data = PfltBaseData.query.filter_by(id=id).first()
+                setattr(base_data, key, value)
+                db.session.add(base_data)
+                db.session.commit()
+    return ServiceResponse.success(message = "Basse data edited updated successfully")
 
 def get_base_data_mapping(info_id):
     try:
@@ -475,19 +540,24 @@ def get_pflt_sec_mapping():
     columns_data = [
         {
             'key': "soi_name",
-            'label': "Soi name"
+            'label': "Soi name",
+            'isEditable': False
         }, {
             'key': "master_comp_security_name",
-            'label': "Master comp security name"
+            'label': "Master comp security name",
+            'isEditable': False
         },  {
             'key': "family_name",
-            'label': "Family name"
+            'label': "Family name",
+            'isEditable': True
         }, {
             'key': "security_type",
-            'label': "Security type"
+            'label': "Security type",
+            'isEditable': False
         }, {
             'key': "cashfile_security_name",
-            'label': "Cash file security name"
+            'label': "Cash file security name",
+            'isEditable': True
         }
     ]
     pflt_sec_mapping_table = {
@@ -520,18 +590,6 @@ def add_pflt_sec_mapping(cashfile_security_name, family_name, master_comp_securi
     company_id = 1
     modified_by = 1
     timestamp = datetime.now(pytz.UTC)
-
-    # id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    # company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=True)
-    # soi_name = db.Column(db.String)
-    # master_comp_security_name = db.Column(db.String)
-    # family_name = db.Column(db.String)
-    # security_type = db.Column(db.String)
-    # cashfile_security_name = db.Column(db.String)
-    # created_by = db.Column(db.Integer, nullable=True)
-    # created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
-    # modified_by = db.Column(db.Integer, nullable=True)
-    # modified_at = db.Column(db.DateTime(timezone=True))
 
     pfltSecurityMapping = PfltSecurityMapping(company_id=company_id, soi_name=soi_name, master_comp_security_name=master_comp_security_name, family_name=family_name, security_type=security_type, cashfile_security_name=cashfile_security_name, modified_by=modified_by, modified_at=timestamp)
 
