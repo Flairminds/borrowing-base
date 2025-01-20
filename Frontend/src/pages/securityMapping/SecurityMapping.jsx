@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router';
-import CrossIcon from '../../assets/CrossIcon.svg';
-import RightIcon from '../../assets/RightIcon.svg';
 import { BackOption } from '../../components/BackOption/BackOption';
 import { CustomButton } from "../../components/custombutton/CustomButton";
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
@@ -14,11 +12,38 @@ export const SecurityMapping = () => {
     const navigate = useNavigate();
     const [data, setData] = useState([]);
     const [columns, setColumns] = useState([]);
-    const [editingCell, setEditingCell] = useState(null);
-    const [tempValue, setTempValue] = useState("");
     const [unmappedSecurities, setUnmappedSecurities] = useState([]);
     const [filteredData, setFilteredData] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+
+    // const tempColumnData = [
+    //     {
+    //         "key": "soi_name",
+    //         "label": "Soi name",
+    //         "isEditable": false
+    //     },
+    //     {
+    //         "key": "master_comp_security_name",
+    //         "label": "Master comp security name",
+    //         "isEditable": false
+    //     },
+    //     {
+    //         "key": "family_name",
+    //         "label": "Family name",
+    //         "isEditable": true
+    //     },
+    //     {
+    //         "key": "security_type",
+    //         "label": "Security type",
+    //         "isEditable": false
+    //     },
+    //     {
+    //         "key": "cashfile_security_name",
+    //         "label": "Cash file security name",
+    //         "isEditable": true
+    //     }
+    // ];
+
 
     // Fetch mapping data
     const getMappingData = async () => {
@@ -39,44 +64,25 @@ export const SecurityMapping = () => {
         getMappingData();
     }, []);
 
-    // Handle cell click to start editing
-    const handleCellEdit = (rowIndex, colKey, currentValue) => {
-        setEditingCell({ rowIndex, colKey });
-        setTempValue(currentValue);
-    };
-
-    // Handle input value change during editing
-    const handleCellChange = (e) => {
-        setTempValue(e.target.value);
-    };
-
     // Save changes to the cell
-    const handleSaveEdit = async () => {
-        const { rowIndex, colKey } = editingCell;
+    const handleSaveEdit = async (rowIndex, columnkey, inputValue) => {
         const updatedData = [...filteredData];
         const changes = [
             {
                 id: updatedData[rowIndex].id,
-                [colKey]: tempValue
+                [columnkey]: inputValue
             }
         ];
 
         try {
             await editPfltSecMapping(changes);
-            updatedData[rowIndex][colKey] = tempValue;
+            updatedData[rowIndex][columnkey] = inputValue;
             setFilteredData(updatedData);
-            setEditingCell(null);
-            setTempValue("");
-            showToast("success", "Data updated successfully");
+            return {success: "failure", msg: "Update success"};
         } catch (error) {
             showToast("error", error?.response?.data?.message || "Failed to update data");
+            return {success: "failure", msg: error?.response?.data?.message || "Failed to update data"};
         }
-    };
-
-    // Cancel editing without saving
-    const handleCancelEdit = () => {
-        setEditingCell(null);
-        setTempValue("");
     };
 
     const filterData = (val) => {
@@ -100,70 +106,14 @@ export const SecurityMapping = () => {
                             </div>
                         </div>
                         <div className={styles.tableContainer}>
-                            <table className={styles.table}>
-                                <thead>
-                                    <tr className={styles.headRow}>
-                                        {columns?.map((col, index) => (
-                                            <th key={index} className={styles.th}>
-                                                {col.label}
-                                            </th>
-                                        ))}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {filteredData?.map((row, rowIndex) => (
-                                        <tr key={rowIndex}>
-                                            {columns?.map((col) => {
-                                                const isEditable =
-                                                    col.key === "family_name" || col.key === "cashfile_security_name";
-                                                const isValueEmpty =
-                                                    (col.key === "family_name" || col.key === "cashfile_security_name") &&
-                                                    !row[col.key];
-
-                                                return (
-                                                    <td
-                                                        key={col.key}
-                                                        className={`${styles.td} ${isValueEmpty ? styles.emptyValue : ""}`}
-                                                        onClick={() =>
-                                                            isEditable &&
-                                                            !editingCell &&
-                                                            handleCellEdit(rowIndex, col.key, row[col.key])
-                                                        }
-                                                        title={row[col.key]}
-                                                    >
-                                                        {editingCell?.rowIndex === rowIndex &&
-                                                            editingCell?.colKey === col.key ? (
-                                                            <div className={styles.editIconsContainer}>
-                                                                <input
-                                                                    type="text"
-                                                                    value={tempValue}
-                                                                    onChange={handleCellChange}
-                                                                    className={styles.updateInput}
-                                                                    autoFocus
-                                                                />
-                                                                <img
-                                                                    src={RightIcon}
-                                                                    alt="Save"
-                                                                    className={styles.iconButton}
-                                                                    onClick={handleSaveEdit}
-                                                                />
-                                                                <img
-                                                                    src={CrossIcon}
-                                                                    alt="Cancel"
-                                                                    className={styles.iconButton}
-                                                                    onClick={handleCancelEdit}
-                                                                />
-                                                            </div>
-                                                        ) : (
-                                                            row[col.key]
-                                                        )}
-                                                    </td>
-                                                );
-                                            })}
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                            <DynamicTableComponents
+                                data={filteredData && filteredData}
+                                setData ={setFilteredData}
+                                columns={columns}
+                                enableSecurityMapping={true}
+                                enableColumnEditing={true}
+                                onChangeSave={handleSaveEdit}
+                            />
                         </div>
                     </div>
                     <div style={{ margin: '0 2rem', border: '1px solid #DCDEDE' }}>

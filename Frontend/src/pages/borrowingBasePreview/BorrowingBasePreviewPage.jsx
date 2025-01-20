@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { getBaseDataCellDetail } from '../../services/api';
+import { editBaseData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 
-export const BorrowingBasePreviewPage = ({baseFilePreviewData}) => {
+export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePreviewData}) => {
     const navigate = useNavigate();
     const [mapping, setMapping] = useState({});
     const [cellDetail, setCellDetail] = useState({});
@@ -58,13 +59,50 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData}) => {
         }
     };
 
+    const handleSaveEdit = async (rowIndex, columnkey, inputValue) => {
+            const updatedData = [...baseFilePreviewData?.baseData?.data];
+            const changes = [
+                {
+                    id: updatedData[rowIndex].id,
+                    [columnkey]: inputValue
+                }
+            ];
+
+            try {
+                await editBaseData(changes);
+                updatedData[rowIndex][columnkey] = inputValue;
+                console.info(baseFilePreviewData, 'base preivew state');
+                setBaseFilePreviewData({
+                    'baseData': {
+                        ...baseFilePreviewData.baseData,
+                        'data': updatedData
+                    }
+                });
+                // setBaseFilePreviewData({...BorrowingBasePreviewPage.baseData, data: updatedData});
+                return {success: "failure", msg: "Update success"};
+            } catch (error) {
+                // showToast("error", error?.response?.data?.message || "Failed to update data");
+                return {success: "failure", msg: error?.response?.data?.message || "Failed to update data"};
+            }
+        };
+
     return (
         <div className={styles.previewPage}>
             <div className={styles.tableContainer}>
                 <div style={{position: 'fixed'}}>
                     Base Data for {baseFilePreviewData.reportDate}
                 </div>
-                <DynamicTableComponents data={baseFilePreviewData?.baseData?.data} columns={baseFilePreviewData?.baseData?.columns} enableStickyColumns={true} showSettings={true} showCellDetailsModal={true} getCellDetailFunc={getCellDetail} cellDetail={cellDetail} />
+                <DynamicTableComponents
+                    data={baseFilePreviewData?.baseData?.data}
+                    columns={baseFilePreviewData?.baseData?.columns}
+                    enableStickyColumns={true}
+                    showSettings={true}
+                    showCellDetailsModal={true}
+                    enableColumnEditing={true}
+                    onChangeSave={handleSaveEdit}
+                    getCellDetailFunc={getCellDetail}
+                    cellDetail={cellDetail}
+                 />
             </div>
         </div>
         // <div>
