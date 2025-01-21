@@ -95,8 +95,8 @@ export const AssetSelectionPage = ({
             };
             const tableDataResponse = await uploadInitialFile(fileData);
             if (tableDataResponse.status === 200) {
-                setTablesData(tableDataResponse?.data);
-                setConstDate(tableDataResponse.data.closing_date);
+                setTablesData(tableDataResponse?.data.result);
+                setConstDate(tableDataResponse.data.result.closing_date);
                 navigate('/');
                 toast.success("Results Generated");
             }

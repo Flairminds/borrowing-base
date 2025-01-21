@@ -85,16 +85,16 @@ export const OverviewTableData = (value,fileId,user_id) => {
     return response;
 }
 
-export const get_preview_table =(selectedFiles) =>{
+export const get_preview_table = (selectedFiles, fundType) => {
     const formData = new FormData();
     selectedFiles.forEach((selectedFile) => {
         formData.append('file', selectedFile);
-        
     });
-    const res =   axios.post(`${ApiURL}/wia/get_asset_overview`,formData,{
-        withCredentials:true
+    formData.append("fund_type", fundType);
+    const res = axios.post(`${ApiURL}/wia/get_asset_overview`,formData,{
+        withCredentials: true
     });
-        return res
+        return res;
 }
 
 
