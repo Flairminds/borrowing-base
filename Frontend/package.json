@@ -11,7 +11,7 @@
     "lint-errors": "eslint --quiet \"src/**/*.{js,jsx}\"",
     "lint-errors-chart": "eslint --format summary-chart \"src/**/*.{js,jsx}\"",
     "preview": "vite preview",
-    "lint-fix": "eslint --fix \"src/components/whatIfAnalysis/**/*.{js,jsx}\""
+    "lint-fix": "eslint --fix \"src/utils/**/*.{js,jsx}\""
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.5.0",
@@ -50,9 +50,7 @@
     "eslint-plugin-react": "^7.36.1",
     "eslint-plugin-react-hooks": "^4.6.2",
     "globals": "^15.9.0",
-    "pre-push": "^0.1.4",
     "prettier": "^3.3.3",
     "vite": "^5.2.0"
-  },
-  "pre-push": "build"
+  }
 }
