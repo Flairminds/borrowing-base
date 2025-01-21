@@ -13,7 +13,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
   const [reportDate, setReportDate] = useState();
   const [selectedOptions, setSelectedOptions] = useState([]);
 
-  const checkboxOptions = ['PCOF', 'PFLT', 'SelectAll'];
+  const checkboxOptions = ['PCOF', 'PFLT'];
 
 
   const { getRootProps, getInputProps } = useDropzone({
@@ -48,7 +48,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
       }
       setLoading(true);
       try {
-        const selectedFunds = selectedOptions.includes('SelectAll') ? checkboxOptions.filter((value) => value !== 'SelectAll') : selectedOptions;
+        const selectedFunds = selectedOptions;
         const uploadresponse = await uploadNewFile(selectedFiles, reportDate, selectedFunds);
         blobFilesList();
         showToast('success', uploadresponse?.data?.message);
@@ -62,11 +62,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
     };
 
     const handleCheckboxChange = (checkedValues) => {
-      if (checkedValues.includes('SelectAll')) {
-        setSelectedOptions(['SelectAll']);
-      } else {
-        setSelectedOptions(checkedValues.filter((value) => value !== 'SelectAll'));
-      }
+      setSelectedOptions(checkedValues);
     };
 
 
