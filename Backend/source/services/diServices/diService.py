@@ -833,3 +833,57 @@ def trigger_bb_calculation(bdi_id):
 
     except Exception as e:
         print(e)
+
+def get_archived_file_list():
+
+    source_files = db.session.query(SourceFiles).filter(SourceFiles.is_archived == True).order_by(SourceFiles.uploaded_at.desc()).all()
+    
+    list_table = {
+        "columns": [{
+            "key": "fund", 
+            "label": "Fund",
+        }, {
+            "key": "file_name", 
+            "label": "File Name",
+        }, {
+            "key": "report_date", 
+            "label": "Report Date",
+        }, {
+            "key": "uploaded_at", 
+            "label": "Uploaded at",
+        }, {
+            "key": "uploaded_by", 
+            "label": "Uploaded by",
+        }], 
+        "data": []
+    }
+
+    for source_file in source_files:
+        list_table["data"].append({
+            "file_id": source_file.id,
+            "file_name": source_file.file_name + source_file.extension, 
+            "uploaded_at": source_file.uploaded_at.strftime("%Y-%m-%d"),
+            "report_date": source_file.report_date.strftime("%Y-%m-%d"),
+            "fund": source_file.fund_types,
+            "source_file_type": source_file.file_type,
+        })
+        print(source_file.fund_types)
+    
+    return ServiceResponse.success(data=list_table)
+
+def add_file_to_archive(list_of_ids):
+    try:
+        for file_id in list_of_ids:
+            source_file = SourceFiles.query.filter_by(id=file_id).first()
+
+            if source_file:
+                source_file.is_archived = True
+
+            db.session.add(source_file)
+            db.session.commit()
+              
+        return ServiceResponse.success(message = "Files uploaded successfully")
+
+    except Exception as e:
+        Log.func_error(e=e)
+        return ServiceResponse.error(message="Could not upload files.", status_code = 500)    
