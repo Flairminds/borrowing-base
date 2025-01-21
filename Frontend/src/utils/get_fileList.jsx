@@ -1,16 +1,16 @@
 export const getFileListColumns = [
-    {
-        key: "file_name",
-        title: "Base File Name"
-    },
-    {
-        key: "closing_date",
-        title: "Report Date"
-    },
-    {
-        key: "fund_type",
-        title: "Fund"
-    }
+	{
+		key: "file_name",
+		title: "Base File Name"
+	},
+	{
+		key: "closing_date",
+		title: "Report Date"
+	},
+	{
+		key: "fund_type",
+		title: "Fund"
+	}
 ];
 
 // static data for import table
