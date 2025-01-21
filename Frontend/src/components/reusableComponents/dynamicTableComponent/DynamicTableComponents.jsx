@@ -166,11 +166,19 @@ export const DynamicTableComponents = (
                             {updatedColumnsData?.map((col) => {
                                 if (selectedColumns.includes(col.label)) {
                                     const isEditable = enableColumnEditing && col.isEditable;
-                                    const isValueEmpty = isEditable && !row[col.key];
+                                    let cellDisplayValue = row[col.key];
+                                    let cellActualValue = row[col.key];
+                                    let cellTitleValue = row[col.key];
+                                    if (row[col.key] && row[col.key]['meta_info']) {
+                                        cellDisplayValue = row[col.key]['display_value'];
+                                        cellActualValue = row[col.key]['value'];
+                                        cellTitleValue = row[col.key]['title'];
+                                    }
+                                    const isValueEmpty = isEditable && !cellDisplayValue;
                                 return (
                                     <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
                                         style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
-                                        onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]) : isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]) : () => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
+                                        onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={cellTitleValue}>
                                         {enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
                                             (
                                                 <div className={tableStyles.editIconsContainer}>
@@ -196,7 +204,7 @@ export const DynamicTableComponents = (
                                                 </div>
                                             )
                                             :
-                                                col.render ? col.render(row[col.key], row) : (row[col.key] ? row[col.key] : '-')
+                                                col.render ? col.render(cellDisplayValue, row) : (cellDisplayValue ? cellDisplayValue : '-')
                                         }
                                     </td>
                                 );

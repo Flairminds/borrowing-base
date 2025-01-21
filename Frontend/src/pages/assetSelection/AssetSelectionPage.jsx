@@ -123,7 +123,7 @@ export const AssetSelectionPage = ({
             <div className={Styles.filtersContainer}>
                 {assetSelectionData.assetSelectionList?.columns?.map((col, index) => (
                     <div key={index} className={Styles.filterItem}>
-                        <label style={{ color: "rgb(144, 144, 144)" }}>{col.label}</label>
+                        <label className={Styles.filterItemLbl} title={col.label}>{col.label}</label>
                         <Select
                             defaultValue=""
                             style={{ width: '100%' }}
