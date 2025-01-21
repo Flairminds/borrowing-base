@@ -1,11 +1,11 @@
 import { SettingOutlined } from '@ant-design/icons';
+import { Switch } from 'antd';
 import React, { useEffect, useState } from 'react';
 import CrossIcon from '../../../assets/CrossIcon.svg';
 import RightIcon from '../../../assets/RightIcon.svg';
 import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import tableStyles from './DynamicTableComponents.module.css';
-import { Switch } from 'antd';
 
 
 export const DynamicTableComponents = (
