@@ -1,7 +1,8 @@
 from datetime import datetime, timezone
 import json
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Identity
+from sqlalchemy import Identity, text, Text
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
@@ -168,7 +169,7 @@ class SourceFiles(db.Model):
     file_url = db.Column(db.String(200), nullable=False)
     file_size = db.Column(db.Float, nullable=False)
     company_id = db.Column(db.Integer, nullable=False)
-    fund_type = db.Column(db.String(100), nullable=False)
+    fund_types = db.Column(db.ARRAY(db.String), nullable=True)
     is_validated = db.Column(db.Boolean, default=False)
     is_extracted = db.Column(db.Boolean, default=False)
     uploaded_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
@@ -231,7 +232,7 @@ class PfltHaircutConfig(db.Model):
     obligor_tier = db.Column(db.String(127), nullable=False)
     position = db.Column(db.String(127), nullable=False)
     value = db.Column(db.Float, nullable=False)
-    description = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.String(255))
     created_by = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_by = db.Column(db.Integer, nullable=True)
@@ -243,8 +244,8 @@ class PfltIndustryList(db.Model):
     company_id = db.Column(db.Integer, nullable=False)
     industry_no = db.Column(db.Integer, nullable=False)
     industry_name = db.Column(db.String(255), nullable=False)
-    industry_code = db.Column(db.String(127), nullable=False)
-    description = db.Column(db.String(255), nullable=False)
+    industry_code = db.Column(db.String(127))
+    description = db.Column(db.String(255))
     created_by = db.Column(db.Integer, nullable=False)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_by = db.Column(db.Integer, nullable=True)
@@ -321,6 +322,15 @@ class PfltBaseDataMapping(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_by = db.Column(db.Integer, nullable=True)
     modified_at = db.Column(db.DateTime(timezone=True))
+    is_editable = db.Column(db.Boolean, server_default=db.sql.expression.false())
+
+class BaseDataMappingColumnInfo(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    fund_type = db.Column(db.String(15), nullable=False)
+    bdm_id = db.Column(db.Integer, db.ForeignKey("pflt_base_data_mapping.bdm_id"), nullable=False)
+    sequence = db.Column(db.Integer, nullable=False)
+    modified_at = db.Column(db.DateTime(timezone=True))
+    modified_by = db.Column(db.Integer, nullable=True)
 
 class PfltBaseData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -388,7 +398,6 @@ class PfltBaseData(db.Model):
     structured_finance_obligation = db.Column(db.String)
     material_non_credit_related_risk = db.Column(db.String)
     primarily_secured_by_real_estate_or_loan = db.Column(db.String)
-    minimum_equity_amount_floor = db.Column(db.String)
     interest_only_security = db.Column(db.String)
     satisfies_all_other_eligibility_criteria = db.Column(db.String)
     excess_concentration_amount = db.Column(db.String)

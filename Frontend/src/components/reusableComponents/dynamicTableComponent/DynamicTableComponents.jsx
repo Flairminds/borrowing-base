@@ -1,10 +1,26 @@
 import { SettingOutlined } from '@ant-design/icons';
+import { Switch } from 'antd';
 import React, { useEffect, useState } from 'react';
+import CrossIcon from '../../../assets/CrossIcon.svg';
+import RightIcon from '../../../assets/RightIcon.svg';
 import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
+import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import tableStyles from './DynamicTableComponents.module.css';
 
 
-export const DynamicTableComponents = ({data, columns, additionalColumns = [], showCellDetailsModal = false, showSettings = false, enableStickyColumns = false, getCellDetailFunc = () => {}, cellDetail = null}) => {
+export const DynamicTableComponents = (
+    {
+        data,
+        columns,
+        additionalColumns = [],
+        showCellDetailsModal = false,
+        showSettings = false,
+        enableStickyColumns = false,
+        enableColumnEditing = false,
+        onChangeSave,
+        getCellDetailFunc = () => {},
+        cellDetail = null
+    }) => {
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
     const [showSettingsDiv, setShowSettingsDiv] = useState(false);
@@ -13,6 +29,9 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
     const [activeRowIndex, setActiveRowIndex] = useState(-1);
     const [modalVisible, setModalVisible] = useState(false);
     // const [cellDetails, setCellDetails] = useState({ rowIndex: -1, column: '' });
+    const [editingCell, setEditingCell] = useState(null);
+    const [inputValue, setInputValue] = useState("");
+    const [isInUpdateMode, setIsInUpdateMode] = useState(false);
 
 
     useEffect(() => {
@@ -46,13 +65,64 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
 			getCellDetailFunc(rowIndex, columnKey, columnName, cellValue);
 			setModalVisible(true);
 		}
-	};
+      };
+
+    const handleCellEdit = (rowIndex, columnkey, cellValue) => {
+        setEditingCell({ rowIndex, columnkey });
+        setInputValue(cellValue);
+    };
+
+    const handleInputChange = (e) => {
+        setInputValue(e.target.value);
+    };
+
+    const handleSaveEdit = async () => {
+
+        const { rowIndex, columnkey } = editingCell;
+        const saveStatus = await onChangeSave(rowIndex, columnkey, inputValue);
+
+        if (saveStatus.success) {
+            setEditingCell(null);
+            setInputValue("");
+            showToast("success", "Data updated successfully");
+        } else {
+            showToast("error", saveStatus.msg);
+        }
+    };
+
+    const handleCancelEdit = (e) => {
+        e.stopPropagation();
+        setEditingCell(null);
+        setInputValue("");
+    };
+
+    const handleToggleChange = (value) => {
+        setIsInUpdateMode(value);
+        if (!value) {
+            setEditingCell(null);
+            setInputValue("");
+        }
+    };
+
 
   return (
     <>
         {showSettings &&
         <div style={{position: 'relative', textAlign: 'right'}}>
-            <div style={{cursor: 'pointer'}} onClick={(e) => handleOpenSettings(e)}><SettingOutlined style={{ fontSize: '20px', margin: '7px'}} /> </div>
+            <div style={{cursor: 'pointer'}}>
+                {(showCellDetailsModal && enableColumnEditing) &&
+                <>
+                    <div style={{display: 'inline-block'}}>
+                        <span style={{margin: '7px'}}>View Only</span>
+                        <Switch size='small' style={{backgroundColor: '#0EB198' }} onChange={handleToggleChange} />
+                        <span style={{margin: '7px'}}>Edit Mode</span>
+                    </div>
+                    <div style={{display: 'inline-block', margin: '7px 25px'}}>
+                        <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px'}} />
+                    </div>
+                </>
+                }
+            </div>
             {showSettingsDiv &&
                 <div style={{position: 'absolute', display: 'flex', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
                     {breaks?.map((b, i) => {
@@ -95,11 +165,47 @@ export const DynamicTableComponents = ({data, columns, additionalColumns = [], s
                         <tr key={rowIndex} onClick={() => setActiveRowIndex(rowIndex)}>
                             {updatedColumnsData?.map((col) => {
                                 if (selectedColumns.includes(col.label)) {
+                                    const isEditable = enableColumnEditing && col.isEditable;
+                                    let cellDisplayValue = row[col.key];
+                                    let cellActualValue = row[col.key];
+                                    let cellTitleValue = row[col.key];
+                                    if (row[col.key] && row[col.key]['meta_info']) {
+                                        cellDisplayValue = row[col.key]['display_value'];
+                                        cellActualValue = row[col.key]['value'];
+                                        cellTitleValue = row[col.key]['title'];
+                                    }
+                                    const isValueEmpty = isEditable && !cellDisplayValue;
                                 return (
-                                    <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : tableStyles.td}
+                                    <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
                                         style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
-                                        onClick={showCellDetailsModal ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]) : () => col.clickHandler && col.clickHandler(row[col.key], row)} title={row[col.key]}>
-                                        {col.render ? col.render(row[col.key], row) : (row[col.key] ? row[col.key] : '-') }
+                                        onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={cellTitleValue}>
+                                        {enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
+                                            (
+                                                <div className={tableStyles.editIconsContainer}>
+                                                    <input
+                                                        type="text"
+                                                        value={inputValue}
+                                                        onChange={handleInputChange}
+                                                        className={tableStyles.updateInput}
+                                                        autoFocus
+                                                    />
+                                                    <img
+                                                        src={RightIcon}
+                                                        alt="Save"
+                                                        className={tableStyles.iconButton}
+                                                        onClick={handleSaveEdit}
+                                                    />
+                                                    <img
+                                                        src={CrossIcon}
+                                                        alt="Cancel"
+                                                        className={tableStyles.iconButton}
+                                                        onClick={handleCancelEdit}
+                                                    />
+                                                </div>
+                                            )
+                                            :
+                                                col.render ? col.render(cellDisplayValue, row) : (cellDisplayValue ? cellDisplayValue : '-')
+                                        }
                                     </td>
                                 );
                                 }

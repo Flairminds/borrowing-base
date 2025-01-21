@@ -4,66 +4,118 @@ import mmap
 from io import BytesIO
 import pandas as pd
 from datetime import datetime
+import pytz
 # import azure.functions as func
 from sqlalchemy import text
 import threading
 import numpy as np
 from numerize import numerize
+from openpyxl import load_workbook
+import openpyxl
+import pickle
+import json
+from datetime import datetime
 
+from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 
-def upload_src_file_to_az_storage(files, report_date):
+pfltDashboardService = PfltDashboardService()
+
+def upload_src_file_to_az_storage(files, report_date, fund_type):
     if len(files) == 0:
         return ServiceResponse.error(message = "Please select files.", status_code = 400)
+    if not fund_type:
+        return ServiceResponse.error(message = "Please select Fund.", status_code = 400)
     
     blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
     company_name = "Pennant"
-    fund_name = "PFLT"
+    fund_names = fund_type
     report_date = datetime.strptime(report_date, "%Y-%m-%d").date()
 
-    source_files = []
+    source_files_list = []
     try:
         for file in files:
             print(file.filename)
-            blob_name = f"{company_name}/{fund_name}/{file.filename}"
-            
-            # setting SourceFiles object
-            file_name = os.path.splitext(file.filename)[0]
-            extension = os.path.splitext(file.filename)[1]
-            file.seek(0, 2)  # Move to the end of the file
-            file_size = file.tell()  # Get the size in bytes
-            file.seek(0)
-            company_id = 1
-            is_validated = False
-            is_extracted = False
-            uploaded_by = 1
-            file_type = None
-            if contains_cash(file.filename):
-                file_type = "cashfile"
-            if contains_master_comp(file.filename):
-                file_type = "master_comp"
+            for fund_name in fund_names:
+                blob_name = f"{company_name}/{fund_name}/{file.filename}"
+                
+                # setting SourceFiles object
+                file_name = os.path.splitext(file.filename)[0]
+                extension = os.path.splitext(file.filename)[1]
+                file.seek(0, 2)  # Move to the end of the file
+                file_size = file.tell()  # Get the size in bytes
+                file.seek(0)
+                company_id = 1
+                is_validated = False
+                is_extracted = False
+                uploaded_by = 1
+                file_type = None
+                if contains_cash(file.filename):
+                    file_type = "cashfile"
+                if contains_master_comp(file.filename):
+                    file_type = "master_comp"
 
-            # upload blob in container
-            blob_client.upload_blob(name=blob_name, data=file)
-            file_url = blob_client.url + '/' + blob_name
-            # add details of files in db
-            source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_type=fund_name, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
+                # upload blob in container
+                blob_client.upload_blob(name=blob_name, data=file)
+                file_url = blob_client.url + '/' + blob_name
+                # add details of files in db
+            source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
 
             db.session.add(source_file)
             db.session.commit()
-                # source_files.append(source_file)
-            # try:
-            #     db.session.add_all(source_files)
-            #     db.session.commit()
-            # except Exception as e:
-            #     Log.func_error(e=e)
-            #     return ServiceResponse.error(message="Could not save files to database.", status_code = 500)
+                    # source_files.append(source_file)
+                # try:
+        #         #     db.session.add_all(source_files)
+        #         #     db.session.commit()
+        #         # except Exception as e:
+        #         #     Log.func_error(e=e)
+        #         #     return ServiceResponse.error(message="Could not save files to database.", status_code = 500)
+
+        # for file in files:
+        #     for fund_name in fund_names:
+        #         blob_name = f"{company_name}/{fund_name}/{file.filename}"
+                
+        #         # setting SourceFiles object
+        #         file_name = os.path.splitext(file.filename)[0]
+        #         extension = os.path.splitext(file.filename)[1]
+        #         file.seek(0, 2)  # Move to the end of the file
+        #         file_size = file.tell()  # Get the size in bytes
+        #         file.seek(0)
+        #         company_id = 1
+        #         is_validated = False
+        #         is_extracted = False
+        #         uploaded_by = 1
+        #         file_type = None
+        #         if contains_cash(file.filename):
+        #             file_type = "cashfile"
+        #         if contains_master_comp(file.filename):
+        #             file_type = "master_comp"
+
+        #         # upload blob in container
+        #         blob_client.upload_blob(name=blob_name, data=file)
+        #         file_url = blob_client.url + '/' + blob_name
+        #         # add details of files in db
+        #         source_file = SourceFile(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
+
+        #         db.session.add(source_file)
+        #         db.session.commit()
+        #         db.session.refresh(source_file)
+        #         source_file_fund = SourceFileFund(sf_id=source_file.id, fund_type=fund_name)
+        #         db.session.add(source_file_fund)
+        #         db.session.commit()
+        #         source_files_list.append(source_file)
+
+        # for fund_name in fund_names:
+        #     for uploaded_file in source_file:
+        #         source_file_fund = SourceFileFund(sf_id=uploaded_file.id, fund_type=fund_name)
+        #         db.session.add(source_file_fund)
+        #         db.session.commit()
             
         return ServiceResponse.success(message = "Files uploaded successfully")
 
@@ -74,21 +126,27 @@ def upload_src_file_to_az_storage(files, report_date):
         Log.func_error(e=e)
         return ServiceResponse.error(message="Could not upload files.", status_code = 500)
     
-def get_blob_list():
+def get_blob_list(fund_type):
     company_id = 1 # for Penennt
-    fund_type = "PFLT"
-    source_files = db.session.query(
+
+    # If fund type is not provided -> fetching all records 
+    source_files_query = db.session.query(
             SourceFiles.id,
             SourceFiles.file_name,
             SourceFiles.extension,
             SourceFiles.uploaded_at,
             SourceFiles.uploaded_by,
-            SourceFiles.fund_type,
+            SourceFiles.fund_types,
             SourceFiles.file_type,
             SourceFiles.report_date,
             Users.display_name
-        ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id, SourceFiles.fund_type == fund_type).order_by(SourceFiles.uploaded_at.desc()).all()
-    # SourceFiles.query.join(Users).filter_by(is_deleted=False, company_id=company_id, fund_type=fund_type).order_by(SourceFiles.uploaded_at.desc()).all()
+        ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id)
+    
+    if fund_type:
+        source_files_query = source_files_query.filter(SourceFiles.fund_types.any(fund_type))
+
+    source_files = source_files_query.order_by(SourceFiles.uploaded_at.desc()).all()
+
     list_table = {
         "columns": [{
             "key": "fund", 
@@ -115,10 +173,11 @@ def get_blob_list():
             "file_name": source_file.file_name + source_file.extension, 
             "uploaded_at": source_file.uploaded_at.strftime("%Y-%m-%d"),
             "report_date": source_file.report_date.strftime("%Y-%m-%d"),
-            "fund": source_file.fund_type,
+            "fund": source_file.fund_types,
             "source_file_type": source_file.file_type,
             "uploaded_by": source_file.display_name
         })
+        print(source_file.fund_types)
     
     return ServiceResponse.success(data=list_table)
 
@@ -349,7 +408,7 @@ def extract_base_data(file_ids):
 
 def get_base_data(info_id):
     # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
-    base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).all()
+    base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).order_by(PfltBaseData.id).all()
     base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
     base_data_mapping = PfltBaseDataMapping.query.filter(PfltBaseDataMapping.bd_column_lookup.is_not(None)).order_by(PfltBaseDataMapping.bdm_id).all()
 
@@ -360,19 +419,28 @@ def get_base_data(info_id):
         del t['_sa_instance_state']
         for key in t:
             val = t[key]
+            numerized_val = None
             if isinstance(val, (int, float, complex)) and not isinstance(val, bool):
-                val = numerize.numerize(val, 2)
-                t[key] = val
+                numerized_val = numerize.numerize(val, 2)
+                # t[key] = val
             elif isinstance(val, str):
                 if val.replace(".", "").replace("-", "").isnumeric():
-                    val = numerize.numerize(float(val), 2)
-                    t[key] = val
+                    numerized_val = numerize.numerize(float(val), 2)
+                    # t[key] = val
+            t[key] = {
+                "meta_info": True,
+                "value": val,
+                "display_value": numerized_val if numerized_val else val,
+                "title": val,
+                "data_type": None,
+                "unit": None
+            }
         # t['report_date'] = t['report_date'].strftime("%Y-%m-%d")
         # t['created_at'] = t['created_at'].strftime("%Y-%m-%d")
         temp.append(t)
     # print(temp[0])
     base_data_table = {
-        "columns": [{"key": column.bd_column_lookup, "label": column.bd_column_name} for column in base_data_mapping],
+        "columns": [{"key": column.bd_column_lookup, "label": column.bd_column_name, "isEditable": column.is_editable} for column in base_data_mapping],
         "data": temp
     }
 
@@ -398,6 +466,21 @@ def get_base_data(info_id):
         "fund_type": base_data_info.fund_type
     }
     return ServiceResponse.success(data=result, message="Base Data")
+
+def edit_base_data(changes):
+    if not changes:
+        return ServiceResponse.error(message = "Please provide changes.", status_code = 400)
+    for change in changes:
+        id = int(change.get("id"))
+        for key in change.keys():
+            if key != "id":
+                value = change.get(key)
+                # column = key.replace('_', " ")
+                base_data = PfltBaseData.query.filter_by(id=id).first()
+                setattr(base_data, key, value)
+                db.session.add(base_data)
+                db.session.commit()
+    return ServiceResponse.success(message = "Basse data edited updated successfully")
 
 def get_base_data_mapping(info_id):
     try:
@@ -466,19 +549,24 @@ def get_pflt_sec_mapping():
     columns_data = [
         {
             'key': "soi_name",
-            'label': "Soi name"
+            'label': "Soi name",
+            'isEditable': False
         }, {
             'key': "master_comp_security_name",
-            'label': "Master comp security name"
+            'label': "Master comp security name",
+            'isEditable': False
         },  {
             'key': "family_name",
-            'label': "Family name"
+            'label': "Family name",
+            'isEditable': True
         }, {
             'key': "security_type",
-            'label': "Security type"
+            'label': "Security type",
+            'isEditable': False
         }, {
             'key': "cashfile_security_name",
-            'label': "Cash file security name"
+            'label': "Cash file security name",
+            'isEditable': True
         }
     ]
     pflt_sec_mapping_table = {
@@ -507,12 +595,24 @@ def edit_pflt_sec_mapping(changes):
     
     return ServiceResponse.success(message="PFLT security mapping edited successfully")
 
+def add_pflt_sec_mapping(cashfile_security_name, family_name, master_comp_security_name, security_type, soi_name):
+    company_id = 1
+    modified_by = 1
+    timestamp = datetime.now(pytz.UTC)
+
+    pfltSecurityMapping = PfltSecurityMapping(company_id=company_id, soi_name=soi_name, master_comp_security_name=master_comp_security_name, family_name=family_name, security_type=security_type, cashfile_security_name=cashfile_security_name, modified_by=modified_by, modified_at=timestamp)
+
+    db.session.add(pfltSecurityMapping)
+    db.session.commit()
+    
+    return ServiceResponse.success(message="PFLT security mapping added successfully")
+
 def get_source_file_data(file_id, file_type, sheet_name):
     # ["US Bank Holdings", "Client Holdings"] for Cash
     # ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"] for Master Comp
-    if file_type == "Cash" and sheet_name == None:
+    if file_type == "cashfile" and sheet_name == None:
         sheet_name = "US Bank Holdings"
-    if file_type == "Master Comp" and sheet_name == None:
+    if file_type == "master_comp" and sheet_name == None:
         sheet_name = "Borrower Stats"
     print(sheet_name)
     match sheet_name:
@@ -562,3 +662,174 @@ def get_source_file_data_detail(ebd_id, column_key):
         return ServiceResponse.success(data=df_dict[0])
     except Exception as e:
         raise Exception(e)
+
+def trigger_bb_calculation(bdi_id):
+    try:
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
+            df2 = pd.DataFrame(connection.execute(text(f'select bd_column_name, bd_column_lookup from pflt_base_data_mapping where bd_column_lookup is not null')).fetchall())
+            # haircut_config = pd.DataFrame(connection.execute(text(f'select haircut_level, obligor_tier, "position", value from pflt_haircut_config')).fetchall())
+            industry_list = pd.DataFrame(connection.execute(text(f'select industry_no as "Industry No", industry_name as "Industry" from pflt_industry_list')).fetchall())
+        df = df.replace({np.nan: None})
+        report_date = df['report_date'][0].strftime("%Y-%m-%d")
+        df = df.drop('report_date', axis=1)
+        df = df.drop('created_at', axis=1)
+        df = df.drop('base_data_info_id', axis=1)
+        df = df.drop('id', axis=1)
+        df = df.drop('company_id', axis=1)
+        df = df.drop('created_by', axis=1)
+        df = df.drop('modified_by', axis=1)
+        df = df.drop('modified_at', axis=1)
+        # df['report_date'] = df['report_date'].astype(str)
+        # df['created_at'] = df['created_at'].astype(str)
+        
+        wb = openpyxl.Workbook()
+        sheet = wb.active
+        sheet.title = "Loan List"
+        file_name = "PFLT Base data - " + report_date + ".xlsx"
+        wb.save(file_name)
+
+        path1 = 'PFLT Base data.xlsx'
+        path2 = file_name
+        wb1 = openpyxl.load_workbook(filename=path1)
+        for index, sheet in enumerate(wb1.worksheets):
+            ws1 = wb1.worksheets[index]
+
+            wb2 = openpyxl.load_workbook(filename=path2)
+            ws2 = wb2.create_sheet(ws1.title)
+            for row in ws1:
+                for cell in row:
+                    ws2[cell.coordinate].value = cell.value
+            wb2.save(path2)
+        
+        rename_df_col = {}
+        for index, row in df2.iterrows():
+            rename_df_col[row['bd_column_lookup']] = row['bd_column_name']
+        df.rename(columns=rename_df_col, inplace=True)
+        # print(df.dtypes)
+        # for c in df.columns:
+            # print(c, df[c].dtype)
+
+        # df["Initial TTM EBITDA"] = df["Initial TTM EBITDA"].astype(float)
+        # df["Current TTM EBITDA"] = df["Current TTM EBITDA"].astype(float)
+        # df["Current Fixed Charge Coverage Ratio"] = df["Current Fixed Charge Coverage Ratio"].astype(float)
+        # df["Initial Fixed Charge Coverage Ratio"] = df["Current Fixed Charge Coverage Ratio"].astype(float)
+
+        # df["Spread incl. PIK and PIK'able"].fillna(0, inplace=True)
+        # df["PIK / PIK'able For Floating Rate Loans"].fillna(0, inplace=True)
+        # df["PIK / PIK'able For Fixed Rate Loans"].fillna(0, inplace=True)
+        # df["Base Rate"].fillna(0, inplace=True)
+
+        xl_df_map = {}
+        xl_df_map['Loan List'] = df
+
+        book = load_workbook(file_name)
+        writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        writer.book = book
+        df.to_excel(writer, sheet_name="Loan List", index=False, header=True)
+        writer.save()
+
+
+        data = {'INPUTS': ['Determination Date', 'Minimum Equity Amount Floor'], '': ['', ''], 'Values': ['9-30-24', '30000000']}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Inputs'] = data
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # data.to_excel(writer, sheet_name="Inputs", index=False, header=True)
+        # writer.save()
+
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Exchange Rates'] = data
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # data.to_excel(writer, sheet_name="Exchange Rates", index=False, header=True)
+        # writer.save()
+
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': [1.000000, 0.739350, 0.691310, 1.113500], 'Cash - Current & PreBorrowing': [50958522.16, 265552.25, 0, 0], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': [0, 0, 0, 0], 'Additional Expences 2': [0, 0, 0, 0], 'Additional Expences 3': [0, 0, 0, 0]}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Cash Balance Projections'] = data
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # data.to_excel(writer, sheet_name="Cash Balance Projections", index=False, header=True)
+        # writer.save()
+
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Current Credit Facility Balance': [442400000, 2000000, 0, 0]}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Credit Balance Projection'] = data
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # data.to_excel(writer, sheet_name="Credit Balance Projection", index=False, header=True)
+        # writer.save()
+
+        data = {'Haircut': ['', 'SD/EBITDA', 'TD/EBITDA', 'UD/EBITDA'], '20% Conc. Limit': ['Tier 1 Obligor', 5, 7, 6], 'Unnamed: 2': ['Tier 2 Obligor', 4.25, 6, 5.25], 'Unnamed: 3': ['Tier 3 Obligor', 3.75, 5, 4.5], 'Level 1 - 10% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 5': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 6': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 2 - 20% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 8': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 9': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 3 - 35% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 11': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 12': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 4 - Max Eligibility - 50% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 14': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 15': ['Tier 3 Obligor', 4.25, 5.5, 5]}
+        data = pd.DataFrame.from_dict(data)
+        xl_df_map['Haircut'] = data
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # data.to_excel(writer, sheet_name="Haircut", index=False, header=True)
+        # writer.save()
+
+        # # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Current Credit Facility Balance': ['442400000', '2000000', '0', '0']}
+        # # data = pd.DataFrame.from_dict(data)
+        xl_df_map['Industry'] = industry_list
+
+        # book = load_workbook(file_name)
+        # writer = pd.ExcelWriter(file_name, engine="openpyxl")
+        # writer.book = book
+        # industry_list.to_excel(writer, sheet_name="Industry", index=False, header=True)
+        # writer.save()
+        # print(industry_list)
+
+        # print(xl_df_map)
+
+        # df.to_excel("output.xlsx")
+
+        xl_df_map = pd.read_excel(file_name, sheet_name=['Loan List', 'Inputs', 'Exchange Rates', 'Cash Balance Projections', 'Credit Balance Projection', 'Haircut', 'Industry'])
+        pickled_xl_sheet_df_map = pickle.dumps(xl_df_map)
+
+        included_excluded_assets_map = pfltDashboardService.pflt_included_excluded_assets(xl_df_map)
+
+        # datetime object containing current date and time
+        now = datetime.now()
+        
+        dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
+        base_data_file = BaseDataFile(
+            user_id=1,
+            closing_date=report_date,
+            fund_type='PFLT',
+            file_data=pickled_xl_sheet_df_map,
+            file_name='Generated Data ' + dt_string,
+            included_excluded_assets_map=json.dumps(included_excluded_assets_map),
+        )
+
+        db.session.add(base_data_file)
+        db.session.commit()
+
+        base_data_file = commonServices.get_base_data_file(
+            base_data_file_id=base_data_file.id
+        )
+        # if base_data_file.fund_type == "PCOF":
+            # return pcofDashboardService.calculate_bb(
+            #     base_data_file, selected_assets, user_id
+            # )
+        # else:
+        selected_assets = included_excluded_assets_map['included_assets']
+        wb2.close()
+        writer.close()
+        os.remove(file_name)
+        return pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
+
+    except Exception as e:
+        print(e)

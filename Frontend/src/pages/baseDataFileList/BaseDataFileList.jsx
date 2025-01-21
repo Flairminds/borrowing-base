@@ -2,10 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { CustomButton } from '../../components/custombutton/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { SourceFileModal } from '../../modal/sourceFileModal/SourceFileModal';
 import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
-import { SourceFileModal } from '../sourceFileModal/SourceFileModal';
 import styles from './BaseDataFileList.module.css';
+import { Select } from 'antd';
+import { fundOptionsArray } from '../../utils/constants/constants';
 
 export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
     const [baseDataFilesList, setBaseDataFilesList] = useState({});
@@ -120,18 +122,25 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
     return (
         <div className={styles.pageContainer}>
             <div className={styles.baseFileListPage}>
-                <div className={styles.buttonsContainer}>
-                    <CustomButton isFilled={true} onClick={handleSecurityMapping} text="Security Mapping" />
-                    <CustomButton isFilled={true} onClick={handleExtractNew} text="Extract New Base Data" />
+                <div className={styles.headerContainer}>
+                    <div className={styles.tableHeading}>
+                        Base Data
+                    </div>
+                    <div className={styles.buttonsContainer}>
+                        <div style={{margin: 'auto'}}>
+                            <Select
+                                defaultValue="Select Fund"
+                                style={{ width: 140, borderRadius: '8px'}}
+                                options={fundOptionsArray}
+                            />
+                        </div>
+                        <CustomButton isFilled={true} onClick={handleSecurityMapping} text="Security Mapping" />
+                        <CustomButton isFilled={true} onClick={handleExtractNew} text="Extract New Base Data" />
+                    </div>
                 </div>
-
-                <div className={styles.tableHeading}>
-                    Base Data
+                <div className={styles.baseDataTableContainer}>
+                    <DynamicTableComponents data={baseDataFilesList?.data} columns={baseDataFilesList?.columns} additionalColumns={columnsToAdd} />
                 </div>
-            <div className={styles.baseDataTableContainer}>
-                <DynamicTableComponents data={baseDataFilesList?.data} columns={baseDataFilesList?.columns} additionalColumns={columnsToAdd} />
-            </div>
-
             </div>
             {/* File Details Modal */}
             <SourceFileModal

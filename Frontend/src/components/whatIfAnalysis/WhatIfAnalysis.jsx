@@ -117,7 +117,7 @@ export const WhatIfAnalysis = (
       const getPreviewTable = async () => {
         
         try{
-          const response = await get_preview_table(selectedFiles)
+          const response = await get_preview_table(selectedFiles, fundType)
           var stringRes = JSON.parse(response.data.replace(/\bNaN\b/g, "null"));
           if(response.status===200){
             // isPreviewModal(true)   

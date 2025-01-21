@@ -501,6 +501,9 @@ class ConcentrationTestExecutor:
             test_required_col_df["Borrowing Base"] / BB_sum
         )
 
+        # check after demo
+        if test_required_col_df.empty:
+            return concentration_test_df
         actual = self.get_kth_largest_percent_BB(test_required_col_df, 1)
 
         if actual < self.limit_percent:
@@ -532,6 +535,10 @@ class ConcentrationTestExecutor:
         test_required_col_df["Percetage Borrowing Base"] = (
             test_required_col_df["Borrowing Base"] / BB_sum
         )
+
+        # check after demo
+        if test_required_col_df.empty:
+            return concentration_test_df
 
         actual = self.get_kth_largest_percent_BB(test_required_col_df, 2)
 

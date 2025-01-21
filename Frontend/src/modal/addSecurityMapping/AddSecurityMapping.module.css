@@ -1,0 +1,23 @@
+
+.inputContainer {
+    margin-bottom: 0.5rem;
+}
+
+.inputContainer label {
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.inputContainer input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #DCDEDE;
+    border-radius: 5px;
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+

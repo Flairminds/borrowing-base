@@ -64,7 +64,11 @@ def update_parameters(base_data_file, type, asset_percent_list):
         opposite_type_col = "Financials LTM EBITDA ($MMs)"
     
     for asset_percent in asset_percent_list:
-        asset_percent["percent"] = float(asset_percent["percent"])
+        if asset_percent.get("percent"):
+            percent = float(asset_percent.get("percent"))
+        else:
+            percent = float("0")
+        asset_percent["percent"] = percent
 
     asset_percent_df = pd.DataFrame.from_records(asset_percent_list)
 
@@ -91,9 +95,12 @@ def update_parameters(base_data_file, type, asset_percent_list):
     df_PL_BB_Build = df_PL_BB_Build.copy()
     
     # get eligible and included assets
+    original_pl_bb_build = df_PL_BB_Build.copy()
     selected_assets_mask = df_PL_BB_Build["Investment Name"].isin(selected_assets)
-    df_PL_BB_Build = df_PL_BB_Build[selected_assets_mask].reset_index(drop=True)
     df_PL_BB_Build = df_PL_BB_Build[df_PL_BB_Build["Is Eligible Issuer"] == "Yes"]
+    if "Cash" in df_PL_BB_Build["Investment Name"].tolist():
+        df_PL_BB_Build = df_PL_BB_Build.append(original_pl_bb_build[original_pl_bb_build['Investment Name'] == 'Cash'])
+    df_PL_BB_Build = df_PL_BB_Build[selected_assets_mask].reset_index(drop=True)
     
     initial_pl_bb_build = df_PL_BB_Build.copy(deep=True)
 

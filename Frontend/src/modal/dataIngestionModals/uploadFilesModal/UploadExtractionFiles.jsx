@@ -1,4 +1,4 @@
-import { Button, DatePicker, Modal } from 'antd';
+import { Button, Checkbox, DatePicker, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css';
@@ -10,7 +10,11 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [reportDate,  setReportDate] = useState();
+  const [reportDate, setReportDate] = useState();
+  const [selectedOptions, setSelectedOptions] = useState([]);
+
+  const checkboxOptions = ['PCOF', 'PFLT'];
+
 
   const { getRootProps, getInputProps } = useDropzone({
       accept: [
@@ -26,8 +30,11 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 
     const handleCancel = () => {
       setSelectedFiles([]);
+      setSelectedOptions([]);
       setUploadFilesPopupOpen(false);
+      setReportDate();
     };
+
 
     const handleDateChange = (date, dateString) => {
       setReportDate(dateString);
@@ -41,16 +48,23 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
       }
       setLoading(true);
       try {
-        const uploadresponse = await uploadNewFile(selectedFiles, reportDate);
+        const selectedFunds = selectedOptions;
+        const uploadresponse = await uploadNewFile(selectedFiles, reportDate, selectedFunds);
         blobFilesList();
         showToast('success', uploadresponse?.data?.message);
       } catch (error) {
         showToast('error', error?.response?.data.message);
       }
       setSelectedFiles([]);
+      setSelectedOptions([]);
       setUploadFilesPopupOpen(false);
       setLoading(false);
     };
+
+    const handleCheckboxChange = (checkedValues) => {
+      setSelectedOptions(checkedValues);
+    };
+
 
   return (
     <>
@@ -80,7 +94,13 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
                 onChange={handleDateChange}
                 allowClear={true}
               />
-
+              <div style={{ marginTop: '20px', marginBottom: '20px'}}>
+            <Checkbox.Group
+              options={checkboxOptions}
+              value={selectedOptions}
+              onChange={handleCheckboxChange}
+            />
+          </div>
             </div>
               <div className={styles.visible}>
                 <div {...getRootProps({ className: 'dropzone' })}>
