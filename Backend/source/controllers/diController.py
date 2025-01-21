@@ -63,6 +63,20 @@ def get_base_data():
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def change_bd_col_seq():
+    try:
+        req_body = flask.request.get_json()
+        updated_sequence = req_body.get("updated_sequence")
+        service_response = diService.change_bd_col_seq(updated_sequence)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not change sequence of base data columns")
+        # base_data_map_res = diService.get_base_data_mapping(info_id)
+        
+        return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
     
 def edit_base_data():
     try:

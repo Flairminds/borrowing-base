@@ -410,7 +410,14 @@ def get_base_data(info_id):
     # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
     base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).order_by(PfltBaseData.id).all()
     base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
-    base_data_mapping = PfltBaseDataMapping.query.filter(PfltBaseDataMapping.bd_column_lookup.is_not(None)).order_by(PfltBaseDataMapping.bdm_id).all()
+    base_data_mapping = db.session.query(
+        PfltBaseDataMapping.bdm_id,
+        PfltBaseDataMapping.bd_column_lookup,
+        PfltBaseDataMapping.bd_column_name,
+        PfltBaseDataMapping.is_editable,
+        BaseDataMappingColumnInfo.sequence,
+        BaseDataMappingColumnInfo.is_selected
+    ).join(PfltBaseDataMapping, PfltBaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).order_by(BaseDataMappingColumnInfo.sequence).all()
 
     temp = []
     # print(base_data[0])
@@ -440,7 +447,13 @@ def get_base_data(info_id):
         temp.append(t)
     # print(temp[0])
     base_data_table = {
-        "columns": [{"key": column.bd_column_lookup, "label": column.bd_column_name, "isEditable": column.is_editable} for column in base_data_mapping],
+        "columns": [{
+                "key": column.bd_column_lookup,
+                "label": column.bd_column_name,
+                "isEditable": column.is_editable,
+                "bdm_id": column.bdm_id,
+                "is_selected": column.is_selected
+            } for column in base_data_mapping],
         "data": temp
     }
 
@@ -466,6 +479,19 @@ def get_base_data(info_id):
         "fund_type": base_data_info.fund_type
     }
     return ServiceResponse.success(data=result, message="Base Data")
+
+def change_bd_col_seq(updated_sequence):
+    try:
+        for change in updated_sequence:
+            bdm_id = change.get("bdm_id")
+            sequence = change.get("sequence")
+            base_data_mapping_info = BaseDataMappingColumnInfo.query.filter_by(bdm_id = bdm_id).first()
+            base_data_mapping_info.sequence = sequence
+            db.session.add(base_data_mapping_info)
+            db.session.commit()
+        return ServiceResponse.success(message = "Base Data Column Sequence Changed Successfully")
+    except Exception as e:
+        raise Exception(e)
 
 def edit_base_data(changes):
     if not changes:

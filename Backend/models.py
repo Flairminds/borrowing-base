@@ -331,6 +331,7 @@ class BaseDataMappingColumnInfo(db.Model):
     sequence = db.Column(db.Integer, nullable=False)
     modified_at = db.Column(db.DateTime(timezone=True))
     modified_by = db.Column(db.Integer, nullable=True)
+    is_selected = db.Column(db.Boolean, server_default=db.sql.expression.false())
 
 class PfltBaseData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

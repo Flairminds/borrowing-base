@@ -20,10 +20,9 @@ def extract_base_data():
 def get_base_data():
     return diController.get_base_data()
 
-# @di_blueprint.route("/create_base_data", methods=["POST"])
-# def create_base_data():
-#     return diController.create_base_data()
-
+@di_blueprint.route("/change_bd_col_seq", methods=["POST"])
+def change_bd_col_seq():
+    return diController.change_bd_col_seq()
 
 @di_blueprint.route('/edit_base_data', methods=['POST'])
 def edit_base_data():
