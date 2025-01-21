@@ -62,9 +62,8 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
 
     const handleSaveEdit = async (rowIndex, columnkey, inputValue) => {
             const updatedData = [...baseFilePreviewData?.baseData?.data];
-            const changes = [
-                {
-                    id: updatedData[rowIndex].id,
+            const changes = [{
+                    id: updatedData[rowIndex].id['value'],
                     [columnkey]: inputValue
                 }
             ];
@@ -74,6 +73,7 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
                 updatedData[rowIndex][columnkey] = inputValue;
                 console.info(baseFilePreviewData, 'base preivew state');
                 setBaseFilePreviewData({
+                    ...baseFilePreviewData,
                     'baseData': {
                         ...baseFilePreviewData.baseData,
                         'data': updatedData

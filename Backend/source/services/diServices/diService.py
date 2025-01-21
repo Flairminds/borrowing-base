@@ -419,13 +419,22 @@ def get_base_data(info_id):
         del t['_sa_instance_state']
         for key in t:
             val = t[key]
+            numerized_val = None
             if isinstance(val, (int, float, complex)) and not isinstance(val, bool):
-                val = numerize.numerize(val, 2)
-                t[key] = val
+                numerized_val = numerize.numerize(val, 2)
+                # t[key] = val
             elif isinstance(val, str):
                 if val.replace(".", "").replace("-", "").isnumeric():
-                    val = numerize.numerize(float(val), 2)
-                    t[key] = val
+                    numerized_val = numerize.numerize(float(val), 2)
+                    # t[key] = val
+            t[key] = {
+                "meta_info": True,
+                "value": val,
+                "display_value": numerized_val if numerized_val else val,
+                "title": val,
+                "data_type": None,
+                "unit": None
+            }
         # t['report_date'] = t['report_date'].strftime("%Y-%m-%d")
         # t['created_at'] = t['created_at'].strftime("%Y-%m-%d")
         temp.append(t)
