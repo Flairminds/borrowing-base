@@ -1,12 +1,83 @@
-import { SettingOutlined } from '@ant-design/icons';
-import { Switch } from 'antd';
+import { SettingOutlined, DragOutlined, MenuOutlined } from '@ant-design/icons';
+import { Popover, Switch } from 'antd';
 import React, { useEffect, useState } from 'react';
+import { useDrag, useDrop, DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import CrossIcon from '../../../assets/CrossIcon.svg';
 import RightIcon from '../../../assets/RightIcon.svg';
 import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import tableStyles from './DynamicTableComponents.module.css';
 
+const ItemType = "COLUMN";
+
+const DraggableColumn = ({ column, index, moveColumn }) => {
+    const [, ref, drag] = useDrag({
+      type: ItemType,
+      item: { index },
+    });
+  
+    const [, drop] = useDrop({
+      accept: ItemType,
+      hover: (item) => {
+        if (item.index !== index) {
+          moveColumn(item.index, index);
+          item.index = index;
+        }
+      },
+    });
+  
+    return (
+      <div
+        ref={(node) => drop(ref(node))} // Attach both drop and drag refs
+        className={tableStyles.columnItem}
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "8px",
+          border: "1px solid #ddd",
+          marginBottom: "4px",
+          backgroundColor: "#f9f9f9",
+          cursor: "pointer",
+        }}
+      >
+        <span>{column}</span>
+        <MenuOutlined
+          style={{ margin: "5px 7px", cursor: "grab" }}
+          ref={drag} // Attach the drag ref only to the icon
+        />
+      </div>
+    );
+  };
+
+const ColumnReorder = ({selectedColumns}) => {
+
+    const [columns, setColumns] = useState(selectedColumns);
+
+    const moveColumn = (fromIndex, toIndex) => {
+        const updatedColumns = [...columns];
+        const [moved] = updatedColumns.splice(fromIndex, 1);
+        updatedColumns.splice(toIndex, 0, moved);
+        setColumns(updatedColumns);
+    };
+
+    return (
+        <DndProvider backend={HTML5Backend}>
+      <div className={tableStyles.orderColumnContainer}>
+        {columns.map((column, index) => (
+          <DraggableColumn
+            key={column}
+            column={column}
+            index={index}
+            moveColumn={moveColumn}
+          />
+        ))}
+      </div>
+      <button onClick={() => console.info("Updated Order:", columns)}>Log Order</button>
+    </DndProvider>
+    );
+};
 
 export const DynamicTableComponents = (
     {
@@ -118,7 +189,10 @@ export const DynamicTableComponents = (
                         <span style={{margin: '7px'}}>Edit Mode</span>
                     </div>
                     <div style={{display: 'inline-block', margin: '7px 25px'}}>
-                        <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px'}} />
+                        <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px', margin: '0px 3px'}} />
+                        <Popover trigger={'click'} placement="bottomRight" title={"Reorder Columns"} content={<ColumnReorder selectedColumns={selectedColumns} />}>
+                            <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} />
+                        </Popover>
                     </div>
                 </>
                 }

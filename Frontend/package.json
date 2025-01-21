@@ -19,6 +19,8 @@
     "axios": "^1.6.8",
     "html-react-parser": "^5.1.10",
     "preact": "^10.19.6",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
     "react-dropzone": "^14.2.3",
     "react-redux": "^9.2.0",
     "react-router": "^6.22.3",
