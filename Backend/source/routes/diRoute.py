@@ -24,6 +24,14 @@ def get_base_data():
 def change_bd_col_seq():
     return diController.change_bd_col_seq()
 
+@di_blueprint.route("/get_base_data_col", methods=["POST"])
+def get_base_data_col():
+    return diController.get_base_data_col()
+
+@di_blueprint.route("/update_bd_col_select", methods=["POST"])
+def update_bd_col_select():
+    return diController.update_bd_col_select()
+
 @di_blueprint.route('/edit_base_data', methods=['POST'])
 def edit_base_data():
     return diController.edit_base_data()
