@@ -140,7 +140,7 @@ def get_blob_list(fund_type):
             SourceFiles.file_type,
             SourceFiles.report_date,
             Users.display_name
-        ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id)
+        ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id, SourceFiles.is_archived == False)
     
     if fund_type:
         source_files_query = source_files_query.filter(SourceFiles.fund_types.any(fund_type))
