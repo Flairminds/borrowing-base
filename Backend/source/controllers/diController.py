@@ -214,7 +214,6 @@ def trigger_bb_calculation():
         print("here",e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
     
-<<<<<<< Updated upstream
 def add_to_archived_files():
     try:
         data = flask.request.get_json()
@@ -238,7 +237,7 @@ def get_archived_files():
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error")
-=======
+    
 def pflt_base_data_other_info():
     try:
         req_body = flask.request.get_json()
@@ -256,4 +255,3 @@ def pflt_base_data_other_info():
     except Exception as e:
         Log.func_error(e=e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
->>>>>>> Stashed changes

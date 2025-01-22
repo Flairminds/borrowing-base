@@ -860,7 +860,6 @@ def trigger_bb_calculation(bdi_id):
     except Exception as e:
         print(e)
 
-<<<<<<< Updated upstream
 def get_archived_file_list():
 
     source_files = db.session.query(SourceFiles).filter(SourceFiles.is_archived == True).order_by(SourceFiles.uploaded_at.desc()).all()
@@ -914,7 +913,6 @@ def add_file_to_archive(list_of_ids):
     except Exception as e:
         Log.func_error(e=e)
         return ServiceResponse.error(message="Could not upload files.", status_code = 500)    
-=======
 def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor, other_data):
     try:
         other_info_list = []
@@ -943,4 +941,3 @@ def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimu
     except Exception as e:
         Log.func_error(e)
         return ServiceResponse.error(message="Failed to add")
->>>>>>> Stashed changes
