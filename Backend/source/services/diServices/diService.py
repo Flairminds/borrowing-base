@@ -20,7 +20,7 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, PfltBaseDataOtherInfo
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
@@ -913,3 +913,31 @@ def add_file_to_archive(list_of_ids):
     except Exception as e:
         Log.func_error(e=e)
         return ServiceResponse.error(message="Could not upload files.", status_code = 500)    
+def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor, other_data):
+    try:
+        other_info_list = []
+    
+        for value in other_data:
+            other_info_list.append ({
+                "currency": value.get("currency"),
+                "exchange_rates": value.get("exchange_rates"),
+                "cash_current_and_preborrowing": value.get("cash_current_and_preborrowing"),
+                "borrowing": value.get("borrowing"),
+                "additional_expenses_1": value.get("additional_expenses_1"),
+                "additional_expenses_2": value.get("additional_expenses_2"),
+                "current_credit_facility_balance": value.get("current_credit_facility_balance")
+            })
+
+            pflt_base_data_other_info =  PfltBaseDataOtherInfo(
+                extraction_info_id = extraction_info_id,
+                determination_date = determination_date,
+                minimum_equity_amount_floor = minimum_equity_amount_floor,
+            )
+            db.session.add(pflt_base_data_other_info)
+            db.session.commit()
+
+        return ServiceResponse.success(message="Data added sucessfully")
+        
+    except Exception as e:
+        Log.func_error(e)
+        return ServiceResponse.error(message="Failed to add")

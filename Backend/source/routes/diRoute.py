@@ -63,3 +63,7 @@ def add_to_archived_files():
 @di_blueprint.route('/get_archived_files', methods=["GET"])
 def get_archived_files():
     return diController.get_archived_files()
+
+@di_blueprint.route('/pflt_base_data_other_info', methods=["POST"])
+def pflt_base_data_other_info():
+    return diController.pflt_base_data_other_info()
