@@ -6,11 +6,13 @@ import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api'
 import { editBaseData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
+import { AddOtherInfo } from '../../modal/addOtherInfo/AddOtherInfo';
 
 export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePreviewData}) => {
     const navigate = useNavigate();
     const [mapping, setMapping] = useState({});
     const [cellDetail, setCellDetail] = useState({});
+    const [isAddFieldModalOpen, setIsAddFieldModalOpen] = useState(false);
 
     useEffect(() => {
         let col = [];
@@ -101,11 +103,14 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
     return (
         <div className={styles.previewPage}>
             <div className={styles.tableContainer}>
-                <div style={{display: 'flex', justifyItems: 'baseline'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between'}}>
                     <div>
                         Base Data for {baseFilePreviewData.reportDate} ({baseFilePreviewData?.baseData?.data ? baseFilePreviewData?.baseData?.data.length : ''})
                     </div>
-                    <button onClick={(e) => generateBaseData(e)} style={{outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px'}}>Trigger BB Calculation</button>
+                    <div>
+                        <button onClick={(e) => generateBaseData(e)} style={{outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px'}}>Trigger BB Calculation</button>
+                        <button onClick={() => setIsAddFieldModalOpen(true)} style={{outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px'}}>Add Other Info</button>
+                    </div>
                 </div>
                 <div>
                     <DynamicTableComponents
@@ -121,6 +126,7 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
                     />
                 </div>
             </div>
+            <AddOtherInfo isOpen={isAddFieldModalOpen} onClose={() => setIsAddFieldModalOpen(false)}/>
         </div>
         // <div>
         //     {Object.keys(mapping)?.map(m => {
@@ -129,5 +135,6 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
         //         )
         //     })}
         // </div>
+       
     );
 };
