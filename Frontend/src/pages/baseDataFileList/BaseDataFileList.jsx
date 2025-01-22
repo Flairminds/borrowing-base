@@ -25,6 +25,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
     };
 
     const handleBaseDataPreview = async (infoId) => {
+        localStorage.setItem("extraction_info_id", infoId);
         try {
             const previewDataResponse = await getBaseFilePreviewData(infoId);
             const result = previewDataResponse.data?.result;
