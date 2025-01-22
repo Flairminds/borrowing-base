@@ -55,7 +55,6 @@ def include_object(object, name, type_, reflected, compare_to):
         return False
     else:
         return True
-
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
 
