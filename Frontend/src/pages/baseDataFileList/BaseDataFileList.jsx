@@ -1,19 +1,21 @@
+import { Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { CustomButton } from '../../components/custombutton/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { SourceFileModal } from '../../modal/sourceFileModal/SourceFileModal';
 import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dataIngestionApi';
+import { fundOptionsArray } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
-import { Select } from 'antd';
-import { fundOptionsArray } from '../../utils/constants/constants';
 
 export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
     const [baseDataFilesList, setBaseDataFilesList] = useState({});
     const [extractionInProgress, setExtractionInProgress] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [popupContent, setPopupContent] = useState(null);
+    const [selectedFundType, setSelectedFundType] = useState(0);
+
     const navigate = useNavigate();
 
     const handleExtractNew = () => {
@@ -86,10 +88,12 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
         setIsPopupOpen(true);
     };
 
-    const getFilesList = async () => {
+    const getFilesList = async (fundType) => {
+        const Fund = (fundType === 1) ? 'PCOF' : (fundType === 2) ? 'PFLT' : undefined;
         try {
             const data = {
-                "company_id": 1
+                "company_id": 1,
+                "fund_type": Fund
             };
             const filesRes = await getBaseDataFilesList(data);
             const updatedColumns = injectRenderForSourceFiles(filesRes.data.result.columns);
@@ -100,7 +104,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
     };
 
     useEffect(() => {
-        getFilesList();
+        getFilesList(selectedFundType);
     }, [extractionInProgress]);
 
     setInterval(() => {
@@ -120,6 +124,12 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
         }
     }, [baseDataFilesList]);
 
+    const handleDropdownChange = (value) => {
+        setSelectedFundType(value);
+            getFilesList(value);
+        
+    };
+
     return (
         <div className={styles.pageContainer}>
             <div className={styles.baseFileListPage}>
@@ -133,6 +143,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
                                 defaultValue="Select Fund"
                                 style={{ width: 140, borderRadius: '8px'}}
                                 options={fundOptionsArray}
+                                onChange={handleDropdownChange}
                             />
                         </div>
                         <CustomButton isFilled={true} onClick={handleSecurityMapping} text="Security Mapping" />

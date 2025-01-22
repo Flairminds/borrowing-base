@@ -53,6 +53,7 @@ export const getBaseDataFilesList = (data) => {
 	const fileData = {
 		"report_date": data.report_date,
 		"company_id": data.company_id,
+		"fund_type": data.fund_type,
 		"extracted_base_data_status_id": data.id
 	};
 	const fileListResponse = axios.post(`${ApiURL}/data_ingestion/get_extracted_base_data_info`, fileData);
