@@ -78,6 +78,32 @@ def change_bd_col_seq():
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
     
+def get_base_data_col():
+    try:
+        req_body = flask.request.get_json()
+        fund_type = req_body.get("fund_type")
+        service_response = diService.get_base_data_col(fund_type)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not get base data columns")
+        
+        return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+def update_bd_col_select():
+    try:
+        req_body = flask.request.get_json()
+        selected_col_ids = req_body.get("selected_col_ids")
+        service_response = diService.update_bd_col_select(selected_col_ids)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not update base data columns selection")
+        
+        return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
 def edit_base_data():
     try:
         req_body = flask.request.get_json()
@@ -121,7 +147,8 @@ def get_extracted_base_data_info():
         # company_id = req_body.get("company_id")
         company_id = 1
         extracted_base_data_info_id = req_body.get("extracted_base_data_info_id")
-        service_response = diService.get_extracted_base_data_info(company_id, extracted_base_data_info_id)
+        fund_type = req_body.get("fund_type")
+        service_response = diService.get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_type)
         if not service_response["success"]:
             return HTTPResponse.error(message="Could not get extracted files list")
         return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])

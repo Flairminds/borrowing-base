@@ -482,16 +482,84 @@ def get_base_data(info_id):
 
 def change_bd_col_seq(updated_sequence):
     try:
+        updated_sequence_list = []
         for change in updated_sequence:
             bdm_id = change.get("bdm_id")
             sequence = change.get("sequence")
             base_data_mapping_info = BaseDataMappingColumnInfo.query.filter_by(bdm_id = bdm_id).first()
             base_data_mapping_info.sequence = sequence
-            db.session.add(base_data_mapping_info)
-            db.session.commit()
+            updated_sequence_list.append(base_data_mapping_info)
+        
+        db.session.add_all(updated_sequence_list)
+        db.session.commit()
+
         return ServiceResponse.success(message = "Base Data Column Sequence Changed Successfully")
     except Exception as e:
         raise Exception(e)
+    
+def get_base_data_col(fund_type):
+    try:
+        base_data_columns_data = db.session.query(
+            PfltBaseDataMapping.bdm_id,
+            PfltBaseDataMapping.bd_column_lookup,
+            PfltBaseDataMapping.bd_column_name,
+            PfltBaseDataMapping.is_editable,
+            BaseDataMappingColumnInfo.sequence,
+            BaseDataMappingColumnInfo.is_selected
+        ).join(PfltBaseDataMapping, PfltBaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMappingColumnInfo.fund_type == fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
+        
+        base_data_columns = [{
+            "key": column.bd_column_lookup,
+            "label": column.bd_column_name,
+            "isEditable": column.is_editable,
+            "bdm_id": column.bdm_id,
+            "is_selected": column.is_selected
+        } for column in base_data_columns_data]
+
+        return ServiceResponse.success(data=base_data_columns, message="Base Data Columns")
+    except Exception as e:
+        Log.func_error(e)
+        return ServiceResponse.error(message="Could not get base data columns")
+    
+def update_bd_col_select(selected_col_ids):
+    try:
+        # making is_selected as false to all records
+        BaseDataMappingColumnInfo.query.update({"is_selected": False})
+
+        default_col_seq = 1
+        # modified_by = Users.query.filter_by(id=1).first()
+        modified_by = 1
+            
+        # updating is_selected of selected columns to True with default sequence
+        selected_bd_col_info_list = []
+        for col_id in selected_col_ids:
+            selected_bd_col_info = BaseDataMappingColumnInfo.query.filter_by(bdm_id=col_id).first()
+            selected_bd_col_info.sequence = default_col_seq
+            default_col_seq = default_col_seq + 1
+            selected_bd_col_info.is_selected = True
+            selected_bd_col_info.modified_at = datetime.now()
+            selected_bd_col_info.modified_by = modified_by
+            selected_bd_col_info_list.append(selected_bd_col_info)
+        db.session.add_all(selected_bd_col_info_list)
+        db.session.commit()
+
+        # updating sequence of unselected columns
+        unselected_bd_col_info_list = []
+        unselected_bd_cols = BaseDataMappingColumnInfo.query.filter_by(is_selected=False).all()
+        for unselected_bd_col in unselected_bd_cols:
+            unselected_bd_col.sequence = default_col_seq
+            default_col_seq = default_col_seq + 1
+            unselected_bd_col_info_list.append(unselected_bd_col)
+
+        db.session.add_all(unselected_bd_col_info_list)
+        db.session.commit()
+
+        return ServiceResponse.success(message = "Base Data Column Selection Updated Successfully")
+
+    except Exception as e:
+        Log.func_error(e=e)
+        db.session.rollback()
+        return ServiceResponse.error(message = "Could not Update base data column selection")
 
 def edit_base_data(changes):
     if not changes:
@@ -518,11 +586,13 @@ def get_base_data_mapping(info_id):
     except Exception as e:
         raise Exception(e)
 
-def get_extracted_base_data_info(company_id, extracted_base_data_info_id):
+def get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_type):
     if extracted_base_data_info_id:
         extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(id = extracted_base_data_info_id).all()
     else:
         extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
+    if fund_type:
+        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id, fund_type=fund_type).order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
     extraction_result = {
         "columns": [{
             "key": "report_date",
