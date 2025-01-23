@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router';
 import { CustomButton } from '../../components/custombutton/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api';
-import { editBaseData } from '../../services/dataIngestionApi';
+import { editBaseData, getBaseFilePreviewData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 
-export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePreviewData}) => {
+export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePreviewData, previewPageId}) => {
     const navigate = useNavigate();
     const [mapping, setMapping] = useState({});
     const [cellDetail, setCellDetail] = useState({});
@@ -60,6 +60,21 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
         }
     };
 
+    const handleBaseDataPreview = async () => {
+        try {
+            const previewDataResponse = await getBaseFilePreviewData(previewPageId);
+            const result = previewDataResponse.data?.result;
+            if (result)
+                setBaseFilePreviewData({
+                    baseData: result.base_data_table,
+                    reportDate: result.report_date,
+                    baseDataMapping: result.base_data_mapping
+                });
+        } catch (err) {
+            showToast("error", err.response.data.message);
+        }
+    };
+
     const handleSaveEdit = async (rowIndex, columnkey, inputValue) => {
             const updatedData = [...baseFilePreviewData?.baseData?.data];
             const changes = [{
@@ -70,6 +85,7 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
 
             try {
                 await editBaseData(changes);
+                await handleBaseDataPreview();
                 updatedData[rowIndex][columnkey] = inputValue;
                 console.info(baseFilePreviewData, 'base preivew state');
                 setBaseFilePreviewData({
@@ -118,6 +134,7 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
                         onChangeSave={handleSaveEdit}
                         getCellDetailFunc={getCellDetail}
                         cellDetail={cellDetail}
+                        refreshDataFunction={handleBaseDataPreview}
                     />
                 </div>
             </div>

@@ -32,6 +32,7 @@ export function App() {
   const [selectedAssets, setSelectedAssets] = useState(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
   const [dataIngestionFileList, setDataIngestionFileList] = useState();
   const [baseFilePreviewData, setBaseFilePreviewData] = useState([]);
+  const [previewPageId, setPreviewPageId] = useState(-1);
   const selectedIds = useRef([]);
 
   const getLandingPageData = async() => {
@@ -128,6 +129,7 @@ export function App() {
             element={
               <BaseDataFileList
                 setBaseFilePreviewData={setBaseFilePreviewData}
+                setPreviewPageId={setPreviewPageId}
              />
             }
           />
@@ -138,6 +140,7 @@ export function App() {
               <BorrowingBasePreviewPage
                 baseFilePreviewData={baseFilePreviewData}
                 setBaseFilePreviewData={setBaseFilePreviewData}
+                previewPageId={previewPageId}
               />
             }
           />
