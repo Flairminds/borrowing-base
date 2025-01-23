@@ -9,7 +9,7 @@ import { fundOptionsArray } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
 
-export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
+export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId }) => {
     const [baseDataFilesList, setBaseDataFilesList] = useState({});
     const [extractionInProgress, setExtractionInProgress] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -38,6 +38,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData }) => {
                     baseDataMapping: result.base_data_mapping,
                     infoId: infoId
                 });
+            setPreviewPageId(infoId);
             navigate('/base-data-preview');
         } catch (err) {
             showToast("error", err.response.data.message);
