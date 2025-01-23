@@ -57,6 +57,7 @@ def get_base_data():
             "base_data_table": service_response["data"]["base_data_table"],
             "report_date": service_response["data"]["report_date"],
             "fund_type": service_response["data"]["fund_type"],
+            "card_data": service_response["data"]["card_data"]
             # "base_data_mapping": base_data_map_res["data"]
         }
         return HTTPResponse.success(message=service_response["message"], result=result)
