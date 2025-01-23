@@ -8,6 +8,8 @@ import RightIcon from '../../../assets/RightIcon.svg';
 import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import tableStyles from './DynamicTableComponents.module.css';
+import { CustomButton } from '../../custombutton/CustomButton';
+import { updateColumnsOrder, updateSeletedColumns } from '../../../services/dataIngestionApi';
 
 const ItemType = "COLUMN";
 
@@ -19,7 +21,7 @@ const DraggableColumn = ({ column, index, moveColumn }) => {
   
     const [, drop] = useDrop({
       accept: ItemType,
-      hover: (item) => {
+		hover: (item) => {
         if (item.index !== index) {
           moveColumn(item.index, index);
           item.index = index;
@@ -51,9 +53,32 @@ const DraggableColumn = ({ column, index, moveColumn }) => {
     );
   };
 
-const ColumnReorder = ({selectedColumns}) => {
+const ColumnReorder = ({selectedColumns, totalColumnsData, refreshDataFunction}) => {
 
     const [columns, setColumns] = useState(selectedColumns);
+
+    const reorderColumns = async() => {
+        const updatedColumnOrder = columns.map((col, index) => {
+            const columnMatchingData = totalColumnsData.find((c) => c.label == col);
+            const columnData = {
+                "bdm_id": columnMatchingData?.bdm_id,
+                "sequence": index + 1,
+                "col_name": columnMatchingData.label
+            };
+            return columnData;
+        });
+
+        try {
+            const res = await updateColumnsOrder(updatedColumnOrder);
+            // re call base data preview to test
+            refreshDataFunction();
+            showToast("success", res.data.message);
+        } catch (err) {
+            console.error(err);
+            showToast('error', err.response?.data?.message || 'Failed to Update');
+        }
+
+    };
 
     const moveColumn = (fromIndex, toIndex) => {
         const updatedColumns = [...columns];
@@ -74,10 +99,16 @@ const ColumnReorder = ({selectedColumns}) => {
           />
         ))}
       </div>
-      <button onClick={() => console.info("Updated Order:", columns)}>Log Order</button>
+      {/* <button onClick={() => console.info("Updated Order:", columns)}>Log Order</button> */}
+      <div className={tableStyles.reorderBtnContainer}>
+        <CustomButton text="Reorder" isFilled={true} onClick={reorderColumns} />
+      </div>
     </DndProvider>
     );
 };
+
+
+
 
 export const DynamicTableComponents = (
     {
@@ -90,7 +121,8 @@ export const DynamicTableComponents = (
         enableColumnEditing = false,
         onChangeSave,
         getCellDetailFunc = () => {},
-        cellDetail = null
+        cellDetail = null,
+        refreshDataFunction
     }) => {
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
@@ -109,15 +141,41 @@ export const DynamicTableComponents = (
         if (columns && columns?.length > 0) {
             const temp = [...columns, ...additionalColumns];
             setUpdatedColumnsData(temp);
-            const initalColumnsConsidered = [...columns.slice(0, 10), ...additionalColumns];
+            let selectedColumntoDisplay = [];
+            if(showSettings) {
+                selectedColumntoDisplay = columns.filter((col) => col.is_selected);
+            } else {
+                selectedColumntoDisplay = columns;
+            }
+            const initalColumnsConsidered = [...selectedColumntoDisplay, ...additionalColumns];
             const intialColumns = initalColumnsConsidered.map((t) => t.label);
+            console.info(intialColumns, 'test', initalColumnsConsidered);
             setSelectedColumns(intialColumns);
             setBreaks([0, parseInt(columns.length / 3) + 1, (2 * parseInt(columns.length / 3)) + 1, columns.length]);
         }
     }, [columns]);
 
+    const updateVisibleColumns = async () => {
+        const updatedSelectedColumnIds = selectedColumns?.map((col) => {
+            const columnData = columns.find((c) => c.label == col);
+            const columnId = columnData?.bdm_id;
+            return columnId;
+        });
+
+        try {
+            const res = await updateSeletedColumns(updatedSelectedColumnIds);
+            showToast("success", res.data.message);
+        } catch (err) {
+            console.error(err);
+            showToast('error', err.response?.data?.message || 'Failed to Update');
+        }
+    };
+
     const handleOpenSettings = (e) => {
         e.preventDefault();
+        if (showSettingsDiv) {
+            updateVisibleColumns();
+        }
         setShowSettingsDiv(!showSettingsDiv);
     };
 
@@ -190,7 +248,7 @@ export const DynamicTableComponents = (
                     </div>
                     <div style={{display: 'inline-block', margin: '7px 25px'}}>
                         <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px', margin: '0px 3px'}} />
-                        <Popover trigger={'click'} placement="bottomRight" title={"Reorder Columns"} content={<ColumnReorder selectedColumns={selectedColumns} />}>
+                        <Popover trigger={'click'} placement="bottomRight" title={"Reorder Columns"} content={<ColumnReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
                             <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} />
                         </Popover>
                     </div>
