@@ -55,10 +55,6 @@ export function App() {
     };
 
   useEffect(() => {
-    getLandingPageData();
-  }, []);
-
-  useEffect(() => {
     setSelectedAssets(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
   }, [assetSelectionData]);
 
@@ -88,6 +84,7 @@ export function App() {
                 fundType={fundType}
                 setFundType={setFundType}
                 setAssetSelectionData={setAssetSelectionData}
+                getLandingPageData={getLandingPageData}
               />
             }
           >

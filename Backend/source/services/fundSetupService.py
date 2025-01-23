@@ -108,7 +108,7 @@ def update_limit(test_changes):
                 fund_test.modified_at = datetime.now()
                 changed_records.append(fund_test)
         if len(changed_records) == 0:
-            return ServiceResponse.success(message="No changes done in test config")
+            return ServiceResponse.success(message="No changes done in test config", data=[])
         db.session.add_all(changed_records)
         db.session.commit()
         return ServiceResponse.success(message="Concentration test config updated successfully", data=changed_records)
@@ -117,10 +117,14 @@ def update_limit(test_changes):
         raise Exception(e)
 
 
-def get_base_files(user_id):
+def get_base_files(user_id, fund_id):
     try:
+        fund_type_record = db.session.query(
+                Fund.id,
+                Fund.fund_name,
+            ).filter(Fund.id == fund_id).first()
         base_data_files = (
-            BaseDataFile.query.filter_by(user_id=user_id)
+            BaseDataFile.query.filter_by(user_id=user_id, fund_type=fund_type_record.fund_name)
             .order_by(BaseDataFile.closing_date.desc())
             .all()
         )
@@ -135,6 +139,7 @@ def get_base_files(user_id):
 def recalculate_bb(base_data_files, changed_records):
     try:
         test_ids = []
+        fund_id = changed_records[0].fund_id
         for c in changed_records:
             test_ids.append(c.test_id)
         conc_tests = db.session.query(
@@ -143,7 +148,8 @@ def recalculate_bb(base_data_files, changed_records):
                 ConcentrationTest.unit,
                 FundConcentrationTest.limit_percentage,
                 FundConcentrationTest.id
-            ).join(FundConcentrationTest).filter(ConcentrationTest.id.in_(test_ids)).all()
+            ).join(FundConcentrationTest).filter(ConcentrationTest.id.in_(test_ids), FundConcentrationTest.fund_id == fund_id).all()
+        print(conc_tests)
         for file in base_data_files["data"]["files"]:
             try:
                 response_data = pickle.loads(file.response)
@@ -151,7 +157,7 @@ def recalculate_bb(base_data_files, changed_records):
                 index = 0
                 for d in a["Concentration Test"]:
                     for temp in conc_tests:
-                        print(temp[1])
+                        # print(temp[1])
                         if temp[1] == d["data"]:
                             limit = temp[3]
                             actual = a["Actual"][index]["data"]
@@ -160,7 +166,7 @@ def recalculate_bb(base_data_files, changed_records):
                                 actual = float(actual.replace('%', '')) / 100
                             else:
                                 a["Concentration Limit"][index]["data"] = temp[3]
-                            if limit < actual:
+                            if limit < actual and 'min' not in temp[1].lower():
                                 a["Result"][index]["data"] = 'Fail'
                             else:
                                 a["Result"][index]["data"] = 'Pass'

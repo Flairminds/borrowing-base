@@ -24,7 +24,8 @@ export const PageLayout = (
         availableClosingDates,
         fundType,
         setFundType,
-        setAssetSelectionData
+        setAssetSelectionData,
+        getLandingPageData
       }) => {
 
   const [trendGraphData, setTrendGraphData] = useState([]);
@@ -35,6 +36,7 @@ export const PageLayout = (
 
   useEffect(() => {
     getTrendGraphData(fundType);
+    getLandingPageData();
   }, []);
 
 

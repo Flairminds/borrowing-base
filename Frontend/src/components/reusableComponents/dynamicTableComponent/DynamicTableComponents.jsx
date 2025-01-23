@@ -201,16 +201,18 @@ export const DynamicTableComponents = (
                                     let cellDisplayValue = row[col.key];
                                     let cellActualValue = row[col.key];
                                     let cellTitleValue = row[col.key];
+                                    let cellOldValue = row[col.key];
                                     if (row[col.key] && row[col.key]['meta_info']) {
                                         cellDisplayValue = row[col.key]['display_value'];
                                         cellActualValue = row[col.key]['value'];
                                         cellTitleValue = row[col.key]['title'];
+                                        cellOldValue = row[col.key]['old_value'];
                                     }
                                     const isValueEmpty = isEditable && !cellDisplayValue;
                                 return (
                                     <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
-                                        style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
-                                        onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={cellTitleValue}>
+                                        style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white', color: cellActualValue != cellOldValue ? 'red' : 'auto'}}
+                                        onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + cellActualValue + '\nPrevious: ' + cellOldValue : cellTitleValue}`}>
                                         {enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
                                             (
                                                 <div className={tableStyles.editIconsContainer}>
