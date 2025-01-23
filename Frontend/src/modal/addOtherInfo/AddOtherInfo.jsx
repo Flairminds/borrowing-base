@@ -23,8 +23,8 @@ export const AddOtherInfo = ({ isOpen, onClose }) => {
         const other_info_data = values.financialDetails.map((item) => {
             return ({
                 currency: item.currency,
-                exchange_rates: item.exchange_rates,
-                cash_current_and_preborrowing: item.cash_current_and_preborrowing,
+                exchange_rates: item.exchangeRate,
+                cash_current_and_preborrowing: item.CashCurrentAndPreborrowing,
                 borrowing: item.borrowing,
                 additional_expenses_1: item.additionalExpenses1,
                 additional_expenses_2: item.additionalExpenses2,
