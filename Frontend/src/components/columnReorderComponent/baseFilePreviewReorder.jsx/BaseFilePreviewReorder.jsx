@@ -27,7 +27,7 @@ const DraggableColumn = ({ column, index, moveColumn }) => {
 
 	return (
 		<div
-			ref={(node) => drop(ref(node))} // Attach both drop and drag refs
+			ref={(node) => drop(ref(node))}
 			className={styles.columnItem}
 			style={{
 				display: "flex",
@@ -43,7 +43,7 @@ const DraggableColumn = ({ column, index, moveColumn }) => {
 			<span>{column}</span>
 			<MenuOutlined
 				style={{ margin: "5px 7px", cursor: "grab" }}
-				ref={drag} // Attach the drag ref only to the icon
+				ref={drag}
 			/>
 		</div>
 	);
@@ -67,7 +67,6 @@ export const BaseFilePreviewReorder = ({selectedColumns, totalColumnsData, refre
 
 		try {
 			const res = await updateColumnsOrder(updatedColumnOrder);
-			// re call base data preview to test
 			refreshDataFunction();
 			showToast("success", res.data.message);
 		} catch (err) {
@@ -96,7 +95,6 @@ export const BaseFilePreviewReorder = ({selectedColumns, totalColumnsData, refre
 					/>
 				))}
 			</div>
-			{/* <button onClick={() => console.info("Updated Order:", columns)}>Log Order</button> */}
 			<div className={styles.reorderBtnContainer}>
 				<CustomButton text="Reorder" isFilled={true} onClick={reorderColumns} />
 			</div>
