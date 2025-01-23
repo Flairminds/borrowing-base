@@ -1,0 +1,17 @@
+.orderColumnContainer {
+    padding: 10px;
+    /* background-color: #f5f5f5; */
+    /* border: 1px solid #ddd; */
+    border-radius: 4px;
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+  
+  .columnItem {
+    border-radius: 4px;
+    transition: box-shadow 0.2s;
+  }
+  
+  .columnItem:hover {
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+  }

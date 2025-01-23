@@ -1,113 +1,13 @@
-import { SettingOutlined, DragOutlined, MenuOutlined } from '@ant-design/icons';
+import { SettingOutlined, DragOutlined } from '@ant-design/icons';
 import { Popover, Switch } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { useDrag, useDrop, DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 import CrossIcon from '../../../assets/CrossIcon.svg';
 import RightIcon from '../../../assets/RightIcon.svg';
 import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
+import { updateSeletedColumns } from '../../../services/dataIngestionApi';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
+import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePreviewReorder.jsx/BaseFilePreviewReorder';
 import tableStyles from './DynamicTableComponents.module.css';
-import { CustomButton } from '../../custombutton/CustomButton';
-import { updateColumnsOrder, updateSeletedColumns } from '../../../services/dataIngestionApi';
-
-const ItemType = "COLUMN";
-
-const DraggableColumn = ({ column, index, moveColumn }) => {
-    const [, ref, drag] = useDrag({
-      type: ItemType,
-      item: { index },
-    });
-  
-    const [, drop] = useDrop({
-      accept: ItemType,
-		hover: (item) => {
-        if (item.index !== index) {
-          moveColumn(item.index, index);
-          item.index = index;
-        }
-      },
-    });
-  
-    return (
-      <div
-        ref={(node) => drop(ref(node))} // Attach both drop and drag refs
-        className={tableStyles.columnItem}
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "8px",
-          border: "1px solid #ddd",
-          marginBottom: "4px",
-          backgroundColor: "#f9f9f9",
-          cursor: "pointer",
-        }}
-      >
-        <span>{column}</span>
-        <MenuOutlined
-          style={{ margin: "5px 7px", cursor: "grab" }}
-          ref={drag} // Attach the drag ref only to the icon
-        />
-      </div>
-    );
-  };
-
-const ColumnReorder = ({selectedColumns, totalColumnsData, refreshDataFunction}) => {
-
-    const [columns, setColumns] = useState(selectedColumns);
-
-    const reorderColumns = async() => {
-        const updatedColumnOrder = columns.map((col, index) => {
-            const columnMatchingData = totalColumnsData.find((c) => c.label == col);
-            const columnData = {
-                "bdm_id": columnMatchingData?.bdm_id,
-                "sequence": index + 1,
-                "col_name": columnMatchingData.label
-            };
-            return columnData;
-        });
-
-        try {
-            const res = await updateColumnsOrder(updatedColumnOrder);
-            // re call base data preview to test
-            refreshDataFunction();
-            showToast("success", res.data.message);
-        } catch (err) {
-            console.error(err);
-            showToast('error', err.response?.data?.message || 'Failed to Update');
-        }
-
-    };
-
-    const moveColumn = (fromIndex, toIndex) => {
-        const updatedColumns = [...columns];
-        const [moved] = updatedColumns.splice(fromIndex, 1);
-        updatedColumns.splice(toIndex, 0, moved);
-        setColumns(updatedColumns);
-    };
-
-    return (
-        <DndProvider backend={HTML5Backend}>
-      <div className={tableStyles.orderColumnContainer}>
-        {columns.map((column, index) => (
-          <DraggableColumn
-            key={column}
-            column={column}
-            index={index}
-            moveColumn={moveColumn}
-          />
-        ))}
-      </div>
-      {/* <button onClick={() => console.info("Updated Order:", columns)}>Log Order</button> */}
-      <div className={tableStyles.reorderBtnContainer}>
-        <CustomButton text="Reorder" isFilled={true} onClick={reorderColumns} />
-      </div>
-    </DndProvider>
-    );
-};
-
-
 
 
 export const DynamicTableComponents = (
@@ -248,7 +148,7 @@ export const DynamicTableComponents = (
                     </div>
                     <div style={{display: 'inline-block', margin: '7px 25px'}}>
                         <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px', margin: '0px 3px'}} />
-                        <Popover trigger={'click'} placement="bottomRight" title={"Reorder Columns"} content={<ColumnReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
+                        <Popover trigger={'click'} placement="bottomRight" title={"Reorder Columns"} content={<BaseFilePreviewReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
                             <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} />
                         </Popover>
                     </div>
