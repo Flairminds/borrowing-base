@@ -63,6 +63,46 @@ def get_base_data():
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def change_bd_col_seq():
+    try:
+        req_body = flask.request.get_json()
+        updated_sequence = req_body.get("updated_sequence")
+        service_response = diService.change_bd_col_seq(updated_sequence)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not change sequence of base data columns")
+        # base_data_map_res = diService.get_base_data_mapping(info_id)
+        
+        return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+def get_base_data_col():
+    try:
+        req_body = flask.request.get_json()
+        fund_type = req_body.get("fund_type")
+        service_response = diService.get_base_data_col(fund_type)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not get base data columns")
+        
+        return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+def update_bd_col_select():
+    try:
+        req_body = flask.request.get_json()
+        selected_col_ids = req_body.get("selected_col_ids")
+        service_response = diService.update_bd_col_select(selected_col_ids)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not update base data columns selection")
+        
+        return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
     
 def edit_base_data():
     try:
@@ -107,7 +147,8 @@ def get_extracted_base_data_info():
         # company_id = req_body.get("company_id")
         company_id = 1
         extracted_base_data_info_id = req_body.get("extracted_base_data_info_id")
-        service_response = diService.get_extracted_base_data_info(company_id, extracted_base_data_info_id)
+        fund_type = req_body.get("fund_type")
+        service_response = diService.get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_type)
         if not service_response["success"]:
             return HTTPResponse.error(message="Could not get extracted files list")
         return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
@@ -177,9 +218,10 @@ def get_source_file_data_detail():
         req_body = flask.request.get_json()
         ebd_id = req_body.get('ebd_id')
         column_key = req_body.get('column_key')
+        data_id = req_body.get('data_id')
         if not ebd_id or not column_key:
             return HTTPResponse.error(message="Bad Request", status_code=400)
-        service_response = diService.get_source_file_data_detail(ebd_id, column_key)
+        service_response = diService.get_source_file_data_detail(ebd_id, column_key, data_id)
         if not service_response["success"]:
             return HTTPResponse.error(message=service_response['message'], status_code=service_response['status_code'])
         return HTTPResponse.success(result=service_response["data"])
@@ -198,4 +240,46 @@ def trigger_bb_calculation():
     except Exception as e:
         # Log.func_error(e)
         print("here",e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+def add_to_archived_files():
+    try:
+        data = flask.request.get_json()
+        list_of_ids = data.get("list_of_ids", [])
+        response = diService.add_file_to_archive(list_of_ids)
+        if (response["success"]):
+            return HTTPResponse.success()
+            
+        return HTTPResponse.success()
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def get_archived_files():
+    try:
+        response = diService.get_archived_file_list()
+        if (response["success"]):
+            return HTTPResponse.success(result=response)
+        
+        return HTTPResponse.error(message="Internal Server Error")
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error")
+    
+def pflt_base_data_other_info():
+    try:
+        req_body = flask.request.get_json()
+        extraction_info_id = req_body.get("extraction_info_id")
+        determination_date= req_body.get("determination_date")
+        minimum_equity_amount_floor= req_body.get("minimum_equity_amount_floor")
+        other_data = req_body.get("other_data")
+
+        service_response = diService.add_pflt_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor, other_data)
+
+        if(service_response["success"]):
+            return HTTPResponse.success(message=service_response.get("message"))
+
+        return HTTPResponse.error(message=service_response.get('message'), status_code=500)
+    except Exception as e:
+        Log.func_error(e=e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)

@@ -3,14 +3,16 @@ import { useNavigate } from 'react-router';
 import { CustomButton } from '../../components/custombutton/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api';
-import { editBaseData } from '../../services/dataIngestionApi';
+import { editBaseData, getBaseFilePreviewData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
+import { AddOtherInfo } from '../../modal/addOtherInfo/AddOtherInfo';
 
-export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePreviewData}) => {
+export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePreviewData, previewPageId}) => {
     const navigate = useNavigate();
     const [mapping, setMapping] = useState({});
     const [cellDetail, setCellDetail] = useState({});
+    const [isAddFieldModalOpen, setIsAddFieldModalOpen] = useState(false);
 
     useEffect(() => {
         let col = [];
@@ -29,34 +31,72 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
         setMapping(col);
     }, [baseFilePreviewData]);
 
-    const getCellDetail = async(rowIndex, columnKey, columnName, cellValue) => {
-        let temp = {
-            "title": columnName,
-            "data": {
-                // 'Base data column name': columnName,
-                'Value': cellValue,
-                'Source file name': 'Not mapped',
-                'Sheet name': 'Not mapped',
-                'Column name': 'Not mapped',
-                'Formula': 'Not mapped'
-            }
-        };
+	const getCellDetail = async(rowIndex, columnKey, columnName, cellValue) => {
+		const temp = {
+			"title": columnName,
+			"data": {
+				// 'Base data column name': columnName,
+				'Value': cellValue,
+				'Source file name': 'Not mapped',
+				'Sheet name': 'Not mapped',
+				'Column name': 'Not mapped',
+				'Formula': 'Not mapped'
+			}
+		};
+		try {
+			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId, 'column_key': columnKey, 'data_id': baseFilePreviewData?.baseData?.data[rowIndex]['id']['value'] });
+			const detail = response?.data?.result;
+			const mappingData = detail?.mapping_data;
+			const t = {
+				...temp.data,
+				'Source file name': mappingData.file_name + mappingData.extension,
+				'Sheet name': mappingData.sf_sheet_name,
+				'Column name': mappingData.sf_column_name,
+				'Formula': mappingData.formula ? mappingData.formula : 'Value same as source column value'
+			};
+			temp['data'] = t;
+			const sourceData = detail?.source_data;
+			if (sourceData) {
+
+				temp['htmlRender'] = <table style={{textAlign: 'center', margin: '15px 0'}}>
+					<thead>
+						{Object.keys(sourceData[0]).map((h, i) => {
+							return (<th key={i} style={{padding: '3px 10px', border: "1px solid #DCDEDE", backgroundColor: '#DCDEDE'}}>{h}</th>);
+						})}
+					</thead>
+					<tbody>
+						{sourceData.map((d, j) => {
+							return (
+								<tr key={j}>
+									{Object.keys(d).map((key, k) => {
+										return (
+											<td key={k} style={{padding: '3px', border: "1px solid #DCDEDE"}}>{d[key]}</td>);
+									})}
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>;
+			}
+			setCellDetail(temp);
+		} catch (error) {
+			console.error(error.message);
+			setCellDetail(temp);
+		}
+	};
+
+    const handleBaseDataPreview = async () => {
         try {
-            console.log(rowIndex, columnKey, columnName, cellValue);
-            const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId, 'column_key': columnKey });
-            const detail = response?.data?.result;
-            const t = {
-                ...temp.data,
-                'Source file name': detail.file_name + detail.extension,
-                'Sheet name': detail.sf_sheet_name,
-                'Column name': detail.sf_column_name,
-                'Formula': detail.formula ? detail.formula : 'Value same as source column value'
-            };
-            temp['data'] = t;
-            setCellDetail(temp);
-        } catch (error) {
-            console.error(error.message);
-            setCellDetail(temp);
+            const previewDataResponse = await getBaseFilePreviewData(previewPageId);
+            const result = previewDataResponse.data?.result;
+            if (result)
+                setBaseFilePreviewData({
+                    baseData: result.base_data_table,
+                    reportDate: result.report_date,
+                    baseDataMapping: result.base_data_mapping
+                });
+        } catch (err) {
+            showToast("error", err.response.data.message);
         }
     };
 
@@ -70,6 +110,7 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
 
             try {
                 await editBaseData(changes);
+                await handleBaseDataPreview();
                 updatedData[rowIndex][columnkey] = inputValue;
                 console.info(baseFilePreviewData, 'base preivew state');
                 setBaseFilePreviewData({
@@ -101,11 +142,14 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
     return (
         <div className={styles.previewPage}>
             <div className={styles.tableContainer}>
-                <div style={{display: 'flex', justifyItems: 'baseline'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between'}}>
                     <div>
                         Base Data for {baseFilePreviewData.reportDate} ({baseFilePreviewData?.baseData?.data ? baseFilePreviewData?.baseData?.data.length : ''})
                     </div>
-                    <button onClick={(e) => generateBaseData(e)} style={{outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px'}}>Trigger BB Calculation</button>
+                    <div>
+                        <button onClick={(e) => generateBaseData(e)} style={{outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px'}}>Trigger BB Calculation</button>
+                        <button onClick={() => setIsAddFieldModalOpen(true)} style={{outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px'}}>Add Other Info</button>
+                    </div>
                 </div>
                 <div>
                     <DynamicTableComponents
@@ -118,9 +162,11 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
                         onChangeSave={handleSaveEdit}
                         getCellDetailFunc={getCellDetail}
                         cellDetail={cellDetail}
+                        refreshDataFunction={handleBaseDataPreview}
                     />
                 </div>
             </div>
+            <AddOtherInfo isOpen={isAddFieldModalOpen} onClose={() => setIsAddFieldModalOpen(false)}/>
         </div>
         // <div>
         //     {Object.keys(mapping)?.map(m => {
@@ -129,5 +175,6 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
         //         )
         //     })}
         // </div>
+       
     );
 };

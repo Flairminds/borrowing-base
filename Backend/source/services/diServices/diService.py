@@ -20,7 +20,7 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PfltBaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, PfltBaseDataOtherInfo
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
@@ -140,7 +140,7 @@ def get_blob_list(fund_type):
             SourceFiles.file_type,
             SourceFiles.report_date,
             Users.display_name
-        ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id)
+        ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id, SourceFiles.is_archived == False)
     
     if fund_type:
         source_files_query = source_files_query.filter(SourceFiles.fund_types.any(fund_type))
@@ -410,22 +410,39 @@ def get_base_data(info_id):
     # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
     base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).order_by(PfltBaseData.id).all()
     base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
-    base_data_mapping = PfltBaseDataMapping.query.filter(PfltBaseDataMapping.bd_column_lookup.is_not(None)).order_by(PfltBaseDataMapping.bdm_id).all()
+    base_data_mapping = db.session.query(
+        PfltBaseDataMapping.bdm_id,
+        PfltBaseDataMapping.bd_column_lookup,
+        PfltBaseDataMapping.bd_column_name,
+        PfltBaseDataMapping.is_editable,
+        BaseDataMappingColumnInfo.sequence,
+        BaseDataMappingColumnInfo.is_selected
+    ).join(PfltBaseDataMapping, PfltBaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).order_by(BaseDataMappingColumnInfo.sequence).all()
 
     temp = []
     # print(base_data[0])
     for b in base_data:
         t = b.__dict__
         del t['_sa_instance_state']
+        old_data = PfltBaseDataHistory.query.filter_by(id = b.id).order_by(PfltBaseDataHistory.done_at.desc()).offset(1).limit(1).first()
+        t1 = None
+        if old_data:
+            t1 = old_data.__dict__
         for key in t:
             val = t[key]
+            old_value = val
+            if t1 and t1[key] != t[key]:
+                old_value = t1[key]
             numerized_val = None
             if isinstance(val, (int, float, complex)) and not isinstance(val, bool):
                 numerized_val = numerize.numerize(val, 2)
                 # t[key] = val
             elif isinstance(val, str):
                 if val.replace(".", "").replace("-", "").isnumeric():
-                    numerized_val = numerize.numerize(float(val), 2)
+                    try:
+                        numerized_val = numerize.numerize(float(val), 2)
+                    except Exception as e:
+                        print(e, val, type(val))
                     # t[key] = val
             t[key] = {
                 "meta_info": True,
@@ -433,14 +450,21 @@ def get_base_data(info_id):
                 "display_value": numerized_val if numerized_val else val,
                 "title": val,
                 "data_type": None,
-                "unit": None
+                "unit": None,
+                "old_value": old_value
             }
         # t['report_date'] = t['report_date'].strftime("%Y-%m-%d")
         # t['created_at'] = t['created_at'].strftime("%Y-%m-%d")
         temp.append(t)
     # print(temp[0])
     base_data_table = {
-        "columns": [{"key": column.bd_column_lookup, "label": column.bd_column_name, "isEditable": column.is_editable} for column in base_data_mapping],
+        "columns": [{
+                "key": column.bd_column_lookup,
+                "label": column.bd_column_name,
+                "isEditable": column.is_editable,
+                "bdm_id": column.bdm_id,
+                "is_selected": column.is_selected
+            } for column in base_data_mapping],
         "data": temp
     }
 
@@ -467,6 +491,87 @@ def get_base_data(info_id):
     }
     return ServiceResponse.success(data=result, message="Base Data")
 
+def change_bd_col_seq(updated_sequence):
+    try:
+        updated_sequence_list = []
+        for change in updated_sequence:
+            bdm_id = change.get("bdm_id")
+            sequence = change.get("sequence")
+            base_data_mapping_info = BaseDataMappingColumnInfo.query.filter_by(bdm_id = bdm_id).first()
+            base_data_mapping_info.sequence = sequence
+            updated_sequence_list.append(base_data_mapping_info)
+        
+        db.session.add_all(updated_sequence_list)
+        db.session.commit()
+
+        return ServiceResponse.success(message = "Base Data Column Sequence Changed Successfully")
+    except Exception as e:
+        raise Exception(e)
+    
+def get_base_data_col(fund_type):
+    try:
+        base_data_columns_data = db.session.query(
+            PfltBaseDataMapping.bdm_id,
+            PfltBaseDataMapping.bd_column_lookup,
+            PfltBaseDataMapping.bd_column_name,
+            PfltBaseDataMapping.is_editable,
+            BaseDataMappingColumnInfo.sequence,
+            BaseDataMappingColumnInfo.is_selected
+        ).join(PfltBaseDataMapping, PfltBaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMappingColumnInfo.fund_type == fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
+        
+        base_data_columns = [{
+            "key": column.bd_column_lookup,
+            "label": column.bd_column_name,
+            "isEditable": column.is_editable,
+            "bdm_id": column.bdm_id,
+            "is_selected": column.is_selected
+        } for column in base_data_columns_data]
+
+        return ServiceResponse.success(data=base_data_columns, message="Base Data Columns")
+    except Exception as e:
+        Log.func_error(e)
+        return ServiceResponse.error(message="Could not get base data columns")
+    
+def update_bd_col_select(selected_col_ids):
+    try:
+        # making is_selected as false to all records
+        BaseDataMappingColumnInfo.query.update({"is_selected": False})
+
+        default_col_seq = 1
+        # modified_by = Users.query.filter_by(id=1).first()
+        modified_by = 1
+            
+        # updating is_selected of selected columns to True with default sequence
+        selected_bd_col_info_list = []
+        for col_id in selected_col_ids:
+            selected_bd_col_info = BaseDataMappingColumnInfo.query.filter_by(bdm_id=col_id).first()
+            selected_bd_col_info.sequence = default_col_seq
+            default_col_seq = default_col_seq + 1
+            selected_bd_col_info.is_selected = True
+            selected_bd_col_info.modified_at = datetime.now()
+            selected_bd_col_info.modified_by = modified_by
+            selected_bd_col_info_list.append(selected_bd_col_info)
+        db.session.add_all(selected_bd_col_info_list)
+        db.session.commit()
+
+        # updating sequence of unselected columns
+        unselected_bd_col_info_list = []
+        unselected_bd_cols = BaseDataMappingColumnInfo.query.filter_by(is_selected=False).all()
+        for unselected_bd_col in unselected_bd_cols:
+            unselected_bd_col.sequence = default_col_seq
+            default_col_seq = default_col_seq + 1
+            unselected_bd_col_info_list.append(unselected_bd_col)
+
+        db.session.add_all(unselected_bd_col_info_list)
+        db.session.commit()
+
+        return ServiceResponse.success(message = "Base Data Column Selection Updated Successfully")
+
+    except Exception as e:
+        Log.func_error(e=e)
+        db.session.rollback()
+        return ServiceResponse.error(message = "Could not Update base data column selection")
+
 def edit_base_data(changes):
     if not changes:
         return ServiceResponse.error(message = "Please provide changes.", status_code = 400)
@@ -492,11 +597,13 @@ def get_base_data_mapping(info_id):
     except Exception as e:
         raise Exception(e)
 
-def get_extracted_base_data_info(company_id, extracted_base_data_info_id):
+def get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_type):
     if extracted_base_data_info_id:
         extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(id = extracted_base_data_info_id).all()
     else:
         extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
+    if fund_type:
+        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id, fund_type=fund_type).order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
     extraction_result = {
         "columns": [{
             "key": "report_date",
@@ -648,18 +755,52 @@ def get_source_file_data(file_id, file_type, sheet_name):
     return ServiceResponse.success(data=source_file_table_data)
 
 
-def get_source_file_data_detail(ebd_id, column_key):
+def get_source_file_data_detail(ebd_id, column_key, data_id):
     try:
         engine = db.get_engine()
         with engine.connect() as connection:
-            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join pflt_base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
+            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join pflt_base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
+            bd_df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where id = :data_id'), {'data_id': data_id}).fetchall())
+        
         df = df.replace({np.nan: None})
         df_dict = df.to_dict(orient='records')
+        try:
+            table_name = df_dict[0]['sd_ref_table_name']
+            sd_col_name = df_dict[0]['sf_column_name']
+            identifier_col_name = None
+            if table_name == 'pflt_client_holdings':
+                identifier_col_name = 'ch."Issuer/Borrower Name"'
+            elif table_name == 'pflt_us_bank_holdings':
+                identifier_col_name = 'usbh."Issuer/Borrower Name"'
+            elif table_name == 'pflt_securities_stats':
+                identifier_col_name = 'ss."Security"'
+            elif table_name == 'pflt_borrower_stats':
+                identifier_col_name = 'bs."Company"'
+            elif table_name == 'pflt_pflt_borrowing_base':
+                identifier_col_name = 'pbb."Security"'
+            sd_df_dict = None
+            if identifier_col_name is not None:
+                if df_dict[0]['sf_column_categories'] is not None:
+                    sd_col_name = df_dict[0]['sf_column_categories'][0] + " " + sd_col_name
+                with engine.connect() as connection:
+                    sd_df = pd.DataFrame(connection.execute(text(f'''select distinct {identifier_col_name}, "{sd_col_name}" from pflt_us_bank_holdings usbh
+                    left join pflt_client_holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
+                    left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
+                    left join pflt_securities_stats ss on ss."Security" = sm.master_comp_security_name
+                    left join pflt_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
+                    left join pflt_borrower_stats bs on bs."Company" = ss."Family Name" where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name and (usbh.source_file_id = :sf_id or ch.source_file_id = :sf_id or ss.source_file_id = :sf_id or pbb.source_file_id = :sf_id or bs.source_file_id = :sf_id)'''), {'obligor_name': bd_df['obligor_name'][0], 'security_name': bd_df['security_name'][0], 'sf_id': df_dict[0]['id']}).fetchall())
+                sd_df_dict = sd_df.to_dict(orient='records')
+        except Exception as e:
+            print(e)
+        result = {
+            'mapping_data': df_dict[0],
+            'source_data': sd_df_dict
+		}
         if len(df_dict) == 0:
             return ServiceResponse.error(message='No data found.', status_code=404)
         if len(df_dict) > 1:
             return ServiceResponse.error(message='Multiple records found.', status_code=409)
-        return ServiceResponse.success(data=df_dict[0])
+        return ServiceResponse.success(data=result)
     except Exception as e:
         raise Exception(e)
 
@@ -833,3 +974,85 @@ def trigger_bb_calculation(bdi_id):
 
     except Exception as e:
         print(e)
+
+def get_archived_file_list():
+
+    source_files = db.session.query(SourceFiles).filter(SourceFiles.is_archived == True).order_by(SourceFiles.uploaded_at.desc()).all()
+    
+    list_table = {
+        "columns": [{
+            "key": "fund", 
+            "label": "Fund",
+        }, {
+            "key": "file_name", 
+            "label": "File Name",
+        }, {
+            "key": "report_date", 
+            "label": "Report Date",
+        }, {
+            "key": "uploaded_at", 
+            "label": "Uploaded at",
+        }, {
+            "key": "uploaded_by", 
+            "label": "Uploaded by",
+        }], 
+        "data": []
+    }
+
+    for source_file in source_files:
+        list_table["data"].append({
+            "file_id": source_file.id,
+            "file_name": source_file.file_name + source_file.extension, 
+            "uploaded_at": source_file.uploaded_at.strftime("%Y-%m-%d"),
+            "report_date": source_file.report_date.strftime("%Y-%m-%d"),
+            "fund": source_file.fund_types,
+            "source_file_type": source_file.file_type,
+        })
+        print(source_file.fund_types)
+    
+    return ServiceResponse.success(data=list_table)
+
+def add_file_to_archive(list_of_ids):
+    try:
+        for file_id in list_of_ids:
+            source_file = SourceFiles.query.filter_by(id=file_id).first()
+
+            if source_file:
+                source_file.is_archived = True
+
+            db.session.add(source_file)
+            db.session.commit()
+              
+        return ServiceResponse.success(message = "Files uploaded successfully")
+
+    except Exception as e:
+        Log.func_error(e=e)
+        return ServiceResponse.error(message="Could not upload files.", status_code = 500)    
+def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor, other_data):
+    try:
+        other_info_list = []
+    
+        for value in other_data:
+            other_info_list.append ({
+                "currency": value.get("currency"),
+                "exchange_rates": value.get("exchange_rates"),
+                "cash_current_and_preborrowing": value.get("cash_current_and_preborrowing"),
+                "borrowing": value.get("borrowing"),
+                "additional_expenses_1": value.get("additional_expenses_1"),
+                "additional_expenses_2": value.get("additional_expenses_2"),
+                "current_credit_facility_balance": value.get("current_credit_facility_balance")
+            })
+
+            pflt_base_data_other_info =  PfltBaseDataOtherInfo(
+                extraction_info_id = extraction_info_id,
+                determination_date = determination_date,
+                minimum_equity_amount_floor = minimum_equity_amount_floor,
+            )
+            db.session.add(pflt_base_data_other_info)
+            db.session.commit()
+
+        return ServiceResponse.success(message="Data added sucessfully")
+        
+    except Exception as e:
+        Log.func_error(e)
+        return ServiceResponse.error(message="Failed to add")

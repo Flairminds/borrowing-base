@@ -25,8 +25,9 @@ def update_limit():
         upd_limit_res = fundSetupService.update_limit(test_changes)
         if upd_limit_res["success"] is False:
             return HTTPResponse.error(message=upd_limit_res["message"], status_code=upd_limit_res["status_code"])
-
-        base_data_files = fundSetupService.get_base_files(user_id=1)
+        if len(upd_limit_res["data"]) == 0:
+            return HTTPResponse.success(message=upd_limit_res["message"], data=[])
+        base_data_files = fundSetupService.get_base_files(user_id=1, fund_id=upd_limit_res["data"][0].fund_id)
         fundSetupService.recalculate_bb(base_data_files, upd_limit_res["data"])
         return HTTPResponse.success(message=upd_limit_res["message"])
     except Exception as e:

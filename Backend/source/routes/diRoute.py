@@ -20,10 +20,17 @@ def extract_base_data():
 def get_base_data():
     return diController.get_base_data()
 
-# @di_blueprint.route("/create_base_data", methods=["POST"])
-# def create_base_data():
-#     return diController.create_base_data()
+@di_blueprint.route("/change_bd_col_seq", methods=["POST"])
+def change_bd_col_seq():
+    return diController.change_bd_col_seq()
 
+@di_blueprint.route("/get_base_data_col", methods=["POST"])
+def get_base_data_col():
+    return diController.get_base_data_col()
+
+@di_blueprint.route("/update_bd_col_select", methods=["POST"])
+def update_bd_col_select():
+    return diController.update_bd_col_select()
 
 @di_blueprint.route('/edit_base_data', methods=['POST'])
 def edit_base_data():
@@ -56,3 +63,15 @@ def get_source_file_data_detail():
 @di_blueprint.route('/trigger_bb_calculation', methods=["POST"])
 def trigger_bb_calculation():
     return diController.trigger_bb_calculation()
+
+@di_blueprint.route('/add_to_archived_files', methods=["PUT"])
+def add_to_archived_files():
+    return diController.add_to_archived_files()
+
+@di_blueprint.route('/get_archived_files', methods=["GET"])
+def get_archived_files():
+    return diController.get_archived_files()
+
+@di_blueprint.route('/pflt_base_data_other_info', methods=["POST"])
+def pflt_base_data_other_info():
+    return diController.pflt_base_data_other_info()

@@ -1,10 +1,12 @@
-import { SettingOutlined } from '@ant-design/icons';
-import { Switch } from 'antd';
+import { SettingOutlined, DragOutlined } from '@ant-design/icons';
+import { Popover, Switch } from 'antd';
 import React, { useEffect, useState } from 'react';
 import CrossIcon from '../../../assets/CrossIcon.svg';
 import RightIcon from '../../../assets/RightIcon.svg';
 import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
+import { updateSeletedColumns } from '../../../services/dataIngestionApi';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
+import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePreviewReorder.jsx/BaseFilePreviewReorder';
 import tableStyles from './DynamicTableComponents.module.css';
 
 
@@ -19,7 +21,8 @@ export const DynamicTableComponents = (
         enableColumnEditing = false,
         onChangeSave,
         getCellDetailFunc = () => {},
-        cellDetail = null
+        cellDetail = null,
+        refreshDataFunction
     }) => {
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
@@ -38,15 +41,41 @@ export const DynamicTableComponents = (
         if (columns && columns?.length > 0) {
             const temp = [...columns, ...additionalColumns];
             setUpdatedColumnsData(temp);
-            const initalColumnsConsidered = [...columns.slice(0, 10), ...additionalColumns];
+            let selectedColumntoDisplay = [];
+            if(showSettings) {
+                selectedColumntoDisplay = columns.filter((col) => col.is_selected);
+            } else {
+                selectedColumntoDisplay = columns;
+            }
+            const initalColumnsConsidered = [...selectedColumntoDisplay, ...additionalColumns];
             const intialColumns = initalColumnsConsidered.map((t) => t.label);
+            console.info(intialColumns, 'test', initalColumnsConsidered);
             setSelectedColumns(intialColumns);
             setBreaks([0, parseInt(columns.length / 3) + 1, (2 * parseInt(columns.length / 3)) + 1, columns.length]);
         }
     }, [columns]);
 
+    const updateVisibleColumns = async () => {
+        const updatedSelectedColumnIds = selectedColumns?.map((col) => {
+            const columnData = columns.find((c) => c.label == col);
+            const columnId = columnData?.bdm_id;
+            return columnId;
+        });
+
+        try {
+            const res = await updateSeletedColumns(updatedSelectedColumnIds);
+            showToast("success", res.data.message);
+        } catch (err) {
+            console.error(err);
+            showToast('error', err.response?.data?.message || 'Failed to Update');
+        }
+    };
+
     const handleOpenSettings = (e) => {
         e.preventDefault();
+        if (showSettingsDiv) {
+            updateVisibleColumns();
+        }
         setShowSettingsDiv(!showSettingsDiv);
     };
 
@@ -118,7 +147,10 @@ export const DynamicTableComponents = (
                         <span style={{margin: '7px'}}>Edit Mode</span>
                     </div>
                     <div style={{display: 'inline-block', margin: '7px 25px'}}>
-                        <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px'}} />
+                        <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px', margin: '0px 3px'}} />
+                        <Popover trigger={'click'} placement="bottomRight" title={"Reorder Columns"} content={<BaseFilePreviewReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
+                            <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} />
+                        </Popover>
                     </div>
                 </>
                 }
@@ -169,16 +201,18 @@ export const DynamicTableComponents = (
                                     let cellDisplayValue = row[col.key];
                                     let cellActualValue = row[col.key];
                                     let cellTitleValue = row[col.key];
+                                    let cellOldValue = row[col.key];
                                     if (row[col.key] && row[col.key]['meta_info']) {
                                         cellDisplayValue = row[col.key]['display_value'];
                                         cellActualValue = row[col.key]['value'];
                                         cellTitleValue = row[col.key]['title'];
+                                        cellOldValue = row[col.key]['old_value'];
                                     }
                                     const isValueEmpty = isEditable && !cellDisplayValue;
                                 return (
                                     <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
-                                        style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white'}}
-                                        onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={cellTitleValue}>
+                                        style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white', color: cellActualValue != cellOldValue ? 'red' : 'auto'}}
+                                        onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + cellActualValue + '\nPrevious: ' + cellOldValue : cellTitleValue}`}>
                                         {enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
                                             (
                                                 <div className={tableStyles.editIconsContainer}>

@@ -53,6 +53,7 @@ export const getBaseDataFilesList = (data) => {
 	const fileData = {
 		"report_date": data.report_date,
 		"company_id": data.company_id,
+		"fund_type": data.fund_type,
 		"extracted_base_data_status_id": data.id
 	};
 	const fileListResponse = axios.post(`${ApiURL}/data_ingestion/get_extracted_base_data_info`, fileData);
@@ -81,5 +82,28 @@ export const postAddSecurityMapping = (payload) => {
 export const editBaseData = (changes) => {
 	const payload = { changes };
 	const response = axios.post(`${ApiURL}/data_ingestion/edit_base_data`, payload);
+	return response;
+};
+
+export const submitOtherInfo = async (data) => {
+	const response = await axios.post(`${ApiURL}/data_ingestion/pflt_base_data_other_info`, data);
+	return response.data;
+};
+
+export const updateSeletedColumns = (columnIds) => {
+	const columnData = {
+		"selected_col_ids": columnIds
+	};
+
+	const response = axios.post(`${ApiURL}/data_ingestion/update_bd_col_select`, columnData);
+	return response;
+};
+
+export const updateColumnsOrder = (updatedOrderData) => {
+	const columnData = {
+		"updated_sequence": updatedOrderData
+	};
+
+	const response = axios.post(`${ApiURL}/data_ingestion/change_bd_col_seq`, columnData);
 	return response;
 };
