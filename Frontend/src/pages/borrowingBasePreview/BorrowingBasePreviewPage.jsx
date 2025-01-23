@@ -31,36 +31,59 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
         setMapping(col);
     }, [baseFilePreviewData]);
 
-    const getCellDetail = async(rowIndex, columnKey, columnName, cellValue) => {
-        let temp = {
-            "title": columnName,
-            "data": {
-                // 'Base data column name': columnName,
-                'Value': cellValue,
-                'Source file name': 'Not mapped',
-                'Sheet name': 'Not mapped',
-                'Column name': 'Not mapped',
-                'Formula': 'Not mapped'
-            }
-        };
-        try {
-            console.log(rowIndex, columnKey, columnName, cellValue);
-            const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId, 'column_key': columnKey });
-            const detail = response?.data?.result;
-            const t = {
-                ...temp.data,
-                'Source file name': detail.file_name + detail.extension,
-                'Sheet name': detail.sf_sheet_name,
-                'Column name': detail.sf_column_name,
-                'Formula': detail.formula ? detail.formula : 'Value same as source column value'
-            };
-            temp['data'] = t;
-            setCellDetail(temp);
-        } catch (error) {
-            console.error(error.message);
-            setCellDetail(temp);
-        }
-    };
+	const getCellDetail = async(rowIndex, columnKey, columnName, cellValue) => {
+		const temp = {
+			"title": columnName,
+			"data": {
+				// 'Base data column name': columnName,
+				'Value': cellValue,
+				'Source file name': 'Not mapped',
+				'Sheet name': 'Not mapped',
+				'Column name': 'Not mapped',
+				'Formula': 'Not mapped'
+			}
+		};
+		try {
+			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId, 'column_key': columnKey, 'data_id': baseFilePreviewData?.baseData?.data[rowIndex]['id']['value'] });
+			const detail = response?.data?.result;
+			const mappingData = detail?.mapping_data;
+			const t = {
+				...temp.data,
+				'Source file name': mappingData.file_name + mappingData.extension,
+				'Sheet name': mappingData.sf_sheet_name,
+				'Column name': mappingData.sf_column_name,
+				'Formula': mappingData.formula ? mappingData.formula : 'Value same as source column value'
+			};
+			temp['data'] = t;
+			const sourceData = detail?.source_data;
+			if (sourceData) {
+
+				temp['htmlRender'] = <table style={{textAlign: 'center', margin: '15px 0'}}>
+					<thead>
+						{Object.keys(sourceData[0]).map((h, i) => {
+							return (<th key={i} style={{padding: '3px 10px', border: "1px solid #DCDEDE", backgroundColor: '#DCDEDE'}}>{h}</th>);
+						})}
+					</thead>
+					<tbody>
+						{sourceData.map((d, j) => {
+							return (
+								<tr key={j}>
+									{Object.keys(d).map((key, k) => {
+										return (
+											<td key={k} style={{padding: '3px', border: "1px solid #DCDEDE"}}>{d[key]}</td>);
+									})}
+								</tr>
+							);
+						})}
+					</tbody>
+				</table>;
+			}
+			setCellDetail(temp);
+		} catch (error) {
+			console.error(error.message);
+			setCellDetail(temp);
+		}
+	};
 
     const handleBaseDataPreview = async () => {
         try {

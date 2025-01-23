@@ -20,7 +20,7 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, PfltBaseDataOtherInfo
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PfltBaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, PfltBaseDataOtherInfo
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
@@ -424,15 +424,25 @@ def get_base_data(info_id):
     for b in base_data:
         t = b.__dict__
         del t['_sa_instance_state']
+        old_data = PfltBaseDataHistory.query.filter_by(id = b.id).order_by(PfltBaseDataHistory.done_at.desc()).offset(1).limit(1).first()
+        t1 = None
+        if old_data:
+            t1 = old_data.__dict__
         for key in t:
             val = t[key]
+            old_value = val
+            if t1 and t1[key] != t[key]:
+                old_value = t1[key]
             numerized_val = None
             if isinstance(val, (int, float, complex)) and not isinstance(val, bool):
                 numerized_val = numerize.numerize(val, 2)
                 # t[key] = val
             elif isinstance(val, str):
                 if val.replace(".", "").replace("-", "").isnumeric():
-                    numerized_val = numerize.numerize(float(val), 2)
+                    try:
+                        numerized_val = numerize.numerize(float(val), 2)
+                    except Exception as e:
+                        print(e, val, type(val))
                     # t[key] = val
             t[key] = {
                 "meta_info": True,
@@ -440,7 +450,8 @@ def get_base_data(info_id):
                 "display_value": numerized_val if numerized_val else val,
                 "title": val,
                 "data_type": None,
-                "unit": None
+                "unit": None,
+                "old_value": old_value
             }
         # t['report_date'] = t['report_date'].strftime("%Y-%m-%d")
         # t['created_at'] = t['created_at'].strftime("%Y-%m-%d")
@@ -744,18 +755,52 @@ def get_source_file_data(file_id, file_type, sheet_name):
     return ServiceResponse.success(data=source_file_table_data)
 
 
-def get_source_file_data_detail(ebd_id, column_key):
+def get_source_file_data_detail(ebd_id, column_key, data_id):
     try:
         engine = db.get_engine()
         with engine.connect() as connection:
-            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join pflt_base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
+            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join pflt_base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
+            bd_df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where id = :data_id'), {'data_id': data_id}).fetchall())
+        
         df = df.replace({np.nan: None})
         df_dict = df.to_dict(orient='records')
+        try:
+            table_name = df_dict[0]['sd_ref_table_name']
+            sd_col_name = df_dict[0]['sf_column_name']
+            identifier_col_name = None
+            if table_name == 'pflt_client_holdings':
+                identifier_col_name = 'ch."Issuer/Borrower Name"'
+            elif table_name == 'pflt_us_bank_holdings':
+                identifier_col_name = 'usbh."Issuer/Borrower Name"'
+            elif table_name == 'pflt_securities_stats':
+                identifier_col_name = 'ss."Security"'
+            elif table_name == 'pflt_borrower_stats':
+                identifier_col_name = 'bs."Company"'
+            elif table_name == 'pflt_pflt_borrowing_base':
+                identifier_col_name = 'pbb."Security"'
+            sd_df_dict = None
+            if identifier_col_name is not None:
+                if df_dict[0]['sf_column_categories'] is not None:
+                    sd_col_name = df_dict[0]['sf_column_categories'][0] + " " + sd_col_name
+                with engine.connect() as connection:
+                    sd_df = pd.DataFrame(connection.execute(text(f'''select distinct {identifier_col_name}, "{sd_col_name}" from pflt_us_bank_holdings usbh
+                    left join pflt_client_holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
+                    left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
+                    left join pflt_securities_stats ss on ss."Security" = sm.master_comp_security_name
+                    left join pflt_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
+                    left join pflt_borrower_stats bs on bs."Company" = ss."Family Name" where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name and (usbh.source_file_id = :sf_id or ch.source_file_id = :sf_id or ss.source_file_id = :sf_id or pbb.source_file_id = :sf_id or bs.source_file_id = :sf_id)'''), {'obligor_name': bd_df['obligor_name'][0], 'security_name': bd_df['security_name'][0], 'sf_id': df_dict[0]['id']}).fetchall())
+                sd_df_dict = sd_df.to_dict(orient='records')
+        except Exception as e:
+            print(e)
+        result = {
+            'mapping_data': df_dict[0],
+            'source_data': sd_df_dict
+		}
         if len(df_dict) == 0:
             return ServiceResponse.error(message='No data found.', status_code=404)
         if len(df_dict) > 1:
             return ServiceResponse.error(message='Multiple records found.', status_code=409)
-        return ServiceResponse.success(data=df_dict[0])
+        return ServiceResponse.success(data=result)
     except Exception as e:
         raise Exception(e)
 

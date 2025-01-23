@@ -218,9 +218,10 @@ def get_source_file_data_detail():
         req_body = flask.request.get_json()
         ebd_id = req_body.get('ebd_id')
         column_key = req_body.get('column_key')
+        data_id = req_body.get('data_id')
         if not ebd_id or not column_key:
             return HTTPResponse.error(message="Bad Request", status_code=400)
-        service_response = diService.get_source_file_data_detail(ebd_id, column_key)
+        service_response = diService.get_source_file_data_detail(ebd_id, column_key, data_id)
         if not service_response["success"]:
             return HTTPResponse.error(message=service_response['message'], status_code=service_response['status_code'])
         return HTTPResponse.success(result=service_response["data"])
