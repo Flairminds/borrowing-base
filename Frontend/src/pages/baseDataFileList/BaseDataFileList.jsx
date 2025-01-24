@@ -36,6 +36,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId }) =
                     baseData: result.base_data_table,
                     reportDate: result.report_date,
                     baseDataMapping: result.base_data_mapping,
+                    cardData: result.card_data[0],
                     infoId: infoId
                 });
             setPreviewPageId(infoId);
