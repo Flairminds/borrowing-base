@@ -419,6 +419,19 @@ def get_base_data(info_id):
         BaseDataMappingColumnInfo.is_selected
     ).join(PfltBaseDataMapping, PfltBaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).order_by(BaseDataMappingColumnInfo.sequence).all()
 
+    engine = db.get_engine()
+
+    with engine.connect() as connection:
+        result = connection.execute(text('''
+            select count(distinct pbd.obligor_name) as no_of_obligors, 
+                    count(distinct pbd.security_name) as no_of_assets, 
+                    sum(pbd.total_commitment::float) as total_commitment, 
+                    sum(pbd.outstanding_principal::float) as total_outstanding_balance 
+            from pflt_base_data pbd 
+            where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
+
+    no_of_obligors, no_of_assets, total_commitment, total_outstanding_balance = result[0]
+
     temp = []
     # print(base_data[0])
     for b in base_data:
@@ -487,7 +500,13 @@ def get_base_data(info_id):
     result = {
         "base_data_table": base_data_table,
         "report_date": base_data_info.report_date.strftime("%Y-%m-%d"),
-        "fund_type": base_data_info.fund_type
+        "fund_type": base_data_info.fund_type,
+        "card_data": [{
+            "No of Obligors": no_of_obligors,
+            "No of Assets": no_of_assets,
+            "Total Commitment": total_commitment,
+            "Total Outstanding Balance": total_outstanding_balance,
+        }]
     }
     return ServiceResponse.success(data=result, message="Base Data")
 
@@ -1040,6 +1059,7 @@ def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimu
                 "borrowing": value.get("borrowing"),
                 "additional_expenses_1": value.get("additional_expenses_1"),
                 "additional_expenses_2": value.get("additional_expenses_2"),
+                "additional_expenses_3": value.get("additional_expenses_3"),
                 "current_credit_facility_balance": value.get("current_credit_facility_balance")
             })
 
@@ -1047,6 +1067,7 @@ def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimu
                 extraction_info_id = extraction_info_id,
                 determination_date = determination_date,
                 minimum_equity_amount_floor = minimum_equity_amount_floor,
+                other_info_list = other_info_list
             )
             db.session.add(pflt_base_data_other_info)
             db.session.commit()
