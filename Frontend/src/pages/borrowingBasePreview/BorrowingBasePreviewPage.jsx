@@ -8,7 +8,7 @@ import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 import { AddOtherInfo } from '../../modal/addOtherInfo/AddOtherInfo';
 
-export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePreviewData, previewPageId}) => {
+export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId }) => {
     const navigate = useNavigate();
     const [mapping, setMapping] = useState({});
     const [cellDetail, setCellDetail] = useState({});
@@ -31,59 +31,59 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
         setMapping(col);
     }, [baseFilePreviewData]);
 
-	const getCellDetail = async(rowIndex, columnKey, columnName, cellValue) => {
-		const temp = {
-			"title": columnName,
-			"data": {
-				// 'Base data column name': columnName,
-				'Value': cellValue,
-				'Source file name': 'Not mapped',
-				'Sheet name': 'Not mapped',
-				'Column name': 'Not mapped',
-				'Formula': 'Not mapped'
-			}
-		};
-		try {
-			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId, 'column_key': columnKey, 'data_id': baseFilePreviewData?.baseData?.data[rowIndex]['id']['value'] });
-			const detail = response?.data?.result;
-			const mappingData = detail?.mapping_data;
-			const t = {
-				...temp.data,
-				'Source file name': mappingData.file_name + mappingData.extension,
-				'Sheet name': mappingData.sf_sheet_name,
-				'Column name': mappingData.sf_column_name,
-				'Formula': mappingData.formula ? mappingData.formula : 'Value same as source column value'
-			};
-			temp['data'] = t;
-			const sourceData = detail?.source_data;
-			if (sourceData) {
+    const getCellDetail = async (rowIndex, columnKey, columnName, cellValue) => {
+        const temp = {
+            "title": columnName,
+            "data": {
+                // 'Base data column name': columnName,
+                'Value': cellValue,
+                'Source file name': 'Not mapped',
+                'Sheet name': 'Not mapped',
+                'Column name': 'Not mapped',
+                'Formula': 'Not mapped'
+            }
+        };
+        try {
+            const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId, 'column_key': columnKey, 'data_id': baseFilePreviewData?.baseData?.data[rowIndex]['id']['value'] });
+            const detail = response?.data?.result;
+            const mappingData = detail?.mapping_data;
+            const t = {
+                ...temp.data,
+                'Source file name': mappingData.file_name + mappingData.extension,
+                'Sheet name': mappingData.sf_sheet_name,
+                'Column name': mappingData.sf_column_name,
+                'Formula': mappingData.formula ? mappingData.formula : 'Value same as source column value'
+            };
+            temp['data'] = t;
+            const sourceData = detail?.source_data;
+            if (sourceData) {
 
-				temp['htmlRender'] = <table style={{textAlign: 'center', margin: '15px 0'}}>
-					<thead>
-						{Object.keys(sourceData[0]).map((h, i) => {
-							return (<th key={i} style={{padding: '3px 10px', border: "1px solid #DCDEDE", backgroundColor: '#DCDEDE'}}>{h}</th>);
-						})}
-					</thead>
-					<tbody>
-						{sourceData.map((d, j) => {
-							return (
-								<tr key={j}>
-									{Object.keys(d).map((key, k) => {
-										return (
-											<td key={k} style={{padding: '3px', border: "1px solid #DCDEDE"}}>{d[key]}</td>);
-									})}
-								</tr>
-							);
-						})}
-					</tbody>
-				</table>;
-			}
-			setCellDetail(temp);
-		} catch (error) {
-			console.error(error.message);
-			setCellDetail(temp);
-		}
-	};
+                temp['htmlRender'] = <table style={{ textAlign: 'center', margin: '15px 0' }}>
+                    <thead>
+                        {Object.keys(sourceData[0]).map((h, i) => {
+                            return (<th key={i} style={{ padding: '3px 10px', border: "1px solid #DCDEDE", backgroundColor: '#DCDEDE' }}>{h}</th>);
+                        })}
+                    </thead>
+                    <tbody>
+                        {sourceData.map((d, j) => {
+                            return (
+                                <tr key={j}>
+                                    {Object.keys(d).map((key, k) => {
+                                        return (
+                                            <td key={k} style={{ padding: '3px', border: "1px solid #DCDEDE" }}>{d[key]}</td>);
+                                    })}
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>;
+            }
+            setCellDetail(temp);
+        } catch (error) {
+            console.error(error.message);
+            setCellDetail(temp);
+        }
+    };
 
     const handleBaseDataPreview = async () => {
         try {
@@ -93,45 +93,48 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
                 setBaseFilePreviewData({
                     baseData: result.base_data_table,
                     reportDate: result.report_date,
-                    baseDataMapping: result.base_data_mapping
+                    baseDataMapping: result.base_data_mapping,
+                    cardData: result.card_data[0]
+                    
                 });
+
+               
         } catch (err) {
             showToast("error", err.response.data.message);
         }
     };
 
     const handleSaveEdit = async (rowIndex, columnkey, inputValue) => {
-            const updatedData = [...baseFilePreviewData?.baseData?.data];
-            const changes = [{
-                    id: updatedData[rowIndex].id['value'],
-                    [columnkey]: inputValue
+        const updatedData = [...baseFilePreviewData?.baseData?.data];
+        const changes = [{
+            id: updatedData[rowIndex].id['value'],
+            [columnkey]: inputValue
+        }
+        ];
+
+        try {
+            await editBaseData(changes);
+            await handleBaseDataPreview();
+            updatedData[rowIndex][columnkey] = inputValue;
+            setBaseFilePreviewData({
+                ...baseFilePreviewData,
+                'baseData': {
+                    ...baseFilePreviewData.baseData,
+                    'data': updatedData
                 }
-            ];
+            });
+            // setBaseFilePreviewData({...BorrowingBasePreviewPage.baseData, data: updatedData});
+            return { success: "failure", msg: "Update success" };
+        } catch (error) {
+            // showToast("error", error?.response?.data?.message || "Failed to update data");
+            return { success: "failure", msg: error?.response?.data?.message || "Failed to update data" };
+        }
+    };
 
-            try {
-                await editBaseData(changes);
-                await handleBaseDataPreview();
-                updatedData[rowIndex][columnkey] = inputValue;
-                console.info(baseFilePreviewData, 'base preivew state');
-                setBaseFilePreviewData({
-                    ...baseFilePreviewData,
-                    'baseData': {
-                        ...baseFilePreviewData.baseData,
-                        'data': updatedData
-                    }
-                });
-                // setBaseFilePreviewData({...BorrowingBasePreviewPage.baseData, data: updatedData});
-                return {success: "failure", msg: "Update success"};
-            } catch (error) {
-                // showToast("error", error?.response?.data?.message || "Failed to update data");
-                return {success: "failure", msg: error?.response?.data?.message || "Failed to update data"};
-            }
-        };
-
-    const generateBaseData = async(e) => {
+    const generateBaseData = async (e) => {
         // e.preventDefault();
         try {
-            const response = await generateBaseDataFile({ 'bdi_id': baseFilePreviewData.infoId});
+            const response = await generateBaseDataFile({ 'bdi_id': baseFilePreviewData.infoId });
             const detail = response?.data;
             showToast('success', detail?.message);
         } catch (error) {
@@ -142,13 +145,23 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
     return (
         <div className={styles.previewPage}>
             <div className={styles.tableContainer}>
-                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div>
                         Base Data for {baseFilePreviewData.reportDate} ({baseFilePreviewData?.baseData?.data ? baseFilePreviewData?.baseData?.data.length : ''})
                     </div>
                     <div>
-                        <button onClick={(e) => generateBaseData(e)} style={{outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px'}}>Trigger BB Calculation</button>
-                        <button onClick={() => setIsAddFieldModalOpen(true)} style={{outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px'}}>Add Other Info</button>
+                        <button onClick={(e) => generateBaseData(e)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px' }}>Trigger BB Calculation</button>
+                        <button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Add Other Info</button>
+                    </div>
+                </div>
+                <div>
+                    <div className={styles.cardContainer}>
+                        {baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
+                            <div key={index} className={styles.card}>
+                                <h5>{cardTitle}</h5>
+                                <p className={styles.cardTitle}>{parseFloat(baseFilePreviewData?.cardData[cardTitle].toFixed(2))}</p>
+                            </div>
+                        ))}
                     </div>
                 </div>
                 <div>
@@ -166,7 +179,7 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
                     />
                 </div>
             </div>
-            <AddOtherInfo isOpen={isAddFieldModalOpen} onClose={() => setIsAddFieldModalOpen(false)}/>
+            <AddOtherInfo isOpen={isAddFieldModalOpen} onClose={() => setIsAddFieldModalOpen(false)} />
         </div>
         // <div>
         //     {Object.keys(mapping)?.map(m => {
@@ -175,6 +188,6 @@ export const BorrowingBasePreviewPage = ({baseFilePreviewData, setBaseFilePrevie
         //         )
         //     })}
         // </div>
-       
+
     );
 };
