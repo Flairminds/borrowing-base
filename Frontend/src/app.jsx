@@ -33,7 +33,8 @@ export function App() {
   const [dataIngestionFileList, setDataIngestionFileList] = useState();
   const [baseFilePreviewData, setBaseFilePreviewData] = useState([]);
   const [previewPageId, setPreviewPageId] = useState(-1);
-  const selectedIds = useRef([]);
+  const [selectedIds, setSelectedIds] = useState([]);
+  // const selectedIds = useRef([]);
 
   const getLandingPageData = async() => {
     try {
@@ -116,7 +117,7 @@ export function App() {
                 baseFilePreviewData={baseFilePreviewData}
                 setBaseFilePreviewData= {setBaseFilePreviewData}
                 selectedIds={selectedIds}
-                // setSelectedIds={setSelectedIds}
+                setSelectedIds={setSelectedIds}
               />
             }
           />

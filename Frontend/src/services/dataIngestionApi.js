@@ -107,3 +107,17 @@ export const updateColumnsOrder = (updatedOrderData) => {
 	const response = axios.post(`${ApiURL}/data_ingestion/change_bd_col_seq`, columnData);
 	return response;
 };
+
+export const updateArchiveStatus = (fileIds, addToArchive) => {
+	const filesData = {
+		"list_of_ids": fileIds,
+		"to_archive": addToArchive
+	};
+	const response = axios.put(`${ApiURL}/data_ingestion/update_archived_files`, filesData);
+	return response;
+};
+
+export const getArchive = () => {
+	const response = axios.get(`${ApiURL}/data_ingestion/get_archived_files`);
+	return response;
+};
