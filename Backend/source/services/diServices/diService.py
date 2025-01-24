@@ -472,12 +472,12 @@ def get_base_data(info_id):
     # print(temp[0])
     base_data_table = {
         "columns": [{
-                "key": column.bd_column_lookup,
-                "label": column.bd_column_name,
-                "isEditable": column.is_editable,
-                "bdm_id": column.bdm_id,
-                "is_selected": column.is_selected
-            } for column in base_data_mapping],
+            "key": column.bd_column_lookup,
+            "label": column.bd_column_name,
+            "isEditable": column.is_editable,
+            "bdm_id": column.bdm_id,
+            "is_selected": column.is_selected
+        } for column in base_data_mapping],
         "data": temp
     }
 
@@ -1031,22 +1031,25 @@ def get_archived_file_list():
     
     return ServiceResponse.success(data=list_table)
 
-def add_file_to_archive(list_of_ids):
+def update_archive(list_of_ids, to_archive):
     try:
+        source_file_list = []
         for file_id in list_of_ids:
             source_file = SourceFiles.query.filter_by(id=file_id).first()
 
             if source_file:
-                source_file.is_archived = True
+                source_file.is_archived = to_archive
 
-            db.session.add(source_file)
-            db.session.commit()
+            source_file_list.append(source_file)
+
+        db.session.add_all(source_file_list)
+        db.session.commit()
               
-        return ServiceResponse.success(message = "Files uploaded successfully")
+        return ServiceResponse.success(message = f"Files {'added to archive' if to_archive else 'removed from archive'} successfully")
 
     except Exception as e:
         Log.func_error(e=e)
-        return ServiceResponse.error(message="Could not upload files.", status_code = 500)    
+        return ServiceResponse.error(message="Could not update the files.", status_code = 500)    
 def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor, other_data):
     try:
         other_info_list = []

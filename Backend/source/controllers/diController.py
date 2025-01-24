@@ -243,11 +243,12 @@ def trigger_bb_calculation():
         print("here",e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
     
-def add_to_archived_files():
+def update_archived_files():
     try:
         data = flask.request.get_json()
         list_of_ids = data.get("list_of_ids", [])
-        response = diService.add_file_to_archive(list_of_ids)
+        to_archive =  data.get("to_archive")
+        response = diService.update_archive(list_of_ids, to_archive)
         if (response["success"]):
             return HTTPResponse.success()
             
