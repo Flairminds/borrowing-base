@@ -46,14 +46,14 @@ def get_card_data(initial_xl_df_map, calculated_xl_df_map):
             {
                 "data": "$"
                 + numerize.numerize(
-                    round(Updated_df_Availability_Borrower.loc[13, "B"], 2)
+                    round(Updated_df_Availability_Borrower.loc[16, "B"], 2)
                 ),
                 "changeInValue": True,
                 "prevValue": "$"
-                + numerize.numerize(round(df_Availability_Borrower.loc[13, "B"], 2)),
+                + numerize.numerize(round(df_Availability_Borrower.loc[16, "B"], 2)),
                 "percentageChange": get_percentageChange(
-                    Updated_df_Availability_Borrower.loc[13, "B"],
-                    df_Availability_Borrower.loc[13, "B"],
+                    Updated_df_Availability_Borrower.loc[16, "B"],
+                    df_Availability_Borrower.loc[16, "B"],
                 ),
             }
         ],

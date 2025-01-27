@@ -89,6 +89,7 @@ def add_assets():
             return pfltAddAssetAnalyst.add_asset(base_data_file, selected_assets)
         
     except Exception as e:
+       Log.func_error(e)
        return HTTPResponse.error(message="Internal Server Error")
 
 
