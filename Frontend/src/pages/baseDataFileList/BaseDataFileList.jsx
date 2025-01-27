@@ -8,6 +8,7 @@ import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dat
 import { fundOptionsArray } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
+import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
 
 export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId }) => {
     const [baseDataFilesList, setBaseDataFilesList] = useState({});
@@ -35,8 +36,8 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId }) =
                 setBaseFilePreviewData({
                     baseData: result.base_data_table,
                     reportDate: result.report_date,
-                    baseDataMapping: result.base_data_mapping,
-                    cardData: result.card_data[0],
+                    baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
+                    cardData: result?.card_data && result.card_data[0],
                     infoId: infoId
                 });
             setPreviewPageId(infoId);
