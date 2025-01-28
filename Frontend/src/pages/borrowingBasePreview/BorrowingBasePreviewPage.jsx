@@ -7,12 +7,18 @@ import { editBaseData, getBaseFilePreviewData } from '../../services/dataIngesti
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 import { AddOtherInfo } from '../../modal/addOtherInfo/AddOtherInfo';
+import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
+import { Select, Space } from 'antd';
+import { filterPreviewTable } from '../../utils/helperFunctions/filterPreviewTable';
 
 export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId }) => {
     const navigate = useNavigate();
     const [mapping, setMapping] = useState({});
     const [cellDetail, setCellDetail] = useState({});
     const [isAddFieldModalOpen, setIsAddFieldModalOpen] = useState(false);
+    const [obligorFliteredValue, setObligorFliteredValue] = useState([]);
+    const [securityFilteredValue, setSecurityFilteredValue] = useState([]);
+    const [filteredData, setFilteredData] = useState(baseFilePreviewData?.baseData?.data);
 
     useEffect(() => {
         let col = [];
@@ -91,14 +97,13 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
             const result = previewDataResponse.data?.result;
             if (result)
                 setBaseFilePreviewData({
-                    baseData: result.base_data_table,
-                    reportDate: result.report_date,
-                    baseDataMapping: result.base_data_mapping,
-                    cardData: result.card_data[0]
-                    
+                    baseData: result?.base_data_table,
+                    reportDate: result?.report_date,
+                    baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
+                    cardData: result?.card_data && result.card_data[0]
                 });
-
-               
+                setFilteredData(result?.base_data_table?.data);
+                
         } catch (err) {
             showToast("error", err.response.data.message);
         }
@@ -123,6 +128,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
                     'data': updatedData
                 }
             });
+            setFilteredData(updatedData);
             // setBaseFilePreviewData({...BorrowingBasePreviewPage.baseData, data: updatedData});
             return { success: "failure", msg: "Update success" };
         } catch (error) {
@@ -141,6 +147,19 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
             showToast('error', error.message);
         }
     };
+
+    const handleObligorChange = (value) => {
+        setObligorFliteredValue(value);
+        const obligorFilterData = filterPreviewTable(baseFilePreviewData?.baseData?.data, value, securityFilteredValue);
+        setFilteredData(obligorFilterData);
+    };
+
+    const handleSecurityChange = (value) => {
+        setSecurityFilteredValue(value);
+       const securityFilterData = filterPreviewTable(baseFilePreviewData?.baseData?.data, obligorFliteredValue, value );
+       setFilteredData(securityFilterData);
+    };
+
 
     return (
         <div className={styles.previewPage}>
@@ -163,10 +182,43 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
                             </div>
                         ))}
                     </div>
+                    <div
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            width: '100%',
+                            gap: '16px',
+                        }}
+                    >
+                        
+                        <Select
+                            mode="multiple"
+                            allowClear
+                            style={{
+                                flex: 1, 
+                            }}
+                            placeholder="Select Obligor Name(s)"
+                            onChange={handleObligorChange}
+                            options={baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'obligor_name')}
+                        />
+
+                       
+                        <Select
+                            mode="multiple"
+                            allowClear
+                            style={{
+                                flex: 1, 
+                            }}
+                            placeholder="Select Security Name(s)"
+                            onChange={handleSecurityChange}
+                            options={baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'security_name')}
+                        />
+                    </div>
                 </div>
                 <div>
                     <DynamicTableComponents
-                        data={baseFilePreviewData?.baseData?.data}
+                        data={filteredData}
                         columns={baseFilePreviewData?.baseData?.columns}
                         enableStickyColumns={true}
                         showSettings={true}
