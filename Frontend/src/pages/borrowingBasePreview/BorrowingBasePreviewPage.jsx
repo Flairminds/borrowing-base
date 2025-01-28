@@ -148,6 +148,20 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
         }
     };
 
+	// const filterData = async(cardTitle) => {
+	// 	if (cardTitle == 'Unmapped Securities') {
+	// 		const temp = [...baseFilePreviewData?.baseData?.data];
+	// 		const updatedData = temp.filter(t => !t.security_name.value);
+	// 		setBaseFilePreviewData({
+	// 			...baseFilePreviewData,
+	// 			'baseData': {
+	// 				...baseFilePreviewData.baseData,
+	// 				'data': updatedData
+	// 			}
+	// 		});
+	// 	}
+	// };
+
     const handleObligorChange = (value) => {
         setObligorFliteredValue(value);
         const obligorFilterData = filterPreviewTable(baseFilePreviewData?.baseData?.data, value, securityFilteredValue);
@@ -166,7 +180,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
             <div className={styles.tableContainer}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div>
-                        Base Data for {baseFilePreviewData.reportDate} ({baseFilePreviewData?.baseData?.data ? baseFilePreviewData?.baseData?.data.length : ''})
+                        Report Date: {baseFilePreviewData.reportDate}
                     </div>
                     <div>
                         <button onClick={(e) => generateBaseData(e)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px' }}>Trigger BB Calculation</button>
@@ -177,8 +191,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
                     <div className={styles.cardContainer}>
                         {baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
                             <div key={index} className={styles.card}>
-                                <h5>{cardTitle}</h5>
-                                <p className={styles.cardTitle}>{parseFloat(baseFilePreviewData?.cardData[cardTitle].toFixed(2))}</p>
+                                <div><b>{cardTitle}</b></div>
+                                <div className={styles.cardTitle}>{baseFilePreviewData?.cardData[cardTitle]}</div>
                             </div>
                         ))}
                     </div>

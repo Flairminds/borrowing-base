@@ -83,7 +83,7 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	0 as for_unused_fee,
 	0 as pik_pikable_for_floating_rate_loans,
 	0 as pik_pikable_for_fixed_rate_loans,
-	'Quarterly' as interest_paid,
+	case when ch."Payment Period" = '3 Months' then 'Quarterly' when  ch."Payment Period" = '1 Month' then 'Monthly' when ch."Payment Period" = '6 Months' then 'Half-Yearly' else null end as interest_paid,
 	bs."[ACM] [COI/LC] S&P Industry" as obligor_industry,
 	ss."[SI] Currency" as currency,
 	ss."[SI] Obligor Country" as obligor_country,
@@ -111,10 +111,11 @@ left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security
 left join pflt_securities_stats ss on ss."Security" = sm.master_comp_security_name
 left join pflt_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
 left join pflt_borrower_stats bs on bs."Company" = ss."Family Name"
-where usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AND ss.source_file_id= :master_comp_file_id AND pbb.source_file_id= :master_comp_file_id AND bs.source_file_id= :master_comp_file_id
+where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id) and
+((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND pbb.source_file_id= :master_comp_file_id AND bs.source_file_id= :master_comp_file_id) or sm.id is null)
     group by usbh."Issuer/Borrower Name", usbh."Security/Facility Name", usbh."Purchase Date", pbb."Defaulted Collateral Loan at Acquisition",
 	ss."Security", pbb."Credit Improved Loan", usbh."Original Purchase Price", pbb."Stretch Senior (Y/N)", ch."Issue Name",
-	ch."Deal Issue (Derived) Rating - Moody's", ch."Deal Issue (Derived) Rating - S&P", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio",
+	ch."Deal Issue (Derived) Rating - Moody's", ch."Payment Period", ch."Deal Issue (Derived) Rating - S&P", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio",
 	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization", pbb."Senior Debt", pbb."LTM EBITDA", pbb."Total Debt",
 	pbb."Closing LTM EBITDA", pbb."Current LTM EBITDA", ch."As Of Date", usbh."Maturity Date", ss."[SI] Type of Rate",
 	ss."[SI] LIBOR Floor", bs."[ACM] [COI/LC] S&P Industry", ss."[SI] Credit Facility Lien Type", ss."[SI] Currency", ss."[SI] Obligor Country",
@@ -123,7 +124,7 @@ where usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AN
 	pbb."Covenant Lite", pbb."Structured Finance Obligation / finance lease", pbb."Material Non-Credit Related Risk", pbb."Primarily Secured by Real Estate",
 	pbb."Interest Only Security", pbb."Satisfies Other Criteria(1)", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio", bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA",
 	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon"
-order by ss."Security"'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id':master_comp_file_details.id}).fetchall())
+order by security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id':master_comp_file_details.id}).fetchall())
             df = cash_file
             if df.empty:
                 raise Exception('Base data is empty')

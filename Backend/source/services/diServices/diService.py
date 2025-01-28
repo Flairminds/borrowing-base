@@ -426,11 +426,12 @@ def get_base_data(info_id):
             select count(distinct pbd.obligor_name) as no_of_obligors, 
                     count(distinct pbd.security_name) as no_of_assets, 
                     sum(pbd.total_commitment::float) as total_commitment, 
-                    sum(pbd.outstanding_principal::float) as total_outstanding_balance 
-            from pflt_base_data pbd 
+                    sum(pbd.outstanding_principal::float) as total_outstanding_balance,
+                    (select count(distinct obligor_name) from pflt_base_data pbd where security_name is null and pbd.base_data_info_id = :info_id) as unmapped_records
+            from pflt_base_data pbd
             where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
 
-    no_of_obligors, no_of_assets, total_commitment, total_outstanding_balance = result[0]
+    no_of_obligors, no_of_assets, total_commitment, total_outstanding_balance, unmapped_records = result[0]
 
     temp = []
     # print(base_data[0])
@@ -504,8 +505,10 @@ def get_base_data(info_id):
         "card_data": [{
             "No of Obligors": no_of_obligors,
             "No of Assets": no_of_assets,
-            "Total Commitment": total_commitment,
-            "Total Outstanding Balance": total_outstanding_balance,
+            "Total Commitment": numerize.numerize(total_commitment, 2),
+            "Total Outstanding Balance": numerize.numerize(total_outstanding_balance, 2),
+            "Unmapped Securities": unmapped_records,
+            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d")
         }]
     }
     return ServiceResponse.success(data=result, message="Base Data")
@@ -810,7 +813,7 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
                     left join pflt_borrower_stats bs on bs."Company" = ss."Family Name" where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name and (usbh.source_file_id = :sf_id or ch.source_file_id = :sf_id or ss.source_file_id = :sf_id or pbb.source_file_id = :sf_id or bs.source_file_id = :sf_id)'''), {'obligor_name': bd_df['obligor_name'][0], 'security_name': bd_df['security_name'][0], 'sf_id': df_dict[0]['id']}).fetchall())
                 sd_df_dict = sd_df.to_dict(orient='records')
         except Exception as e:
-            print(e)
+            print(str(e)[:150])
         result = {
             'mapping_data': df_dict[0],
             'source_data': sd_df_dict
