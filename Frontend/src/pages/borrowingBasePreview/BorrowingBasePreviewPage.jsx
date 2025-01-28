@@ -185,30 +185,30 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
                     <div
                         style={{
                             display: 'flex',
-                            justifyContent: 'space-between', // Ensures dropdowns are side by side
-                            alignItems: 'center', // Vertically aligns dropdowns
-                            width: '100%', // Occupies full parent width
-                            gap: '16px', // Adds spacing between the dropdowns
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            width: '100%',
+                            gap: '16px',
                         }}
                     >
-                        {/* Obligor Name Dropdown */}
+                        
                         <Select
                             mode="multiple"
                             allowClear
                             style={{
-                                flex: 1, // Ensures both dropdowns take equal space
+                                flex: 1, 
                             }}
                             placeholder="Select Obligor Name(s)"
                             onChange={handleObligorChange}
                             options={baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'obligor_name')}
                         />
 
-                        {/* Security Name Dropdown */}
+                       
                         <Select
                             mode="multiple"
                             allowClear
                             style={{
-                                flex: 1, // Ensures both dropdowns take equal space
+                                flex: 1, 
                             }}
                             placeholder="Select Security Name(s)"
                             onChange={handleSecurityChange}
