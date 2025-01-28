@@ -1781,18 +1781,15 @@ def calculate_Borrowing_Base_helper(
     Borrowing_Base_Other_Adjustment,
     Borrowing_Base_Industry_Concentration,
 ):
+    required_cols = [Borrowing_Base_Adj_Contribution, Borrowing_Base_Other_Adjustment, Borrowing_Base_Industry_Concentration]
     try:
         a = np.array(
-            [
-                Borrowing_Base_Adj_Contribution,
-                Borrowing_Base_Other_Adjustment,
-                Borrowing_Base_Industry_Concentration,
-            ]
+            [np.nan if x is None else x for x in required_cols]
         )
         return a[~np.isnan(a)].sum()
         # return Borrowing_Base_Adj_Contribution+Borrowing_Base_Other_Adjustment+Borrowing_Base_Industry_Concentration
     except:
-        return "n/a"
+        return 0.0
 
 
 def calculate_Borrowing_Base(df_PL_BB_Build):

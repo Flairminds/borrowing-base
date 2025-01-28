@@ -230,6 +230,5 @@ def calculate_bb():
         response["closing_dates"] = closing_dates
 
         return HTTPResponse.success(result=response)
-
     except Exception as e:
         return HTTPResponse.error(message="Internal Server Error")

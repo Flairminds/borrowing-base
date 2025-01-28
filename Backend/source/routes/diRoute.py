@@ -64,9 +64,9 @@ def get_source_file_data_detail():
 def trigger_bb_calculation():
     return diController.trigger_bb_calculation()
 
-@di_blueprint.route('/add_to_archived_files', methods=["PUT"])
+@di_blueprint.route('/update_archived_files', methods=["PUT"])
 def add_to_archived_files():
-    return diController.add_to_archived_files()
+    return diController.update_archived_files()
 
 @di_blueprint.route('/get_archived_files', methods=["GET"])
 def get_archived_files():

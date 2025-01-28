@@ -1,0 +1,11 @@
+.switchContainer {
+	display: inline-block;
+}
+
+.switchText {
+	margin: 7px;
+}
+
+.switch {
+	background-color: #0EB198 !important;
+}

@@ -307,14 +307,7 @@ class PfltDashboardService:
         return jsonify(pflt_trnd_graph_response), 200
 
     def calculate_bb(self, base_data_file, selected_assets, user_id):
-        return (
-            jsonify(
-                pfltBBCalculator.get_bb_calculation(
-                    base_data_file, selected_assets, user_id
-                )
-            ),
-            200,
-        )
+        return (pfltBBCalculator.get_bb_calculation(base_data_file, selected_assets, user_id))
     
     def validate_standard_file_format(self, excel_file, std_file_format):
         try:

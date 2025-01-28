@@ -30,7 +30,7 @@ fund_std_col_map:
       Eligible Issuer:
         Sheet Name: Loan List
         Column Name: Obligor
-  8 or 9 Issuers?:
+  Number of Issuers:
     PCOF:
       Eligible Issuer:
         Sheet Name: PL BB Build

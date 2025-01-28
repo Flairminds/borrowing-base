@@ -8,6 +8,7 @@ import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dat
 import { fundOptionsArray } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
+import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
 
 export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId }) => {
     const [baseDataFilesList, setBaseDataFilesList] = useState({});
@@ -26,19 +27,25 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId }) =
         navigate('/security-mapping');
     };
 
-    const handleBaseDataPreview = async (infoId) => {
-        localStorage.setItem("extraction_info_id", infoId);
+    const handleBaseDataPreview = async (row) => {
+        localStorage.setItem("extraction_info_id", row.id);
+        if (row.extraction_status == 'failed') {
+            alert(row.comments);
+            return;
+        }
         try {
-            const previewDataResponse = await getBaseFilePreviewData(infoId);
+            const previewDataResponse = await getBaseFilePreviewData(row.id);
             const result = previewDataResponse.data?.result;
             if (result)
                 setBaseFilePreviewData({
                     baseData: result.base_data_table,
                     reportDate: result.report_date,
-                    baseDataMapping: result.base_data_mapping,
-                    infoId: infoId
+                    baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
+                    cardData: result?.card_data && result.card_data[0],
+                    infoId: row.id,
+                    otherInfo: result.other_info
                 });
-            setPreviewPageId(infoId);
+            setPreviewPageId(row.id);
             navigate('/base-data-preview');
         } catch (err) {
             showToast("error", err.response.data.message);
@@ -48,9 +55,9 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId }) =
     const columnsToAdd = [{
         'key': 'file_preview',
         'label': '',
-        'render': (value, row) => <div onClick={() => handleBaseDataPreview(row.id)}
-                                    style={{display: row.extraction_status === "completed" ? 'block' : 'none', color: '#0EB198', cursor: 'pointer'}}>
-                                    Preview Base Data
+        'render': (value, row) => <div onClick={() => handleBaseDataPreview(row)}
+                                    style={{color: '#0EB198', cursor: 'pointer'}}>
+                                    {row.extraction_status === "completed" ? 'Preview Base Data' : (row.extraction_status === "failed" ? 'Errors' : '')}
                                 </div>
     }];
 

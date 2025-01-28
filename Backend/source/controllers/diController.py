@@ -53,10 +53,13 @@ def get_base_data():
         if not service_response["success"]:
             return HTTPResponse.error(message="Could not get base data")
         # base_data_map_res = diService.get_base_data_mapping(info_id)
+        other_info = diService.get_pflt_base_data_other_info(info_id)
         result = {
             "base_data_table": service_response["data"]["base_data_table"],
             "report_date": service_response["data"]["report_date"],
             "fund_type": service_response["data"]["fund_type"],
+            "card_data": service_response["data"]["card_data"],
+            "other_info": other_info["data"]
             # "base_data_mapping": base_data_map_res["data"]
         }
         return HTTPResponse.success(message=service_response["message"], result=result)
@@ -236,17 +239,18 @@ def trigger_bb_calculation():
         service_response = diService.trigger_bb_calculation(bdi_id)
         # if not service_response["success"]:
         #     return HTTPResponse.error(message="Could not get source file data")
-        return HTTPResponse.success(message="Successfully processed.", result=[])
+        return HTTPResponse.success(message="Successfully processed. Visit the Borrowing Base module to check the data.", result=[])
     except Exception as e:
         # Log.func_error(e)
         print("here",e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
     
-def add_to_archived_files():
+def update_archived_files():
     try:
         data = flask.request.get_json()
         list_of_ids = data.get("list_of_ids", [])
-        response = diService.add_file_to_archive(list_of_ids)
+        to_archive =  data.get("to_archive")
+        response = diService.update_archive(list_of_ids, to_archive)
         if (response["success"]):
             return HTTPResponse.success()
             
