@@ -177,7 +177,7 @@ class SourceFiles(db.Model):
     uploaded_by = db.Column(db.Integer, nullable=False)
     is_deleted = db.Column(db.Boolean, default=False)
     file_type = db.Column(db.String(100))
-    is_archived = db.Column(db.Boolean, server_default=db.sql.expression.false())
+    is_archived = db.Column(db.Boolean, default=False)
 
 class SheetMetadataMaster(db.Model):
     smm_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
