@@ -72,11 +72,11 @@
 }
 
 .cardContainer {
-  margin-top: 10px;
+  /* margin-top: 10px; */
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-start;
-  padding: 10px 0;
+  /* padding: 10px 0; */
   font-size: smaller;
 }
 
@@ -84,7 +84,7 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   padding: 10px;
-  margin: 5px;
+  margin: 0 5px;
   /* height: 90px; */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease;

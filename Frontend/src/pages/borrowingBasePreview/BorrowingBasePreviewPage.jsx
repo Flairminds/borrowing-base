@@ -16,6 +16,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
     const [mapping, setMapping] = useState({});
     const [cellDetail, setCellDetail] = useState({});
     const [isAddFieldModalOpen, setIsAddFieldModalOpen] = useState(false);
+    const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
     const [obligorFliteredValue, setObligorFliteredValue] = useState([]);
     const [securityFilteredValue, setSecurityFilteredValue] = useState([]);
     const [filteredData, setFilteredData] = useState(baseFilePreviewData?.baseData?.data);
@@ -100,8 +101,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
                     baseData: result?.base_data_table,
                     reportDate: result?.report_date,
                     baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
-                    cardData: result?.card_data && result.card_data[0]
-                });
+                    cardData: result?.card_data && result.card_data[0],
+                });otherInfo: result.other_info
                 setFilteredData(result?.base_data_table?.data);
                 
         } catch (err) {
@@ -137,16 +138,30 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
         }
     };
 
-    const generateBaseData = async (e) => {
-        // e.preventDefault();
-        try {
-            const response = await generateBaseDataFile({ 'bdi_id': baseFilePreviewData.infoId });
-            const detail = response?.data;
-            showToast('success', detail?.message);
-        } catch (error) {
-            showToast('error', error.message);
-        }
-    };
+	const generateBaseData = async (e) => {
+		// e.preventDefault();
+        setTriggerBBCalculation(true);
+		try {
+			let run = false;
+			if (baseFilePreviewData?.cardData['Unmapped Securities'] > 0) {
+				if (confirm('The calculation will be inaccurate due to some unmapped securities. Do you want to proceed?')) {
+					run = true;
+				}
+			} else {
+				run = true;
+			}
+			if (run) {
+				const response = await generateBaseDataFile({ 'bdi_id': baseFilePreviewData.infoId });
+				const detail = response?.data;
+				showToast('success', detail?.message);
+			}
+            setTriggerBBCalculation(false);
+			return;
+		} catch (error) {
+            setTriggerBBCalculation(false);
+			showToast('error', error.message);
+		}
+	};
 
 	// const filterData = async(cardTitle) => {
 	// 	if (cardTitle == 'Unmapped Securities') {
@@ -180,10 +195,17 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
             <div className={styles.tableContainer}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                     <div>
-                        Report Date: {baseFilePreviewData.reportDate}
+						<div className={styles.cardContainer}>
+							{baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
+								<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => window.location.href = '/security-mapping' : () => {}}>
+									<div><b>{cardTitle}</b></div>
+									<div className={styles.cardTitle}>{baseFilePreviewData?.cardData[cardTitle]}</div>
+								</div>
+							))}
+						</div>
                     </div>
                     <div>
-                        <button onClick={(e) => generateBaseData(e)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px' }}>Trigger BB Calculation</button>
+                        <button onClick={(e) => generateBaseData(e)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px' }}>{triggerBBCalculation ? '...Calculating' : 'Trigger BB Calculation'}</button>
                         <button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Add Other Info</button>
                     </div>
                 </div>
@@ -245,7 +267,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
                     />
                 </div>
             </div>
-            <AddOtherInfo isOpen={isAddFieldModalOpen} onClose={() => setIsAddFieldModalOpen(false)} />
+            <AddOtherInfo isOpen={isAddFieldModalOpen} onClose={() => setIsAddFieldModalOpen(false)} dataId={baseFilePreviewData.infoId} data={baseFilePreviewData.otherInfo} />
         </div>
         // <div>
         //     {Object.keys(mapping)?.map(m => {

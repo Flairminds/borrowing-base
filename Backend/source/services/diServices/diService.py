@@ -661,6 +661,7 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_t
             "report_date": extracted_base_data.report_date.strftime("%Y-%m-%d"),
             "fund": extracted_base_data.fund_type,
             "extraction_status": extracted_base_data.status,
+            "comments": extracted_base_data.failure_comments,
             "extraction_date": extracted_base_data.extraction_date.strftime("%Y-%m-%d"),
             "source_files": files,
             "source_file_details":  file_details
@@ -1052,10 +1053,14 @@ def update_archive(list_of_ids, to_archive):
 
     except Exception as e:
         Log.func_error(e=e)
-        return ServiceResponse.error(message="Could not update the files.", status_code = 500)    
+        return ServiceResponse.error(message="Could not update the files.", status_code = 500)
+
 def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor, other_data):
     try:
         other_info_list = []
+
+        PfltBaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).delete()
+        db.session.commit()
     
         for value in other_data:
             other_info_list.append ({
@@ -1069,17 +1074,40 @@ def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimu
                 "current_credit_facility_balance": value.get("current_credit_facility_balance")
             })
 
-            pflt_base_data_other_info =  PfltBaseDataOtherInfo(
-                extraction_info_id = extraction_info_id,
-                determination_date = determination_date,
-                minimum_equity_amount_floor = minimum_equity_amount_floor,
-                other_info_list = other_info_list
-            )
-            db.session.add(pflt_base_data_other_info)
-            db.session.commit()
+        pflt_base_data_other_info =  PfltBaseDataOtherInfo(
+            extraction_info_id = extraction_info_id,
+            determination_date = determination_date,
+            minimum_equity_amount_floor = minimum_equity_amount_floor,
+            other_info_list = other_info_list
+        )
+        db.session.add(pflt_base_data_other_info)
+        db.session.commit()
 
         return ServiceResponse.success(message="Data added sucessfully")
         
     except Exception as e:
         Log.func_error(e)
         return ServiceResponse.error(message="Failed to add")
+
+def get_pflt_base_data_other_info(extraction_info_id):
+    try:
+        other_info = db.session.query(
+            PfltBaseDataOtherInfo.id,
+            PfltBaseDataOtherInfo.extraction_info_id,
+            PfltBaseDataOtherInfo.determination_date,
+            PfltBaseDataOtherInfo.minimum_equity_amount_floor,
+            PfltBaseDataOtherInfo.other_info_list
+        ).filter(PfltBaseDataOtherInfo.extraction_info_id == extraction_info_id).first()
+        res = {}
+        if other_info:
+            res = {
+                "id": other_info.id,
+                "extraction_info_id": other_info.extraction_info_id,
+                "determination_date": other_info.determination_date,
+                "minimum_equity_amount_floor": other_info.minimum_equity_amount_floor,
+                "other_info_list": other_info.other_info_list
+            }
+        return ServiceResponse.success(data = res)
+    except Exception as e:
+        Log.func_error(e)
+        return ServiceResponse.error()
