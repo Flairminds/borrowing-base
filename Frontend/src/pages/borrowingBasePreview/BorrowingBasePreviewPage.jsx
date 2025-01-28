@@ -197,7 +197,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 					<div>
 						<div className={styles.cardContainer}>
 							{baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
-								<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => window.location.href = '/security-mapping' : () => {}}>
+								<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/security-mapping') : () => {}}>
 									<div><b>{cardTitle}</b></div>
 									<div className={styles.cardTitle}>{baseFilePreviewData?.cardData[cardTitle]}</div>
 								</div>
