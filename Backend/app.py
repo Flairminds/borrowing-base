@@ -104,11 +104,6 @@ app.register_blueprint(wia_blueprint, url_prefix="/api/wia")
 app.register_blueprint(di_blueprint, url_prefix="/api/data_ingestion")
 
 
-@app.route("/", methods=["GET"])
-def index():
-    return render_template("index.html")
-
-
 @app.route("/lib/<path:filename>")
 def base_static(filename):
     return send_from_directory(app.root_path + "/lib/", filename)
@@ -314,6 +309,14 @@ def save_what_if_analysis():
 # @app.route('/api/apply_concentration_test', methods=['POST'])
 # def apply_concentration_test():
 #     return concentration_test_application.apply_concentration_test_function()
+
+@app.route("/", methods=["GET"])
+def index():
+    return render_template("index.html")
+
+@app.route("/<path:path>", methods=["GET"])
+def catch_all(path):
+    return render_template("index.html")
 
 if __name__ == "__main__":
     with app.app_context():
