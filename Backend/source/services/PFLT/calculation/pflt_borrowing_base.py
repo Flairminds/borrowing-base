@@ -191,6 +191,8 @@ class PFLTBorrowingBase(PFLTCalculationInitiator):
         )
 
         security_df = security_df.sort_values("Borrowing Base", ascending=False)
+        total_bb = security_df["Borrowing Base"].sum()
+        percent_bb_sum = security_df["% Borrowing Base"].sum()*100
         security_df = security_df.rename(
             columns={"Loan Type (Term / Delayed Draw / Revolver)": "Loan Type"}
         )
@@ -211,6 +213,13 @@ class PFLTBorrowingBase(PFLTCalculationInitiator):
                 for cell in security_df[column]
             ]
             for column in security_df.columns.tolist()
+        }
+        security_data["Total"] = {
+            "data": {
+                "Loan Type": "Total",
+                "% Borrowing Base": str(percent_bb_sum) +"%",
+                "Borrowing Base": f"${numerize.numerize(total_bb)}",
+            }
         }
         security_data["columns"] = [{"data": security_df.columns.tolist()}]
         return security_data

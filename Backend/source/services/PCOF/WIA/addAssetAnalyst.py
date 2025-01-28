@@ -47,9 +47,7 @@ def add_asset(base_data_file, selected_assets):
         "included_assets"
     ]
 
-    df_PL_BB_Build = df_PL_BB_Build[
-        df_PL_BB_Build["Investment Name"].isin(included_assets)
-    ]
+    df_PL_BB_Build = df_PL_BB_Build[df_PL_BB_Build["Investment Name"].isin(included_assets)].reset_index(drop=True)
     initial_pl_bb_build = df_PL_BB_Build.copy(deep=True)
 
     uploaded_df = pd.DataFrame(selected_assets)
