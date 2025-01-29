@@ -53,7 +53,7 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	sum(ch."Principal Balance (Deal Currency)"::float) as outstanding_principal,
 	case when pbb."Defaulted Collateral Loan at Acquisition" = 0 then 'No' when pbb."Defaulted Collateral Loan at Acquisition" = 1 then 'Yes' else null end as defaulted_collateral_loan,
 	case when pbb."Credit Improved Loan" = 0 then 'No' when pbb."Credit Improved Loan" = 1 then 'Yes' else null end as credit_improved_loan,
-	case when usbh."Original Purchase Price" is not null then usbh."Original Purchase Price"::float / 100 else null end as purchase_price,
+	case when avg(usbh."Original Purchase Price"::float) is not null then avg(usbh."Original Purchase Price"::float) else null end as purchase_price,
 	pbb."Stretch Senior (Y/N)" as stretch_senior_loan,
 	ch."Issue Name" as loan_type,
 	ch."Deal Issue (Derived) Rating - Moody's" as current_moodys_rating,
@@ -114,7 +114,7 @@ left join pflt_borrower_stats bs on bs."Company" = ss."Family Name"
 where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id) and
 ((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND pbb.source_file_id= :master_comp_file_id AND bs.source_file_id= :master_comp_file_id) or sm.id is null)
     group by usbh."Issuer/Borrower Name", usbh."Security/Facility Name", pbb."Defaulted Collateral Loan at Acquisition",
-	ss."Security", pbb."Credit Improved Loan", usbh."Original Purchase Price", pbb."Stretch Senior (Y/N)", ch."Issue Name",
+	ss."Security", pbb."Credit Improved Loan", pbb."Stretch Senior (Y/N)", ch."Issue Name",
 	ch."Deal Issue (Derived) Rating - Moody's", ch."Payment Period", ch."Deal Issue (Derived) Rating - S&P", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio",
 	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization", pbb."Senior Debt", pbb."LTM EBITDA", pbb."Total Debt",
 	pbb."Closing LTM EBITDA", pbb."Current LTM EBITDA", ch."As Of Date", usbh."Maturity Date", ss."[SI] Type of Rate",
