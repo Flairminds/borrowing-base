@@ -1,6 +1,6 @@
 import pandas as pd
 from sqlalchemy import text
-from models import db, PfltBaseData, PfltBaseDataMapping
+from models import db, PfltBaseData, BaseDataMapping
 
 
 def rename_duplicate_columns(df):
