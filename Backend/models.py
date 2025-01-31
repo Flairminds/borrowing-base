@@ -299,7 +299,7 @@ class PfltSecurityMapping(db.Model):
     modified_by = db.Column(db.Integer, nullable=True)
     modified_at = db.Column(db.DateTime(timezone=True))
 
-class PfltBaseDataMapping(db.Model):
+class BaseDataMapping(db.Model):
     bdm_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     fund_type = db.Column(db.String(15), nullable=False)
     company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=False)
@@ -328,7 +328,7 @@ class PfltBaseDataMapping(db.Model):
 class BaseDataMappingColumnInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     fund_type = db.Column(db.String(15), nullable=False)
-    bdm_id = db.Column(db.Integer, db.ForeignKey("pflt_base_data_mapping.bdm_id"), nullable=False)
+    bdm_id = db.Column(db.Integer, db.ForeignKey("base_data_mapping.bdm_id"), nullable=False)
     sequence = db.Column(db.Integer, nullable=False)
     modified_at = db.Column(db.DateTime(timezone=True))
     modified_by = db.Column(db.Integer, nullable=True)
