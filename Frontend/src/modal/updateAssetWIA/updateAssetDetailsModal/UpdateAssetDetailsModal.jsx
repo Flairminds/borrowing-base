@@ -49,17 +49,21 @@ export const UpdateAssetDetailsModal = ({
     const [loading, setLoading] = useState(false)
     const [addAssetDetailsModalOpen , setAddAssetDetailsModalOpen] = useState(false);
     const [showModification, setShowModification] = useState(false)
+    const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 
     useEffect(() => {
         if (fundType) {
           setSelectedSheetNumber(updateAssetModalData(fundType));
+        
         }
+      
       }, [fundType]);
 
     const previewSheets = updateAssetTableData?.table_data?.sheets
 
     const handleCancel = () => {
         setIsupdateAssetModalOpen(false);
+        setIsButtonDisabled(true);
         setSelectedOption(0);
         setAppliedChanges([]);
         setLoading(false);
@@ -76,6 +80,7 @@ export const UpdateAssetDetailsModal = ({
     };
 
     const handleCommitChange = (e, investment_name, colKey, colName, currValue) => {
+        setIsButtonDisabled(false);
         e.stopPropagation();
         updateDataAfterChange(updateAssetTableData, investment_name, colKey, selectedSheetNumber, updateAssetInputText);
         const currentChanges = {
@@ -153,6 +158,8 @@ export const UpdateAssetDetailsModal = ({
     };
 
     const updateAssetApply = async() => {
+
+        console.log(updateAssetTableData);
         setLoading(true);
         let currentAnalysisId = undefined;
         let totalChangesOnSheet = {
@@ -245,11 +252,13 @@ export const UpdateAssetDetailsModal = ({
             });
             setAddAssetDetailsModalOpen(false);
         }
+        setIsButtonDisabled(false);
     };
 
     const MoreOptionContent = ({rowIndex}) => (
+        
         <div className={Styles.optionsContainer}>
-            <div onClick={() => updateAddDeleteData(rowIndex, 'addAbove')} className={Styles.option}>
+            <div onClick={() => updateAddDeleteData(rowIndex, 'addAbove') } className={Styles.option}>
                 <img className={Styles.optionIcon} src={AddIcon} alt="Add Icon" />
                 Insert 1 row above
             </div>
@@ -262,6 +271,7 @@ export const UpdateAssetDetailsModal = ({
                 Delete
             </div>
         </div>
+        
     );
 
     const handleShowModificationChange = (checked) => {
@@ -281,7 +291,7 @@ export const UpdateAssetDetailsModal = ({
                 <button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
                     Cancel
                 </button>
-                <Button className={ButtonStyles.filledBtn} loading={loading} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={updateAssetApply}>
+                <Button className={isButtonDisabled ? ButtonStyles.DisbaledBtn : ButtonStyles.filledBtn} loading={loading} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={updateAssetApply} disabled={isButtonDisabled} >
                     Apply
                 </Button>
                 </div>
