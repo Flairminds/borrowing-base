@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { CustomButton } from '../../components/custombutton/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
-import { AddOtherInfo } from '../../modal/addOtherInfo/AddOtherInfo';
+import { AddAdditionalInformationModal } from '../../modal/addAdditionalInformationModal/AddAdditionalInformationModal';
 import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api';
 import { editBaseData, getBaseFilePreviewData } from '../../services/dataIngestionApi';
 import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
@@ -102,9 +102,9 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 					reportDate: result?.report_date,
 					baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
 					cardData: result?.card_data && result.card_data[0],
-				});otherInfo: result.other_info
-				setFilteredData(result?.base_data_table?.data);
-				
+					otherInfo: result.other_info
+				});
+			setFilteredData(result?.base_data_table?.data);
 		} catch (err) {
 			showToast("error", err.response.data.message);
 		}
@@ -244,7 +244,14 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 					/>
 				</div>
 			</div>
-			<AddOtherInfo isOpen={isAddFieldModalOpen} onClose={() => setIsAddFieldModalOpen(false)} dataId={baseFilePreviewData.infoId} data={baseFilePreviewData.otherInfo} />
+			<AddAdditionalInformationModal
+				isAddFieldModalOpen={isAddFieldModalOpen}
+				setIsAddFieldModalOpen={setIsAddFieldModalOpen}
+				onClose={() => setIsAddFieldModalOpen(false)}
+				dataId={baseFilePreviewData.infoId}
+				data={baseFilePreviewData.otherInfo}
+				handleBaseDataPreview={handleBaseDataPreview}
+			/>
 		</div>
 		// <div>
 		//     {Object.keys(mapping)?.map(m => {

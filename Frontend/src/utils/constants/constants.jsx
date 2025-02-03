@@ -46,3 +46,46 @@ export const sidebarItemsArray = [
 	{ imgSrc: GroupUserIcon, imgAlt: "GroupUser Icon" },
 	{ imgSrc: dollarMoneyCurrencyIcon, imgAlt: "dollarMoneyCurrency Icon" }
 ];
+
+export const additionalDetailsFormStructure = [
+	{
+		name: "currency",
+		label: "Currency",
+		type: "text"
+	},
+	{
+		name: "borrowing",
+		label: "Borrowing",
+		type: "text"
+	},
+	{
+		name: "exchange_rates",
+		label: "Exchange Rate",
+		type: "text"
+	},
+	{
+		name: "current_credit_facility_balance",
+		label: "Credit Facility Balance",
+		type: "text"
+	},
+	{
+		name: "cash_current_and_preborrowing",
+		label: "Cash Current And Preborrowing",
+		type: "text"
+	},
+	{
+		name: "additional_expenses_1",
+		label: "Additional Expenses 1",
+		type: "text"
+	},
+	{
+		name: "additional_expenses_2",
+		label: "Additional Expenses 2",
+		type: "text"
+	},
+	{
+		name: "additional_expenses_3",
+		label: "Additional Expenses 3",
+		type: "text"
+	}
+];

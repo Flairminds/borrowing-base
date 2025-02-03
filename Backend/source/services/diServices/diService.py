@@ -1105,7 +1105,7 @@ def get_pflt_base_data_other_info(extraction_info_id):
                 "extraction_info_id": other_info.extraction_info_id,
                 "determination_date": other_info.determination_date,
                 "minimum_equity_amount_floor": other_info.minimum_equity_amount_floor,
-                "other_info_list": other_info.other_info_list
+                "other_data": other_info.other_info_list
             }
         return ServiceResponse.success(data = res)
     except Exception as e:
