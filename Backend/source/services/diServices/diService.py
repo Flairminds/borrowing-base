@@ -20,7 +20,7 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PfltBaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, PfltBaseDataOtherInfo
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PfltBaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
@@ -1055,15 +1055,15 @@ def update_archive(list_of_ids, to_archive):
         Log.func_error(e=e)
         return ServiceResponse.error(message="Could not update the files.", status_code = 500)
 
-def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor, other_data):
+def pflt_add_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor, fund_type, other_data):
     try:
-        other_info_list = []
+        table_list = []
 
-        PfltBaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).delete()
+        BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).delete()
         db.session.commit()
     
         for value in other_data:
-            other_info_list.append ({
+            table_list.append ({
                 "currency": value.get("currency"),
                 "exchange_rates": value.get("exchange_rates"),
                 "cash_current_and_preborrowing": value.get("cash_current_and_preborrowing"),
@@ -1074,13 +1074,55 @@ def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimu
                 "current_credit_facility_balance": value.get("current_credit_facility_balance")
             })
 
-        pflt_base_data_other_info =  PfltBaseDataOtherInfo(
+        base_data_other_info =  BaseDataOtherInfo(
             extraction_info_id = extraction_info_id,
             determination_date = determination_date,
-            minimum_equity_amount_floor = minimum_equity_amount_floor,
-            other_info_list = other_info_list
+            fund_type = fund_type,
+            other_info_list = {
+                "minimum_equity_amount_floor": minimum_equity_amount_floor,
+                "table_list": table_list
+            }
         )
-        db.session.add(pflt_base_data_other_info)
+
+        db.session.add(base_data_other_info)
+        db.session.commit()
+
+        return ServiceResponse.success(message="Data added sucessfully")
+        
+    except Exception as e:
+        Log.func_error(e)
+        return ServiceResponse.error(message="Failed to add")
+def pcof_add_base_data_other_info(extraction_info_id, determination_date, revolving_closing_date, fund_type, other_data):
+    try:
+        table_list = []
+
+        BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).delete()
+        db.session.commit()
+    
+        for value in other_data:
+            table_list.append ({
+                "commitment_period": value.get("commitment_period"),
+                "facility_size": value.get("facility_size"),
+                "loans_usd": value.get("loans_usd"),
+                "loans_cad": value.get("loans_cad"),
+                "principal_obligations": value.get("principal_obligations"),
+                "currency": value.get("currency"),
+                "amount": value.get("amount"),
+                "spot_rate": value.get("spot_rate"),
+                "dollar_equivalent": value.get("dollar_equivalent")
+            })
+
+        base_data_other_info =  BaseDataOtherInfo(
+            extraction_info_id = extraction_info_id,
+            determination_date = determination_date,
+            fund_type = fund_type,
+            other_info_list = {
+                "revolving_closing_date": revolving_closing_date,
+                "table_list": table_list
+            }
+        )
+
+        db.session.add(base_data_other_info)
         db.session.commit()
 
         return ServiceResponse.success(message="Data added sucessfully")
@@ -1089,24 +1131,29 @@ def add_pflt_base_data_other_info(extraction_info_id, determination_date, minimu
         Log.func_error(e)
         return ServiceResponse.error(message="Failed to add")
 
-def get_pflt_base_data_other_info(extraction_info_id):
+def get_base_data_other_info(extraction_info_id, fund_type):
     try:
         other_info = db.session.query(
-            PfltBaseDataOtherInfo.id,
-            PfltBaseDataOtherInfo.extraction_info_id,
-            PfltBaseDataOtherInfo.determination_date,
-            PfltBaseDataOtherInfo.minimum_equity_amount_floor,
-            PfltBaseDataOtherInfo.other_info_list
-        ).filter(PfltBaseDataOtherInfo.extraction_info_id == extraction_info_id).first()
+            BaseDataOtherInfo.id,
+            BaseDataOtherInfo.extraction_info_id,
+            BaseDataOtherInfo.determination_date,
+            BaseDataOtherInfo.other_info_list
+        ).filter(BaseDataOtherInfo.extraction_info_id == extraction_info_id).first()
         res = {}
         if other_info:
-            res = {
+           common_fields = {
                 "id": other_info.id,
                 "extraction_info_id": other_info.extraction_info_id,
                 "determination_date": other_info.determination_date,
-                "minimum_equity_amount_floor": other_info.minimum_equity_amount_floor,
-                "other_data": other_info.other_info_list
+                "other_data": other_info.other_info_list["table_list"]
             }
+
+        if fund_type == "PFLT":
+            res = {**common_fields, "minimum_equity_amount_floor": other_info.other_info_list["minimum_equity_amount_floor"]}
+
+        elif fund_type == "PCOF":
+            res = {**common_fields, "revolving_closing_date": other_info.other_info_list["revolving_closing_date "]}
+
         return ServiceResponse.success(data = res)
     except Exception as e:
         Log.func_error(e)
