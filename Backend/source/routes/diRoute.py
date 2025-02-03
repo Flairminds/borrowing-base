@@ -72,6 +72,6 @@ def add_to_archived_files():
 def get_archived_files():
     return diController.get_archived_files()
 
-@di_blueprint.route('/pflt_base_data_other_info', methods=["POST"])
-def pflt_base_data_other_info():
-    return diController.pflt_base_data_other_info()
+@di_blueprint.route('/base_data_other_info', methods=["POST"])
+def base_data_other_info():
+    return diController.base_data_other_info()

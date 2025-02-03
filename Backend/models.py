@@ -404,11 +404,11 @@ class PfltBaseData(db.Model):
     satisfies_all_other_eligibility_criteria = db.Column(db.String)
     excess_concentration_amount = db.Column(db.String)
 
-class PfltBaseDataOtherInfo(db.Model):
+class BaseDataOtherInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     extraction_info_id = db.Column(db.Integer, db.ForeignKey("extracted_base_data_info.id"), nullable=True)
     determination_date = db.Column(db.String(255))
-    minimum_equity_amount_floor = db.Column(db.String(255))
+    fund_type = db.Column(db.String(255))
     other_info_list = db.Column(db.JSON, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_by = db.Column(db.Integer, nullable=True)
