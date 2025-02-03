@@ -122,7 +122,7 @@ export const getLatestPrevValue = (PrevChanges, currdata, rowName, columnName) =
 			const updatedNumber = parseFloat(updatedValue);
 
 			if (updatedNumber !== 0) {
-				const percentageChange = ((updatedNumber - prevNumber) / updatedNumber) * 100;
+				const percentageChange = ((updatedNumber - prevNumber) / prevNumber) * 100;
 				return `${latestEntry.prev_value} | ${percentageChange.toFixed(2)}%`;
 			}
 		}
