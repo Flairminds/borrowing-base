@@ -23,6 +23,7 @@ from source.utility.Log import Log
 from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, PfltBaseDataOtherInfo
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
+from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
 from source.services.diServices import ColumnSheetMap
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 
@@ -263,10 +264,14 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             # if new_source_file:
             if not cash_file_details == None or master_comp_file_details == None:
                 raise Exception('Proper files not selected.')
-            # base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
             if fund_name == "PCOF":
-                extracted_base_data_info.status = "Partially completed"
+                service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details)
+                if service_response["success"]:   
+                    extracted_base_data_info.status = "completed"
+                else:
+                    raise Exception(service_response.get("message"))
             else:
+                base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
                 extracted_base_data_info.status = "completed"
             # else:
                 # extracted_base_data_info.status = "repeated"
