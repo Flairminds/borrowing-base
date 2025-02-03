@@ -8,6 +8,7 @@ import { updateSeletedColumns } from '../../../services/dataIngestionApi';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePreviewReorder.jsx/BaseFilePreviewReorder';
 import tableStyles from './DynamicTableComponents.module.css';
+import { DynamicInputComponent } from '../dynamicInputsComponent/DynamicInputComponent';
 
 
 export const DynamicTableComponents = (
@@ -216,13 +217,7 @@ export const DynamicTableComponents = (
                                         {enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
                                             (
                                                 <div className={tableStyles.editIconsContainer}>
-                                                    <input
-                                                        type="text"
-                                                        value={inputValue}
-                                                        onChange={handleInputChange}
-                                                        className={tableStyles.updateInput}
-                                                        autoFocus
-                                                    />
+                                                    <DynamicInputComponent inputValue={inputValue} onInputChange={handleInputChange} autoFocusInput={true} />
                                                     <img
                                                         src={RightIcon}
                                                         alt="Save"
