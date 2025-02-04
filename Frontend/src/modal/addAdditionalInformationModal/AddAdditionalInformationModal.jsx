@@ -1,13 +1,13 @@
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import { Form, Input, DatePicker, Button } from "antd";
 import Modal from "antd/es/modal/Modal";
+import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { CustomButton } from "../../components/custombutton/CustomButton";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
+import { PFLTData, PCOFData } from "../../utils/constants/constants";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./AddAdditionalInformationModal.module.css";
-import { additionalDetailsFormStructure } from "../../utils/constants/constants";
-import dayjs from "dayjs";
 
 export const AddAdditionalInformationModal = (
 	{
@@ -16,25 +16,37 @@ export const AddAdditionalInformationModal = (
 		onClose,
 		dataId,
 		data = {},
-		handleBaseDataPreview }
+		handleBaseDataPreview,
+		previewFundType
+	}
 ) => {
 	const [form] = Form.useForm();
 	const [initalFormData, setInitalFormData] = useState(null);
 
-	const emptyFormStructure = {
+	const pfltEmptyFormStructure = {
 		"determination_date": "",
 		"minimum_equity_amount_floor": "",
 		"other_data": [{}]
 	};
 
+	const pcofEmptyFormStructure = {
+		"determination_date": "",
+		"revolving_closing_date": "",
+		"other_data": [{}]
+	};
+
 	useEffect(() => {
-		console.info(data, 'ddd');
 		const formData = {
 			...data,
 			"determination_date": data.determination_date && dayjs(data.determination_date),
-			"minimum_equity_amount_floor": data.minimum_equity_amount_floor && data.minimum_equity_amount_floor,
 			"other_data": data.other_data ? data.other_data : [{}]
 		};
+
+		if (previewFundType == "PCOF") {
+			formData["revolving_closing_date"] = data.revolving_closing_date && dayjs(data.revolving_closing_date);
+		} else {
+			formData["minimum_equity_amount_floor"] = data.minimum_equity_amount_floor && data.minimum_equity_amount_floor;
+		}
 		console.info(formData, 'form');
 		setInitalFormData(formData);
 	}, [data]);
@@ -67,10 +79,21 @@ export const AddAdditionalInformationModal = (
 				"extraction_info_id": extractionInfoId,
 				"determination_date": values.determination_date.format("YYYY-MM-DD"),
 				"minimum_equity_amount_floor": values.minimum_equity_amount_floor,
-				"other_data": values.other_data
+				"other_data": values.other_data,
+				"fund_type": previewFundType
 			};
 
-			console.info(transformedData, '-test 123', values, 'vals');
+			if (previewFundType == "PCOF") {
+				const updatedlist = values.other_data.map((el => {
+					return {
+						...el,
+						"dollar_equivalent": el.amount * el.spot_rate
+					};
+				}));
+
+				transformedData["other_data"] = updatedlist;
+				transformedData["revolving_closing_date"] = values.revolving_closing_date.format("YYYY-MM-DD");
+			}
 
 			const response = await submitOtherInfo(transformedData);
 			await handleBaseDataPreview();
@@ -86,59 +109,80 @@ export const AddAdditionalInformationModal = (
 		}
 	};
 
+	const selectedData = previewFundType === "PCOF" ? PCOFData : PFLTData;
+	console.info(selectedData, 'sel');
+	console.info(initalFormData, 'initalFormData');
+
+	const intialFormData = selectedData == "PCOF" ? pcofEmptyFormStructure : pfltEmptyFormStructure;
+
 	return (
 		<Modal open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"}>
-			<Form form={form} layout="vertical" onFinish={handleSubmit} autoComplete="off" initialValues={initalFormData ? initalFormData : emptyFormStructure}>
-				<Form.Item
-					label="Determination Date"
-					name="determination_date"
-					rules={[{ required: true, message: "Please select a date!" }]}
-					style={{ display: "inline-block", width: "20%" }}
-				>
-					<DatePicker style={{ width: "100%" }}/>
-				</Form.Item>
-
-				<Form.Item
-					label="Minimum Equity Amount Floor"
-					name="minimum_equity_amount_floor"
-					rules={[{ required: true, message: "Please enter the amount!" }]}
-					style={{ display: "inline-block", width: "20%", marginLeft: "4%" }}
-				>
-					<Input placeholder="Enter amount" />
-				</Form.Item>
+			<Form
+				form={form}
+				layout="vertical"
+				onFinish={handleSubmit}
+				autoComplete="off"
+				initialValues={initalFormData || intialFormData}
+				// initialValues={initalFormData || selectedData == "PCOF" ? pcofEmptyFormStructure : pfltEmptyFormStructure}
+			>
+				{selectedData.Header.map((header) => (
+					<Form.Item
+						key={header.name}
+						label={header.label}
+						name={header.name}
+						rules={[{ required: true, message: `Please enter ${header.label.toLowerCase()}!` }]}
+						style={{ display: "inline-block", width: "20%", marginRight: "4%" }}
+					>
+						{header.type === "datePicker" ? (
+							<DatePicker style={{ width: "100%" }} />
+						) : (
+							<Input placeholder={`Enter ${header.label}`} />
+						)}
+					</Form.Item>
+				))}
 
 				<Form.List name="other_data">
-					{(fields, { add, remove }, index) => (
+					{(fields, { add, remove }) => (
 						<>
 							<div className={styles.rowHeader}>
-								{additionalDetailsFormStructure.map((inputfield) => (
-									<div key={inputfield.label} className={styles.column}>{inputfield.label}</div>
+								{selectedData.Column.map((inputField) => (
+									<div key={inputField.label} className={styles.column}>
+										{inputField.label}
+									</div>
 								))}
 							</div>
 
-							{fields.map((field, {...resetField}, index) => (
-								<div key={index} className={styles.row}>
-
-									{additionalDetailsFormStructure.map((inputfield) => (
+							{fields.map((field, index) => (
+								<div key={field.key} className={styles.row}>
+									{selectedData.Column.map((inputField) => (
 										<Form.Item
-											key={inputfield.name}
-											// rules={[{ required: true }]}
-											name={[field.name, inputfield.name]}
+											key={inputField.name}
+											name={[field.name, inputField.name]}
 											noStyle
 										>
-											<Input
-												defaultValue={inputfield?.value}
-												placeholder={inputfield.label}
-												style={{
-													width: "100%",
-													padding: '4px',
-													borderRadius: "8px",
-													border: "1px solid rgba(201, 196, 196, 0.6)"
-												}}
-											/>
+											{inputField.type === "datePicker" ? (
+												<DatePicker
+													placeholder={inputField.label}
+													style={{
+														width: "100%",
+														padding: "4px",
+														borderRadius: "8px",
+														border: "1px solid rgba(201, 196, 196, 0.6)",
+													}}
+												/>
+											) : (
+												<Input
+													placeholder={inputField.label}
+													style={{
+														width: "100%",
+														padding: "4px",
+														borderRadius: "8px",
+														border: "1px solid rgba(201, 196, 196, 0.6)",
+													}}
+												/>
+											)}
 										</Form.Item>
 									))}
-
 								</div>
 							))}
 
@@ -150,13 +194,11 @@ export const AddAdditionalInformationModal = (
 						</>
 					)}
 				</Form.List>
-
 			</Form>
 			<div className={styles.buttonContainer}>
 				<CustomButton isFilled={true} text="Save" onClick={() => form.submit()} />
 				<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
 			</div>
-
 		</Modal>
 	);
 };

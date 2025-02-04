@@ -32,60 +32,137 @@ export const updateAssetModalData = (fundType) => {
 };
 
 export const fundOptionsArray = [
-	{ value: 0, label: 'Select Fund'},
-	{ value: 1, label: 'PCOF'},
+	{ value: 0, label: 'Select Fund' },
+	{ value: 1, label: 'PCOF' },
 	{ value: 2, label: 'PFLT' }
 ];
 
 export const sidebarItemsArray = [
 	{ imgSrc: HomeIcon, imgAlt: "Home Icon", name: 'Home', route: '/' },
-	{ imgSrc: ThreeBarIcon, imgAlt: "ThreeBar Icon", name: 'Concentration Test Setup', route: '/fund-setup'},
+	{ imgSrc: ThreeBarIcon, imgAlt: "ThreeBar Icon", name: 'Concentration Test Setup', route: '/fund-setup' },
 	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: '/base-data-list' },
-	{ imgSrc: DoneCheckIcon, imgAlt: "DoneCheck Icon"},
+	{ imgSrc: DoneCheckIcon, imgAlt: "DoneCheck Icon" },
 	{ imgSrc: suitcasePortfolioIcon, imgAlt: "suitcasePortfolio Icon" },
 	{ imgSrc: GroupUserIcon, imgAlt: "GroupUser Icon" },
 	{ imgSrc: dollarMoneyCurrencyIcon, imgAlt: "dollarMoneyCurrency Icon" }
 ];
 
-export const additionalDetailsFormStructure = [
-	{
-		name: "currency",
-		label: "Currency",
-		type: "text"
-	},
-	{
-		name: "borrowing",
-		label: "Borrowing",
-		type: "text"
-	},
-	{
-		name: "exchange_rates",
-		label: "Exchange Rate",
-		type: "text"
-	},
-	{
-		name: "current_credit_facility_balance",
-		label: "Credit Facility Balance",
-		type: "text"
-	},
-	{
-		name: "cash_current_and_preborrowing",
-		label: "Cash Current And Preborrowing",
-		type: "text"
-	},
-	{
-		name: "additional_expenses_1",
-		label: "Additional Expenses 1",
-		type: "text"
-	},
-	{
-		name: "additional_expenses_2",
-		label: "Additional Expenses 2",
-		type: "text"
-	},
-	{
-		name: "additional_expenses_3",
-		label: "Additional Expenses 3",
-		type: "text"
-	}
-];
+// AddInfo Functionality
+export const PFLTData = {
+	Header: [
+		{
+			name: "determination_date",
+			label: "Determination Date",
+			type: "datePicker"
+		},
+		{
+			name: "minimum_equity_amount_floor",
+			label: "Minimum Equity Amount Floor",
+			type: "text"
+		}
+	],
+	Column: [
+		{
+			name: "currency",
+			label: "Currency",
+			type: "text"
+		},
+		{
+			name: "borrowing",
+			label: "Borrowing",
+			type: "text"
+		},
+		{
+			name: "exchange_rates",
+			label: "Exchange Rate",
+			type: "text"
+		},
+		{
+			name: "current_credit_facility_balance",
+			label: "Credit Facility Balance",
+			type: "text"
+		},
+		{
+			name: "cash_current_and_preborrowing",
+			label: "Cash Current And Preborrowing",
+			type: "text"
+		},
+		{
+			name: "additional_expenses_1",
+			label: "Additional Expenses 1",
+			type: "text"
+		},
+		{
+			name: "additional_expenses_2",
+			label: "Additional Expenses 2",
+			type: "text"
+		},
+		{
+			name: "additional_expenses_3",
+			label: "Additional Expenses 3",
+			type: "text"
+		}
+	]
+};
+
+export const PCOFData = {
+	Header: [
+		{
+			name: "determination_date",
+			label: "Determination Date",
+			type: "datePicker"
+		},
+		{
+			name: "revolving_closing_date",
+			label: "Revolving Closing Date",
+			type: "datePicker"
+		}
+	],
+	Column: [
+		{
+			name: "commitment_period",
+			label: "Commitment Period",
+			type: "text"
+		},
+		{
+			name: "facility_size",
+			label: "Facility Size",
+			type: "text"
+		},
+		{
+			name: "loans_usd",
+			label: "Loans (USD)",
+			type: "text"
+		},
+		{
+			name: "loans_cad",
+			label: "Loans (CAD)",
+			type: "text"
+		},
+		{
+			name: "principal_obligations",
+			label: "Principal Obligations",
+			type: "text"
+		},
+		{
+			name: "currency",
+			label: "Currency",
+			type: "text"
+		},
+		{
+			name: "amount",
+			label: "Amount",
+			type: "text"
+		},
+		{
+			name: "spot_rate",
+			label: "Spot Rate",
+			type: "text"
+		}
+		// {
+		// 	name: "dollar_equivalent",
+		// 	label: "Dollar Equivalent",
+		// 	type: "text"
+		// }
+	]
+};
