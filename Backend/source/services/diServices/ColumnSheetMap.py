@@ -46,17 +46,12 @@ sheet_column_mapper = {
 }
 
 FUND_SHEETS = {
-    'PFLT': {
-        'cashfile': ["US Bank Holdings", "Client Holdings"],
-        'master_comp': ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"]
-    },
-    'PCOF': {
-        'master_comp': ["Borrower Stats", "Securities Stats", "PCOF III Borrrowing Base", "PCOF IV"]
-    }
+    'cashfile': ["US Bank Holdings", "Client Holdings"],
+    'master_comp': ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV"]
 }
 
-def get_fund_file_sheets(fund, file_type):
-    return FUND_SHEETS.get(fund).get(file_type)
+def get_file_sheets(fund, file_type):
+    return FUND_SHEETS.get(file_type)
 
 class ExtractionStatusMaster(Enum):
     COMPLETED = 'completed'

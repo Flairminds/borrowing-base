@@ -238,7 +238,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                         "cash": {
                             "file": file,
                             "source_file_obj": file_details,
-                            "sheets": ColumnSheetMap.get_fund_file_sheets(fund=fund_type, file_type=file_type), 
+                            "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type), 
                             "is_extracted": file_details.is_extracted
                         }
                     }
@@ -248,7 +248,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                         "master_comp": {
                             "file": file,
                             "source_file_obj": file_details,
-                            "sheets": ColumnSheetMap.get_fund_file_sheets(fund=fund_type, file_type=file_type),
+                            "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
                             "is_extracted": file_details.is_extracted
                         }
                     }
@@ -1089,7 +1089,7 @@ def get_base_data_other_info(extraction_info_id, fund_type):
             res = {**common_fields, "minimum_equity_amount_floor": other_info.other_info_list["minimum_equity_amount_floor"]}
 
         elif fund_type == "PCOF":
-            res = {**common_fields, "revolving_closing_date": other_info.other_info_list["revolving_closing_date "]}
+            res = {**common_fields, "revolving_closing_date": other_info.other_info_list["revolving_closing_date"]}
 
         return ServiceResponse.success(data = res)
     except Exception as e:
