@@ -1,4 +1,4 @@
-CREATE TABLE public.pflt_borrower_stats (
+CREATE TABLE public.sf_sheet_borrower_stats (
 	"Company" text NULL,
 	"Newly Added Deal?" int8 NULL,
 	"[F] PNNT" int8 NULL,
@@ -89,7 +89,7 @@ CREATE TABLE public.pflt_borrower_stats (
 	source_file_id int8 NULL
 );
 
-CREATE TABLE public.pflt_client_holdings (
+CREATE TABLE public.sf_sheet_client_holdings (
 	"Asset ID" text NULL,
 	"Facility ID" int8 NULL,
 	"LoanX ID" text NULL,
@@ -127,7 +127,7 @@ CREATE TABLE public.pflt_client_holdings (
 	source_file_id int8 NULL
 );
 
-CREATE TABLE public.pflt_pflt_borrowing_base (
+CREATE TABLE public.sf_sheet_pflt_borrowing_base (
 	nan text NULL,
 	"Security" text NULL,
 	"Issuer" text NULL,
@@ -272,7 +272,7 @@ CREATE TABLE public.pflt_pflt_borrowing_base (
 	source_file_id int8 NULL
 );
 
-CREATE TABLE public.pflt_securities_stats (
+CREATE TABLE public.sf_sheet_securities_stats (
 	"Security" text NULL,
 	"Family Name" text NULL,
 	"Sponsor" text NULL,
@@ -375,7 +375,7 @@ CREATE TABLE public.pflt_securities_stats (
 	source_file_id int8 NULL
 );
 
-CREATE TABLE public.pflt_us_bank_holdings (
+CREATE TABLE public.sf_sheet_us_bank_holdings (
 	"CUSIP" text NULL,
 	"Security ID" text NULL,
 	"LoanX ID" text NULL,

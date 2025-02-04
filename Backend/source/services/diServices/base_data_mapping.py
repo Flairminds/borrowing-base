@@ -104,13 +104,13 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	case when pbb."Interest Only Security" = 0 then 'No' when pbb."Interest Only Security" = 1 then 'Yes' else null end as interest_only_security,
 	case when pbb."Satisfies Other Criteria(1)" = 0 then 'No' when pbb."Satisfies Other Criteria(1)" = 1 then 'Yes' else null end as satisfies_all_other_eligibility_criteria,
 	null as excess_concentration_amount
-from pflt_us_bank_holdings usbh
-left join pflt_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
+from sf_sheet_us_bank_holdings usbh
+left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
 	and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
 left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
-left join pflt_securities_stats ss on ss."Security" = sm.master_comp_security_name
-left join pflt_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
-left join pflt_borrower_stats bs on bs."Company" = ss."Family Name"
+left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
+left join sf_sheet_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
+left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
 where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id) and
 ((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND pbb.source_file_id= :master_comp_file_id AND bs.source_file_id= :master_comp_file_id) or sm.id is null)
     group by usbh."Issuer/Borrower Name", usbh."Security/Facility Name", pbb."Defaulted Collateral Loan at Acquisition",

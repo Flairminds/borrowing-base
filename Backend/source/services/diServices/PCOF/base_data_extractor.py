@@ -23,9 +23,9 @@ def map_and_store_base_data(engine, extracted_base_data_info, source_file_detail
                 ppibb."Affiliate Investment" as "classifications_affiliate_investment",
                 ppibb."Defaulted / Restructured" as "classifications_defaulted_restructured",
                 ppibb."TotalCapitalization" as "leverage_total_capitalization"
-            from pcof_pcof_iv ppi
-            left join pcof_pcof_iii_borrrowing_base ppibb on ppibb."Family Name" = ppi."MC Name" 
-            where ppi.source_file_id = :source_file_details_id --and ppibb.source_file_id  = 112
+            from sf_sheet_pcof_iv ppi
+            left join sf_sheet_pcof_iii_borrrowing_base ppibb on ppibb."Family Name" = ppi."MC Name" 
+            where ppi.source_file_id = :source_file_details_id 
             order by ppi."Asset"'''), {'source_file_details_id': source_file_details.id}))
 
         if pcof_base_data.empty:

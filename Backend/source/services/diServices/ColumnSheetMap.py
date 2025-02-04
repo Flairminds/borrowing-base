@@ -1,3 +1,5 @@
+from enum import Enum
+
 borrower_stats = {
     "Current Metrics": (0, 9, 52),
     "At Close Metrics": (0, 52, 79),
@@ -55,3 +57,9 @@ FUND_SHEETS = {
 
 def get_fund_file_sheets(fund, file_type):
     return FUND_SHEETS.get(fund).get(file_type)
+
+class ExtractionStatusMaster(Enum):
+    COMPLETED = 'completed'
+    FAILED = 'failed'
+    PARTIALLY_COMPLETED = 'Partially Completed'
+    IN_PROGRESS = 'In progress'

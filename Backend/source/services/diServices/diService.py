@@ -20,11 +20,12 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
 from source.services.diServices import ColumnSheetMap
+from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 
 pfltDashboardService = PfltDashboardService()
@@ -267,12 +268,12 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             if fund_name == "PCOF":
                 service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details)
                 if service_response["success"]:   
-                    extracted_base_data_info.status = "completed"
+                    extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
                 else:
                     raise Exception(service_response.get("message"))
             else:
                 base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
-                extracted_base_data_info.status = "completed"
+                extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
             # else:
                 # extracted_base_data_info.status = "repeated"
             
@@ -299,7 +300,7 @@ def extract_base_data(file_ids, fund_type):
         ini_file = SourceFiles.query.filter_by(id = file_ids[0]).first()
         report_date = ini_file.report_date
         company_id = ini_file.company_id
-        extracted_base_data_info = ExtractedBaseDataInfo(report_date=report_date, fund_type=fund_type, status="In progress", company_id = 1, files = file_ids)
+        extracted_base_data_info = ExtractedBaseDataInfo(report_date=report_date, fund_type=fund_type, status=ExtractionStatusMaster.IN_PROGRESS.value, company_id = 1, files = file_ids)
         db.session.add(extracted_base_data_info)
         db.session.commit()
         db.session.refresh(extracted_base_data_info)
@@ -324,7 +325,7 @@ def extract_base_data(file_ids, fund_type):
         Log.func_error(e)
         if base_data_info_id:
             extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(id = base_data_info_id).first()
-            extracted_base_data_info.status = 'failed'
+            extracted_base_data_info.status = ExtractionStatusMaster.FAILED.value
             extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
@@ -333,7 +334,7 @@ def extract_base_data(file_ids, fund_type):
 
 def get_base_data(info_id):
     # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
-    base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).order_by(PfltBaseData.id).all()
+    
     base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
     base_data_mapping = db.session.query(
         BaseDataMapping.bdm_id,
@@ -342,28 +343,36 @@ def get_base_data(info_id):
         BaseDataMapping.is_editable,
         BaseDataMappingColumnInfo.sequence,
         BaseDataMappingColumnInfo.is_selected
-    ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).order_by(BaseDataMappingColumnInfo.sequence).all()
+    ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
 
     engine = db.get_engine()
+    
+    if base_data_info.fund_type == 'PFLT':
+        base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).order_by(PfltBaseData.id).all()
+        HistoryData = PfltBaseDataHistory
+        with engine.connect() as connection:
+            result = connection.execute(text('''
+                select count(distinct pbd.obligor_name) as no_of_obligors, 
+                        count(distinct pbd.security_name) as no_of_assets, 
+                        sum(pbd.total_commitment::float) as total_commitment, 
+                        sum(pbd.outstanding_principal::float) as total_outstanding_balance,
+                        (select count(distinct obligor_name) from pflt_base_data pbd where security_name is null and pbd.base_data_info_id = :info_id) as unmapped_records
+                from pflt_base_data pbd
+                where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
+            final_result = result[0]
+    else:
+        base_data = PcofBaseData.query.filter_by(base_data_info_id = info_id).order_by(PcofBaseData.id).all()
+        HistoryData = PcofBaseDataHistory
+        final_result = [1,2,3,4,5]
 
-    with engine.connect() as connection:
-        result = connection.execute(text('''
-            select count(distinct pbd.obligor_name) as no_of_obligors, 
-                    count(distinct pbd.security_name) as no_of_assets, 
-                    sum(pbd.total_commitment::float) as total_commitment, 
-                    sum(pbd.outstanding_principal::float) as total_outstanding_balance,
-                    (select count(distinct obligor_name) from pflt_base_data pbd where security_name is null and pbd.base_data_info_id = :info_id) as unmapped_records
-            from pflt_base_data pbd
-            where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
-
-    no_of_obligors, no_of_assets, total_commitment, total_outstanding_balance, unmapped_records = result[0]
+    no_of_obligors, no_of_assets, total_commitment, total_outstanding_balance, unmapped_records = final_result
 
     temp = []
     # print(base_data[0])
     for b in base_data:
         t = b.__dict__
         del t['_sa_instance_state']
-        old_data = PfltBaseDataHistory.query.filter_by(id = b.id).order_by(PfltBaseDataHistory.done_at.desc()).offset(1).limit(1).first()
+        old_data = HistoryData.query.filter_by(id = b.id).order_by(HistoryData.done_at.desc()).offset(1).limit(1).first()
         t1 = None
         if old_data:
             t1 = old_data.__dict__
@@ -546,11 +555,14 @@ def get_base_data_mapping(info_id):
 
 def get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_type):
     if extracted_base_data_info_id:
-        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(id = extracted_base_data_info_id).all()
+        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(id = extracted_base_data_info_id)
     else:
-        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
+        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.extraction_date.desc())
     if fund_type:
-        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id, fund_type=fund_type).order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
+        extracted_base_datas = extracted_base_datas.filter_by(fund_type=fund_type)
+        
+    extracted_base_datas = extracted_base_datas.order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
+    
     extraction_result = {
         "columns": [{
             "key": "report_date",
