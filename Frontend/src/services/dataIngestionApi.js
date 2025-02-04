@@ -86,7 +86,7 @@ export const editBaseData = (changes) => {
 };
 
 export const submitOtherInfo = async (data) => {
-	const response = await axios.post(`${ApiURL}/data_ingestion/pflt_base_data_other_info`, data);
+	const response = await axios.post(`${ApiURL}/data_ingestion/base_data_other_info`, data);
 	return response.data;
 };
 

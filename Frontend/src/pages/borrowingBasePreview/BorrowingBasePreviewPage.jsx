@@ -11,7 +11,7 @@ import { filterPreviewTable } from '../../utils/helperFunctions/filterPreviewTab
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 
-export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId }) => {
+export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType}) => {
 	const navigate = useNavigate();
 	const [mapping, setMapping] = useState({});
 	const [cellDetail, setCellDetail] = useState({});
@@ -251,6 +251,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				dataId={baseFilePreviewData.infoId}
 				data={baseFilePreviewData.otherInfo}
 				handleBaseDataPreview={handleBaseDataPreview}
+				previewFundType={previewFundType}
 			/>
 		</div>
 		// <div>
