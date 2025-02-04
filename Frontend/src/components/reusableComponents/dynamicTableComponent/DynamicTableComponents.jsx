@@ -1,4 +1,4 @@
-import { SettingOutlined, DragOutlined } from '@ant-design/icons';
+import { SettingOutlined, DragOutlined, CloseOutlined } from '@ant-design/icons';
 import { Popover, Switch } from 'antd';
 import React, { useEffect, useState } from 'react';
 import CrossIcon from '../../../assets/CrossIcon.svg';
@@ -158,6 +158,7 @@ export const DynamicTableComponents = (
             </div>
             {showSettingsDiv &&
                 <div style={{position: 'absolute', display: 'flex', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
+                    <div className={tableStyles.crossIcon}><CloseOutlined onClick={handleOpenSettings} /></div>
                     {breaks?.map((b, i) => {
                         if (i !== 0) {
                             return (
@@ -172,7 +173,7 @@ export const DynamicTableComponents = (
                                     }
                                     )}
                                 </div>);
-                        }
+                    }
                     })}
                 </div>}
         </div>}

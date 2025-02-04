@@ -196,7 +196,7 @@ export const WhatIfAnalysis = (
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'Borrowing_Base_Report.xlsx';
+        a.download = 'Asset File.xlsx';
         document.body.appendChild(a);
         a.click();
         window.URL.revokeObjectURL(url);
