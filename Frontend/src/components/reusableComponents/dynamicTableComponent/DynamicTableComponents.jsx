@@ -74,7 +74,6 @@ export const DynamicTableComponents = (
 
     const handleOpenSettings = (e) => {
         e.preventDefault();
-        console.info(showSettingsDiv, 'test show');
         if (showSettingsDiv) {
             updateVisibleColumns();
         }
