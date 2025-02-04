@@ -39,7 +39,7 @@ def process_and_store_data(data_dict, file_id, fund_name, engine):
         try:
             # Truncate and rename columns
             df = truncate_and_rename_columns(df)
-            table_name = fund_name.lower() + '_' + sheet_name.lower().replace(" ", "_")
+            table_name = 'sf_sheet' + '_' + sheet_name.lower().replace(" ", "_")
             # Store in the database
             with engine.connect() as connection:
                 data = pd.DataFrame(connection.execute(text(f'select * from {table_name} where source_file_id = :source_file_id limit 1'), {'source_file_id': file_id}).fetchall())

@@ -20,9 +20,12 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PfltBaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
+from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
+from source.services.diServices import ColumnSheetMap
+from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 
 pfltDashboardService = PfltDashboardService()
@@ -69,53 +72,6 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
 
             db.session.add(source_file)
             db.session.commit()
-                    # source_files.append(source_file)
-                # try:
-        #         #     db.session.add_all(source_files)
-        #         #     db.session.commit()
-        #         # except Exception as e:
-        #         #     Log.func_error(e=e)
-        #         #     return ServiceResponse.error(message="Could not save files to database.", status_code = 500)
-
-        # for file in files:
-        #     for fund_name in fund_names:
-        #         blob_name = f"{company_name}/{fund_name}/{file.filename}"
-                
-        #         # setting SourceFiles object
-        #         file_name = os.path.splitext(file.filename)[0]
-        #         extension = os.path.splitext(file.filename)[1]
-        #         file.seek(0, 2)  # Move to the end of the file
-        #         file_size = file.tell()  # Get the size in bytes
-        #         file.seek(0)
-        #         company_id = 1
-        #         is_validated = False
-        #         is_extracted = False
-        #         uploaded_by = 1
-        #         file_type = None
-        #         if contains_cash(file.filename):
-        #             file_type = "cashfile"
-        #         if contains_master_comp(file.filename):
-        #             file_type = "master_comp"
-
-        #         # upload blob in container
-        #         blob_client.upload_blob(name=blob_name, data=file)
-        #         file_url = blob_client.url + '/' + blob_name
-        #         # add details of files in db
-        #         source_file = SourceFile(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
-
-        #         db.session.add(source_file)
-        #         db.session.commit()
-        #         db.session.refresh(source_file)
-        #         source_file_fund = SourceFileFund(sf_id=source_file.id, fund_type=fund_name)
-        #         db.session.add(source_file_fund)
-        #         db.session.commit()
-        #         source_files_list.append(source_file)
-
-        # for fund_name in fund_names:
-        #     for uploaded_file in source_file:
-        #         source_file_fund = SourceFileFund(sf_id=uploaded_file.id, fund_type=fund_name)
-        #         db.session.add(source_file_fund)
-        #         db.session.commit()
             
         return ServiceResponse.success(message = "Files uploaded successfully")
 
@@ -248,14 +204,14 @@ def extract(file_sheet_map, sheet_column_mapper, args):
                 print(sheet + ' extracted')
     return updated_column_df
 
-def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info):
+def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, fund_type):
     from app import app
     with app.app_context():
         try:
             engine = db.get_engine()
             start_time = datetime.now()
             company_name = "Pennant"
-            fund_name = "PFLT"
+            fund_name = fund_type
             FOLDER_PATH = company_name + '/' + fund_name + '/'
         
             blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
@@ -282,7 +238,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info):
                         "cash": {
                             "file": file,
                             "source_file_obj": file_details,
-                            "sheets": ["US Bank Holdings", "Client Holdings"], 
+                            "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type), 
                             "is_extracted": file_details.is_extracted
                         }
                     }
@@ -292,13 +248,13 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info):
                         "master_comp": {
                             "file": file,
                             "source_file_obj": file_details,
-                            "sheets": ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"],
+                            "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
                             "is_extracted": file_details.is_extracted
                         }
                     }
                 if file_details.is_extracted:
                     continue
-                args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name"]
+                args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
                 data_dict = extract(file_sheet_map, sheet_column_mapper, args)
                 process_store_status = helper_functions.process_and_store_data(data_dict, file_id, fund_name, engine)
                 file_details.is_extracted = True
@@ -307,10 +263,17 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info):
                 new_source_file = True
 
             # if new_source_file:
-            if not cash_file_details or not master_comp_file_details:
+            if not cash_file_details == None or master_comp_file_details == None:
                 raise Exception('Proper files not selected.')
-            base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
-            extracted_base_data_info.status = "completed"
+            if fund_name == "PCOF":
+                service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details)
+                if service_response["success"]:   
+                    extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
+                else:
+                    raise Exception(service_response.get("message"))
+            else:
+                base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
+                extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
             # else:
                 # extracted_base_data_info.status = "repeated"
             
@@ -326,55 +289,18 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info):
             db.session.add(extracted_base_data_info)
             db.session.commit()
 
-def extract_base_data(file_ids):
+def extract_base_data(file_ids, fund_type):
     base_data_info_id = None
     try:
     # initialization
-        borrower_stats_column_level_map = {
-            "Current Metrics": (0, 9, 52),
-            "At Close Metrics": (0, 52, 79),
-            "Fund": (1, 2, 9),
-            "Capital Structure": (1, 9, 23),
-            "Reporting": (1, 23, 32),
-            "For PSCF-Lev & PSSL": (1, 32, 33),
-            "L3M / Quarterly": (1, 33, 37),
-            "YTD": (1, 37, 41),
-            "Current Leverage Stats Output": (1, 41, 52),
-            "Comps Other Inputs / Leverage Calcs": (1, 52, 58),
-            "Comps - At Close Metrics (Hardcode at close)": (1, 58, 72),
-            "Pricing": (1, 72, 79)
-        }
-
-        security_stats = {
-            "Banks": (0, 3, 9),
-            "Security Information": (0, 10, 30),
-            "PCOF Specific Metrics": (0, 31, 39),
-            "Current": (0, 75, 81),
-            "At Close": (0, 81, 91),
-            "L3M / Quarterly": (0, 91, 95),
-            "YTD": (0, 95, 99)
-        }
-
-        SOI_Mapping = {
-            "General": (0, 1, 5),
-            "For Dropdown": (0, 6, 7)
-        }
-
-        sheet_column_mapper = {
-            "Borrower Stats": borrower_stats_column_level_map,
-            "Securities Stats": security_stats,
-            "US Bank Holdings": {},
-            "Client Holdings": {},
-            "SOI Mapping": SOI_Mapping,
-            "PFLT Borrowing Base": {}
-        }
+        sheet_column_mapper = ColumnSheetMap.sheet_column_mapper
         #--------------------------------
         if len(file_ids) == 0:
             return ServiceResponse.error(message='No files selected.')
         ini_file = SourceFiles.query.filter_by(id = file_ids[0]).first()
         report_date = ini_file.report_date
         company_id = ini_file.company_id
-        extracted_base_data_info = ExtractedBaseDataInfo(report_date=report_date, fund_type="PFLT", status="in progress", company_id = 1, files = file_ids)
+        extracted_base_data_info = ExtractedBaseDataInfo(report_date=report_date, fund_type=fund_type, status=ExtractionStatusMaster.IN_PROGRESS.value, company_id = 1, files = file_ids)
         db.session.add(extracted_base_data_info)
         db.session.commit()
         db.session.refresh(extracted_base_data_info)
@@ -383,7 +309,8 @@ def extract_base_data(file_ids):
         threading.Thread(target=extract_and_store, kwargs={
             'file_ids': file_ids,
             'sheet_column_mapper': sheet_column_mapper,
-            'extracted_base_data_info': extracted_base_data_info}
+            'extracted_base_data_info': extracted_base_data_info,
+            'fund_type': fund_type}
         ).start()
 
         # extract_and_store(file_ids = file_ids, sheet_column_mapper = sheet_column_mapper, extracted_base_data_info = extracted_base_data_info)
@@ -393,13 +320,12 @@ def extract_base_data(file_ids):
             "report_date": report_date.strftime("%Y-%m-%d"),
             "company_id": company_id
         }
-        # put this following code in above function
         return ServiceResponse.success(message="Base Data extraction might take few minutes", data=response_data)
     except Exception as e:
         Log.func_error(e)
         if base_data_info_id:
             extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(id = base_data_info_id).first()
-            extracted_base_data_info.status = 'failed'
+            extracted_base_data_info.status = ExtractionStatusMaster.FAILED.value
             extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
@@ -408,37 +334,45 @@ def extract_base_data(file_ids):
 
 def get_base_data(info_id):
     # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
-    base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).order_by(PfltBaseData.id).all()
+    
     base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
     base_data_mapping = db.session.query(
-        PfltBaseDataMapping.bdm_id,
-        PfltBaseDataMapping.bd_column_lookup,
-        PfltBaseDataMapping.bd_column_name,
-        PfltBaseDataMapping.is_editable,
+        BaseDataMapping.bdm_id,
+        BaseDataMapping.bd_column_lookup,
+        BaseDataMapping.bd_column_name,
+        BaseDataMapping.is_editable,
         BaseDataMappingColumnInfo.sequence,
         BaseDataMappingColumnInfo.is_selected
-    ).join(PfltBaseDataMapping, PfltBaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).order_by(BaseDataMappingColumnInfo.sequence).all()
+    ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
 
     engine = db.get_engine()
+    
+    if base_data_info.fund_type == 'PFLT':
+        base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).order_by(PfltBaseData.id).all()
+        HistoryData = PfltBaseDataHistory
+        with engine.connect() as connection:
+            result = connection.execute(text('''
+                select count(distinct pbd.obligor_name) as no_of_obligors, 
+                        count(distinct pbd.security_name) as no_of_assets, 
+                        sum(pbd.total_commitment::float) as total_commitment, 
+                        sum(pbd.outstanding_principal::float) as total_outstanding_balance,
+                        (select count(distinct obligor_name) from pflt_base_data pbd where security_name is null and pbd.base_data_info_id = :info_id) as unmapped_records
+                from pflt_base_data pbd
+                where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
+            final_result = result[0]
+    else:
+        base_data = PcofBaseData.query.filter_by(base_data_info_id = info_id).order_by(PcofBaseData.id).all()
+        HistoryData = PcofBaseDataHistory
+        final_result = [1,2,3,4,5]
 
-    with engine.connect() as connection:
-        result = connection.execute(text('''
-            select count(distinct pbd.obligor_name) as no_of_obligors, 
-                    count(distinct pbd.security_name) as no_of_assets, 
-                    sum(pbd.total_commitment::float) as total_commitment, 
-                    sum(pbd.outstanding_principal::float) as total_outstanding_balance,
-                    (select count(distinct obligor_name) from pflt_base_data pbd where security_name is null and pbd.base_data_info_id = :info_id) as unmapped_records
-            from pflt_base_data pbd
-            where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
-
-    no_of_obligors, no_of_assets, total_commitment, total_outstanding_balance, unmapped_records = result[0]
+    no_of_obligors, no_of_assets, total_commitment, total_outstanding_balance, unmapped_records = final_result
 
     temp = []
     # print(base_data[0])
     for b in base_data:
         t = b.__dict__
         del t['_sa_instance_state']
-        old_data = PfltBaseDataHistory.query.filter_by(id = b.id).order_by(PfltBaseDataHistory.done_at.desc()).offset(1).limit(1).first()
+        old_data = HistoryData.query.filter_by(id = b.id).order_by(HistoryData.done_at.desc()).offset(1).limit(1).first()
         t1 = None
         if old_data:
             t1 = old_data.__dict__
@@ -533,13 +467,13 @@ def change_bd_col_seq(updated_sequence):
 def get_base_data_col(fund_type):
     try:
         base_data_columns_data = db.session.query(
-            PfltBaseDataMapping.bdm_id,
-            PfltBaseDataMapping.bd_column_lookup,
-            PfltBaseDataMapping.bd_column_name,
-            PfltBaseDataMapping.is_editable,
+            BaseDataMapping.bdm_id,
+            BaseDataMapping.bd_column_lookup,
+            BaseDataMapping.bd_column_name,
+            BaseDataMapping.is_editable,
             BaseDataMappingColumnInfo.sequence,
             BaseDataMappingColumnInfo.is_selected
-        ).join(PfltBaseDataMapping, PfltBaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMappingColumnInfo.fund_type == fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
+        ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMappingColumnInfo.fund_type == fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
         
         base_data_columns = [{
             "key": column.bd_column_lookup,
@@ -621,11 +555,14 @@ def get_base_data_mapping(info_id):
 
 def get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_type):
     if extracted_base_data_info_id:
-        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(id = extracted_base_data_info_id).all()
+        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(id = extracted_base_data_info_id)
     else:
-        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
+        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.extraction_date.desc())
     if fund_type:
-        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id, fund_type=fund_type).order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
+        extracted_base_datas = extracted_base_datas.filter_by(fund_type=fund_type)
+        
+    extracted_base_datas = extracted_base_datas.order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
+    
     extraction_result = {
         "columns": [{
             "key": "report_date",
@@ -1152,7 +1089,7 @@ def get_base_data_other_info(extraction_info_id, fund_type):
             res = {**common_fields, "minimum_equity_amount_floor": other_info.other_info_list["minimum_equity_amount_floor"]}
 
         elif fund_type == "PCOF":
-            res = {**common_fields, "revolving_closing_date": other_info.other_info_list["revolving_closing_date "]}
+            res = {**common_fields, "revolving_closing_date": other_info.other_info_list["revolving_closing_date"]}
 
         return ServiceResponse.success(data = res)
     except Exception as e:
