@@ -21,6 +21,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [selectedFundType, setSelectedFundType] = useState(2);
 	const [archiveToggle, setArchiveToggle] = useState(false);
 	const [archiveFilesData, setArchiveFilesData] = useState(null);
+	const [isbuttonDisable, setButtonDisable] = useState(false);
 
 	const navigate = useNavigate();
 	let extractionInterval;
@@ -157,6 +158,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	};
 
 	const toggleArchiveFiles = (value) => {
+		setButtonDisable(value);
 		if (value) {
 			getArchiveFiles();
 		}
@@ -202,7 +204,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 						</div>
 						<div className={styles.uploadFileBtnContainer}>
 							<DynamicSwitchComponent switchOnText="Archives" switchOffText="Source Files" switchOnChange={toggleArchiveFiles} />
-							<CustomButton isFilled={true} onClick={updateFilesArchiveStatus} text={archiveToggle ? 'Unarchive' : 'Add to archives'} />
+							<CustomButton isFilled={true} onClick={updateFilesArchiveStatus} text={archiveToggle ? 'Unarchive' : 'Add to Archives'} />
 							<CustomButton isFilled={true} onClick={() => setUploadFilesPopupOpen(true)} text='+ Upload Files' />
 						</div>
 					</div>
@@ -234,12 +236,14 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 					</div>
 
 					<div className={styles.extractDataBtn}>
+					{!isbuttonDisable && (
 						<CustomButton
 							isFilled={true}
 							onClick={handleFileExtraction}
 							text='Extract Base Data'
 							// loading={fileExtractionLoading}
 						/>
+					)}
 					</div>
 				</div>
 			</div>

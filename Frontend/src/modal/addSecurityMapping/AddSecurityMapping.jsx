@@ -51,6 +51,7 @@ export const AddSecurityMapping = ({ isOpen, columns, onClose, getMappingData })
                         type="text"
                         value={formValues[col.key] || ""}
                         onChange={(e) => handleInputChange(col.key, e.target.value)}
+                        required={columns.isRequired}
                     />
                 </div>
             ))}

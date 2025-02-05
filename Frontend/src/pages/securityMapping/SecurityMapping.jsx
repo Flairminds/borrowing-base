@@ -101,7 +101,7 @@ export const SecurityMapping = () => {
 									text={`<- Base Data`} />
 							</div>
 							<div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: '300px' }}>
-								<input type="text" style={{ outline: 'none', border: '1px solid #DCDEDE', borderRadius: '5px', width: '100%', fontSize: 'small', padding: '0.5rem' }} onChange={(e) => filterData(e.target.value)} placeholder="Search by security name" />
+								<input type="text" style={{ outline: 'none', border: '1px solid #DCDEDE', borderRadius: '5px', width: '100%', fontSize: 'small', padding: '0.5rem' }} onChange={(e) => filterData(e.target.value)} placeholder="Search By Security Name" />
 								<CustomButton isFilled={true} text="+ Add" onClick={() => setIsModalOpen(true)} />
 							</div>
 						</div>

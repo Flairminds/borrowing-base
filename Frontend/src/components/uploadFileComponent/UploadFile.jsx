@@ -451,7 +451,7 @@ export const UploadFile = ({
 										</table>
 									</div>
 								) : (
-									<div>No data available</div>
+									<div>No Data Available</div>
 								)}
 							</div>
 						</div>

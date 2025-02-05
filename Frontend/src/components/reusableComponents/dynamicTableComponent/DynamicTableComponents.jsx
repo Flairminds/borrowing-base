@@ -243,7 +243,7 @@ export const DynamicTableComponents = (
                         </tr>
                     ))
                     : <tr>
-                        <td colSpan={updatedColumnsData?.length} className={tableStyles.td} style={{textAlign: 'center'}}>No data</td>
+                        <td colSpan={updatedColumnsData?.length} className={tableStyles.td} style={{textAlign: 'center'}}>No Data</td>
                     </tr>}
             </tbody>
         </table>
