@@ -616,23 +616,24 @@ def get_pflt_sec_mapping():
     columns_data = [
         {
             'key': "soi_name",
-            'label': "Soi name",
-            'isEditable': False
+            'label': "SOI Name",
+            'isEditable': False,
+            'isRequired': True
         }, {
             'key': "master_comp_security_name",
-            'label': "Master comp security name",
+            'label': "Master Comp Security Name",
             'isEditable': False
         },  {
             'key': "family_name",
-            'label': "Family name",
+            'label': "Family Name",
             'isEditable': True
         }, {
             'key': "security_type",
-            'label': "Security type",
+            'label': "Security Type",
             'isEditable': False
         }, {
             'key': "cashfile_security_name",
-            'label': "Cash file security name",
+            'label': "Cash File Security Name",
             'isEditable': True
         }
     ]
@@ -996,8 +997,7 @@ def pflt_add_base_data_other_info(extraction_info_id, determination_date, minimu
     try:
         table_list = []
 
-        BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).delete()
-        db.session.commit()
+        existing_record  = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).first()
     
         for value in other_data:
             table_list.append ({
@@ -1011,17 +1011,25 @@ def pflt_add_base_data_other_info(extraction_info_id, determination_date, minimu
                 "current_credit_facility_balance": value.get("current_credit_facility_balance")
             })
 
-        base_data_other_info =  BaseDataOtherInfo(
-            extraction_info_id = extraction_info_id,
-            determination_date = determination_date,
-            fund_type = fund_type,
-            other_info_list = {
+        if existing_record:
+            existing_record.determination_date = determination_date
+            existing_record.fund_type = fund_type
+            existing_record.other_info_list = {
                 "minimum_equity_amount_floor": minimum_equity_amount_floor,
                 "table_list": table_list
             }
-        )
+        else:
+            base_data_other_info =  BaseDataOtherInfo(
+                extraction_info_id = extraction_info_id,
+                determination_date = determination_date,
+                fund_type = fund_type,
+                other_info_list = {
+                    "minimum_equity_amount_floor": minimum_equity_amount_floor,
+                    "table_list": table_list
+                }
+            )
+            db.session.add(base_data_other_info)
 
-        db.session.add(base_data_other_info)
         db.session.commit()
 
         return ServiceResponse.success(message="Data added sucessfully")
@@ -1033,9 +1041,8 @@ def pcof_add_base_data_other_info(extraction_info_id, determination_date, revolv
     try:
         table_list = []
 
-        BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).delete()
-        db.session.commit()
-    
+        existing_record = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id)
+
         for value in other_data:
             table_list.append ({
                 "commitment_period": value.get("commitment_period"),
@@ -1049,17 +1056,25 @@ def pcof_add_base_data_other_info(extraction_info_id, determination_date, revolv
                 "dollar_equivalent": value.get("dollar_equivalent")
             })
 
-        base_data_other_info =  BaseDataOtherInfo(
-            extraction_info_id = extraction_info_id,
-            determination_date = determination_date,
-            fund_type = fund_type,
-            other_info_list = {
+        if existing_record:
+            existing_record.determination_date = determination_date
+            existing_record.fund_type = fund_type
+            existing_record.other_info_list = {
                 "revolving_closing_date": revolving_closing_date,
                 "table_list": table_list
             }
-        )
+        else:
+            base_data_other_info =  BaseDataOtherInfo(
+                extraction_info_id = extraction_info_id,
+                determination_date = determination_date,
+                fund_type = fund_type,
+                other_info_list = {
+                    "revolving_closing_date": revolving_closing_date,
+                    "table_list": table_list
+                }
+            )
+            db.session.add(base_data_other_info)
 
-        db.session.add(base_data_other_info)
         db.session.commit()
 
         return ServiceResponse.success(message="Data added sucessfully")
