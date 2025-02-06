@@ -43,32 +43,28 @@ export const AddSecurityMapping = ({ isOpen, columns, onClose, getMappingData })
         }
     };
 
-
-
     const handleCancel = () => {
         setFormValues({});
         onClose();
-        setErrors({})
+        setErrors({});
     };
 
     return (
-        <Modal
-            open={isOpen}
-            onCancel={handleCancel}
-            footer={null}
-            width={'50%'}
-        >
+        <Modal open={isOpen} onCancel={handleCancel} footer={null} width={"50%"}>
             <h5 style={{ textAlign: "center" }}>Add Security Mapping</h5>
             {columns.map((col) => (
                 <div key={col.key} className={styles.inputContainer}>
-                    <label>{col.label}</label>
+                    <label>
+                        {col.label}
+                        {col.isRequired && <span className={styles.requiredMarker}> *</span>}
+                    </label>
                     <input
                         type="text"
                         value={formValues[col.key] || ""}
                         onChange={(e) => handleInputChange(col.key, e.target.value)}
                         className={errors[col.key] ? styles.errorInput : ""}
                     />
-                {errors[col.key] && <span className={styles.errorText}>{errors[col.key]}</span>}
+                    {errors[col.key] && <span className={styles.errorText}>{errors[col.key]}</span>}
                 </div>
             ))}
             <div className={styles.buttonContainer}>
