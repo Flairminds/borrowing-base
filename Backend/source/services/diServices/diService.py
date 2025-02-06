@@ -613,7 +613,7 @@ def get_pflt_sec_mapping():
     with engine.connect() as connection:
         pflt_sec_mapping_df = pd.DataFrame(connection.execute(text('select id, soi_name, master_comp_security_name, family_name, security_type, cashfile_security_name from pflt_security_mapping where company_id = 1 order by soi_name ASC')).fetchall())
 
-        unmapped_securities = pd.DataFrame(connection.execute(text('''select distinct "Security/Facility Name" as cashfile_securities from pflt_us_bank_holdings pubh left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" where psm.id is null''')).fetchall())
+        unmapped_securities = pd.DataFrame(connection.execute(text('''select distinct "Security/Facility Name" as cashfile_securities from sf_sheet_us_bank_holdings pubh left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" where psm.id is null''')).fetchall())
     
     columns_data = [
         {
@@ -687,15 +687,15 @@ def get_source_file_data(file_id, file_type, sheet_name):
     print(sheet_name)
     match sheet_name:
         case "US Bank Holdings":
-            table_name = "pflt_us_bank_holdings"
+            table_name = "sf_sheet_us_bank_holdings"
         case "Client Holdings":
-            table_name = "pflt_client_holdings"
+            table_name = "sf_sheet_client_holdings"
         case "Borrower Stats":
-            table_name = "pflt_borrower_stats"
+            table_name = "sf_sheet_borrower_stats"
         case "Securities Stats":
-            table_name = "pflt_securities_stats"
+            table_name = "sf_sheet_securities_stats"
         case "PFLT Borrowing Base":
-            table_name = "pflt_pflt_borrowing_base"
+            table_name = "sf_sheet_pflt_borrowing_base"
 
     source_file_table_data = {}
 
@@ -731,27 +731,27 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
             table_name = df_dict[0]['sd_ref_table_name']
             sd_col_name = df_dict[0]['sf_column_name']
             identifier_col_name = None
-            if table_name == 'pflt_client_holdings':
+            if table_name == 'sf_sheet_client_holdings':
                 identifier_col_name = 'ch."Issuer/Borrower Name"'
-            elif table_name == 'pflt_us_bank_holdings':
+            elif table_name == 'sf_sheet_us_bank_holdings':
                 identifier_col_name = 'usbh."Issuer/Borrower Name"'
-            elif table_name == 'pflt_securities_stats':
+            elif table_name == 'sf_sheet_securities_stats':
                 identifier_col_name = 'ss."Security"'
-            elif table_name == 'pflt_borrower_stats':
+            elif table_name == 'sf_sheet_borrower_stats':
                 identifier_col_name = 'bs."Company"'
-            elif table_name == 'pflt_pflt_borrowing_base':
+            elif table_name == 'sf_sheet_pflt_borrowing_base':
                 identifier_col_name = 'pbb."Security"'
             sd_df_dict = None
             if identifier_col_name is not None:
                 if df_dict[0]['sf_column_categories'] is not None:
                     sd_col_name = df_dict[0]['sf_column_categories'][0] + " " + sd_col_name
                 with engine.connect() as connection:
-                    sd_df = pd.DataFrame(connection.execute(text(f'''select distinct {identifier_col_name}, "{sd_col_name}" from pflt_us_bank_holdings usbh
-                    left join pflt_client_holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
+                    sd_df = pd.DataFrame(connection.execute(text(f'''select distinct {identifier_col_name}, "{sd_col_name}" from sf_sheet_us_bank_holdings usbh
+                    left join sf_sheet_client_holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
                     left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
-                    left join pflt_securities_stats ss on ss."Security" = sm.master_comp_security_name
-                    left join pflt_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
-                    left join pflt_borrower_stats bs on bs."Company" = ss."Family Name" where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name and (usbh.source_file_id = :sf_id or ch.source_file_id = :sf_id or ss.source_file_id = :sf_id or pbb.source_file_id = :sf_id or bs.source_file_id = :sf_id)'''), {'obligor_name': bd_df['obligor_name'][0], 'security_name': bd_df['security_name'][0], 'sf_id': df_dict[0]['id']}).fetchall())
+                    left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
+                    left join sf_sheet_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
+                    left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name" where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name and (usbh.source_file_id = :sf_id or ch.source_file_id = :sf_id or ss.source_file_id = :sf_id or pbb.source_file_id = :sf_id or bs.source_file_id = :sf_id)'''), {'obligor_name': bd_df['obligor_name'][0], 'security_name': bd_df['security_name'][0], 'sf_id': df_dict[0]['id']}).fetchall())
                 sd_df_dict = sd_df.to_dict(orient='records')
         except Exception as e:
             print(str(e)[:150])
