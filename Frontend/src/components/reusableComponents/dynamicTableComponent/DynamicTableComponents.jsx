@@ -218,7 +218,7 @@ export const DynamicTableComponents = (
                                         {enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
                                             (
                                                 <div className={tableStyles.editIconsContainer}>
-                                                    <DynamicInputComponent inputValue={inputValue} onInputChange={handleInputChange} autoFocusInput={true} />
+                                                    <DynamicInputComponent inputValue={inputValue} inputType={col.datatype} onInputChange={handleInputChange} autoFocusInput={true} />
                                                     <img
                                                         src={RightIcon}
                                                         alt="Save"

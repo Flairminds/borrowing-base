@@ -340,6 +340,7 @@ def get_base_data(info_id):
         BaseDataMapping.bdm_id,
         BaseDataMapping.bd_column_lookup,
         BaseDataMapping.bd_column_name,
+        BaseDataMapping.bd_column_datatype,
         BaseDataMapping.is_editable,
         BaseDataMappingColumnInfo.sequence,
         BaseDataMappingColumnInfo.is_selected
@@ -409,6 +410,7 @@ def get_base_data(info_id):
         "columns": [{
             "key": column.bd_column_lookup,
             "label": column.bd_column_name,
+            "datatype": column.bd_column_datatype,
             "isEditable": column.is_editable,
             "bdm_id": column.bdm_id,
             "is_selected": column.is_selected
@@ -1093,18 +1095,17 @@ def get_base_data_other_info(extraction_info_id, fund_type):
         ).filter(BaseDataOtherInfo.extraction_info_id == extraction_info_id).first()
         res = {}
         if other_info:
-           common_fields = {
+            common_fields = {
                 "id": other_info.id,
                 "extraction_info_id": other_info.extraction_info_id,
                 "determination_date": other_info.determination_date,
                 "other_data": other_info.other_info_list["table_list"]
             }
+            if fund_type == "PFLT":
+                res = {**common_fields, "minimum_equity_amount_floor": other_info.other_info_list["minimum_equity_amount_floor"]}
 
-        if fund_type == "PFLT":
-            res = {**common_fields, "minimum_equity_amount_floor": other_info.other_info_list["minimum_equity_amount_floor"]}
-
-        elif fund_type == "PCOF":
-            res = {**common_fields, "revolving_closing_date": other_info.other_info_list["revolving_closing_date"]}
+            elif fund_type == "PCOF":
+                res = {**common_fields, "revolving_closing_date": other_info.other_info_list["revolving_closing_date"]}
 
         return ServiceResponse.success(data = res)
     except Exception as e:
