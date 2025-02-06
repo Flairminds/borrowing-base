@@ -77,7 +77,8 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const handleFileExtraction = async() => {
 		// setFileExtractionLoading(true);
 		try {
-			const extractionResponse = await exportBaseDataFile(selectedIds.current);
+			const selectedFund = selectedFundType == 1 ? "PCOF" : "PFLT";
+			const extractionResponse = await exportBaseDataFile(selectedIds.current, selectedFund);
 			console.info(extractionResponse, 'rex');
 			const extractionData = extractionResponse?.data.result;
 			showToast("info", extractionResponse.data.message);
