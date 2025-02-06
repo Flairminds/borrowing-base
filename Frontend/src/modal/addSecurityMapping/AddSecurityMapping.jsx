@@ -7,25 +7,39 @@ import styles from "./AddSecurityMapping.module.css";
 
 export const AddSecurityMapping = ({ isOpen, columns, onClose, getMappingData }) => {
     const [formValues, setFormValues] = useState({});
+    const [errors, setErrors] = useState({});
+
     const handleInputChange = (key, value) => {
         setFormValues((prev) => ({ ...prev, [key]: value }));
     };
 
     const handleSave = async () => {
-        try {
-            const payload = formValues;
-            const response = await postAddSecurityMapping(payload);
 
-            if (response.data.success) {
+        const newErrors = {};
+        columns.forEach((col) => {
+          if (col.isRequired && !formValues[col.key]) {
+            newErrors[col.key] = `${col.label} is required`;
+          }
+        });
+    
+        setErrors(newErrors);
 
-                const successMessage = response.data.message || 'Security mapping added successfully';
-                showToast('success', successMessage);
-                getMappingData();
-                setFormValues({});
-                onClose();
+        if(Object.keys(newErrors).length === 0) {
+            try {
+                const payload = formValues;
+                const response = await postAddSecurityMapping(payload);
+
+                if (response.data.success) {
+
+                    const successMessage = response.data.message || 'Security mapping added successfully';
+                    showToast('success', successMessage);
+                    getMappingData();
+                    setFormValues({});
+                    onClose();
+                }
+            } catch (error) {
+                showToast('error', error.response.data.message || 'Error: Failed to add security mapping');
             }
-        } catch (error) {
-            showToast('error', error.response.data.message || 'Error: Failed to add security mapping');
         }
     };
 
@@ -34,6 +48,7 @@ export const AddSecurityMapping = ({ isOpen, columns, onClose, getMappingData })
     const handleCancel = () => {
         setFormValues({});
         onClose();
+        setErrors({})
     };
 
     return (
@@ -51,8 +66,9 @@ export const AddSecurityMapping = ({ isOpen, columns, onClose, getMappingData })
                         type="text"
                         value={formValues[col.key] || ""}
                         onChange={(e) => handleInputChange(col.key, e.target.value)}
-                        required={columns.isRequired}
+                        className={errors[col.key] ? styles.errorInput : ""}
                     />
+                {errors[col.key] && <span className={styles.errorText}>{errors[col.key]}</span>}
                 </div>
             ))}
             <div className={styles.buttonContainer}>
