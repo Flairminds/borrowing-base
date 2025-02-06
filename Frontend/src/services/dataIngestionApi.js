@@ -91,9 +91,10 @@ export const submitOtherInfo = async (data) => {
 	return response.data;
 };
 
-export const updateSeletedColumns = (columnIds) => {
+export const updateSeletedColumns = (columnIds, previewFundType) => {
 	const columnData = {
-		"selected_col_ids": columnIds
+		"selected_col_ids": columnIds,
+		"fund_type": previewFundType
 	};
 
 	const response = axios.post(`${ApiURL}/data_ingestion/update_bd_col_select`, columnData);

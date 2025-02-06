@@ -23,7 +23,8 @@ export const DynamicTableComponents = (
         onChangeSave,
         getCellDetailFunc = () => {},
         cellDetail = null,
-        refreshDataFunction
+        refreshDataFunction,
+        previewFundType
     }) => {
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
@@ -64,7 +65,7 @@ export const DynamicTableComponents = (
         });
 
         try {
-            const res = await updateSeletedColumns(updatedSelectedColumnIds);
+            const res = await updateSeletedColumns(updatedSelectedColumnIds, previewFundType);
             showToast("success", res.data.message);
         } catch (err) {
             console.error(err);
