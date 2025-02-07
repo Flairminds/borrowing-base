@@ -490,10 +490,10 @@ def get_base_data_col(fund_type):
         Log.func_error(e)
         return ServiceResponse.error(message="Could not get base data columns")
     
-def update_bd_col_select(selected_col_ids):
+def update_bd_col_select(selected_col_ids, fund_type):
     try:
         # making is_selected as false to all records
-        BaseDataMappingColumnInfo.query.update({"is_selected": False})
+        BaseDataMappingColumnInfo.query.filter_by(fund_type=fund_type).update({"is_selected": False})
 
         default_col_seq = 1
         # modified_by = Users.query.filter_by(id=1).first()
@@ -514,7 +514,7 @@ def update_bd_col_select(selected_col_ids):
 
         # updating sequence of unselected columns
         unselected_bd_col_info_list = []
-        unselected_bd_cols = BaseDataMappingColumnInfo.query.filter_by(is_selected=False).all()
+        unselected_bd_cols = BaseDataMappingColumnInfo.query.filter_by(is_selected=False, fund_type=fund_type).all()
         for unselected_bd_col in unselected_bd_cols:
             unselected_bd_col.sequence = default_col_seq
             default_col_seq = default_col_seq + 1

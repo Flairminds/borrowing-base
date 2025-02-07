@@ -100,7 +100,8 @@ def update_bd_col_select():
     try:
         req_body = flask.request.get_json()
         selected_col_ids = req_body.get("selected_col_ids")
-        service_response = diService.update_bd_col_select(selected_col_ids)
+        fund_type = req_body.get('fund_type')
+        service_response = diService.update_bd_col_select(selected_col_ids, fund_type)
         if not service_response["success"]:
             return HTTPResponse.error(message="Could not update base data columns selection")
         
