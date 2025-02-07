@@ -1,9 +1,9 @@
 import React from 'react';
 // import { BBConcentration } from '../../../utils/BBData';
-import { TableComponent } from '../TableComponent';
-import styleCCTable from './Concentration_testTable.module.css';
+import { TableComponent } from '../../../components/Tables/TableComponent';
+import styleCCTable from './concentrationTestTable.module.css';
 
-export const  Concentration_testTable = ({title, tablesData, baseFile, setTablesData, setWhatIfAnalysisListData}) => {
+export const ConcentrationTestTable = ({title, tablesData, baseFile, setTablesData, setWhatIfAnalysisListData}) => {
 	const concentrationTest = "Concentration Test";
 	return (
 		<div className={styleCCTable.main}>

@@ -106,7 +106,7 @@
 
   .tableGraphContainer
   {
-    margin: 1rem 3% 1rem 5%;
+    /* margin: 1rem 3% 1rem 5%; */
     border : 1px solid #DCDEDE;
     border-radius:8px;
   }
