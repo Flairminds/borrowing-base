@@ -8,8 +8,8 @@
     padding: 1rem 0.5rem;
     border: 1px solid #DEDEDE;  
     border-radius: 10px;
-    margin-right: 3% ;
-    margin-left: 5%;
+    /* margin-right: 3% ; */
+    /* margin-left: 5%; */
 }
 
 .tabsDiv {
@@ -24,6 +24,7 @@
   gap: 10px;
   cursor: pointer;
   padding: 5px 0px;
+  text-align: left;
 }
 
 .tabsParent {

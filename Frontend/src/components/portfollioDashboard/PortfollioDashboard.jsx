@@ -58,7 +58,7 @@ export const PortfollioDashboard = ({
     // };
 
     return (
-        <div className='mt-3'>
+        <div>
             <div className={stylesOverView.main}>
                 <div className={stylesOverView.titleDiv}>
                     <div className={stylesOverView.overViewHeadingDiv}>
