@@ -33,9 +33,10 @@ export const uploadNewFile = (files, reportDate, selectedFunds) => {
 };
 
 
-export const exportBaseDataFile = (uploadedFilesData) => {
+export const exportBaseDataFile = (uploadedFilesData, selectedFund) => {
 	const uploadedData = {
-		"files_list": uploadedFilesData
+		"files_list": uploadedFilesData,
+		"fund_type": selectedFund
 	};
 	const exportRes = axios.post(`${ApiURL}/data_ingestion/extract_base_data`, uploadedData);
 	return exportRes;
@@ -90,9 +91,10 @@ export const submitOtherInfo = async (data) => {
 	return response.data;
 };
 
-export const updateSeletedColumns = (columnIds) => {
+export const updateSeletedColumns = (columnIds, previewFundType) => {
 	const columnData = {
-		"selected_col_ids": columnIds
+		"selected_col_ids": columnIds,
+		"fund_type": previewFundType
 	};
 
 	const response = axios.post(`${ApiURL}/data_ingestion/update_bd_col_select`, columnData);

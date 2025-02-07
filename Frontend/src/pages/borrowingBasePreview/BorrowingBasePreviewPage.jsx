@@ -241,6 +241,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						getCellDetailFunc={getCellDetail}
 						cellDetail={cellDetail}
 						refreshDataFunction={handleBaseDataPreview}
+						previewFundType={previewFundType}
 					/>
 				</div>
 			</div>
