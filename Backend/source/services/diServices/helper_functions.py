@@ -59,7 +59,7 @@ def process_and_store_data(data_dict, file_id, fund_name, engine):
             if table_name == 'sf_sheet_soi_mapping':
                 # delete non-unique records from soi mapping
                 with engine.connect() as connection:
-                    data = connection.execute(f'DELETE FROM sf_sheet_soi_mapping a USING (SELECT MAX(ctid) as ctid, "SOI Name", "Security Name", "Security Type" FROM sf_sheet_soi_mapping GROUP BY ("SOI Name", "Security Name", "Security Type") HAVING COUNT(*) > 1) b WHERE (a."SOI Name" = b."SOI Name" AND a."Security Name" = b."Security Name" AND a."Security Type" = b."Security Type" AND a.ctid <> b.ctid) or a."Security Name" is null')
+                    data = connection.execute(text(f'DELETE FROM sf_sheet_soi_mapping a USING (SELECT MAX(ctid) as ctid, "SOI Name", "Security Name", "Security Type" FROM sf_sheet_soi_mapping GROUP BY ("SOI Name", "Security Name", "Security Type") HAVING COUNT(*) > 1) b WHERE (a."SOI Name" = b."SOI Name" AND a."Security Name" = b."Security Name" AND a."Security Type" = b."Security Type" AND a.ctid <> b.ctid) or a."Security Name" is null'))
                     connection.commit()
             print(f"Successfully stored sheet: {sheet_name}")
         except Exception as e:
