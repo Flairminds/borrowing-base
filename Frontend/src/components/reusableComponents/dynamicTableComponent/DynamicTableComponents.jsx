@@ -9,6 +9,7 @@ import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePreviewReorder.jsx/BaseFilePreviewReorder';
 import tableStyles from './DynamicTableComponents.module.css';
 import { DynamicInputComponent } from '../dynamicInputsComponent/DynamicInputComponent';
+import { TbReorder } from "react-icons/tb";
 
 
 export const DynamicTableComponents = (
@@ -143,15 +144,16 @@ export const DynamicTableComponents = (
             <div style={{cursor: 'pointer'}}>
                 {(showCellDetailsModal && enableColumnEditing) &&
                 <>
-                    <div style={{display: 'inline-block'}}>
+                    <div style={{display: 'inline-block', fontSize: 'small'}}>
                         <span style={{margin: '7px'}}>View Only</span>
                         <Switch size='small' style={{backgroundColor: '#0EB198' }} onChange={handleToggleChange} />
                         <span style={{margin: '7px'}}>Edit Mode</span>
                     </div>
-                    <div style={{display: 'inline-block', margin: '7px 25px'}}>
-                        <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px', margin: '0px 3px'}} />
+                    <div style={{display: 'inline-block', margin: '5px 15px'}}>
+                        <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{display: 'inline-block', margin: '0px 8px'}} title='Select/Unselect columns'/>
                         <Popover trigger={'click'} placement="bottomRight" title={"Reorder Columns"} content={<BaseFilePreviewReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
-                            <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} />
+                        <TbReorder size={20} title='Reorder columns'/>
+                            {/* <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} /> */}
                         </Popover>
                     </div>
                 </>

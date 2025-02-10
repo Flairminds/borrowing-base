@@ -26,7 +26,7 @@ security_stats = {
 }
 
 SOI_Mapping = {
-    "General": (0, 1, 5),
+    # "General": (0, 1, 5),
     "For Dropdown": (0, 6, 7)
 }
 
@@ -47,7 +47,7 @@ sheet_column_mapper = {
 
 FUND_SHEETS = {
     'cashfile': ["US Bank Holdings", "Client Holdings"],
-    'master_comp': ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV"]
+    'master_comp': ["Borrower Stats", "Securities Stats", "SOI Mapping", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV"]
 }
 
 def get_file_sheets(fund, file_type):
