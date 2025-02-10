@@ -30,12 +30,7 @@ def get_concentration_tests(fund_name):
     test_list = []
     for test in fund_tests:
         limit_percentage = test.limit_percentage
-        if test.test_name not in [
-            "Min. Eligible Issuers (#)",
-            "8 or 9 Issuers?",
-            "Max. Weighted Average Maturity (Years)",
-            "Max. Weighted Average Leverage thru Borrower",
-        ]:
+        if test.unit == 'percentage':
             limit_percentage = test.limit_percentage * 100
         if limit_percentage == 0:
             limit_percentage = ""

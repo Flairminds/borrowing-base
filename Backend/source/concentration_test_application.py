@@ -42,8 +42,7 @@ def get_concentration_test_master_list_function():
         for test in fund_tests:
             limit_percentage = test.limit_percentage
             if test.test_name not in [
-                "Min. Eligible Issuers (#)",
-                "Number of Issuers",
+                
                 "Max. Weighted Average Maturity (Years)",
                 "Max. Weighted Average Leverage thru Borrower",
             ]:
@@ -114,8 +113,7 @@ def change_conc_test_config_function():
                 id=fund_test.test_id
             ).first()
             if cocentration_test.test_name in [
-                "Min. Eligible Issuers (#)",
-                "Number of Issuers",
+                
                 "Max. Weighted Average Maturity (Years)",
                 "Max. Weighted Average Leverage thru Borrower",
             ]:
@@ -234,7 +232,7 @@ class ConcentrationTestExecutor:
         self, test_name, test_required_col_df, concentration_test_df
     ):
         actual = test_required_col_df["Eligible Issuer"].max()
-        if actual <= self.limit_percent:
+        if actual >= self.limit_percent:
             result = "Pass"
         else:
             result = "Fail"
