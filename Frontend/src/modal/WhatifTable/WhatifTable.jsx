@@ -14,7 +14,7 @@ export const WhatifTable = ({simulationType,setSimulationType,data, columns, set
   const [wiaSimulationModal, isWiaSimulationModal] = useState(false);
   const [searchInput, setSearchInput] = useState(""); 
   if (!columns?.length || !data?.length) {
-    return <div>No data available</div>;
+    return <div>No Data Available</div>;
   }
 
   const handleUseBtn = async () => {
@@ -134,7 +134,7 @@ export const WhatifTable = ({simulationType,setSimulationType,data, columns, set
               ))
             ) : (
               <tr>
-                <td colSpan={columns.length + 2} className={Styles.td}>No data found</td>
+                <td colSpan={columns.length + 2} className={Styles.td}>No Data Found</td>
               </tr>
             )}
           </tbody>

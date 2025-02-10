@@ -36,7 +36,8 @@ def extract_base_data():
     try:
         req_body = flask.request.get_json()
         file_ids = req_body.get("files_list")
-        service_response = diService.extract_base_data(file_ids)
+        fund_type = req_body.get("fund_type")
+        service_response = diService.extract_base_data(file_ids, fund_type)
         if not service_response["success"]:
             return HTTPResponse.error(message=service_response.get("message"), status_code=service_response.get("status_code"))
 
@@ -53,7 +54,8 @@ def get_base_data():
         if not service_response["success"]:
             return HTTPResponse.error(message="Could not get base data")
         # base_data_map_res = diService.get_base_data_mapping(info_id)
-        other_info = diService.get_pflt_base_data_other_info(info_id)
+        fund_type = service_response["data"]["fund_type"]
+        other_info = diService.get_base_data_other_info(info_id, fund_type)
         result = {
             "base_data_table": service_response["data"]["base_data_table"],
             "report_date": service_response["data"]["report_date"],
@@ -98,7 +100,8 @@ def update_bd_col_select():
     try:
         req_body = flask.request.get_json()
         selected_col_ids = req_body.get("selected_col_ids")
-        service_response = diService.update_bd_col_select(selected_col_ids)
+        fund_type = req_body.get('fund_type')
+        service_response = diService.update_bd_col_select(selected_col_ids, fund_type)
         if not service_response["success"]:
             return HTTPResponse.error(message="Could not update base data columns selection")
         
@@ -270,16 +273,22 @@ def get_archived_files():
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error")
     
-def pflt_base_data_other_info():
+def base_data_other_info():
     try:
         req_body = flask.request.get_json()
         extraction_info_id = req_body.get("extraction_info_id")
         determination_date= req_body.get("determination_date")
-        minimum_equity_amount_floor= req_body.get("minimum_equity_amount_floor")
+        fund_type = req_body.get("fund_type")
         other_data = req_body.get("other_data")
 
-        service_response = diService.add_pflt_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor, other_data)
+        if(fund_type == "PFLT"):
+            minimum_equity_amount_floor= req_body.get("minimum_equity_amount_floor")
+            service_response = diService.pflt_add_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor,fund_type, other_data)
+        if(fund_type == "PCOF"):
+            revolving_closing_date= req_body.get("revolving_closing_date")
+            service_response = diService.pcof_add_base_data_other_info(extraction_info_id, determination_date, revolving_closing_date, fund_type, other_data)
 
+        
         if(service_response["success"]):
             return HTTPResponse.success(message=service_response.get("message"))
 

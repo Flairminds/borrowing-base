@@ -21,6 +21,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [selectedFundType, setSelectedFundType] = useState(2);
 	const [archiveToggle, setArchiveToggle] = useState(false);
 	const [archiveFilesData, setArchiveFilesData] = useState(null);
+	const [isbuttonDisable, setButtonDisable] = useState(false);
 
 	const navigate = useNavigate();
 	let extractionInterval;
@@ -30,7 +31,13 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			const payload = fundType === 1 ? 'PCOF' : 'PFLT';
 			const fileresponse = await getBlobFilesList(payload);
 			const responseData = fileresponse.data.result;
-
+			const temp = responseData.data.map(d => {
+				return {
+					...d,
+					fund: d.fund.join(', ')
+				};
+			});
+			responseData.data = temp;
 			setDataIngestionFileListData(responseData.data);
 
 			const columnsToAdd = [{
@@ -76,7 +83,8 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const handleFileExtraction = async() => {
 		// setFileExtractionLoading(true);
 		try {
-			const extractionResponse = await exportBaseDataFile(selectedIds.current);
+			const selectedFund = selectedFundType == 1 ? "PCOF" : "PFLT";
+			const extractionResponse = await exportBaseDataFile(selectedIds.current, selectedFund);
 			console.info(extractionResponse, 'rex');
 			const extractionData = extractionResponse?.data.result;
 			showToast("info", extractionResponse.data.message);
@@ -157,6 +165,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	};
 
 	const toggleArchiveFiles = (value) => {
+		setButtonDisable(value);
 		if (value) {
 			getArchiveFiles();
 		}
@@ -191,18 +200,19 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 								<BackOption onClick={() => navigate('/base-data-list')}
 									text={`<- Base Data`} />
 
-								<div style={{ padding: '0 5px 0 0' }}></div>
-								<Select
-									defaultValue={selectedFundType}
-									style={{ width: 140, borderRadius: '8px', margin: '1rem 1rem' }}
-									options={fundOptionsArray}
-									onChange={handleDropdownChange}
-								/>
+								<div style={{ textAlign: 'left' }}>
+									<Select
+										defaultValue={selectedFundType}
+										style={{ width: 140, borderRadius: '8px', margin: '1rem 1rem' }}
+										options={fundOptionsArray}
+										onChange={handleDropdownChange}
+									/>
+								</div>
 							</div>
 						</div>
 						<div className={styles.uploadFileBtnContainer}>
 							<DynamicSwitchComponent switchOnText="Archives" switchOffText="Source Files" switchOnChange={toggleArchiveFiles} />
-							<CustomButton isFilled={true} onClick={updateFilesArchiveStatus} text={archiveToggle ? 'Unarchive' : 'Add to archives'} />
+							<CustomButton isFilled={true} onClick={updateFilesArchiveStatus} text={archiveToggle ? 'Unarchive' : 'Add to Archives'} />
 							<CustomButton isFilled={true} onClick={() => setUploadFilesPopupOpen(true)} text='+ Upload Files' />
 						</div>
 					</div>
@@ -234,12 +244,14 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 					</div>
 
 					<div className={styles.extractDataBtn}>
+					{!isbuttonDisable && (
 						<CustomButton
 							isFilled={true}
 							onClick={handleFileExtraction}
 							text='Extract Base Data'
 							// loading={fileExtractionLoading}
 						/>
+					)}
 					</div>
 				</div>
 			</div>

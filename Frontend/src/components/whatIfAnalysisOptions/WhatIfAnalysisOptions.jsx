@@ -58,11 +58,11 @@ export const WhatIfAnalysisOptions = (
   return (
     <>
 
-  <div style={{ textAlign: "center", flex: "1", margin: '0rem 1rem', paddingRight: "2rem" }}>
+  <div style={{ flex: "1" }}>
     <Select
-      className={ButtonStyles.filledBtn}
-      defaultValue="What if Analysis"
-      style={{ width: 140, borderRadius: '8px', backgroundColor: 'red' }}
+      // className={ButtonStyles.filledBtn}
+      defaultValue="-- What if Analysis --"
+      style={{ width: 170, borderRadius: '8px', backgroundColor: 'red', border: '1px solid #6D6E6F' }}
       onChange={handleDropdownChange}
       value={selectedOption}
       onSelect={(value) => setSelectedOption(value)}

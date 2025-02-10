@@ -1,0 +1,21 @@
+.input {
+    outline: none;
+    border: 1px solid #DCDEDE;
+    border-radius: 5px;
+    width: 90%;
+    font-size: small;
+    padding: 0.5rem;
+    margin: 5px 0px;
+
+    -moz-appearance: textfield;
+    -webkit-appearance: none; 
+    appearance: none; 
+}
+
+.input:focus {
+    outline: none;
+}
+
+.input::-webkit-inner-spin-button, .input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }

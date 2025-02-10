@@ -21,3 +21,16 @@
     gap: 1rem;
 }
 
+.errorInput {
+    border: 1px solid red;
+  }
+  .errorText {
+    color: red;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  
+  .requiredMarker {
+    color: red;
+    margin-left: 4px;
+}

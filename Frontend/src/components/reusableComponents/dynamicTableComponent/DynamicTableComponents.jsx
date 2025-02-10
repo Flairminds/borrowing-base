@@ -1,4 +1,4 @@
-import { SettingOutlined, DragOutlined } from '@ant-design/icons';
+import { SettingOutlined, DragOutlined, CloseOutlined } from '@ant-design/icons';
 import { Popover, Switch } from 'antd';
 import React, { useEffect, useState } from 'react';
 import CrossIcon from '../../../assets/CrossIcon.svg';
@@ -8,6 +8,8 @@ import { updateSeletedColumns } from '../../../services/dataIngestionApi';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePreviewReorder.jsx/BaseFilePreviewReorder';
 import tableStyles from './DynamicTableComponents.module.css';
+import { DynamicInputComponent } from '../dynamicInputsComponent/DynamicInputComponent';
+import { TbReorder } from "react-icons/tb";
 
 
 export const DynamicTableComponents = (
@@ -22,7 +24,8 @@ export const DynamicTableComponents = (
         onChangeSave,
         getCellDetailFunc = () => {},
         cellDetail = null,
-        refreshDataFunction
+        refreshDataFunction,
+        previewFundType
     }) => {
 
     const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
@@ -63,7 +66,7 @@ export const DynamicTableComponents = (
         });
 
         try {
-            const res = await updateSeletedColumns(updatedSelectedColumnIds);
+            const res = await updateSeletedColumns(updatedSelectedColumnIds, previewFundType);
             showToast("success", res.data.message);
         } catch (err) {
             console.error(err);
@@ -141,15 +144,16 @@ export const DynamicTableComponents = (
             <div style={{cursor: 'pointer'}}>
                 {(showCellDetailsModal && enableColumnEditing) &&
                 <>
-                    <div style={{display: 'inline-block'}}>
+                    <div style={{display: 'inline-block', fontSize: 'small'}}>
                         <span style={{margin: '7px'}}>View Only</span>
                         <Switch size='small' style={{backgroundColor: '#0EB198' }} onChange={handleToggleChange} />
                         <span style={{margin: '7px'}}>Edit Mode</span>
                     </div>
-                    <div style={{display: 'inline-block', margin: '7px 25px'}}>
-                        <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{ fontSize: '20px', margin: '0px 3px'}} />
+                    <div style={{display: 'inline-block', margin: '5px 15px'}}>
+                        <SettingOutlined onClick={(e) => handleOpenSettings(e)} style={{display: 'inline-block', margin: '0px 8px'}} title='Select/Unselect columns'/>
                         <Popover trigger={'click'} placement="bottomRight" title={"Reorder Columns"} content={<BaseFilePreviewReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
-                            <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} />
+                        <TbReorder size={20} title='Reorder columns'/>
+                            {/* <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} /> */}
                         </Popover>
                     </div>
                 </>
@@ -157,6 +161,7 @@ export const DynamicTableComponents = (
             </div>
             {showSettingsDiv &&
                 <div style={{position: 'absolute', display: 'flex', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
+                    <div className={tableStyles.crossIcon}><CloseOutlined onClick={handleOpenSettings} /></div>
                     {breaks?.map((b, i) => {
                         if (i !== 0) {
                             return (
@@ -171,7 +176,7 @@ export const DynamicTableComponents = (
                                     }
                                     )}
                                 </div>);
-                        }
+                    }
                     })}
                 </div>}
         </div>}
@@ -216,13 +221,7 @@ export const DynamicTableComponents = (
                                         {enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
                                             (
                                                 <div className={tableStyles.editIconsContainer}>
-                                                    <input
-                                                        type="text"
-                                                        value={inputValue}
-                                                        onChange={handleInputChange}
-                                                        className={tableStyles.updateInput}
-                                                        autoFocus
-                                                    />
+                                                    <DynamicInputComponent inputValue={inputValue} inputType={col.datatype} onInputChange={handleInputChange} autoFocusInput={true} />
                                                     <img
                                                         src={RightIcon}
                                                         alt="Save"
@@ -247,7 +246,7 @@ export const DynamicTableComponents = (
                         </tr>
                     ))
                     : <tr>
-                        <td colSpan={updatedColumnsData?.length} className={tableStyles.td} style={{textAlign: 'center'}}>No data</td>
+                        <td colSpan={updatedColumnsData?.length} className={tableStyles.td} style={{textAlign: 'center'}}>No Data</td>
                     </tr>}
             </tbody>
         </table>

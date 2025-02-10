@@ -150,19 +150,18 @@
     align-items: center;
 }
 
-.updateInput {
-    width: 90%;
-    outline: none;
-    border: 0px;
-}
-
-.updateInput:focus {
-    outline: none;
-    border-bottom: 1px solid black;
-}
-
 .iconButton {
     cursor: pointer;
     margin-left: 5px;
 }
 
+.crossIcon
+{
+    order: 4;
+    margin-right: 5px;
+}
+
+.columnSelectionContainer
+{
+    margin: 20px 0px;
+}

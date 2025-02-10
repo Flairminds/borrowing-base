@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { CustomButton } from '../../components/custombutton/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
-import { AddOtherInfo } from '../../modal/addOtherInfo/AddOtherInfo';
+import { AddAdditionalInformationModal } from '../../modal/addAdditionalInformationModal/AddAdditionalInformationModal';
 import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api';
 import { editBaseData, getBaseFilePreviewData } from '../../services/dataIngestionApi';
 import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
@@ -11,7 +11,7 @@ import { filterPreviewTable } from '../../utils/helperFunctions/filterPreviewTab
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 
-export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId }) => {
+export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType}) => {
 	const navigate = useNavigate();
 	const [mapping, setMapping] = useState({});
 	const [cellDetail, setCellDetail] = useState({});
@@ -102,9 +102,10 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 					reportDate: result?.report_date,
 					baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
 					cardData: result?.card_data && result.card_data[0],
-				});otherInfo: result.other_info
-				setFilteredData(result?.base_data_table?.data);
-				
+					otherInfo: result.other_info,
+					fundType: result?.fund_type
+				});
+			setFilteredData(result?.base_data_table?.data);
 		} catch (err) {
 			showToast("error", err.response.data.message);
 		}
@@ -209,6 +210,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Add Other Info</button>
 					</div>
 				</div>
+				{baseFilePreviewData.fundType == 'PFLT' &&
 				<div>
 					<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '600px', gap: '16px', padding: '5px' }}>
 						<Select
@@ -228,7 +230,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							options={baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'security_name')}
 						/>
 					</div>
-				</div>
+				</div>}
 				<div>
 					<DynamicTableComponents
 						data={filteredData}
@@ -241,10 +243,19 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						getCellDetailFunc={getCellDetail}
 						cellDetail={cellDetail}
 						refreshDataFunction={handleBaseDataPreview}
+						previewFundType={previewFundType}
 					/>
 				</div>
 			</div>
-			<AddOtherInfo isOpen={isAddFieldModalOpen} onClose={() => setIsAddFieldModalOpen(false)} dataId={baseFilePreviewData.infoId} data={baseFilePreviewData.otherInfo} />
+			<AddAdditionalInformationModal
+				isAddFieldModalOpen={isAddFieldModalOpen}
+				setIsAddFieldModalOpen={setIsAddFieldModalOpen}
+				onClose={() => setIsAddFieldModalOpen(false)}
+				dataId={baseFilePreviewData.infoId}
+				data={baseFilePreviewData.otherInfo}
+				handleBaseDataPreview={handleBaseDataPreview}
+				previewFundType={previewFundType}
+			/>
 		</div>
 		// <div>
 		//     {Object.keys(mapping)?.map(m => {
