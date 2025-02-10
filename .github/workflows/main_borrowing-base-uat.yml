@@ -65,7 +65,7 @@ jobs:
 
       # Upload artifact for deployment jobs
       - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: python-app
           path: |
@@ -82,7 +82,7 @@ jobs:
     steps:
       # Download artifact from build job
       - name: Download artifact from build job
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: python-app
 
