@@ -102,7 +102,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 					reportDate: result?.report_date,
 					baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
 					cardData: result?.card_data && result.card_data[0],
-					otherInfo: result.other_info
+					otherInfo: result.other_info,
+					fundType: result?.fund_type
 				});
 			setFilteredData(result?.base_data_table?.data);
 		} catch (err) {
@@ -209,6 +210,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Add Other Info</button>
 					</div>
 				</div>
+				{baseFilePreviewData.fundType == 'PFLT' &&
 				<div>
 					<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '600px', gap: '16px', padding: '5px' }}>
 						<Select
@@ -228,7 +230,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							options={baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'security_name')}
 						/>
 					</div>
-				</div>
+				</div>}
 				<div>
 					<DynamicTableComponents
 						data={filteredData}

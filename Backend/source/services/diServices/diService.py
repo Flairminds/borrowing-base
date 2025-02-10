@@ -45,29 +45,28 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
     try:
         for file in files:
             print(file.filename)
-            for fund_name in fund_names:
-                blob_name = f"{company_name}/{fund_name}/{file.filename}"
-                
-                # setting SourceFiles object
-                file_name = os.path.splitext(file.filename)[0]
-                extension = os.path.splitext(file.filename)[1]
-                file.seek(0, 2)  # Move to the end of the file
-                file_size = file.tell()  # Get the size in bytes
-                file.seek(0)
-                company_id = 1
-                is_validated = False
-                is_extracted = False
-                uploaded_by = 1
-                file_type = None
-                if contains_cash(file.filename):
-                    file_type = "cashfile"
-                if contains_master_comp(file.filename):
-                    file_type = "master_comp"
+            blob_name = f"{company_name}/{file.filename}"
+            
+            # setting SourceFiles object
+            file_name = os.path.splitext(file.filename)[0]
+            extension = os.path.splitext(file.filename)[1]
+            file.seek(0, 2)  # Move to the end of the file
+            file_size = file.tell()  # Get the size in bytes
+            file.seek(0)
+            company_id = 1
+            is_validated = False
+            is_extracted = False
+            uploaded_by = 1
+            file_type = None
+            if contains_cash(file.filename):
+                file_type = "cashfile"
+            if contains_master_comp(file.filename):
+                file_type = "master_comp"
 
-                # upload blob in container
-                blob_client.upload_blob(name=blob_name, data=file)
-                file_url = blob_client.url + '/' + blob_name
-                # add details of files in db
+            # upload blob in container
+            blob_client.upload_blob(name=blob_name, data=file)
+            file_url = blob_client.url + '/' + blob_name
+            # add details of files in db
             source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
 
             db.session.add(source_file)
@@ -212,7 +211,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             start_time = datetime.now()
             company_name = "Pennant"
             fund_name = fund_type
-            FOLDER_PATH = company_name + '/' + fund_name + '/'
+            FOLDER_PATH = company_name + '/'
         
             blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
 
@@ -252,6 +251,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                             "is_extracted": file_details.is_extracted
                         }
                     }
+                print(file_type)
                 if file_details.is_extracted:
                     continue
                 args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
@@ -261,9 +261,13 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                 db.session.add(file_details)
                 db.session.commit()
                 new_source_file = True
+            
+            
+            # update security mapping table
+            helper_functions.update_security_mapping(engine)
 
             # if new_source_file:
-            if not cash_file_details == None or master_comp_file_details == None:
+            if cash_file_details == None or master_comp_file_details == None:
                 raise Exception('Proper files not selected.')
             if fund_name == "PCOF":
                 service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details)
@@ -346,6 +350,8 @@ def get_base_data(info_id):
         BaseDataMappingColumnInfo.is_selected
     ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
 
+    card_data = []
+
     engine = db.get_engine()
     
     if base_data_info.fund_type == 'PFLT':
@@ -361,12 +367,34 @@ def get_base_data(info_id):
                 from pflt_base_data pbd
                 where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
             final_result = result[0]
+        no_of_obligors, no_of_assets, total_commitment, total_outstanding_balance, unmapped_records = final_result
+        card_data = [{
+            "No of Obligors": no_of_obligors,
+            "No of Securities": no_of_assets,
+            "Total Commitment": numerize.numerize(total_commitment, 2),
+            "Total Outstanding Balance": numerize.numerize(total_outstanding_balance, 2),
+            "Unmapped Securities": unmapped_records,
+            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d")
+        }]
     else:
         base_data = PcofBaseData.query.filter_by(base_data_info_id = info_id).order_by(PcofBaseData.id).all()
         HistoryData = PcofBaseDataHistory
-        final_result = [1,2,3,4,5]
-
-    no_of_obligors, no_of_assets, total_commitment, total_outstanding_balance, unmapped_records = final_result
+        with engine.connect() as connection:
+            result = connection.execute(text('''
+                select count(distinct pbd.issuer) as no_of_issuers, 
+                        count(distinct pbd.investment_name) as no_of_investments 
+                        --sum(pbd.total_commitment::float) as total_commitment, 
+                        --sum(pbd.outstanding_principal::float) as total_outstanding_balance,
+                        --(select count(distinct obligor_name) from pflt_base_data pbd where --security_name is null and pbd.base_data_info_id = :info_id) as unmapped_records
+                from pcof_base_data pbd
+                where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
+            final_result = result[0]
+        no_of_issuers, no_of_investments = final_result
+        card_data = [{
+            "No of Issuers": no_of_issuers,
+            "No of Investments": no_of_investments,
+            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d")
+        }]
 
     temp = []
     # print(base_data[0])
@@ -438,14 +466,7 @@ def get_base_data(info_id):
         "base_data_table": base_data_table,
         "report_date": base_data_info.report_date.strftime("%Y-%m-%d"),
         "fund_type": base_data_info.fund_type,
-        "card_data": [{
-            "No of Obligors": no_of_obligors,
-            "No of Assets": no_of_assets,
-            "Total Commitment": numerize.numerize(total_commitment, 2),
-            "Total Outstanding Balance": numerize.numerize(total_outstanding_balance, 2),
-            "Unmapped Securities": unmapped_records,
-            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d")
-        }]
+        "card_data": card_data
     }
     return ServiceResponse.success(data=result, message="Base Data")
 

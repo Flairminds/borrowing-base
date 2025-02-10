@@ -411,3 +411,61 @@ CREATE TABLE public.sf_sheet_us_bank_holdings (
 	"Deal Nickname" text NULL,
 	source_file_id int8 NULL
 );
+
+CREATE TABLE public.sf_sheet_pcof_iii_borrrowing_base (
+	nan float8 NULL,
+	"Family Name" text NULL,
+	"Security Name" text NULL,
+	"Investment Type" text NULL,
+	"S&P Industry" text NULL,
+	"Floating Cash Spread" text NULL,
+	"Floor" text NULL,
+	"Quoted / Unquoted" text NULL,
+	"Approved Foreign Jurisdiction" text NULL,
+	"LTV Transaction" text NULL,
+	"Noteless Assigned Loan" text NULL,
+	"Undelivered Note" text NULL,
+	"Structured Finance Obligation" text NULL,
+	"Third Party Finance Company" text NULL,
+	"Affiliate Investment" text NULL,
+	"Defaulted / Restructured" text NULL,
+	"LTM Revenue" text NULL,
+	"LTM EBITDA" text NULL,
+	"Priority Revolver Det" int8 NULL,
+	"TEV" text NULL,
+	"Total Gross Leverage" text NULL,
+	"Total PCOF III Leverage" text NULL,
+	"TotalCapitalization" text NULL,
+	"LTV Deal" text NULL,
+	"Warehouse Yes / No" text NULL,
+	"Warehouse - Credit Rating" text NULL,
+	source_file_id int8 NULL
+);
+
+CREATE TABLE public.sf_sheet_pcof_iv (
+	nan float8 NULL,
+	"Asset" text NULL,
+	"MC Name" text NULL,
+	"LTM Revenue" float8 NULL,
+	"LTM EBITDA" text NULL,
+	"Revolver" text NULL,
+	"TEV" text NULL,
+	"Total Lev" float8 NULL,
+	"PCOF IV Lev" float8 NULL,
+	"LTV" float8 NULL,
+	nan_1 float8 NULL,
+	nan_2 float8 NULL,
+	nan_3 text NULL,
+	nan_4 float8 NULL,
+	nan_5 float8 NULL,
+	nan_6 float8 NULL,
+	source_file_id int8 NULL
+);
+
+create table sf_sheet_soi_mapping (
+	"SOI Name" text NULL,
+	"Security Name" text NULL,
+	"Family Name" text NULL,
+	"Security Type" text NULL,
+	source_file_id int8 NULL
+);

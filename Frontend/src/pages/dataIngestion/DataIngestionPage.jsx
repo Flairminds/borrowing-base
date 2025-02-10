@@ -31,7 +31,13 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			const payload = fundType === 1 ? 'PCOF' : 'PFLT';
 			const fileresponse = await getBlobFilesList(payload);
 			const responseData = fileresponse.data.result;
-
+			const temp = responseData.data.map(d => {
+				return {
+					...d,
+					fund: d.fund.join(', ')
+				};
+			});
+			responseData.data = temp;
 			setDataIngestionFileListData(responseData.data);
 
 			const columnsToAdd = [{
@@ -194,13 +200,14 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 								<BackOption onClick={() => navigate('/base-data-list')}
 									text={`<- Base Data`} />
 
-								<div style={{ padding: '0 5px 0 0' }}></div>
-								<Select
-									defaultValue={selectedFundType}
-									style={{ width: 140, borderRadius: '8px', margin: '1rem 1rem' }}
-									options={fundOptionsArray}
-									onChange={handleDropdownChange}
-								/>
+								<div style={{ textAlign: 'left' }}>
+									<Select
+										defaultValue={selectedFundType}
+										style={{ width: 140, borderRadius: '8px', margin: '1rem 1rem' }}
+										options={fundOptionsArray}
+										onChange={handleDropdownChange}
+									/>
+								</div>
 							</div>
 						</div>
 						<div className={styles.uploadFileBtnContainer}>

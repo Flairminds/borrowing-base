@@ -116,9 +116,7 @@ export const PCOFData = {
 			name: "revolving_closing_date",
 			label: "Revolving Closing Date",
 			type: "datePicker"
-		}
-	],
-	Column: [
+		},
 		{
 			name: "commitment_period",
 			label: "Commitment Period",
@@ -138,7 +136,9 @@ export const PCOFData = {
 			name: "loans_cad",
 			label: "Loans (CAD)",
 			type: "text"
-		},
+		}
+	],
+	Column: [
 		{
 			name: "principal_obligations",
 			label: "Principal Obligations",
