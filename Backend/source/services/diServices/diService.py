@@ -15,6 +15,7 @@ import openpyxl
 import pickle
 import json
 from datetime import datetime
+from werkzeug.datastructures import FileStorage
 
 from source.services.commons import commonServices
 from source.app_configs import azureConfig
@@ -27,10 +28,11 @@ from source.services.diServices.PCOF import base_data_extractor as pcof_base_dat
 from source.services.diServices import ColumnSheetMap
 from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
+from source.services.diServices.helper_functions import store_sheet_data
 
 pfltDashboardService = PfltDashboardService()
 
-def upload_src_file_to_az_storage(files, report_date, fund_type):
+def upload_src_file_to_az_storage(files, report_date, fund_type, source_files_list):
     if len(files) == 0:
         return ServiceResponse.error(message = "Please select files.", status_code = 400)
     if not fund_type:
@@ -41,7 +43,6 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
     fund_names = fund_type
     report_date = datetime.strptime(report_date, "%Y-%m-%d").date()
 
-    source_files_list = []
     try:
         for file in files:
             print(file.filename)
@@ -50,6 +51,7 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
             # setting SourceFiles object
             file_name = os.path.splitext(file.filename)[0]
             extension = os.path.splitext(file.filename)[1]
+            file_bytes = file.read() 
             file.seek(0, 2)  # Move to the end of the file
             file_size = file.tell()  # Get the size in bytes
             file.seek(0)
@@ -58,10 +60,6 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
             is_extracted = False
             uploaded_by = 1
             file_type = None
-            if contains_cash(file.filename):
-                file_type = "cashfile"
-            if contains_master_comp(file.filename):
-                file_type = "master_comp"
 
             # upload blob in container
             blob_client.upload_blob(name=blob_name, data=file)
@@ -69,8 +67,15 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
             # add details of files in db
             source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
 
+            source_files_list.append({
+                "source_file": source_file,
+                "file": file_bytes
+            })
+
             db.session.add(source_file)
             db.session.commit()
+            db.session.flush()  
+            db.session.refresh(source_file)
             
         return ServiceResponse.success(message = "Files uploaded successfully")
 
@@ -132,7 +137,6 @@ def get_blob_list(fund_type):
             "source_file_type": source_file.file_type,
             "uploaded_by": source_file.display_name
         })
-        print(source_file.fund_types)
     
     return ServiceResponse.success(data=list_table)
 
@@ -167,20 +171,24 @@ def get_data(blob_data, sheet_name, output_file_name, args):
         return {"success_status": False, "error": str(e), "dataframe": None}
 
 def update_column_names(df, sheet_name, sheet_column_mapper):
-    column_level_map = sheet_column_mapper[sheet_name]
-    columns = []
-    
-    for index, column in enumerate(df.columns):
-        column_initials = ""
-        for heading in list(column_level_map.keys()):
-            if index in range(column_level_map[heading][1], column_level_map[heading][2]):
-                column_initials = column_initials + "[" + "".join(word[0].upper() for word in heading.split()) + "] "
-        column_name = column_initials + str(column)
-        columns.append(column_name.strip())
+    try:
+        column_level_map = sheet_column_mapper[sheet_name]
+        columns = []
+        
+        for index, column in enumerate(df.columns):
+            column_initials = ""
+            for heading in list(column_level_map.keys()):
+                if index in range(column_level_map[heading][1], column_level_map[heading][2]):
+                    column_initials = column_initials + "[" + "".join(word[0].upper() for word in heading.split()) + "] "
+            column_name = column_initials + str(column)
+            columns.append(column_name.strip())
 
-    df.columns = columns
-    df = df.round(3)
-    return df
+        df.columns = columns
+        df = df.round(3)
+        return df
+    
+    except Exception as e:
+        Log.func_error(e)
 
 def extract(file_sheet_map, sheet_column_mapper, args):
     extrcted_df = {}
@@ -292,6 +300,85 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
+
+def get_sheet_data(blob_data, sheet_name, output_file_name, args):
+    try:
+        df = blob_data
+        for name in args:
+            if df.eq(name).any(axis=1).any():
+                first_occurrence_index = df.eq(name).any(axis=1).idxmax()
+            else:
+                first_occurrence_index = None 
+            if first_occurrence_index is None:
+                continue
+            else:
+                break
+        if first_occurrence_index is None:
+            return {"success_status": False, "error": "No such column found", "dataframe": None}
+        
+        new_df = df.loc[first_occurrence_index + 1:].reset_index(drop=True)
+        new_df.columns = df.loc[first_occurrence_index]
+        return {"success_status": True, "error": None, "dataframe": new_df}
+    except Exception as e:
+        return {"success_status": False, "error": str(e), "dataframe": None}
+
+def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_column_mapper, args):
+    try:
+        extrcted_df = {}
+        cashFileSheet = ["US Bank Holdings", "Client Holdings"]
+        masterCompSheet = ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV"]
+
+        uploaded_file.seek(0)
+        sheet_df_map = pd.read_excel(uploaded_file, sheet_name=None)
+
+        sheet_name_list = list(sheet_df_map.keys())
+
+        for sheet_name in sheet_name_list:
+            if sheet_name in cashFileSheet:
+                required_sheets = cashFileSheet
+                file_type = "cashfile"
+            elif sheet_name in masterCompSheet:
+                required_sheets = masterCompSheet
+                file_type = "master_comp"
+
+        for sheet in required_sheets:
+            column_level_map = sheet_column_mapper[sheet]
+            df_result = get_sheet_data(sheet_df_map[sheet], sheet, column_level_map, args)
+            if df_result["success_status"] is True:
+                extrcted_df[sheet] = df_result["dataframe"]
+                extracted_df = df_result["dataframe"].copy(deep=True)
+                updated_col_df = update_column_names(extracted_df, sheet, sheet_column_mapper)
+                updated_col_df["source_file_id"] = db_source_file.id
+                db_source_file.file_type = file_type
+                updated_column_df[sheet] = updated_col_df
+            print(sheet + ' extracted')
+
+    except Exception as e:
+        Log.func_error(e)
+        print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+
+def extract_source_file(file_list):
+    try:
+        for source_file in file_list:
+            print("inside", source_file["source_file"])
+        sheet_column_mapper = ColumnSheetMap.sheet_column_mapper
+        args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
+        updated_column_df = {}
+
+        for file_value in file_list:
+            db_source_file = file_value.get("source_file")
+            print("db_source_file", db_source_file)
+            uploaded_file_bytes =  file_value.get("file")
+            uploaded_file_stream = BytesIO(uploaded_file_bytes)
+            uploaded_file = FileStorage(stream=uploaded_file_stream, filename="example.txt", content_type="text/plain")
+
+            sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_column_mapper, args)
+        
+        return ServiceResponse.success(data=updated_column_df)
+    
+    except Exception as e:
+        print(str(e))
+        return ServiceResponse.error()
 
 def extract_base_data(file_ids, fund_type):
     base_data_info_id = None
@@ -1129,6 +1216,41 @@ def get_base_data_other_info(extraction_info_id, fund_type):
                 res = {**common_fields, "revolving_closing_date": other_info.other_info_list["revolving_closing_date"]}
 
         return ServiceResponse.success(data = res)
+    except Exception as e:
+        Log.func_error(e)
+        return ServiceResponse.error()
+    
+def update_source_file_info(source_file_list, isValidated=False, isExtracted=False):
+    try:
+        for source_file in source_file_list:
+            source_file_detail = source_file.get("source_file")
+            source_file_detail.is_validated = isValidated
+            source_file_detail.is_extracted = isExtracted
+
+            db.session.add(source_file_detail)
+            db.session.commit()
+    except Exception as e:
+        Log.func_error(e)
+        print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+        
+def extract_validate_store_update(source_files_list):
+    try:
+        from app import app
+        with app.app_context():
+            for source_file in source_files_list:
+                print(source_file["source_file"].id)
+            extraction_response = extract_source_file(source_files_list)
+
+            is_Extracted = False
+            if (extraction_response.get("success")):
+                extracted_data = extraction_response.get("data")
+                store_response = store_sheet_data(data_dict=extracted_data)
+                is_Extracted = store_response.get("success")
+
+            update_source_file_info(source_files_list, isExtracted=is_Extracted)
+        
+        return ServiceResponse.success()
+
     except Exception as e:
         Log.func_error(e)
         return ServiceResponse.error()
