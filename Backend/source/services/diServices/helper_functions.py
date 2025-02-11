@@ -1,5 +1,7 @@
 import pandas as pd
 from sqlalchemy import text
+from models import db
+from source.utility.ServiceResponse import ServiceResponse
 
 def truncate_and_rename_columns(df):
     """
@@ -75,3 +77,32 @@ def update_security_mapping(engine):
     except Exception as e:
         print(f"Failed to update security mapping")
         raise Exception(e)
+    
+def store_sheet_data(data_dict):
+    engine = db.get_engine()
+
+    """Process each DataFrame and store it in the database."""
+    try:
+        for sheet_name, df in data_dict.items():
+            print(f"Processing sheet: {sheet_name}")
+
+            df = truncate_and_rename_columns(df)
+            table_name = 'sf_sheet' + '_' + sheet_name.lower().replace(" ", "_")
+            with engine.connect() as connection:
+                columns = connection.execute(text(f'''SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = :table_name'''), {'table_name': table_name}).fetchall()
+            columns_list = []
+            for column in columns:
+                columns_list.append(column.column_name)
+            drop_columns = []
+            for column in df.columns:
+                if column not in columns_list:
+                    drop_columns.append(column)
+            df=df.drop(columns=drop_columns)
+            df.to_sql(table_name, con=engine, if_exists='append', index=False, method='multi')
+            print(f"Successfully stored sheet: {sheet_name}")
+                
+        return ServiceResponse.success()
+    except Exception as e:
+        print(f"Failed to store sheet {sheet_name}")
+        print(str(e))
+        return ServiceResponse.error() 

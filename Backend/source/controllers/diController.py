@@ -1,4 +1,5 @@
 import flask
+import threading
 
 from source.services.diServices import diService
 from source.utility.HTTPResponse import HTTPResponse
@@ -10,14 +11,20 @@ def upload_source_files():
         files = flask.request.files.getlist("files")
         reporting_date = flask.request.form.get("reporting_date")
         fund_type = flask.request.form.getlist("fund_type")
-        service_response = diService.upload_src_file_to_az_storage(files, reporting_date, fund_type)
+        # diservice.storeSourceinDB (source_file and upload file to db table)
+        source_files_list = []
+        service_response = diService.upload_src_file_to_az_storage(files, reporting_date, fund_type, source_files_list)
         
         if not service_response["success"]:
             return HTTPResponse.error(message = service_response["message"], status_code = service_response["status_code"])
         
         Log.func_success(message=service_response["message"])
-        return HTTPResponse.success(message=service_response["message"])
 
+        threading.Thread(target=diService.extract_validate_store_update,
+            kwargs={"source_files_list" : source_files_list}
+        ).start()
+
+        return HTTPResponse.success(message=service_response["message"])
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal server error", status_code=500)
