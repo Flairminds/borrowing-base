@@ -1,15 +1,16 @@
 import { SettingOutlined, DragOutlined, CloseOutlined } from '@ant-design/icons';
 import { Popover, Switch } from 'antd';
+import dayjs from "dayjs";
 import React, { useEffect, useState } from 'react';
+import { TbReorder } from "react-icons/tb";
 import CrossIcon from '../../../assets/CrossIcon.svg';
 import RightIcon from '../../../assets/RightIcon.svg';
 import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
 import { updateSeletedColumns } from '../../../services/dataIngestionApi';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePreviewReorder.jsx/BaseFilePreviewReorder';
-import tableStyles from './DynamicTableComponents.module.css';
 import { DynamicInputComponent } from '../dynamicInputsComponent/DynamicInputComponent';
-import { TbReorder } from "react-icons/tb";
+import tableStyles from './DynamicTableComponents.module.css';
 
 
 export const DynamicTableComponents = (
@@ -36,7 +37,10 @@ export const DynamicTableComponents = (
 	const [modalVisible, setModalVisible] = useState(false);
 	// const [cellDetails, setCellDetails] = useState({ rowIndex: -1, column: '' });
 	const [editingCell, setEditingCell] = useState(null);
-	const [inputValue, setInputValue] = useState("");
+	const [inputValue, setInputValue] = useState({
+		value: "",
+		displayValue: ""
+	});
 	const [isInUpdateMode, setIsInUpdateMode] = useState(false);
 
 
@@ -99,45 +103,70 @@ export const DynamicTableComponents = (
 		}
 	};
 
-	const handleCellEdit = (rowIndex, columnkey, cellValue) => {
+	const handleCellEdit = (rowIndex, columnkey, cellValue, dataType) => {
 		setEditingCell({ rowIndex, columnkey });
-		setInputValue(cellValue);
+		if (dataType === "date" && cellValue) {
+			setInputValue({
+				value: dayjs(cellValue),
+				displayValue: cellValue
+			});
+		} else {
+			setInputValue({
+				value: cellValue,
+				displayValue: cellValue
+			});
+		}
 	};
 
 	const handleInputChange = (e) => {
-		setInputValue(e.target.value);
+		setInputValue({
+			value: e.target.value,
+			displayValue: e.target.value
+		});
 	};
 
 	const handleDateChange = (date, dateString) => {
-		setInputValue(dateString);
+		setInputValue({
+			value: date,
+			displayValue: dateString
+		});
 	};
 
 	const handleSaveEdit = async () => {
 
 		const { rowIndex, columnkey } = editingCell;
 		console.info(rowIndex, columnkey, '----', inputValue);
-		// const saveStatus = await onChangeSave(rowIndex, columnkey, inputValue);
+		const saveStatus = await onChangeSave(rowIndex, columnkey, inputValue.displayValue);
 
-		// if (saveStatus.success) {
-		// 	setEditingCell(null);
-		// 	setInputValue("");
-		// 	showToast("success", "Data updated successfully");
-		// } else {
-		// 	showToast("error", saveStatus.msg);
-		// }
+		if (saveStatus.success) {
+			setEditingCell(null);
+			setInputValue({
+				value: null,
+				displayValue: ""
+			});
+			showToast("success", "Data updated successfully");
+		} else {
+			showToast("error", saveStatus.msg);
+		}
 	};
 
 	const handleCancelEdit = (e) => {
 		e.stopPropagation();
 		setEditingCell(null);
-		setInputValue("");
+		setInputValue({
+			value: null,
+			displayValue: ""
+		});
 	};
 
 	const handleToggleChange = (value) => {
 		setIsInUpdateMode(value);
 		if (!value) {
 			setEditingCell(null);
-			setInputValue("");
+			setInputValue({
+				value: null,
+				displayValue: ""
+			});
 		}
 	};
 
@@ -224,11 +253,11 @@ export const DynamicTableComponents = (
 										return (
 											<td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
 												style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white', color: cellActualValue != cellOldValue ? 'red' : 'auto'}}
-												onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + cellActualValue + '\nPrevious: ' + cellOldValue : cellTitleValue}`}>
+												onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue, col.datatype) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + cellActualValue + '\nPrevious: ' + cellOldValue : cellTitleValue}`}>
 												{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 													(
 														<div className={tableStyles.editIconsContainer}>
-															<DynamicInputComponent inputValue={inputValue} inputType={col.datatype} onInputChange={InputChnageFun} autoFocusInput={true} />
+															<DynamicInputComponent inputValue={inputValue?.value} inputType={col.datatype} onInputChange={InputChnageFun} autoFocusInput={true} />
 															<img
 																src={RightIcon}
 																alt="Save"
