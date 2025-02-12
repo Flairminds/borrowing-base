@@ -1,7 +1,6 @@
 import { SettingOutlined, DragOutlined, CloseOutlined } from '@ant-design/icons';
 import { Popover, Switch } from 'antd';
 import dayjs from "dayjs";
-import dayjs from "dayjs";
 import React, { useEffect, useState } from 'react';
 import { TbReorder } from "react-icons/tb";
 import CrossIcon from '../../../assets/CrossIcon.svg';
@@ -11,7 +10,6 @@ import { updateSeletedColumns } from '../../../services/dataIngestionApi';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePreviewReorder.jsx/BaseFilePreviewReorder';
 import { DynamicInputComponent } from '../dynamicInputsComponent/DynamicInputComponent';
-import tableStyles from './DynamicTableComponents.module.css';
 import tableStyles from './DynamicTableComponents.module.css';
 
 
@@ -30,34 +28,7 @@ export const DynamicTableComponents = (
 		refreshDataFunction,
 		previewFundType
 	}) => {
-	{
-		data,
-		columns,
-		additionalColumns = [],
-		showCellDetailsModal = false,
-		showSettings = false,
-		enableStickyColumns = false,
-		enableColumnEditing = false,
-		onChangeSave,
-		getCellDetailFunc = () => {},
-		cellDetail = null,
-		refreshDataFunction,
-		previewFundType
-	}) => {
 
-	const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
-	const [showSettingsDiv, setShowSettingsDiv] = useState(false);
-	const [breaks, setBreaks] = useState([]);
-	const [selectedColumns, setSelectedColumns] = useState([]);
-	const [activeRowIndex, setActiveRowIndex] = useState(-1);
-	const [modalVisible, setModalVisible] = useState(false);
-	// const [cellDetails, setCellDetails] = useState({ rowIndex: -1, column: '' });
-	const [editingCell, setEditingCell] = useState(null);
-	const [inputValue, setInputValue] = useState({
-		value: "",
-		displayValue: ""
-	});
-	const [isInUpdateMode, setIsInUpdateMode] = useState(false);
 	const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
 	const [showSettingsDiv, setShowSettingsDiv] = useState(false);
 	const [breaks, setBreaks] = useState([]);
@@ -90,23 +61,6 @@ export const DynamicTableComponents = (
 			setBreaks([0, parseInt(columns.length / 3) + 1, (2 * parseInt(columns.length / 3)) + 1, columns.length]);
 		}
 	}, [columns]);
-	useEffect(() => {
-		if (columns && columns?.length > 0) {
-			const temp = [...columns, ...additionalColumns];
-			setUpdatedColumnsData(temp);
-			let selectedColumntoDisplay = [];
-			if (showSettings) {
-				selectedColumntoDisplay = columns.filter((col) => col.is_selected);
-			} else {
-				selectedColumntoDisplay = columns;
-			}
-			const initalColumnsConsidered = [...selectedColumntoDisplay, ...additionalColumns];
-			const intialColumns = initalColumnsConsidered.map((t) => t.label);
-			console.info(intialColumns, 'test', initalColumnsConsidered);
-			setSelectedColumns(intialColumns);
-			setBreaks([0, parseInt(columns.length / 3) + 1, (2 * parseInt(columns.length / 3)) + 1, columns.length]);
-		}
-	}, [columns]);
 
 	const updateVisibleColumns = async () => {
 		const updatedSelectedColumnIds = selectedColumns?.map((col) => {
@@ -114,21 +68,6 @@ export const DynamicTableComponents = (
 			const columnId = columnData?.bdm_id;
 			return columnId;
 		});
-	const updateVisibleColumns = async () => {
-		const updatedSelectedColumnIds = selectedColumns?.map((col) => {
-			const columnData = columns.find((c) => c.label == col);
-			const columnId = columnData?.bdm_id;
-			return columnId;
-		});
-
-		try {
-			const res = await updateSeletedColumns(updatedSelectedColumnIds, previewFundType);
-			showToast("success", res.data.message);
-		} catch (err) {
-			console.error(err);
-			showToast('error', err.response?.data?.message || 'Failed to Update');
-		}
-	};
 		try {
 			const res = await updateSeletedColumns(updatedSelectedColumnIds, previewFundType);
 			showToast("success", res.data.message);
@@ -138,13 +77,6 @@ export const DynamicTableComponents = (
 		}
 	};
 
-	const handleOpenSettings = (e) => {
-		e.preventDefault();
-		if (showSettingsDiv) {
-			updateVisibleColumns();
-		}
-		setShowSettingsDiv(!showSettingsDiv);
-	};
 	const handleOpenSettings = (e) => {
 		e.preventDefault();
 		if (showSettingsDiv) {
@@ -162,39 +94,15 @@ export const DynamicTableComponents = (
 			setSelectedColumns([...selectedColumns, val]);
 		}
 	};
-	const handleCheckboxClick = (e, val) => {
-		const selectedColumnsArray = [...selectedColumns];
-		const index = selectedColumnsArray.indexOf(val);
-		if (index > -1) {
-			setSelectedColumns(selectedColumns?.filter((col) => col != val));
-		} else {
-			setSelectedColumns([...selectedColumns, val]);
-		}
-	};
 
-	const handleCellClick = (rowIndex, columnKey, columnName, cellValue) => {
+
 	const handleCellClick = (rowIndex, columnKey, columnName, cellValue) => {
 		if (showCellDetailsModal) {
 			getCellDetailFunc(rowIndex, columnKey, columnName, cellValue);
 			setModalVisible(true);
 		}
 	};
-	};
 
-	const handleCellEdit = (rowIndex, columnkey, cellValue, dataType) => {
-		setEditingCell({ rowIndex, columnkey });
-		if (dataType === "date" && cellValue) {
-			setInputValue({
-				value: dayjs(cellValue),
-				displayValue: cellValue
-			});
-		} else {
-			setInputValue({
-				value: cellValue,
-				displayValue: cellValue
-			});
-		}
-	};
 	const handleCellEdit = (rowIndex, columnkey, cellValue, dataType) => {
 		setEditingCell({ rowIndex, columnkey });
 		if (dataType === "date" && cellValue) {
@@ -223,41 +131,13 @@ export const DynamicTableComponents = (
 			displayValue: dateString
 		});
 	};
-	const handleInputChange = (e) => {
-		setInputValue({
-			value: e.target.value,
-			displayValue: e.target.value
-		});
-	};
 
-	const handleDateChange = (date, dateString) => {
-		setInputValue({
-			value: date,
-			displayValue: dateString
-		});
-	};
-
-	const handleSaveEdit = async () => {
 	const handleSaveEdit = async () => {
 
 		const { rowIndex, columnkey } = editingCell;
 		console.info(rowIndex, columnkey, '----', inputValue);
 		const saveStatus = await onChangeSave(rowIndex, columnkey, inputValue.displayValue);
-		const { rowIndex, columnkey } = editingCell;
-		console.info(rowIndex, columnkey, '----', inputValue);
-		const saveStatus = await onChangeSave(rowIndex, columnkey, inputValue.displayValue);
 
-		if (saveStatus.success) {
-			setEditingCell(null);
-			setInputValue({
-				value: null,
-				displayValue: ""
-			});
-			showToast("success", "Data updated successfully");
-		} else {
-			showToast("error", saveStatus.msg);
-		}
-	};
 		if (saveStatus.success) {
 			setEditingCell(null);
 			setInputValue({
@@ -278,25 +158,7 @@ export const DynamicTableComponents = (
 			displayValue: ""
 		});
 	};
-	const handleCancelEdit = (e) => {
-		e.stopPropagation();
-		setEditingCell(null);
-		setInputValue({
-			value: null,
-			displayValue: ""
-		});
-	};
 
-	const handleToggleChange = (value) => {
-		setIsInUpdateMode(value);
-		if (!value) {
-			setEditingCell(null);
-			setInputValue({
-				value: null,
-				displayValue: ""
-			});
-		}
-	};
 	const handleToggleChange = (value) => {
 		setIsInUpdateMode(value);
 		if (!value) {
