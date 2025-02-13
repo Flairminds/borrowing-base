@@ -199,51 +199,57 @@ export const DynamicTableComponents = (
             <tbody>
                 {data?.length > 0 ?
                     data?.map((row, rowIndex) => (
-                        <tr key={rowIndex} onClick={() => setActiveRowIndex(rowIndex)}>
-                            {updatedColumnsData?.map((col) => {
-                                if (selectedColumns.includes(col.label)) {
-                                    const isEditable = enableColumnEditing && col.isEditable;
-                                    let cellDisplayValue = row[col.key];
-                                    let cellActualValue = row[col.key];
-                                    let cellTitleValue = row[col.key];
-                                    let cellOldValue = row[col.key];
-                                    if (row[col.key] && row[col.key]['meta_info']) {
-                                        cellDisplayValue = row[col.key]['display_value'];
-                                        cellActualValue = row[col.key]['value'];
-                                        cellTitleValue = row[col.key]['title'];
-                                        cellOldValue = row[col.key]['old_value'];
-                                    }
-                                    const isValueEmpty = isEditable && !cellDisplayValue;
-                                return (
-                                    <td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
-                                        style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white', color: cellActualValue != cellOldValue ? 'red' : 'auto'}}
-                                        onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + cellActualValue + '\nPrevious: ' + cellOldValue : cellTitleValue}`}>
-                                        {enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
-                                            (
-                                                <div className={tableStyles.editIconsContainer}>
-                                                    <DynamicInputComponent inputValue={inputValue} inputType={col.datatype} onInputChange={handleInputChange} autoFocusInput={true} />
-                                                    <img
-                                                        src={RightIcon}
-                                                        alt="Save"
-                                                        className={tableStyles.iconButton}
-                                                        onClick={handleSaveEdit}
-                                                    />
-                                                    <img
-                                                        src={CrossIcon}
-                                                        alt="Cancel"
-                                                        className={tableStyles.iconButton}
-                                                        onClick={handleCancelEdit}
-                                                    />
-                                                </div>
-                                            )
-                                            :
-                                                col.render ? col.render(cellDisplayValue, row) : (cellDisplayValue ? cellDisplayValue : '-')
-                                        }
-                                    </td>
-                                );
-                                }
-                            })}
-                        </tr>
+						<tr key={rowIndex} onClick={() => setActiveRowIndex(rowIndex)}>
+							{updatedColumnsData?.map((col) => {
+								if (selectedColumns.includes(col.label)) {
+									const isEditable = enableColumnEditing && col.isEditable;
+									let cellDisplayValue = row[col.key];
+									let cellActualValue = row[col.key];
+									let cellTitleValue = row[col.key];
+									let cellOldValue = row[col.key];
+									if (row[col.key] && row[col.key]['meta_info']) {
+										cellDisplayValue = row[col.key]['display_value'];
+										cellActualValue = row[col.key]['value'];
+										switch (col.unit) {
+											case 'percent': cellDisplayValue = `${(cellActualValue * 100).toFixed(2)}%`; break;
+											case 'date': cellDisplayValue = `${((new Date(cellActualValue)).toLocaleDateString("en-US"))}`; break;
+											default:
+												break;
+										}
+										cellTitleValue = row[col.key]['title'];
+										cellOldValue = row[col.key]['old_value'];
+									}
+									const isValueEmpty = isEditable && !cellDisplayValue;
+								return (
+									<td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
+										style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white', color: cellActualValue != cellOldValue ? 'red' : 'auto'}}
+										onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + cellActualValue + '\nPrevious: ' + cellOldValue : cellTitleValue}`}>
+										{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
+											(
+												<div className={tableStyles.editIconsContainer}>
+													<DynamicInputComponent inputValue={inputValue} inputType={col.datatype} onInputChange={handleInputChange} autoFocusInput={true} />
+													<img
+														src={RightIcon}
+														alt="Save"
+														className={tableStyles.iconButton}
+														onClick={handleSaveEdit}
+													/>
+													<img
+														src={CrossIcon}
+														alt="Cancel"
+														className={tableStyles.iconButton}
+														onClick={handleCancelEdit}
+													/>
+												</div>
+											)
+											:
+												col.render ? col.render(cellDisplayValue, row) : (cellDisplayValue ? cellDisplayValue : '-')
+										}
+									</td>
+								);
+								}
+							})}
+						</tr>
                     ))
                     : <tr>
                         <td colSpan={updatedColumnsData?.length} className={tableStyles.td} style={{textAlign: 'center'}}>No Data</td>

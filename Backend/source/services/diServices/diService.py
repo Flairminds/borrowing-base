@@ -432,6 +432,7 @@ def get_base_data(info_id):
         BaseDataMapping.bd_column_lookup,
         BaseDataMapping.bd_column_name,
         BaseDataMapping.bd_column_datatype,
+        BaseDataMapping.bd_column_unit,
         BaseDataMapping.is_editable,
         BaseDataMappingColumnInfo.sequence,
         BaseDataMappingColumnInfo.is_selected
@@ -442,7 +443,7 @@ def get_base_data(info_id):
     engine = db.get_engine()
     
     if base_data_info.fund_type == 'PFLT':
-        base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).order_by(PfltBaseData.id).all()
+        base_data = PfltBaseData.query.join(PfltSecurityMapping, PfltSecurityMapping.master_comp_security_name == PfltBaseData.security_name).filter(PfltBaseData.base_data_info_id == info_id).order_by(PfltBaseData.id).all()
         HistoryData = PfltBaseDataHistory
         with engine.connect() as connection:
             result = connection.execute(text('''
@@ -450,7 +451,7 @@ def get_base_data(info_id):
                         count(distinct pbd.security_name) as no_of_assets, 
                         sum(pbd.total_commitment::float) as total_commitment, 
                         sum(pbd.outstanding_principal::float) as total_outstanding_balance,
-                        (select count(distinct obligor_name) from pflt_base_data pbd where security_name is null and pbd.base_data_info_id = :info_id) as unmapped_records
+                        (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
                 from pflt_base_data pbd
                 where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
             final_result = result[0]
@@ -526,6 +527,7 @@ def get_base_data(info_id):
             "key": column.bd_column_lookup,
             "label": column.bd_column_name,
             "datatype": column.bd_column_datatype,
+            "unit": column.bd_column_unit,
             "isEditable": column.is_editable,
             "bdm_id": column.bdm_id,
             "is_selected": column.is_selected
@@ -943,7 +945,7 @@ def trigger_bb_calculation(bdi_id):
         writer.save()
 
 
-        data = {'INPUTS': ['Determination Date', 'Minimum Equity Amount Floor'], '': ['', ''], 'Values': ['9-30-24', '30000000']}
+        data = {'INPUTS': ['Determination Date', 'Minimum Equity Amount Floor'], '': ['', ''], 'Values': ['12-31-24', '30000000']}
         data = pd.DataFrame.from_dict(data)
         xl_df_map['Inputs'] = data
 
@@ -953,7 +955,7 @@ def trigger_bb_calculation(bdi_id):
         # data.to_excel(writer, sheet_name="Inputs", index=False, header=True)
         # writer.save()
 
-        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rate': [1.000000, 0.695230, 0.618820, 1.035400]}
         data = pd.DataFrame.from_dict(data)
         xl_df_map['Exchange Rates'] = data
 
@@ -963,7 +965,7 @@ def trigger_bb_calculation(bdi_id):
         # data.to_excel(writer, sheet_name="Exchange Rates", index=False, header=True)
         # writer.save()
 
-        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': [1.000000, 0.739350, 0.691310, 1.113500], 'Cash - Current & PreBorrowing': [50958522.16, 265552.25, 0, 0], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': [0, 0, 0, 0], 'Additional Expences 2': [0, 0, 0, 0], 'Additional Expences 3': [0, 0, 0, 0]}
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': [1.000000, 0.695230, 0.618820, 1.035400], 'Cash - Current & PreBorrowing': [21455041.84, 216583.15, 0, 0], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': [0, 0, 0, 0], 'Additional Expences 2': [0, 0, 0, 0], 'Additional Expences 3': [0, 0, 0, 0]}
         data = pd.DataFrame.from_dict(data)
         xl_df_map['Cash Balance Projections'] = data
 

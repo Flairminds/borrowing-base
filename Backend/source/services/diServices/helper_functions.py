@@ -71,7 +71,7 @@ def process_and_store_data(data_dict, file_id, fund_name, engine):
 def update_security_mapping(engine):
     try:
         with engine.connect() as connection:
-            connection.execute(text(f'insert into pflt_security_mapping (soi_name, master_comp_security_name, family_name, security_type) select "SOI Name", "Security Name", "Family Name", "Security Type" from sf_sheet_soi_mapping on conflict do nothing'))
+            connection.execute(text(f'insert into pflt_security_mapping (company_id, soi_name, master_comp_security_name, family_name, security_type) select 1, "SOI Name", "Security Name", "Family Name", "Security Type" from sf_sheet_soi_mapping on conflict do nothing'))
             connection.commit()
         print("updated security mapping")
     except Exception as e:
