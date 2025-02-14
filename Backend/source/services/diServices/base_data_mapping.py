@@ -60,7 +60,7 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	ch."Deal Issue (Derived) Rating - S&P" as current_sp_rating,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as initial_fixed_charge_coverage_ratio,
 	null as date_of_default,
-	100 as market_value,
+	case when usbh."Market Value Indenture" is not null then avg(usbh."Market Value Indenture" / 100) else 0 end as market_value,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as current_fixed_charge_coverage_ratio,
 	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA" as current_interest_coverage_ratio,
 	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization" as initial_debt_to_capitalization_ratio,
@@ -78,7 +78,7 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	0 as coupon_incl_pik_pikable,
 	case when ss."[SI] LIBOR Floor" is not null then 'Yes' else 'No' end as floor_obligation,
 	case when ss."[SI] LIBOR Floor" != 'NM' then ss."[SI] LIBOR Floor"::float else null end as floor,
-	case when ss."[SI] Cash Spread to LIBOR" != 'NM' and ss."[SI] Cash Spread to LIBOR" is not null then ss."[SI] Cash Spread to LIBOR"::float + coalesce(ss."[SI] PIK Coupon"::float, 0)::float else null end as spread_incl_pik_pikable,
+	case when ss."[SI] Cash Spread to LIBOR" != 'NM' and ss."[SI] Cash Spread to LIBOR" is not null and ss."[SI] PIK Coupon" != 'NM' then ss."[SI] Cash Spread to LIBOR"::float + coalesce(ss."[SI] PIK Coupon"::float, 0)::float else 0 end as spread_incl_pik_pikable,
 	0 as base_rate,
 	0 as for_unused_fee,
 	0 as pik_pikable_for_floating_rate_loans,
@@ -112,12 +112,12 @@ left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_securit
 left join sf_sheet_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
 where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id) and
-((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND pbb.source_file_id= :master_comp_file_id AND bs.source_file_id= :master_comp_file_id) or sm.id is null)
+((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND (pbb.source_file_id = :master_comp_file_id or pbb.source_file_id is null) AND bs.source_file_id= :master_comp_file_id) or sm.id is null)
     group by usbh."Issuer/Borrower Name", usbh."Security/Facility Name", pbb."Defaulted Collateral Loan at Acquisition",
 	ss."Security", pbb."Credit Improved Loan", pbb."Stretch Senior (Y/N)", ch."Issue Name",
 	ch."Deal Issue (Derived) Rating - Moody's", ch."Payment Period", ch."Deal Issue (Derived) Rating - S&P", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio",
 	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization", pbb."Senior Debt", pbb."LTM EBITDA", pbb."Total Debt",
-	pbb."Closing LTM EBITDA", pbb."Current LTM EBITDA", ch."As Of Date", usbh."Maturity Date", ss."[SI] Type of Rate",
+	pbb."Closing LTM EBITDA", pbb."Current LTM EBITDA", ch."As Of Date", usbh."Maturity Date", ss."[SI] Type of Rate", usbh."Market Value Indenture",
 	ss."[SI] LIBOR Floor", bs."[ACM] [COI/LC] S&P Industry", ss."[SI] Credit Facility Lien Type", ss."[SI] Currency", ss."[SI] Obligor Country",
 	pbb."DIP Loans", pbb."Obligations w/ Warrants attached", pbb."Participations", pbb."Convertible into Equity", pbb."Eligible Covie Lite (1L, Issue > $250mm, B3 / B-)",
 	pbb."Equity Security", pbb."Subject of an Offer or Called for Redemption", pbb."Margin Stock", pbb."Subject to Withholding Tax", pbb."Zero Coupon Obligation",
