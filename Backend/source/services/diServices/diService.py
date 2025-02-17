@@ -25,6 +25,7 @@ from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, 
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
+from source.services.diServices.PCOF import BBTrigger as PCOF_BBTrigger
 from source.services.diServices import ColumnSheetMap
 from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
@@ -906,6 +907,10 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
 
 def trigger_bb_calculation(bdi_id):
     try:
+        extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(id=bdi_id).first()
+        if extracted_base_data_info.fund_type == 'PCOF':
+            pcof_bb_trigger_response = PCOF_BBTrigger.trigger_pcof_bb(bdi_id)
+            return pcof_bb_trigger_response
         engine = db.get_engine()
         with engine.connect() as connection:
             df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
