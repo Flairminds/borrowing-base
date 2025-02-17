@@ -237,7 +237,13 @@ export const AddAdditionalInformationModal = (
 						<Form.List name="other_data">
 							{(fields, { add, remove }) => (
 								<>
-									<div className={styles.rowHeader}>
+									<div className={styles.rowHeader}
+										style={{
+											display: "grid",
+											gridTemplateColumns: `repeat(${selectedData.Column.length}, 1fr)`, // Dynamic grid
+											gap: "10px",
+											padding: "10px"
+										}}>
 										{selectedData.Column.map((inputField) => (
 											<div key={inputField.label} className={styles.column}>
 												{inputField.label}
@@ -245,39 +251,48 @@ export const AddAdditionalInformationModal = (
 										))}
 									</div>
 
-									{fields.map((field, index) => (
-										<div key={field.key} className={styles.row}>
-											{selectedData.Column.map((inputField) => (
-												<Form.Item
-													key={inputField.name}
-													name={[field.name, inputField.name]}
-													noStyle
-												>
-													{inputField.type === "datePicker" ? (
-														<DatePicker
-															placeholder={inputField.label}
-															style={{
-																width: "100%",
-																padding: "4px",
-																borderRadius: "8px",
-																border: "1px solid rgba(201, 196, 196, 0.6)",
-															}}
-														/>
-													) : (
-														<Input
-															placeholder={inputField.label}
-															style={{
-																width: "100%",
-																padding: "4px",
-																borderRadius: "8px",
-																border: "1px solid rgba(201, 196, 196, 0.6)",
-															}}
-														/>
-													)}
-												</Form.Item>
-											))}
-										</div>
-									))}
+									<div className={styles.rowContainer}>
+										{fields.map((field, index) => (
+											<div key={field.key} className={styles.row} 
+												style={{
+													display: "grid",
+													gridTemplateColumns: `repeat(${selectedData.Column.length}, 1fr)`, // Dynamic grid
+													gap: "10px",
+													padding: "10px"
+												}}
+											>
+												{selectedData.Column.map((inputField) => (
+													<Form.Item
+														key={inputField.name}
+														name={[field.name, inputField.name]}
+														noStyle
+													>
+														{inputField.type === "datePicker" ? (
+															<DatePicker
+																placeholder={inputField.label}
+																style={{
+																	width: "100%",
+																	padding: "4px",
+																	borderRadius: "8px",
+																	border: "1px solid rgba(201, 196, 196, 0.6)",
+																}}
+															/>
+														) : (
+															<Input
+																placeholder={inputField.label}
+																style={{
+																	width: "100%",
+																	padding: "4px",
+																	borderRadius: "8px",
+																	border: "1px solid rgba(201, 196, 196, 0.6)",
+																}}
+															/>
+														)}
+													</Form.Item>
+												))}
+											</div>
+										))}
+									</div>
 
 									<Form.Item>
 										<Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
