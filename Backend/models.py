@@ -172,6 +172,7 @@ class SourceFiles(db.Model):
     fund_types = db.Column(db.ARRAY(db.String), nullable=True)
     is_validated = db.Column(db.Boolean, default=False)
     is_extracted = db.Column(db.Boolean, default=False)
+    extraction_status = db.Column(db.String(100))
     uploaded_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_at = db.Column(db.DateTime(timezone=True))
     uploaded_by = db.Column(db.Integer, nullable=False)
