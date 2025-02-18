@@ -68,6 +68,7 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity }
 
 	const handleCancel = () => {
 		setIsOpen(false);
+		// setProbableEntriesData(null);
 	};
 
 	const handleMapSecurity = async (secId, cashSecurity) => {
@@ -88,7 +89,7 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity }
 	const additionalColumns = [{
 		key: "",
 		label: "",
-		'render': (value, row) => <div onClick={() => handleMapSecurity(row.id, activeSecurity)} style={{ textAlign: 'center' }}> Use </div>
+		'render': (value, row) => <div onClick={() => handleMapSecurity(row.id, activeSecurity)} style={{ textAlign: 'center', cursor: 'pointer' }}> Use </div>
 	}];
 
 	const getProbableMappings = async () => {
@@ -104,7 +105,7 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity }
 
 
 	return (
-		<Modal open={isOpen} onCancel={handleCancel} footer={null} width={"90%"}>
+		<Modal open={isOpen} onCancel={handleCancel} footer={null} width={"80%"}>
 			<h5>{activeSecurity}</h5>
 			<Radio.Group value={selectedOption} onChange={handleOptionChange} style={{ marginBottom: "16px" }}>
 				<Radio value="mapToExisting">Map to Existing Record</Radio>
@@ -115,7 +116,7 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity }
 				/>
 			)}
 			{selectedOption === 'addNewMapping' && (
-				<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+				<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
 					<div style={{ padding: '16px', border: '1px solid #d9d9d9', borderRadius: '4px', width: '50%' }}>
 						<Form layout="vertical">
 							<Form.Item label="SOI Name" required>
@@ -124,7 +125,7 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity }
 									value={formValues.soiName || ''}
 									onChange={(e) => handleInputChange('soiName', e.target.value)}
 								/>
-								{errors.soiName && <span className={styles.errorText}>{errors.soiName}</span>} {/* Show error message */}
+								{errors.soiName && <span className={styles.errorText}>{errors.soiName}</span>}
 							</Form.Item>
 
 							<Form.Item label="Master Comp Security Name">
