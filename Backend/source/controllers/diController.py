@@ -285,6 +285,10 @@ def base_data_other_info():
         req_body = flask.request.get_json()
         extraction_info_id = req_body.get("extraction_info_id")
         determination_date= req_body.get("determination_date")
+        commitment_period = req_body.get("commitment_period")
+        facility_size= req_body.get("facility_size")
+        loans_usd= req_body.get("loans_usd")
+        loans_cad= req_body.get("loans_cad")
         fund_type = req_body.get("fund_type")
         other_data = req_body.get("other_data")
 
@@ -293,7 +297,17 @@ def base_data_other_info():
             service_response = diService.pflt_add_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor,fund_type, other_data)
         if(fund_type == "PCOF"):
             revolving_closing_date= req_body.get("revolving_closing_date")
-            service_response = diService.pcof_add_base_data_other_info(extraction_info_id, determination_date, revolving_closing_date, fund_type, other_data)
+            service_response = diService.pcof_add_base_data_other_info(
+                extraction_info_id,
+                determination_date,
+                revolving_closing_date, 
+                commitment_period,
+                facility_size,
+                loans_usd,
+                loans_cad,
+                fund_type, 
+                other_data
+            )
 
         
         if(service_response["success"]):

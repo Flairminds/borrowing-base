@@ -1149,7 +1149,17 @@ def pflt_add_base_data_other_info(extraction_info_id, determination_date, minimu
     except Exception as e:
         Log.func_error(e)
         return ServiceResponse.error(message="Failed to add")
-def pcof_add_base_data_other_info(extraction_info_id, determination_date, revolving_closing_date, fund_type, other_data):
+def pcof_add_base_data_other_info(
+        extraction_info_id,
+        determination_date, 
+        revolving_closing_date, 
+        commitment_period,
+        facility_size,
+        loans_usd,
+        loans_cad, 
+        fund_type, 
+        other_data
+    ):
     try:
         table_list = []
 
@@ -1157,15 +1167,10 @@ def pcof_add_base_data_other_info(extraction_info_id, determination_date, revolv
 
         for value in other_data:
             table_list.append ({
-                "commitment_period": value.get("commitment_period"),
-                "facility_size": value.get("facility_size"),
-                "loans_usd": value.get("loans_usd"),
-                "loans_cad": value.get("loans_cad"),
                 "principal_obligations": value.get("principal_obligations"),
                 "currency": value.get("currency"),
                 "amount": value.get("amount"),
                 "spot_rate": value.get("spot_rate"),
-                "dollar_equivalent": value.get("dollar_equivalent")
             })
 
         if existing_record:
@@ -1173,6 +1178,10 @@ def pcof_add_base_data_other_info(extraction_info_id, determination_date, revolv
             existing_record.fund_type = fund_type
             existing_record.other_info_list = {
                 "revolving_closing_date": revolving_closing_date,
+                "commitment_period": commitment_period,
+                "facility_size": facility_size,
+                "loans_usd": loans_usd,
+                "loans_cad": loans_cad,
                 "table_list": table_list
             }
         else:
@@ -1182,6 +1191,10 @@ def pcof_add_base_data_other_info(extraction_info_id, determination_date, revolv
                 fund_type = fund_type,
                 other_info_list = {
                     "revolving_closing_date": revolving_closing_date,
+                    "commitment_period": commitment_period,
+                    "facility_size": facility_size,
+                    "loans_usd": loans_usd,
+                    "loans_cad": loans_cad,
                     "table_list": table_list
                 }
             )
