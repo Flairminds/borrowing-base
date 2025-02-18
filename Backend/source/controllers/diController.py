@@ -179,7 +179,41 @@ def get_pflt_sec_mapping():
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def get_unmapped_cash_sec():
+    try:
+        service_response = diService.get_unmapped_cash_sec()
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not get PFLT Security Mapping")
+        return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
     
+def get_cash_sec():
+    try:
+        req_body = flask.request.get_json()
+        security_type = req_body.get('security_type')
+        service_response = diService.get_cash_sec(security_type)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not get all securities")
+        return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def get_unmapped_pflt_sec():
+    try:
+        req_body = flask.request.get_json()
+        cash_file_security = req_body.get('cash_file_security')
+        service_response = diService.get_unmapped_pflt_sec(cash_file_security)
+        if not service_response["success"]:
+            return HTTPResponse.error(message=service_response.get("message"))
+        return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
 def edit_pflt_sec_mapping():
     try:
         req_body = flask.request.get_json()
