@@ -1256,3 +1256,130 @@ def extract_validate_store_update(source_files_list):
     except Exception as e:
         Log.func_error(e)
         return ServiceResponse.error()
+
+def get_unmapped_cash_sec():
+    engine = db.get_engine()
+    with engine.connect() as connection:
+        unmapped_securities = pd.DataFrame(connection.execute(text('''select 
+	        distinct "Security/Facility Name" as cashfile_securities, 
+	        "Security ID" as "security_id", 
+	        "Issuer/Borrower Name" as "issuer_borrower_name",
+	        "P. Lot Current Par Amount (Deal Currency)" as "par_amout_deal",
+	        "PIK Loan" as "pik_loan"
+        from sf_sheet_us_bank_holdings pubh 
+        left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
+        where psm.id is null''')).fetchall())
+
+    columns = [
+        {"key": "security_id", "label": "Security ID", 'isEditable': False, 'isRequired': True},
+        {"key": "cashfile_securities", "label": "Security/Facility Name", 'isEditable': False, 'isRequired': True},
+        {"key": "issuer_borrower_name", "label": "Issuer/Borrower Name", 'isEditable': False, 'isRequired': True},
+        {"key": "par_amout_deal", "label": "P.L.Lot Current Par Amount (Deal Currency)", 'isEditable': False, 'isRequired': True},
+        {"key": "pik_loan", "label": "PIK Loan", 'isEditable': False, 'isRequired': True}
+    ]
+
+    unmapped_securities = unmapped_securities.fillna("")
+    unmapped_securities_dict = unmapped_securities.to_dict(orient='records')
+
+    unmapped_securities_list = {
+        "columns": columns,
+        "data": unmapped_securities_dict
+    }
+    return ServiceResponse.success(data=unmapped_securities_list, message="Unmapped Securities")
+
+def get_unmapped_pflt_sec(cash_file_security):
+    try:
+        cash_file_security_initial = cash_file_security.split(" ")[0]
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            matched_pflt_sec_mapping_df = pd.DataFrame(connection.execute(text(f'''
+                select 
+                    id, 
+                    soi_name, 
+                    master_comp_security_name, 
+                    family_name, security_type, 
+                    cashfile_security_name 
+                from pflt_security_mapping 
+                where company_id = 1 and
+                pflt_security_mapping.cashfile_security_name is null and
+                (soi_name ilike '{cash_file_security_initial}%' or family_name ilike '{cash_file_security_initial}%') 
+                order by soi_name asc;''')).fetchall())
+
+        columns_data = [
+            {
+                'key': "soi_name",
+                'label': "SOI Name",
+                'isEditable': False,
+                'isRequired': True
+            }, {
+                'key': "master_comp_security_name",
+                'label': "Master Comp Security Name",
+                'isEditable': False
+            },  {
+                'key': "family_name",
+                'label': "Family Name",
+                'isEditable': True
+            }, {
+                'key': "security_type",
+                'label': "Security Type",
+                'isEditable': False
+            }, {
+                'key': "cashfile_security_name",
+                'label': "Cash File Security Name",
+                'isEditable': True
+            }
+        ]
+        pflt_sec_mapping_table = {
+            "columns": columns_data,
+            "data": []
+        }
+        matched_pflt_sec_mapping_df.columns = matched_pflt_sec_mapping_df.columns.str.replace(" ", "_")
+        matched_pflt_sec_mapping_df = matched_pflt_sec_mapping_df.replace({np.nan: None})
+        df_dict = matched_pflt_sec_mapping_df.to_dict(orient='records')
+        pflt_sec_mapping_table["data"] = df_dict
+
+        return ServiceResponse.success(data=pflt_sec_mapping_table, message="Probable securities")
+    except Exception as e:
+        Log.func_error(e=e)
+        return ServiceResponse.error(message=f"Error occurred while retrieving unmapped cash file securities")
+    
+def get_cash_sec(security_type):
+    engine = db.get_engine()
+    with engine.connect() as connection:
+        if security_type == "all":
+            securities = pd.DataFrame(connection.execute(text('''select 
+                distinct "Security/Facility Name" as cashfile_securities, 
+                "Security ID" as "security_id", 
+                "Issuer/Borrower Name" as "issuer_borrower_name",
+                "P. Lot Current Par Amount (Deal Currency)" as "par_amout_deal",
+                "PIK Loan" as "pik_loan"
+            from sf_sheet_us_bank_holdings pubh 
+            left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
+            order by "Issuer/Borrower Name" asc''')).fetchall())
+        else:
+            securities = pd.DataFrame(connection.execute(text('''select 
+                distinct "Security/Facility Name" as cashfile_securities, 
+                "Security ID" as "security_id", 
+                "Issuer/Borrower Name" as "issuer_borrower_name",
+                "P. Lot Current Par Amount (Deal Currency)" as "par_amout_deal",
+                "PIK Loan" as "pik_loan"
+            from sf_sheet_us_bank_holdings pubh 
+            left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
+            where psm.id is null''')).fetchall())
+
+    columns = [
+        {"key": "security_id", "label": "Security ID", 'isEditable': False, 'isRequired': True},
+        {"key": "cashfile_securities", "label": "Security/Facility Name", 'isEditable': False, 'isRequired': True},
+        {"key": "issuer_borrower_name", "label": "Issuer/Borrower Name", 'isEditable': False, 'isRequired': True},
+        {"key": "par_amout_deal", "label": "P.L.Lot Current Par Amount (Deal Currency)", 'isEditable': False, 'isRequired': True},
+        {"key": "pik_loan", "label": "PIK Loan", 'isEditable': False, 'isRequired': True}
+    ]
+
+    securities = securities.fillna("")
+    securities_dict = securities.to_dict(orient='records')
+
+    unmapped_securities_list = {
+        "columns": columns,
+        "data": securities_dict
+    }
+    return ServiceResponse.success(data=unmapped_securities_list, message="All Securities")
