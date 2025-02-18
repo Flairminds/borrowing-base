@@ -34,7 +34,7 @@ export const SecurityMappingPage = () => {
 	const additionalColumns = [{
 		key: "",
 		label: "",
-		'render': (value, row) => <div style={{textAlign: 'center'}}> <FaRegEdit onClick={() => handleSecurityEdit(row.cashfile_securities)} /> </div>
+		'render': (value, row) => <div style={{textAlign: 'center', cursor: 'pointer'}}> <FaRegEdit onClick={() => handleSecurityEdit(row.cashfile_securities)} /> </div>
 	}];
 
 	return (
@@ -44,7 +44,7 @@ export const SecurityMappingPage = () => {
 				<div className={styles.securityOverviewCard}>Unmapped Securities</div>
 			</div>
 
-			<div className={styles.pageTitle}>Unmapped Securites</div>
+			<div className={styles.pageTitle}>Unmapped Securities</div>
 			<div className={styles.tableContainer}>
 				<DynamicTableComponents data={unmappedSecurities?.data} columns={unmappedSecurities?.columns} additionalColumns={additionalColumns} />
 			</div>
