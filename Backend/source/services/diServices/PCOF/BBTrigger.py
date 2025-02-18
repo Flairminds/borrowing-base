@@ -342,51 +342,51 @@ def trigger_pcof_bb(bdi_id):
         input_other_metrics_data = [
             {
                 "Other Metrics": "First Lien Leverage Cut-Off Point",
-                "Values": 4.0
+                "values": 4.0
             },
             {
                 "Other Metrics": "Warehouse First Lien Leverage Cut-Off",
-                "Values": 4.5
+                "values": 4.5
             },
             {
                 "Other Metrics": "Last Out Attachment Point",
-                "Values": 2.25
+                "values": 2.25
             },
             {
                 "Other Metrics": "1 out of 2 Test",
-                "Values": None
+                "values": None
             },
             {
                 "Other Metrics": "Trailing 12-Month EBITDA",
-                "Values": 10.0
+                "values": 10.0
             },
             {
                 "Other Metrics": "Trailing 24-Month EBITDA",
-                "Values": 20.0
+                "values": 20.0
             },
             {
                 "Other Metrics": "Total Leverage",
-                "Values": 4.5
+                "values": 4.5
             },
             {
                 "Other Metrics": "LTV",
-                "Values": 0.65
+                "values": 0.65
             },
             {
                 "Other Metrics": "Concentration Test Threshold 1",
-                "Values": 0.075
+                "values": 0.075
             },
             {
                 "Other Metrics": "Concentration Test Threshold 1",
-                "Values": 0.010
+                "values": 0.010
             },
             {
                 "Other Metrics": "Threshold 1 Advance Rate",
-                "Values": 0.50
+                "values": 0.50
             },
             {
                 "Other Metrics": "Threshold 2 Advance Rate",
-                "Values": 0.0
+                "values": 0.0
             }
         ]
         df_Inputs_Other_Metrics = pd.DataFrame(input_other_metrics_data)
@@ -505,6 +505,19 @@ def trigger_pcof_bb(bdi_id):
         df_PL_BB_Build[["Investment Cost"]].fillna(0)
         df_PL_BB_Build["Investment Par"] = df_PL_BB_Build["Investment Cost"].astype(float)
         df_PL_BB_Build[["Investment Par"]].fillna(0)
+
+        df_PL_BB_Build["Leverage PCOF IV Leverage"].fillna(0, inplace=True)
+
+        df_PL_BB_Build["Rates Fixed Coupon"] = pd.to_numeric(df_PL_BB_Build["Rates Fixed Coupon"], errors='coerce')
+        df_PL_BB_Build["Rates Fixed Coupon"] = df_PL_BB_Build["Rates Fixed Coupon"].fillna(0).astype(int)
+
+        df_PL_BB_Build["Rates Current LIBOR/Floor"] = pd.to_numeric(df_PL_BB_Build["Rates Current LIBOR/Floor"], errors='coerce')
+        df_PL_BB_Build["Rates Current LIBOR/Floor"] = df_PL_BB_Build["Rates Current LIBOR/Floor"].fillna(0).astype(int)
+
+        df_PL_BB_Build["Rates Floating Cash Spread"] = pd.to_numeric(df_PL_BB_Build["Rates Floating Cash Spread"], errors='coerce')
+        df_PL_BB_Build["Rates Floating Cash Spread"] = df_PL_BB_Build["Rates Floating Cash Spread"].fillna(0).astype(int)
+
+        
 
         df_PL_BB_Build = calculation_for_build(
             df_PL_BB_Build, 

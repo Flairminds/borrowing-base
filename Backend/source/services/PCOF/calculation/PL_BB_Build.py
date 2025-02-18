@@ -1244,14 +1244,26 @@ def calculate_Warehouse_Day_Count(df_PL_BB_Build, date_as_of):
 
 # AB All_In
 def calculate_All_In_helper(w, x, y, z):
-    if math.isnan(w):
-        w = 0
-    if math.isnan(x):
+    if pd.isna(w):
+        w =0
+    else:
+        if math.isnan(w):
+            w = 0
+    if pd.isna(x):
         x = 0
-    if math.isnan(y):
+    else:
+        if math.isnan(x):
+            x = 0
+    if pd.isna(y):
         y = 0
-    if math.isnan(z):
+    else:
+        if math.isnan(y):
+            y = 0
+    if pd.isna(z):
         z = 0
+    else:
+        if math.isnan(z):
+            z = 0
     return w + y + x + z
 
 
