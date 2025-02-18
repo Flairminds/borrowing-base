@@ -264,7 +264,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                     continue
                 args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
                 data_dict = extract(file_sheet_map, sheet_column_mapper, args)
-                process_store_status = helper_functions.process_and_store_data(data_dict, file_id, fund_name, engine)
+                # process_store_status = helper_functions.process_and_store_data(data_dict, file_id, fund_name, engine)
                 file_details.is_extracted = True
                 db.session.add(file_details)
                 db.session.commit()
