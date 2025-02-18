@@ -221,69 +221,80 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
     with app.app_context():
         try:
             engine = db.get_engine()
-            start_time = datetime.now()
-            company_name = "Pennant"
+            # start_time = datetime.now()
+            # company_name = "Pennant"
             fund_name = fund_type
-            FOLDER_PATH = company_name + '/'
+            # FOLDER_PATH = company_name + '/'
         
-            blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
+            # blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
 
             start_time = datetime.now()
 
-            company_id = None
-            report_date = None
-            new_source_file = False
+            # company_id = None
+            # report_date = None
+            # new_source_file = False
             cash_file_details = None
             master_comp_file_details = None
-            file_sheet_map = None
+            market_book_file_details = None
+            # file_sheet_map = None
 
             for file_id in file_ids:
                 file_details = SourceFiles.query.filter_by(id=file_id).first()
-                company_id = file_details.company_id
-                report_date = file_details.report_date
-                file_name = file_details.file_name + file_details.extension
-                file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + file_name).download_blob().readall())
+                # company_id = file_details.company_id
+                # report_date = file_details.report_date
+                # file_name = file_details.file_name + file_details.extension
+                # file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + file_name).download_blob().readall())
                 file_type = file_details.file_type
                 if (file_type == 'cashfile'):
                     cash_file_details = file_details
-                    file_sheet_map = {
-                        "cash": {
-                            "file": file,
-                            "source_file_obj": file_details,
-                            "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type), 
-                            "is_extracted": file_details.is_extracted
-                        }
-                    }
+                    # file_sheet_map = {
+                    #     "cash": {
+                    #         "file": file,
+                    #         "source_file_obj": file_details,
+                    #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type), 
+                    #         "is_extracted": file_details.is_extracted
+                    #     }
+                    # }
                 elif file_type == 'master_comp':
                     master_comp_file_details = file_details
-                    file_sheet_map = {
-                        "master_comp": {
-                            "file": file,
-                            "source_file_obj": file_details,
-                            "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
-                            "is_extracted": file_details.is_extracted
-                        }
-                    }
+                    # file_sheet_map = {
+                    #     "master_comp": {
+                    #         "file": file,
+                    #         "source_file_obj": file_details,
+                    #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
+                    #         "is_extracted": file_details.is_extracted
+                    #     }
+                    # }
+                elif file_type == 'market_book_file':
+                    market_book_file_details = file_details
+                    # file_sheet_map = {
+                    #     "market_book_file": {
+                    #         "file": file,
+                    #         "source_file_obj": file_details,
+                    #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
+                    #         "is_extracted": file_details.is_extracted
+                    #     }
+                    # }
                 print(file_type)
-                if file_details.is_extracted:
-                    continue
-                args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
-                data_dict = extract(file_sheet_map, sheet_column_mapper, args)
+                # if file_details.is_extracted:
+                #     continue
+                # args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
+                # data_dict = extract(file_sheet_map, sheet_column_mapper, args)
                 # process_store_status = helper_functions.process_and_store_data(data_dict, file_id, fund_name, engine)
-                file_details.is_extracted = True
-                db.session.add(file_details)
-                db.session.commit()
-                new_source_file = True
+                # file_details.is_extracted = True
+                # db.session.add(file_details)
+                # db.session.commit()
+                # new_source_file = True
             
             
             # update security mapping table
-            helper_functions.update_security_mapping(engine)
+            # helper_functions.update_security_mapping(engine)
 
             # if new_source_file:
-            if cash_file_details == None or master_comp_file_details == None:
+            if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
                 raise Exception('Proper files not selected.')
             if fund_name == "PCOF":
-                service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
+                service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details)
                 if service_response["success"]:   
                     extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
                 else:
@@ -332,6 +343,7 @@ def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_c
         extrcted_df = {}
         cashFileSheet = ["US Bank Holdings", "Client Holdings"]
         masterCompSheet = ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV"]
+        marketBookSheets = ["MarketBook"]
 
         uploaded_file.seek(0)
         sheet_df_map = pd.read_excel(uploaded_file, sheet_name=None)
@@ -345,6 +357,9 @@ def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_c
             elif sheet_name in masterCompSheet:
                 required_sheets = masterCompSheet
                 file_type = "master_comp"
+            elif sheet_name in marketBookSheets:
+                required_sheets = marketBookSheets
+                file_type = "market_book_file"
 
         for sheet in required_sheets:
             column_level_map = sheet_column_mapper[sheet]
@@ -367,7 +382,7 @@ def extract_source_file(file_list):
         for source_file in file_list:
             print("inside", source_file["source_file"])
         sheet_column_mapper = ColumnSheetMap.sheet_column_mapper
-        args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
+        args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset", "Issuer"]
         updated_column_df = {}
 
         for file_value in file_list:
