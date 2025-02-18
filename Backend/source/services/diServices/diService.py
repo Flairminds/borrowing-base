@@ -65,7 +65,7 @@ def upload_src_file_to_az_storage(files, report_date, fund_type, source_files_li
             blob_client.upload_blob(name=blob_name, data=file)
             file_url = blob_client.url + '/' + blob_name
             # add details of files in db
-            source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
+            source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, extraction_status='In Progress', uploaded_by=uploaded_by, file_type=file_type)
 
             source_files_list.append({
                 "source_file": source_file,
@@ -99,6 +99,7 @@ def get_blob_list(fund_type):
             SourceFiles.fund_types,
             SourceFiles.file_type,
             SourceFiles.report_date,
+            SourceFiles.extraction_status,
             Users.display_name
         ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id, SourceFiles.is_archived == False)
     
@@ -123,6 +124,9 @@ def get_blob_list(fund_type):
         }, {
             "key": "uploaded_by", 
             "label": "Uploaded by",
+        }, {
+            "key": "extraction_status",
+            "label": "Extraction Status"
         }], 
         "data": []
     }
@@ -135,7 +139,8 @@ def get_blob_list(fund_type):
             "report_date": source_file.report_date.strftime("%Y-%m-%d"),
             "fund": source_file.fund_types,
             "source_file_type": source_file.file_type,
-            "uploaded_by": source_file.display_name
+            "extraction_status": source_file.extraction_status,
+            "uploaded_by": source_file.display_name,
         })
     
     return ServiceResponse.success(data=list_table)
@@ -1228,7 +1233,7 @@ def update_source_file_info(source_file_list, isValidated=False, isExtracted=Fal
             source_file_detail = source_file.get("source_file")
             source_file_detail.is_validated = isValidated
             source_file_detail.is_extracted = isExtracted
-
+            source_file_detail.extraction_status = "Completed" if isExtracted else "Failed"
             db.session.add(source_file_detail)
             db.session.commit()
     except Exception as e:
@@ -1250,7 +1255,7 @@ def extract_validate_store_update(source_files_list):
                 is_Extracted = store_response.get("success")
 
             update_source_file_info(source_files_list, isExtracted=is_Extracted)
-        
+        print("Files extracted, validated, stored")
         return ServiceResponse.success()
 
     except Exception as e:

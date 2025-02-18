@@ -50,7 +50,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
       try {
         const selectedFunds = selectedOptions;
         const uploadresponse = await uploadNewFile(selectedFiles, reportDate, selectedFunds);
-        blobFilesList();
+        await blobFilesList(selectedOptions);
         showToast('success', uploadresponse?.data?.message);
       } catch (error) {
         showToast('error', error?.response?.data.message);
