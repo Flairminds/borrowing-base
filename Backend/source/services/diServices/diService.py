@@ -288,7 +288,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             
             
             # update security mapping table
-            helper_functions.update_security_mapping(engine)
+            # helper_functions.update_security_mapping(engine)
 
             # if new_source_file:
             # if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
