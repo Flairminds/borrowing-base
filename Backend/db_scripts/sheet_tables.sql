@@ -469,3 +469,21 @@ create table sf_sheet_soi_mapping (
 	"Security Type" text NULL,
 	source_file_id int8 NULL
 );
+
+CREATE TABLE public.sf_sheet_marketbook (
+	nan text NULL,
+	"Issuer" text NULL,
+	nan_1 float8 NULL,
+	"Asset" text NULL,
+	"(NC)" text NULL,
+	nan_2 float8 NULL,
+	"Committed" text NULL,
+	"Book Value" text NULL,
+	"Market Value" text NULL,
+	nan_3 float8 NULL,
+	"MV Price" text NULL,
+	"Book Value_1" text NULL,
+	"BV Price" text NULL,
+	"MV - BV" text NULL,
+	source_file_id int8 NULL
+);

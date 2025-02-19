@@ -909,7 +909,7 @@ def trigger_bb_calculation(bdi_id):
         engine = db.get_engine()
         with engine.connect() as connection:
             df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
-            df2 = pd.DataFrame(connection.execute(text(f'select bd_column_name, bd_column_lookup from pflt_base_data_mapping where bd_column_lookup is not null')).fetchall())
+            df2 = pd.DataFrame(connection.execute(text(f'select bd_column_name, bd_column_lookup from base_data_mapping where bd_column_lookup is not null')).fetchall())
             # haircut_config = pd.DataFrame(connection.execute(text(f'select haircut_level, obligor_tier, "position", value from pflt_haircut_config')).fetchall())
             industry_list = pd.DataFrame(connection.execute(text(f'select industry_no as "Industry No", industry_name as "Industry" from pflt_industry_list')).fetchall())
         df = df.replace({np.nan: None})

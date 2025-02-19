@@ -16,10 +16,10 @@
 // const apiURL = 'https://borrowing-base-uat.azurewebsites.net/api';
 // const apiURL = 'http://127.0.0.1:5000/api';
 
-const apiURL = 'http://localhost:5000/api';
+// const apiURL = 'http://localhost:5000/api';
 
 // local backend link
-// const apiURL = `${window.location}/api`;
+const apiURL = `${window.location}/api`;
 
 export const ApiURL = apiURL;
 
