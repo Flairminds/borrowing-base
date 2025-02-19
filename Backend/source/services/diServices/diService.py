@@ -32,7 +32,7 @@ from source.services.diServices.helper_functions import store_sheet_data
 
 pfltDashboardService = PfltDashboardService()
 
-def upload_src_file_to_az_storage(files, report_date, fund_type, source_files_list):
+def upload_src_file_to_az_storage(files, report_date, fund_type):
     if len(files) == 0:
         return ServiceResponse.error(message = "Please select files.", status_code = 400)
     if not fund_type:
@@ -42,6 +42,8 @@ def upload_src_file_to_az_storage(files, report_date, fund_type, source_files_li
     company_name = "Pennant"
     fund_names = fund_type
     report_date = datetime.strptime(report_date, "%Y-%m-%d").date()
+    source_files_list = []
+
 
     try:
         for file in files:
@@ -61,6 +63,7 @@ def upload_src_file_to_az_storage(files, report_date, fund_type, source_files_li
             uploaded_by = 1
             file_type = None
 
+
             # upload blob in container
             blob_client.upload_blob(name=blob_name, data=file)
             file_url = blob_client.url + '/' + blob_name
@@ -77,7 +80,7 @@ def upload_src_file_to_az_storage(files, report_date, fund_type, source_files_li
             db.session.flush()  
             db.session.refresh(source_file)
             
-        return ServiceResponse.success(message = "Files uploaded successfully")
+        return ServiceResponse.success(message = "Files uploaded successfully", data=source_files_list)
 
     except ResourceExistsError as ree:
         Log.func_error(e=ree)

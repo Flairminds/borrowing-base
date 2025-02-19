@@ -64,9 +64,9 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
             left join sf_sheet_pcof_iv sspi on ss."Security" = sspi."Asset"
             left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
             left join sf_sheet_marketbook ssmb on ch."Issuer/Borrower Name" = ssmb."Issuer"
-            where (usbh.source_file_id = 132 AND ch.source_file_id = 132 and ssmb.source_file_id = 138) and
-            ((sm.id is not null AND ss.source_file_id = 133 AND bs.source_file_id = 133) or sm.id is null)
-            order by usbh."Security/Facility Name"'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id}))
+            where (usbh.source_file_id = :cash_file_id AND ch.source_file_id = :cash_file_id and ssmb.source_file_id = :market_book_file_id) and
+            ((sm.id is not null AND ss.source_file_id = :master_comp_file_id AND bs.source_file_id = :master_comp_file_id) or sm.id is null)
+            order by usbh."Security/Facility Name"'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}))
 
         if pcof_base_data.empty:
                 raise Exception('Base data is empty')
