@@ -5,6 +5,8 @@ import { HandleSecurityMappingModal } from '../../modal/securityMappingModals/ha
 import { getUnmappedSecurityData } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from "./SecurityMappingPage.module.css";
+import { BackOption } from '../../components/BackOption/BackOption';
+import { useNavigate } from 'react-router';
 
 export const SecurityMappingPage = () => {
 	const [unmappedSecurities, setUnmappedSecurities] = useState([]);
@@ -12,6 +14,7 @@ export const SecurityMappingPage = () => {
 	const [isMappingPopupOpen, setIsMappingPopupOpen] = useState(false);
 	const [securityViewType, setSecurityViewType] = useState("unmapped");
 	const [searchText, setSearchText] = useState("");
+	const navigate = useNavigate();
 
 	const handleSearch = (event) => {
 		setSearchText(event.target.value);
@@ -59,9 +62,15 @@ export const SecurityMappingPage = () => {
 
 	return (
 		<div>
+
+			<div className={styles.backOptionContainer}>
+				<BackOption onClick={() => navigate('/base-data-list')}
+					text={`<- Base Data`} />
+			</div>
+
 			<div className={styles.securityOverview}>
-				<div onClick={() => changeSecurityView("all")} className={styles.securityOverviewCard}>All Securities</div>
-				<div onClick={() => changeSecurityView("unmapped")} className={`${styles.securityOverviewCard} ${styles.background}`}>Unmapped Securities</div>
+				<div onClick={() => changeSecurityView("all")} className={securityViewType == "all" ? `${styles.securityOverviewCard} ${styles.background}` : `${styles.securityOverviewCard}`}>All Securities</div>
+				<div onClick={() => changeSecurityView("unmapped")} className={securityViewType == "unmapped" ? `${styles.securityOverviewCard} ${styles.background}` : `${styles.securityOverviewCard}`}>Unmapped Securities</div>
 			</div>
 
 
@@ -74,14 +83,14 @@ export const SecurityMappingPage = () => {
 					<input
 						type="text"
 						placeholder="Security/Facility Name"
-						style={{ width: '200px', borderRadius: '5px' }}
+						style={{ width: '350px', borderRadius: '5px', outline: "none", border: "1px solid #888D8D", padding: '7px' }}
 						value={searchText}
 						onChange={handleSearch}
 					/>
 				</div>
 				<DynamicTableComponents data={dataToDisplay} columns={unmappedSecurities?.columns} additionalColumns={additionalColumns} />
 			</div>
-			<HandleSecurityMappingModal isOpen={isMappingPopupOpen} setIsOpen={setIsMappingPopupOpen} activeSecurity={activeSecurity} />
+			<HandleSecurityMappingModal isOpen={isMappingPopupOpen} setIsOpen={setIsMappingPopupOpen} activeSecurity={activeSecurity} getMappingData={getMappingData} />
 
 		</div>
 	);

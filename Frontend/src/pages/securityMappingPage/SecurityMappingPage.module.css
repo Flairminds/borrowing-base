@@ -1,3 +1,7 @@
+.backOptionContainer {
+	text-align: left;
+}
+
 .securityOverview {
 	display: flex;
 	margin: 1rem ;
@@ -26,7 +30,7 @@
 }
 
 .background{
-	background:  #b3b3b3;
+	background:  #efeaea;
 }
 
 .unmappedSecuritiesList {
