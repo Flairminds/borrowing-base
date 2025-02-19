@@ -150,8 +150,10 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity }
 								/>
 							</Form.Item>
 							<Form.Item>
-								<CustomButton isFilled={true} text="Save" onClick={handleSave} />
-								<CustomButton isFilled={false} text="Cancel" onClick={handleFormCancel} style={{ marginLeft: '8px' }} />
+								<div style={{display: 'flex', justifyContent: "flex-end"}}>
+									<CustomButton isFilled={false} text="Cancel" onClick={handleFormCancel} style={{ marginLeft: '8px' }} />
+									<CustomButton isFilled={true} text="Save" onClick={handleSave} />
+								</div>
 							</Form.Item>
 						</Form>
 					</div>
