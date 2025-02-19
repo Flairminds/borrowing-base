@@ -288,18 +288,22 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             
             
             # update security mapping table
-            # helper_functions.update_security_mapping(engine)
+            helper_functions.update_security_mapping(engine)
 
             # if new_source_file:
-            if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
-                raise Exception('Proper files not selected.')
+            # if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
+            #     raise Exception('Proper files not selected.')
             if fund_name == "PCOF":
+                if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
+                    raise Exception('Proper files not selected.')
                 service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details)
                 if service_response["success"]:   
                     extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
                 else:
                     raise Exception(service_response.get("message"))
             else:
+                if cash_file_details == None or master_comp_file_details == None:
+                    raise Exception('Proper files not selected.')
                 base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
                 extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
             # else:
@@ -342,7 +346,7 @@ def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_c
     try:
         extrcted_df = {}
         cashFileSheet = ["US Bank Holdings", "Client Holdings"]
-        masterCompSheet = ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV"]
+        masterCompSheet = ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping"]
         marketBookSheets = ["MarketBook"]
 
         uploaded_file.seek(0)
@@ -852,7 +856,7 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
     try:
         engine = db.get_engine()
         with engine.connect() as connection:
-            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join pflt_base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
+            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
             bd_df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where id = :data_id'), {'data_id': data_id}).fetchall())
         
         df = df.replace({np.nan: None})
