@@ -159,7 +159,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			const archivecolumnsToAdd = [{
 				'key': 'file_select',
 				'label': '',
-				'render': (value, row) => <input checked={selectedIds.current.includes(row.file_id)} onClick={() => handleCheckboxClick(row.file_id)} type="checkbox" disabled />
+				'render': (value, row) => <input checked={selectedIds.current.includes(row.file_id)} onClick={() => handleCheckboxClick(row.file_id)} type="checkbox" />
 			}];
 
 			const updatedArchivedColumns = [...archivecolumnsToAdd, ...archiveData.columns];
