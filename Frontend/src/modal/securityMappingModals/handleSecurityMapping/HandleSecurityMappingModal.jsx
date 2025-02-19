@@ -10,7 +10,7 @@ import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import styles from './HandleSecurityMappingModal.module.css';
 
 
-export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity }) => {
+export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity, getMappingData }) => {
 
 	const [probableEntriesData, setProbableEntriesData] = useState();
 	const [selectedOption, setSelectedOption] = useState('mapToExisting');
@@ -56,18 +56,21 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity }
 				setFormValues({});
 				setErrors({});
 			}
+			await getMappingData("unmapped");
 		} catch (error) {
 			console.error("API Error:", error);
 			showToast('error', error?.response?.data?.message || 'Error: Failed to add security mapping');
 		}
 	};
-	const handleFormCancel = () => {
-		setFormValues({});
-		setErrors({});
-	};
+	// const handleFormCancel = () => {
+	// 	setFormValues({});
+	// 	setErrors({});
+	// };
 
 	const handleCancel = () => {
 		setIsOpen(false);
+		setFormValues({});
+		setErrors({});
 		// setProbableEntriesData(null);
 	};
 
@@ -79,6 +82,7 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity }
 		try {
 			const res = await editPfltSecMapping([mappingData]);
 			showToast('success', res?.data?.message);
+			await getMappingData("unmapped");
 		} catch (error) {
 			showToast("error", error?.response?.data?.message || "Failed to update data");
 		}
@@ -151,7 +155,7 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity }
 							</Form.Item>
 							<Form.Item>
 								<div style={{display: 'flex', justifyContent: "flex-end"}}>
-									<CustomButton isFilled={false} text="Cancel" onClick={handleFormCancel} style={{ marginLeft: '8px' }} />
+									<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} style={{ marginLeft: '8px' }} />
 									<CustomButton isFilled={true} text="Save" onClick={handleSave} />
 								</div>
 							</Form.Item>

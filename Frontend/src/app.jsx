@@ -136,8 +136,8 @@ export function App() {
 							/>
 						}
 					/>
-					<Route path='/security-mapping' element={<SecurityMapping />} />
-					<Route path='/securities-mapping' element={<SecurityMappingPage />} />
+					<Route path='/security-mapping' element={<SecurityMappingPage />} />
+					<Route path='/securities-mapping' element={<SecurityMapping />} />
 				</Route>
 			</Routes>
 			<ToastContainer />
