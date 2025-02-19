@@ -50,14 +50,16 @@ export const AddAdditionalInformationModal = (
 
 		const formData = {
 			...data,
-			"determination_date": uploadedData?.inputData?.determination_date 
-				? dayjs(uploadedData.inputData.determination_date) 
-				: (data.determination_date ? dayjs(data.determination_date) : null),
+			"determination_date": uploadedData?.inputData?.determination_date ? dayjs(uploadedData.inputData.determination_date) : (data.determination_date ? dayjs(data.determination_date) : null),
 			"other_data": [...otherDataArray, ...uploadedOtherDataArray]
 		};
-
+		
 		if (previewFundType === "PCOF") {
-			formData["revolving_closing_date"] = data.revolving_closing_date ? dayjs(data.revolving_closing_date) : null;
+			formData["revolving_closing_date"] = dayjs(uploadedData.inputData.revolving_closing_date) || dayjs(data.revolving_closing_date) || null;
+			formData["commitment_period"] = uploadedData.inputData.commitment_period || data.commitment_period || null;
+			formData["facility_size"] = uploadedData.inputData.facility_size || data.facility_size || null;
+			formData["loans_cad"] = uploadedData.inputData["loans(cad)"] || data["loans_cad"] || null;
+			formData["loans_usd"] = uploadedData.inputData["loans(usd)"] || data["loans_usd"] || null;
 		} else {
 			formData["minimum_equity_amount_floor"] = uploadedData?.inputData?.minimum_equity_amount_floor || data.minimum_equity_amount_floor;
 		}
@@ -102,13 +104,17 @@ export const AddAdditionalInformationModal = (
 			if (previewFundType == "PCOF") {
 				const updatedlist = values.other_data.map((el => {
 					return {
-						...el,
-						"dollar_equivalent": el.amount * el.spot_rate
+						...el
+						// "dollar_equivalent": el.amount * el.spot_rate,
 					};
 				}));
-
+ 
 				transformedData["other_data"] = updatedlist;
 				transformedData["revolving_closing_date"] = values.revolving_closing_date.format("YYYY-MM-DD");
+				transformedData["commitment_period"] = values.commitment_period;
+				transformedData["facility_size"] = values.facility_size;
+				transformedData["loans_usd"] = values.loans_usd;
+				transformedData["loans_cad"] = values.loans_cad;
 			}
 
 			const response = await submitOtherInfo(transformedData);
@@ -174,19 +180,20 @@ export const AddAdditionalInformationModal = (
 			let inputSheetData;
 			let otherSheetData;
 			sheetsData.map((sheet) => {
-				if (sheet.sheetName === "input") {
+				if (sheet.sheetName.toLocaleLowerCase() === "input") {
 					const data = Object.fromEntries(sheet?.data?.slice(1).filter(row => row.length === 2));
 					inputSheetData = Object.fromEntries(
 						Object.entries(data).map(([key, value]) => [key.toLowerCase().replace(/\s+/g, '_'), value])
 					);
 				}
-				if (sheet.sheetName === "other_sheet") {
+				if (sheet.sheetName.toLocaleLowerCase().replace(" ", "_") === "other_sheet") {
 					otherSheetData = sheet.data;
 				}
 			});
 
 			const headers = otherSheetData[0];
-			const uploadedOtherInfo = otherSheetData.slice(1, -1)
+			const uploadedOtherInfo = otherSheetData.slice(1)
+				.filter(row => row.some(cell => cell != null && cell !== ""))
 				.map(row => Object.fromEntries(headers.map((key, index) => [key.toLowerCase().replace(/\s+/g, "_"), row[index] ?? null])));
 
 			setUploadedData({
