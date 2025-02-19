@@ -21,6 +21,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [securityFilteredValue, setSecurityFilteredValue] = useState([]);
 	const [filteredData, setFilteredData] = useState(baseFilePreviewData?.baseData?.data);
 
+	const [selectedFiles, setSelectedFiles] = useState([]);
+
 	useEffect(() => {
 		let col = [];
 		if (!baseFilePreviewData.reportDate) {
@@ -256,6 +258,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				data={baseFilePreviewData.otherInfo}
 				handleBaseDataPreview={handleBaseDataPreview}
 				previewFundType={previewFundType}
+				selectedFiles={selectedFiles}
+				setSelectedFiles={setSelectedFiles}
 			/>
 		</div>
 		// <div>
