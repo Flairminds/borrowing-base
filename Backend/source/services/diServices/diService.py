@@ -1190,7 +1190,7 @@ def pcof_add_base_data_other_info(
     try:
         table_list = []
 
-        existing_record = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id)
+        existing_record = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).first()
 
         for value in other_data:
             table_list.append ({
@@ -1255,7 +1255,14 @@ def get_base_data_other_info(extraction_info_id, fund_type):
                 res = {**common_fields, "minimum_equity_amount_floor": other_info.other_info_list["minimum_equity_amount_floor"]}
 
             elif fund_type == "PCOF":
-                res = {**common_fields, "revolving_closing_date": other_info.other_info_list["revolving_closing_date"]}
+                res = {
+                    **common_fields, 
+                    "revolving_closing_date": other_info.other_info_list["revolving_closing_date"],
+                    "commitment_period": other_info.other_info_list["commitment_period"],
+                    "facility_size": other_info.other_info_list["facility_size"],
+                    "loans_cad": other_info.other_info_list["loans_cad"],
+                    "loans_usd": other_info.other_info_list["loans_usd"]
+                }
 
         return ServiceResponse.success(data = res)
     except Exception as e:
