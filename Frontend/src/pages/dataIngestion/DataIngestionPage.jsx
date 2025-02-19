@@ -43,7 +43,17 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			const columnsToAdd = [{
 				'key': 'file_select',
 				'label': '',
-				'render': (value, row) => <input checked={selectedIds.current.includes(row.file_id)} onClick={() => handleCheckboxClick(row.file_id)} type="checkbox" />
+				'render': (value, row) => {
+					const isDisabled = row['extraction_status'] === 'In Progress' || row['extraction_status'] === 'Failed';
+					return (
+						<input
+							checked={selectedIds.current.includes(row.file_id)}
+							onClick={() => handleCheckboxClick(row.file_id)}
+							type="checkbox"
+							disabled={isDisabled}
+						/>
+					);
+				}
 			}];
 
 			const updatedcolumns = [...columnsToAdd, ...responseData.columns];

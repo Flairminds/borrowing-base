@@ -42,18 +42,25 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 
     const handleFileUpload = async() => {
 
+      
+
       if (!reportDate || reportDate == "") {
         showToast('warning', "Select report date");
         return;
       }
       setLoading(true);
       try {
+        showToast('info', "File upload and extraction is in progress, it may take few minutes");
         const selectedFunds = selectedOptions;
         const uploadresponse = await uploadNewFile(selectedFiles, reportDate, selectedFunds);
-        await blobFilesList(selectedOptions);
+        
+        // await blobFilesList(selectedOptions);
         showToast('success', uploadresponse?.data?.message);
       } catch (error) {
         showToast('error', error?.response?.data.message);
+      }
+      finally {
+        await blobFilesList(selectedOptions);
       }
       setSelectedFiles([]);
       setSelectedOptions([]);

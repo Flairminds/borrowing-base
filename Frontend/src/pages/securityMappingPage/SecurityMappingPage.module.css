@@ -25,6 +25,10 @@
 
 }
 
+.background{
+	background:  #b3b3b3;
+}
+
 .unmappedSecuritiesList {
 	margin: 2rem;
 	text-align: left;

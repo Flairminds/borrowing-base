@@ -169,7 +169,7 @@ export const DynamicTableComponents = (
                                     {updatedColumnsData?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
                                         return <>
                                             <div key={index} className={tableStyles.columnContainer} style={{fontSize: 'small'}}>
-                                                <input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)}/>
+                                                 <input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)}/>
                                                 <label htmlFor={col.key}>{col.label}</label>
                                             </div>
                                         </>;
