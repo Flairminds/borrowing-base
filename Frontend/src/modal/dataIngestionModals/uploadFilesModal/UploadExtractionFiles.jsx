@@ -50,12 +50,12 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
       }
       setLoading(true);
       try {
-        showToast('info', "File upload and extraction is in progress, it may take few minutes");
         const selectedFunds = selectedOptions;
         const uploadresponse = await uploadNewFile(selectedFiles, reportDate, selectedFunds);
         
         // await blobFilesList(selectedOptions);
-        showToast('success', uploadresponse?.data?.message);
+        showToast('success', "File upload and extraction is in progress, it may take few minutes");
+        // showToast('success', uploadresponse?.data?.message);
       } catch (error) {
         showToast('error', error?.response?.data.message);
       }
