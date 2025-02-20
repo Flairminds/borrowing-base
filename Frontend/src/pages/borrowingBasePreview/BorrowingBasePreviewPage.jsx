@@ -154,7 +154,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				run = true;
 			}
 			if (run) {
-				const response = await generateBaseDataFile({ 'bdi_id': baseFilePreviewData.infoId });
+				const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
 				const detail = response?.data;
 				showToast('success', detail?.message);
 			}
