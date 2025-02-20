@@ -21,6 +21,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [securityFilteredValue, setSecurityFilteredValue] = useState([]);
 	const [filteredData, setFilteredData] = useState(baseFilePreviewData?.baseData?.data);
 
+	const [selectedFiles, setSelectedFiles] = useState([]);
+
 	useEffect(() => {
 		let col = [];
 		if (!baseFilePreviewData.reportDate) {
@@ -152,7 +154,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				run = true;
 			}
 			if (run) {
-				const response = await generateBaseDataFile({ 'bdi_id': baseFilePreviewData.infoId });
+				const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
 				const detail = response?.data;
 				showToast('success', detail?.message);
 			}
@@ -210,7 +212,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Add Other Info</button>
 					</div>
 				</div>
-				{baseFilePreviewData.fundType == 'PFLT' &&
+				{/* {baseFilePreviewData.fundType == 'PFLT' && */}
 				<div>
 					<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '600px', gap: '16px', padding: '5px' }}>
 						<Select
@@ -230,7 +232,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							options={baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'security_name')}
 						/>
 					</div>
-				</div>}
+				</div>
+				{/* } */}
 				<div>
 					<DynamicTableComponents
 						data={filteredData}
@@ -255,6 +258,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				data={baseFilePreviewData.otherInfo}
 				handleBaseDataPreview={handleBaseDataPreview}
 				previewFundType={previewFundType}
+				selectedFiles={selectedFiles}
+				setSelectedFiles={setSelectedFiles}
 			/>
 		</div>
 		// <div>

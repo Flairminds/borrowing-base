@@ -103,6 +103,7 @@ export const SecurityMapping = () => {
 							<div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: '300px' }}>
 								<input type="text" style={{ outline: 'none', border: '1px solid #DCDEDE', borderRadius: '5px', width: '100%', fontSize: 'small', padding: '0.5rem' }} onChange={(e) => filterData(e.target.value)} placeholder="Search By Security Name" />
 								<CustomButton isFilled={true} text="+ Add" onClick={() => setIsModalOpen(true)} />
+								<CustomButton isFilled={true} text="Refresh" onClick={() => window.location.reload()} />
 							</div>
 						</div>
 						<div className={styles.tableContainer}>

@@ -123,3 +123,20 @@ export const getArchive = () => {
 	const response = axios.get(`${ApiURL}/data_ingestion/get_archived_files`);
 	return response;
 };
+
+export const getUnmappedSecurityData = (securityType) => {
+	const payload = {
+		"security_type": securityType
+	};
+	const fileListResponse = axios.post(`${ApiURL}/data_ingestion/get_cash_securities`, payload);
+	return fileListResponse;
+};
+
+
+export const getProbableSecuritiesData = (cashSecurity) => {
+	const payload = {
+		"cash_file_security": cashSecurity
+	};
+	const fileListResponse = axios.post(`${ApiURL}/data_ingestion/get_unmapped_pflt_sec`, payload);
+	return fileListResponse;
+};

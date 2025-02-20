@@ -1,0 +1,63 @@
+.backOptionContainer {
+	text-align: left;
+}
+
+.securityOverview {
+	display: flex;
+	margin: 1rem ;
+}
+
+.securityOverviewCard {
+	margin: 10px;
+	padding: 20px;
+	border: 1px solid grey;
+	border-radius: 10px;
+}
+
+.pageTitle {
+	margin: 15px;
+	font-size: 20px;
+	font-weight: bold;
+	text-align: left;
+}
+
+.tableContainer {
+	padding: 0px 20px;
+	margin: 10px;
+	max-height: 70vh;
+	overflow-y: auto;
+
+}
+
+.background{
+	background:  #efeaea;
+}
+
+.unmappedSecuritiesList {
+	margin: 2rem;
+	text-align: left;
+	max-height: 60vh;
+	overflow-y: auto;
+}
+
+.unmappedSecurity {
+	display: flex;
+	justify-content: space-between;
+	margin: 0px 10px;
+	padding: 5px 10px;
+	border: 1px solid grey;
+	border-top: none;
+
+}
+
+.unmappedSecurity:first-child {
+	border-top: 1px solid grey;
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
+}
+
+.unmappedSecurity:last-child {
+	border-top: 1px solid grey;
+	border-bottom-left-radius: 8px;
+	border-bottom-right-radius: 8px;
+}

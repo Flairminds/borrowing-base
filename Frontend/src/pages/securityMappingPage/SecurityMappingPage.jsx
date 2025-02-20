@@ -1,0 +1,97 @@
+import React, { useEffect, useState } from 'react';
+import { FaRegEdit } from "react-icons/fa";
+import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { HandleSecurityMappingModal } from '../../modal/securityMappingModals/handleSecurityMapping/HandleSecurityMappingModal';
+import { getUnmappedSecurityData } from '../../services/dataIngestionApi';
+import { showToast } from '../../utils/helperFunctions/toastUtils';
+import styles from "./SecurityMappingPage.module.css";
+import { BackOption } from '../../components/BackOption/BackOption';
+import { useNavigate } from 'react-router';
+
+export const SecurityMappingPage = () => {
+	const [unmappedSecurities, setUnmappedSecurities] = useState([]);
+	const [activeSecurity, setActiveSecurity] = useState("");
+	const [isMappingPopupOpen, setIsMappingPopupOpen] = useState(false);
+	const [securityViewType, setSecurityViewType] = useState("unmapped");
+	const [searchText, setSearchText] = useState("");
+	const navigate = useNavigate();
+
+	const handleSearch = (event) => {
+		setSearchText(event.target.value);
+	};
+
+	const filteredData = unmappedSecurities?.data
+		? unmappedSecurities.data.filter((item) =>
+			item["cashfile_securities"] &&
+			item["cashfile_securities"].toLowerCase().includes(searchText.toLowerCase())
+		)
+		: [];
+
+	const dataToDisplay = searchText ? filteredData : unmappedSecurities?.data;
+
+	const getMappingData = async (securityType) => {
+		try {
+			const mappingRes = await getUnmappedSecurityData(securityType);
+			setUnmappedSecurities(mappingRes.data.result);
+		} catch (err) {
+			showToast("error", err?.response?.data?.message || "Failed to load data");
+		}
+	};
+
+	useEffect(() => {
+		if (securityViewType) {
+			getMappingData(securityViewType);
+		}
+	}, []);
+
+	const handleSecurityEdit = (security) => {
+		setActiveSecurity(security);
+		setIsMappingPopupOpen(true);
+	};
+
+	const changeSecurityView = (securityType) => {
+		setSecurityViewType(securityType);
+		getMappingData(securityType);
+	};
+
+	const additionalColumns = securityViewType == "unmapped" ? [{
+		key: "",
+		label: "",
+		'render': (value, row) => <div style={{ textAlign: 'center', cursor: 'pointer' }}> <FaRegEdit onClick={() => handleSecurityEdit(row.cashfile_securities)} /> </div>
+	}] : [];
+
+	return (
+		<div>
+
+			<div className={styles.backOptionContainer}>
+				<BackOption onClick={() => navigate('/base-data-list')}
+					text={`<- Base Data`} />
+			</div>
+
+			<div className={styles.securityOverview}>
+				<div onClick={() => changeSecurityView("all")} className={securityViewType == "all" ? `${styles.securityOverviewCard} ${styles.background}` : `${styles.securityOverviewCard}`}>All Securities</div>
+				<div onClick={() => changeSecurityView("unmapped")} className={securityViewType == "unmapped" ? `${styles.securityOverviewCard} ${styles.background}` : `${styles.securityOverviewCard}`}>Unmapped Securities</div>
+			</div>
+
+
+
+			<div className={styles.tableContainer}>
+				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+					<div className={styles.pageTitle}>
+						{securityViewType === "all" ? <>All Securities</> : <>Unmapped Securities</>}
+					</div>
+					<input
+						type="text"
+						placeholder="Security/Facility Name"
+						style={{ width: '350px', borderRadius: '5px', outline: "none", border: "1px solid #888D8D", padding: '7px' }}
+						value={searchText}
+						onChange={handleSearch}
+					/>
+				</div>
+				<DynamicTableComponents data={dataToDisplay} columns={unmappedSecurities?.columns} additionalColumns={additionalColumns} />
+			</div>
+			<HandleSecurityMappingModal isOpen={isMappingPopupOpen} setIsOpen={setIsMappingPopupOpen} activeSecurity={activeSecurity} getMappingData={getMappingData} />
+
+		</div>
+	);
+};

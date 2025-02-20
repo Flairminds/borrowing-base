@@ -1,4 +1,5 @@
 import flask
+import threading
 
 from source.services.diServices import diService
 from source.utility.HTTPResponse import HTTPResponse
@@ -10,14 +11,23 @@ def upload_source_files():
         files = flask.request.files.getlist("files")
         reporting_date = flask.request.form.get("reporting_date")
         fund_type = flask.request.form.getlist("fund_type")
+        # diservice.storeSourceinDB (source_file and upload file to db table)
+        # source_files_list = []
         service_response = diService.upload_src_file_to_az_storage(files, reporting_date, fund_type)
         
         if not service_response["success"]:
             return HTTPResponse.error(message = service_response["message"], status_code = service_response["status_code"])
         
         Log.func_success(message=service_response["message"])
-        return HTTPResponse.success(message=service_response["message"])
 
+        for source_file in service_response.get("data"):
+                print(source_file["source_file"].id)
+
+        threading.Thread(target=diService.extract_validate_store_update,
+            kwargs={"source_files_list" : service_response.get("data")}
+        ).start()
+
+        return HTTPResponse.success(message=service_response["message"])
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal server error", status_code=500)
@@ -172,7 +182,41 @@ def get_pflt_sec_mapping():
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def get_unmapped_cash_sec():
+    try:
+        service_response = diService.get_unmapped_cash_sec()
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not get PFLT Security Mapping")
+        return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
     
+def get_cash_sec():
+    try:
+        req_body = flask.request.get_json()
+        security_type = req_body.get('security_type')
+        service_response = diService.get_cash_sec(security_type)
+        if not service_response["success"]:
+            return HTTPResponse.error(message="Could not get all securities")
+        return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def get_unmapped_pflt_sec():
+    try:
+        req_body = flask.request.get_json()
+        cash_file_security = req_body.get('cash_file_security')
+        service_response = diService.get_unmapped_pflt_sec(cash_file_security)
+        if not service_response["success"]:
+            return HTTPResponse.error(message=service_response.get("message"))
+        return HTTPResponse.success(message=service_response.get("message"), result=service_response["data"])
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
 def edit_pflt_sec_mapping():
     try:
         req_body = flask.request.get_json()
@@ -278,6 +322,10 @@ def base_data_other_info():
         req_body = flask.request.get_json()
         extraction_info_id = req_body.get("extraction_info_id")
         determination_date= req_body.get("determination_date")
+        commitment_period = req_body.get("commitment_period")
+        facility_size= req_body.get("facility_size")
+        loans_usd= req_body.get("loans_usd")
+        loans_cad= req_body.get("loans_cad")
         fund_type = req_body.get("fund_type")
         other_data = req_body.get("other_data")
 
@@ -286,7 +334,17 @@ def base_data_other_info():
             service_response = diService.pflt_add_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor,fund_type, other_data)
         if(fund_type == "PCOF"):
             revolving_closing_date= req_body.get("revolving_closing_date")
-            service_response = diService.pcof_add_base_data_other_info(extraction_info_id, determination_date, revolving_closing_date, fund_type, other_data)
+            service_response = diService.pcof_add_base_data_other_info(
+                extraction_info_id,
+                determination_date,
+                revolving_closing_date, 
+                commitment_period,
+                facility_size,
+                loans_usd,
+                loans_cad,
+                fund_type, 
+                other_data
+            )
 
         
         if(service_response["success"]):

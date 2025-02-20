@@ -13,6 +13,7 @@ import { SecurityMapping } from './pages/securityMapping/SecurityMapping';
 import { ConcentrationTestMaster } from './pages/testMaster/ConcentrationTestMaster';
 import { landingPageData } from './services/api';
 import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
+import { SecurityMappingPage } from './pages/securityMappingPage/SecurityMappingPage';
 
 
 
@@ -135,7 +136,8 @@ export function App() {
 							/>
 						}
 					/>
-					<Route path='/security-mapping' element={<SecurityMapping />} />
+					<Route path='/security-mapping' element={<SecurityMappingPage />} />
+					<Route path='/securities-mapping' element={<SecurityMapping />} />
 				</Route>
 			</Routes>
 			<ToastContainer />

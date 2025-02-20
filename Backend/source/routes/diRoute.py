@@ -44,6 +44,18 @@ def get_extracted_base_data_info():
 def get_pflt_sec_mapping():
     return diController.get_pflt_sec_mapping()
 
+@di_blueprint.route('/get_unmapped_cash_sec', methods=["POST"])
+def get_unmapped_cash_sec():
+    return diController.get_unmapped_cash_sec()
+
+@di_blueprint.route('/get_cash_securities', methods=["POST"])
+def get_cash_sec():
+    return diController.get_cash_sec()
+
+@di_blueprint.route('/get_unmapped_pflt_sec', methods=["POST"])
+def get_unmapped_pflt_sec():
+    return diController.get_unmapped_pflt_sec()
+
 @di_blueprint.route('/edit_pflt_sec_mapping', methods=["POST"])
 def edit_pflt_sec_mapping():
     return diController.edit_pflt_sec_mapping()

@@ -15,6 +15,7 @@ import openpyxl
 import pickle
 import json
 from datetime import datetime
+from werkzeug.datastructures import FileStorage
 
 from source.services.commons import commonServices
 from source.app_configs import azureConfig
@@ -27,6 +28,7 @@ from source.services.diServices.PCOF import base_data_extractor as pcof_base_dat
 from source.services.diServices import ColumnSheetMap
 from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
+from source.services.diServices.helper_functions import store_sheet_data
 
 pfltDashboardService = PfltDashboardService()
 
@@ -40,8 +42,9 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
     company_name = "Pennant"
     fund_names = fund_type
     report_date = datetime.strptime(report_date, "%Y-%m-%d").date()
-
     source_files_list = []
+
+
     try:
         for file in files:
             print(file.filename)
@@ -50,6 +53,7 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
             # setting SourceFiles object
             file_name = os.path.splitext(file.filename)[0]
             extension = os.path.splitext(file.filename)[1]
+            file_bytes = file.read() 
             file.seek(0, 2)  # Move to the end of the file
             file_size = file.tell()  # Get the size in bytes
             file.seek(0)
@@ -58,21 +62,25 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
             is_extracted = False
             uploaded_by = 1
             file_type = None
-            if contains_cash(file.filename):
-                file_type = "cashfile"
-            if contains_master_comp(file.filename):
-                file_type = "master_comp"
+
 
             # upload blob in container
             blob_client.upload_blob(name=blob_name, data=file)
             file_url = blob_client.url + '/' + blob_name
             # add details of files in db
-            source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, uploaded_by=uploaded_by, file_type=file_type)
+            source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, extraction_status='In Progress', uploaded_by=uploaded_by, file_type=file_type)
+
+            source_files_list.append({
+                "source_file": source_file,
+                "file": file_bytes
+            })
 
             db.session.add(source_file)
             db.session.commit()
+            db.session.flush()  
+            db.session.refresh(source_file)
             
-        return ServiceResponse.success(message = "Files uploaded successfully")
+        return ServiceResponse.success(message = "Files uploaded successfully", data=source_files_list)
 
     except ResourceExistsError as ree:
         Log.func_error(e=ree)
@@ -94,6 +102,7 @@ def get_blob_list(fund_type):
             SourceFiles.fund_types,
             SourceFiles.file_type,
             SourceFiles.report_date,
+            SourceFiles.extraction_status,
             Users.display_name
         ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id, SourceFiles.is_archived == False)
     
@@ -118,6 +127,9 @@ def get_blob_list(fund_type):
         }, {
             "key": "uploaded_by", 
             "label": "Uploaded by",
+        }, {
+            "key": "extraction_status",
+            "label": "Extraction Status"
         }], 
         "data": []
     }
@@ -130,9 +142,9 @@ def get_blob_list(fund_type):
             "report_date": source_file.report_date.strftime("%Y-%m-%d"),
             "fund": source_file.fund_types,
             "source_file_type": source_file.file_type,
-            "uploaded_by": source_file.display_name
+            "extraction_status": source_file.extraction_status,
+            "uploaded_by": source_file.display_name,
         })
-        print(source_file.fund_types)
     
     return ServiceResponse.success(data=list_table)
 
@@ -167,20 +179,24 @@ def get_data(blob_data, sheet_name, output_file_name, args):
         return {"success_status": False, "error": str(e), "dataframe": None}
 
 def update_column_names(df, sheet_name, sheet_column_mapper):
-    column_level_map = sheet_column_mapper[sheet_name]
-    columns = []
-    
-    for index, column in enumerate(df.columns):
-        column_initials = ""
-        for heading in list(column_level_map.keys()):
-            if index in range(column_level_map[heading][1], column_level_map[heading][2]):
-                column_initials = column_initials + "[" + "".join(word[0].upper() for word in heading.split()) + "] "
-        column_name = column_initials + str(column)
-        columns.append(column_name.strip())
+    try:
+        column_level_map = sheet_column_mapper[sheet_name]
+        columns = []
+        
+        for index, column in enumerate(df.columns):
+            column_initials = ""
+            for heading in list(column_level_map.keys()):
+                if index in range(column_level_map[heading][1], column_level_map[heading][2]):
+                    column_initials = column_initials + "[" + "".join(word[0].upper() for word in heading.split()) + "] "
+            column_name = column_initials + str(column)
+            columns.append(column_name.strip())
 
-    df.columns = columns
-    df = df.round(3)
-    return df
+        df.columns = columns
+        df = df.round(3)
+        return df
+    
+    except Exception as e:
+        Log.func_error(e)
 
 def extract(file_sheet_map, sheet_column_mapper, args):
     extrcted_df = {}
@@ -208,74 +224,89 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
     with app.app_context():
         try:
             engine = db.get_engine()
-            start_time = datetime.now()
-            company_name = "Pennant"
+            # start_time = datetime.now()
+            # company_name = "Pennant"
             fund_name = fund_type
-            FOLDER_PATH = company_name + '/'
+            # FOLDER_PATH = company_name + '/'
         
-            blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
+            # blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
 
             start_time = datetime.now()
 
-            company_id = None
-            report_date = None
-            new_source_file = False
+            # company_id = None
+            # report_date = None
+            # new_source_file = False
             cash_file_details = None
             master_comp_file_details = None
-            file_sheet_map = None
+            market_book_file_details = None
+            # file_sheet_map = None
 
             for file_id in file_ids:
                 file_details = SourceFiles.query.filter_by(id=file_id).first()
-                company_id = file_details.company_id
-                report_date = file_details.report_date
-                file_name = file_details.file_name + file_details.extension
-                file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + file_name).download_blob().readall())
+                # company_id = file_details.company_id
+                # report_date = file_details.report_date
+                # file_name = file_details.file_name + file_details.extension
+                # file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + file_name).download_blob().readall())
                 file_type = file_details.file_type
                 if (file_type == 'cashfile'):
                     cash_file_details = file_details
-                    file_sheet_map = {
-                        "cash": {
-                            "file": file,
-                            "source_file_obj": file_details,
-                            "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type), 
-                            "is_extracted": file_details.is_extracted
-                        }
-                    }
+                    # file_sheet_map = {
+                    #     "cash": {
+                    #         "file": file,
+                    #         "source_file_obj": file_details,
+                    #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type), 
+                    #         "is_extracted": file_details.is_extracted
+                    #     }
+                    # }
                 elif file_type == 'master_comp':
                     master_comp_file_details = file_details
-                    file_sheet_map = {
-                        "master_comp": {
-                            "file": file,
-                            "source_file_obj": file_details,
-                            "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
-                            "is_extracted": file_details.is_extracted
-                        }
-                    }
+                    # file_sheet_map = {
+                    #     "master_comp": {
+                    #         "file": file,
+                    #         "source_file_obj": file_details,
+                    #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
+                    #         "is_extracted": file_details.is_extracted
+                    #     }
+                    # }
+                elif file_type == 'market_book_file':
+                    market_book_file_details = file_details
+                    # file_sheet_map = {
+                    #     "market_book_file": {
+                    #         "file": file,
+                    #         "source_file_obj": file_details,
+                    #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
+                    #         "is_extracted": file_details.is_extracted
+                    #     }
+                    # }
                 print(file_type)
-                if file_details.is_extracted:
-                    continue
-                args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
-                data_dict = extract(file_sheet_map, sheet_column_mapper, args)
-                process_store_status = helper_functions.process_and_store_data(data_dict, file_id, fund_name, engine)
-                file_details.is_extracted = True
-                db.session.add(file_details)
-                db.session.commit()
-                new_source_file = True
+                # if file_details.is_extracted:
+                #     continue
+                # args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
+                # data_dict = extract(file_sheet_map, sheet_column_mapper, args)
+                # process_store_status = helper_functions.process_and_store_data(data_dict, file_id, fund_name, engine)
+                # file_details.is_extracted = True
+                # db.session.add(file_details)
+                # db.session.commit()
+                # new_source_file = True
             
             
             # update security mapping table
-            helper_functions.update_security_mapping(engine)
+            # helper_functions.update_security_mapping(engine)
 
             # if new_source_file:
-            if cash_file_details == None or master_comp_file_details == None:
-                raise Exception('Proper files not selected.')
+            # if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
+            #     raise Exception('Proper files not selected.')
             if fund_name == "PCOF":
-                service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details)
+                if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
+                    raise Exception('Proper files not selected.')
+                service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details)
                 if service_response["success"]:   
                     extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
                 else:
                     raise Exception(service_response.get("message"))
             else:
+                if cash_file_details == None or master_comp_file_details == None:
+                    raise Exception('Proper files not selected.')
                 base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
                 extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
             # else:
@@ -292,6 +323,89 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
+
+def get_sheet_data(blob_data, sheet_name, output_file_name, args):
+    try:
+        df = blob_data
+        for name in args:
+            if df.eq(name).any(axis=1).any():
+                first_occurrence_index = df.eq(name).any(axis=1).idxmax()
+            else:
+                first_occurrence_index = None 
+            if first_occurrence_index is None:
+                continue
+            else:
+                break
+        if first_occurrence_index is None:
+            return {"success_status": False, "error": "No such column found", "dataframe": None}
+        
+        new_df = df.loc[first_occurrence_index + 1:].reset_index(drop=True)
+        new_df.columns = df.loc[first_occurrence_index]
+        return {"success_status": True, "error": None, "dataframe": new_df}
+    except Exception as e:
+        return {"success_status": False, "error": str(e), "dataframe": None}
+
+def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_column_mapper, args):
+    try:
+        extrcted_df = {}
+        cashFileSheet = ["US Bank Holdings", "Client Holdings"]
+        masterCompSheet = ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping"]
+        marketBookSheets = ["MarketBook"]
+
+        uploaded_file.seek(0)
+        sheet_df_map = pd.read_excel(uploaded_file, sheet_name=None)
+
+        sheet_name_list = list(sheet_df_map.keys())
+
+        for sheet_name in sheet_name_list:
+            if sheet_name in cashFileSheet:
+                required_sheets = cashFileSheet
+                file_type = "cashfile"
+            elif sheet_name in masterCompSheet:
+                required_sheets = masterCompSheet
+                file_type = "master_comp"
+            elif sheet_name in marketBookSheets:
+                required_sheets = marketBookSheets
+                file_type = "market_book_file"
+
+        for sheet in required_sheets:
+            column_level_map = sheet_column_mapper[sheet]
+            df_result = get_sheet_data(sheet_df_map[sheet], sheet, column_level_map, args)
+            if df_result["success_status"] is True:
+                extrcted_df[sheet] = df_result["dataframe"]
+                extracted_df = df_result["dataframe"].copy(deep=True)
+                updated_col_df = update_column_names(extracted_df, sheet, sheet_column_mapper)
+                updated_col_df["source_file_id"] = db_source_file.id
+                db_source_file.file_type = file_type
+                updated_column_df[sheet] = updated_col_df
+            print(sheet + ' extracted')
+
+    except Exception as e:
+        Log.func_error(e)
+        print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+
+def extract_source_file(file_list):
+    try:
+        for source_file in file_list:
+            print("inside", source_file["source_file"])
+        sheet_column_mapper = ColumnSheetMap.sheet_column_mapper
+        args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset", "Issuer"]
+        updated_column_df = {}
+
+        for file_value in file_list:
+            db_source_file = file_value.get("source_file")
+            print("db_source_file", db_source_file)
+            uploaded_file_bytes =  file_value.get("file")
+            uploaded_file_stream = BytesIO(uploaded_file_bytes)
+            uploaded_file = FileStorage(stream=uploaded_file_stream, filename="example.txt", content_type="text/plain")
+
+            sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_column_mapper, args)
+        
+        return ServiceResponse.success(data=updated_column_df)
+    
+    except Exception as e:
+        print(str(e))
+        return ServiceResponse.error()
 
 def extract_base_data(file_ids, fund_type):
     base_data_info_id = None
@@ -345,6 +459,7 @@ def get_base_data(info_id):
         BaseDataMapping.bd_column_lookup,
         BaseDataMapping.bd_column_name,
         BaseDataMapping.bd_column_datatype,
+        BaseDataMapping.bd_column_unit,
         BaseDataMapping.is_editable,
         BaseDataMappingColumnInfo.sequence,
         BaseDataMappingColumnInfo.is_selected
@@ -355,7 +470,7 @@ def get_base_data(info_id):
     engine = db.get_engine()
     
     if base_data_info.fund_type == 'PFLT':
-        base_data = PfltBaseData.query.filter_by(base_data_info_id = info_id).order_by(PfltBaseData.id).all()
+        base_data = PfltBaseData.query.join(PfltSecurityMapping, PfltSecurityMapping.master_comp_security_name == PfltBaseData.security_name).filter(PfltBaseData.base_data_info_id == info_id).order_by(PfltBaseData.id).all()
         HistoryData = PfltBaseDataHistory
         with engine.connect() as connection:
             result = connection.execute(text('''
@@ -363,7 +478,7 @@ def get_base_data(info_id):
                         count(distinct pbd.security_name) as no_of_assets, 
                         sum(pbd.total_commitment::float) as total_commitment, 
                         sum(pbd.outstanding_principal::float) as total_outstanding_balance,
-                        (select count(distinct obligor_name) from pflt_base_data pbd where security_name is null and pbd.base_data_info_id = :info_id) as unmapped_records
+                        (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
                 from pflt_base_data pbd
                 where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
             final_result = result[0]
@@ -439,6 +554,7 @@ def get_base_data(info_id):
             "key": column.bd_column_lookup,
             "label": column.bd_column_name,
             "datatype": column.bd_column_datatype,
+            "unit": column.bd_column_unit,
             "isEditable": column.is_editable,
             "bdm_id": column.bdm_id,
             "is_selected": column.is_selected
@@ -743,7 +859,7 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
     try:
         engine = db.get_engine()
         with engine.connect() as connection:
-            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join pflt_base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
+            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
             bd_df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where id = :data_id'), {'data_id': data_id}).fetchall())
         
         df = df.replace({np.nan: None})
@@ -793,7 +909,7 @@ def trigger_bb_calculation(bdi_id):
         engine = db.get_engine()
         with engine.connect() as connection:
             df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
-            df2 = pd.DataFrame(connection.execute(text(f'select bd_column_name, bd_column_lookup from pflt_base_data_mapping where bd_column_lookup is not null')).fetchall())
+            df2 = pd.DataFrame(connection.execute(text(f'select bd_column_name, bd_column_lookup from base_data_mapping where bd_column_lookup is not null')).fetchall())
             # haircut_config = pd.DataFrame(connection.execute(text(f'select haircut_level, obligor_tier, "position", value from pflt_haircut_config')).fetchall())
             industry_list = pd.DataFrame(connection.execute(text(f'select industry_no as "Industry No", industry_name as "Industry" from pflt_industry_list')).fetchall())
         df = df.replace({np.nan: None})
@@ -856,7 +972,7 @@ def trigger_bb_calculation(bdi_id):
         writer.save()
 
 
-        data = {'INPUTS': ['Determination Date', 'Minimum Equity Amount Floor'], '': ['', ''], 'Values': ['9-30-24', '30000000']}
+        data = {'INPUTS': ['Determination Date', 'Minimum Equity Amount Floor'], '': ['', ''], 'Values': ['12-31-24', '30000000']}
         data = pd.DataFrame.from_dict(data)
         xl_df_map['Inputs'] = data
 
@@ -866,7 +982,7 @@ def trigger_bb_calculation(bdi_id):
         # data.to_excel(writer, sheet_name="Inputs", index=False, header=True)
         # writer.save()
 
-        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rate': ['1.000000', '0.739350', '0.691310', '1.113500']}
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rate': [1.000000, 0.695230, 0.618820, 1.035400]}
         data = pd.DataFrame.from_dict(data)
         xl_df_map['Exchange Rates'] = data
 
@@ -876,7 +992,7 @@ def trigger_bb_calculation(bdi_id):
         # data.to_excel(writer, sheet_name="Exchange Rates", index=False, header=True)
         # writer.save()
 
-        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': [1.000000, 0.739350, 0.691310, 1.113500], 'Cash - Current & PreBorrowing': [50958522.16, 265552.25, 0, 0], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': [0, 0, 0, 0], 'Additional Expences 2': [0, 0, 0, 0], 'Additional Expences 3': [0, 0, 0, 0]}
+        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': [1.000000, 0.695230, 0.618820, 1.035400], 'Cash - Current & PreBorrowing': [21455041.84, 216583.15, 0, 0], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': [0, 0, 0, 0], 'Additional Expences 2': [0, 0, 0, 0], 'Additional Expences 3': [0, 0, 0, 0]}
         data = pd.DataFrame.from_dict(data)
         xl_df_map['Cash Balance Projections'] = data
 
@@ -1060,23 +1176,28 @@ def pflt_add_base_data_other_info(extraction_info_id, determination_date, minimu
     except Exception as e:
         Log.func_error(e)
         return ServiceResponse.error(message="Failed to add")
-def pcof_add_base_data_other_info(extraction_info_id, determination_date, revolving_closing_date, fund_type, other_data):
+def pcof_add_base_data_other_info(
+        extraction_info_id,
+        determination_date, 
+        revolving_closing_date, 
+        commitment_period,
+        facility_size,
+        loans_usd,
+        loans_cad, 
+        fund_type, 
+        other_data
+    ):
     try:
         table_list = []
 
-        existing_record = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id)
+        existing_record = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).first()
 
         for value in other_data:
             table_list.append ({
-                "commitment_period": value.get("commitment_period"),
-                "facility_size": value.get("facility_size"),
-                "loans_usd": value.get("loans_usd"),
-                "loans_cad": value.get("loans_cad"),
                 "principal_obligations": value.get("principal_obligations"),
                 "currency": value.get("currency"),
                 "amount": value.get("amount"),
                 "spot_rate": value.get("spot_rate"),
-                "dollar_equivalent": value.get("dollar_equivalent")
             })
 
         if existing_record:
@@ -1084,6 +1205,10 @@ def pcof_add_base_data_other_info(extraction_info_id, determination_date, revolv
             existing_record.fund_type = fund_type
             existing_record.other_info_list = {
                 "revolving_closing_date": revolving_closing_date,
+                "commitment_period": commitment_period,
+                "facility_size": facility_size,
+                "loans_usd": loans_usd,
+                "loans_cad": loans_cad,
                 "table_list": table_list
             }
         else:
@@ -1093,6 +1218,10 @@ def pcof_add_base_data_other_info(extraction_info_id, determination_date, revolv
                 fund_type = fund_type,
                 other_info_list = {
                     "revolving_closing_date": revolving_closing_date,
+                    "commitment_period": commitment_period,
+                    "facility_size": facility_size,
+                    "loans_usd": loans_usd,
+                    "loans_cad": loans_cad,
                     "table_list": table_list
                 }
             )
@@ -1126,9 +1255,178 @@ def get_base_data_other_info(extraction_info_id, fund_type):
                 res = {**common_fields, "minimum_equity_amount_floor": other_info.other_info_list["minimum_equity_amount_floor"]}
 
             elif fund_type == "PCOF":
-                res = {**common_fields, "revolving_closing_date": other_info.other_info_list["revolving_closing_date"]}
+                res = {
+                    **common_fields, 
+                    "revolving_closing_date": other_info.other_info_list["revolving_closing_date"],
+                    "commitment_period": other_info.other_info_list["commitment_period"],
+                    "facility_size": other_info.other_info_list["facility_size"],
+                    "loans_cad": other_info.other_info_list["loans_cad"],
+                    "loans_usd": other_info.other_info_list["loans_usd"]
+                }
 
         return ServiceResponse.success(data = res)
     except Exception as e:
         Log.func_error(e)
         return ServiceResponse.error()
+    
+def update_source_file_info(source_file_list, isValidated=False, isExtracted=False):
+    try:
+        for source_file in source_file_list:
+            source_file_detail = source_file.get("source_file")
+            source_file_detail.is_validated = isValidated
+            source_file_detail.is_extracted = isExtracted
+            source_file_detail.extraction_status = "Completed" if isExtracted else "Failed"
+            db.session.add(source_file_detail)
+            db.session.commit()
+    except Exception as e:
+        Log.func_error(e)
+        print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+        
+def extract_validate_store_update(source_files_list):
+    try:
+        from app import app
+        with app.app_context():
+            for source_file in source_files_list:
+                print(source_file["source_file"].id)
+            extraction_response = extract_source_file(source_files_list)
+
+            is_Extracted = False
+            if (extraction_response.get("success")):
+                extracted_data = extraction_response.get("data")
+                store_response = store_sheet_data(data_dict=extracted_data)
+                is_Extracted = store_response.get("success")
+
+            update_source_file_info(source_files_list, isExtracted=is_Extracted)
+        print("Files extracted, validated, stored")
+        return ServiceResponse.success()
+
+    except Exception as e:
+        Log.func_error(e)
+        return ServiceResponse.error()
+
+def get_unmapped_cash_sec():
+    engine = db.get_engine()
+    with engine.connect() as connection:
+        unmapped_securities = pd.DataFrame(connection.execute(text('''select 
+	        distinct "Security/Facility Name" as cashfile_securities, 
+	        "Security ID" as "security_id", 
+	        "Issuer/Borrower Name" as "issuer_borrower_name",
+	        "P. Lot Current Par Amount (Deal Currency)" as "par_amout_deal",
+	        "PIK Loan" as "pik_loan"
+        from sf_sheet_us_bank_holdings pubh 
+        left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
+        where psm.id is null''')).fetchall())
+
+    columns = [
+        {"key": "security_id", "label": "Security ID", 'isEditable': False, 'isRequired': True},
+        {"key": "cashfile_securities", "label": "Security/Facility Name", 'isEditable': False, 'isRequired': True},
+        {"key": "issuer_borrower_name", "label": "Issuer/Borrower Name", 'isEditable': False, 'isRequired': True},
+        {"key": "par_amout_deal", "label": "P.L.Lot Current Par Amount (Deal Currency)", 'isEditable': False, 'isRequired': True},
+        {"key": "pik_loan", "label": "PIK Loan", 'isEditable': False, 'isRequired': True}
+    ]
+
+    unmapped_securities = unmapped_securities.fillna("")
+    unmapped_securities_dict = unmapped_securities.to_dict(orient='records')
+
+    unmapped_securities_list = {
+        "columns": columns,
+        "data": unmapped_securities_dict
+    }
+    return ServiceResponse.success(data=unmapped_securities_list, message="Unmapped Securities")
+
+def get_unmapped_pflt_sec(cash_file_security):
+    try:
+        cash_file_security_initial = cash_file_security.split(" ")[0]
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            matched_pflt_sec_mapping_df = pd.DataFrame(connection.execute(text(f'''
+                select 
+                    id, 
+                    soi_name, 
+                    master_comp_security_name, 
+                    family_name, security_type, 
+                    cashfile_security_name 
+                from pflt_security_mapping 
+                where company_id = 1 and
+                pflt_security_mapping.cashfile_security_name is null and
+                (soi_name ilike '{cash_file_security_initial}%' or family_name ilike '{cash_file_security_initial}%') 
+                order by soi_name asc;''')).fetchall())
+
+        columns_data = [
+            {
+                'key': "soi_name",
+                'label': "SOI Name",
+                'isEditable': False,
+                'isRequired': True
+            }, {
+                'key': "master_comp_security_name",
+                'label': "Master Comp Security Name",
+                'isEditable': False
+            },  {
+                'key': "family_name",
+                'label': "Family Name",
+                'isEditable': True
+            }, {
+                'key': "security_type",
+                'label': "Security Type",
+                'isEditable': False
+            }, {
+                'key': "cashfile_security_name",
+                'label': "Cash File Security Name",
+                'isEditable': True
+            }
+        ]
+        pflt_sec_mapping_table = {
+            "columns": columns_data,
+            "data": []
+        }
+        matched_pflt_sec_mapping_df.columns = matched_pflt_sec_mapping_df.columns.str.replace(" ", "_")
+        matched_pflt_sec_mapping_df = matched_pflt_sec_mapping_df.replace({np.nan: None})
+        df_dict = matched_pflt_sec_mapping_df.to_dict(orient='records')
+        pflt_sec_mapping_table["data"] = df_dict
+
+        return ServiceResponse.success(data=pflt_sec_mapping_table, message="Probable securities")
+    except Exception as e:
+        Log.func_error(e=e)
+        return ServiceResponse.error(message=f"Error occurred while retrieving unmapped cash file securities")
+    
+def get_cash_sec(security_type):
+    engine = db.get_engine()
+    with engine.connect() as connection:
+        if security_type == "all":
+            securities = pd.DataFrame(connection.execute(text('''select 
+                distinct "Security/Facility Name" as cashfile_securities, 
+                "Security ID" as "security_id", 
+                "Issuer/Borrower Name" as "issuer_borrower_name",
+                "P. Lot Current Par Amount (Deal Currency)" as "par_amout_deal",
+                "PIK Loan" as "pik_loan"
+            from sf_sheet_us_bank_holdings pubh 
+            left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
+            order by "Issuer/Borrower Name" asc''')).fetchall())
+        else:
+            securities = pd.DataFrame(connection.execute(text('''select 
+                distinct "Security/Facility Name" as cashfile_securities, 
+                "Security ID" as "security_id", 
+                "Issuer/Borrower Name" as "issuer_borrower_name",
+                "P. Lot Current Par Amount (Deal Currency)" as "par_amout_deal",
+                "PIK Loan" as "pik_loan"
+            from sf_sheet_us_bank_holdings pubh 
+            left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
+            where psm.id is null''')).fetchall())
+
+    columns = [
+        {"key": "security_id", "label": "Security ID", 'isEditable': False, 'isRequired': True},
+        {"key": "cashfile_securities", "label": "Security/Facility Name", 'isEditable': False, 'isRequired': True},
+        {"key": "issuer_borrower_name", "label": "Issuer/Borrower Name", 'isEditable': False, 'isRequired': True},
+        {"key": "par_amout_deal", "label": "P.L.Lot Current Par Amount (Deal Currency)", 'isEditable': False, 'isRequired': True},
+        {"key": "pik_loan", "label": "PIK Loan", 'isEditable': False, 'isRequired': True}
+    ]
+
+    securities = securities.fillna("")
+    securities_dict = securities.to_dict(orient='records')
+
+    unmapped_securities_list = {
+        "columns": columns,
+        "data": securities_dict
+    }
+    return ServiceResponse.success(data=unmapped_securities_list, message="All Securities")

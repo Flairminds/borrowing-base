@@ -166,3 +166,8 @@ export const PCOFData = {
 		// }
 	]
 };
+
+export const OTHER_INFO_OPTIONS = [
+	{ label: 'Enter Data', value: 'add' },
+	{ label: 'Upload File', value: 'upload'}
+];
