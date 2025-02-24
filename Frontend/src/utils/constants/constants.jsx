@@ -49,122 +49,157 @@ export const sidebarItemsArray = [
 
 // AddInfo Functionality
 export const PFLTData = {
-	Header: [
-		{
-			name: "determination_date",
-			label: "Determination Date",
-			type: "datePicker"
-		},
-		{
-			name: "minimum_equity_amount_floor",
-			label: "Minimum Equity Amount Floor",
-			type: "text"
-		}
-	],
-	Column: [
-		{
-			name: "currency",
-			label: "Currency",
-			type: "text"
-		},
-		{
-			name: "borrowing",
-			label: "Borrowing",
-			type: "text"
-		},
-		{
-			name: "exchange_rates",
-			label: "Exchange Rate",
-			type: "text"
-		},
-		{
-			name: "current_credit_facility_balance",
-			label: "Credit Facility Balance",
-			type: "text"
-		},
-		{
-			name: "cash_current_and_preborrowing",
-			label: "Cash Current And Preborrowing",
-			type: "text"
-		},
-		{
-			name: "additional_expenses_1",
-			label: "Additional Expenses 1",
-			type: "text"
-		},
-		{
-			name: "additional_expenses_2",
-			label: "Additional Expenses 2",
-			type: "text"
-		},
-		{
-			name: "additional_expenses_3",
-			label: "Additional Expenses 3",
-			type: "text"
-		}
-	]
+	"Inputs": {
+		Header: [
+			{
+				name: "determination_date",
+				label: "Determination Date",
+				type: "datePicker"
+			},
+			{
+				name: "minimum_equity_amount_floor",
+				label: "Minimum Equity Amount Floor",
+				type: "text"
+			}
+		],
+		Column: [
+			{
+				name: "currency",
+				label: "Currency",
+				type: "text"
+			},
+			{
+				name: "borrowing",
+				label: "Borrowing",
+				type: "text"
+			},
+			{
+				name: "exchange_rates",
+				label: "Exchange Rate",
+				type: "text"
+			},
+			{
+				name: "current_credit_facility_balance",
+				label: "Credit Facility Balance",
+				type: "text"
+			},
+			{
+				name: "cash_current_and_preborrowing",
+				label: "Cash Current And Preborrowing",
+				type: "text"
+			},
+			{
+				name: "additional_expenses_1",
+				label: "Additional Expenses 1",
+				type: "text"
+			},
+			{
+				name: "additional_expenses_2",
+				label: "Additional Expenses 2",
+				type: "text"
+			},
+			{
+				name: "additional_expenses_3",
+				label: "Additional Expenses 3",
+				type: "text"
+			}
+		]
+	}
 };
 
 export const PCOFData = {
-	Header: [
-		{
-			name: "determination_date",
-			label: "Determination Date",
-			type: "datePicker"
-		},
-		{
-			name: "revolving_closing_date",
-			label: "Revolving Closing Date",
-			type: "datePicker"
-		},
-		{
-			name: "commitment_period",
-			label: "Commitment Period",
-			type: "text"
-		},
-		{
-			name: "facility_size",
-			label: "Facility Size",
-			type: "text"
-		},
-		{
-			name: "loans_usd",
-			label: "Loans (USD)",
-			type: "text"
-		},
-		{
-			name: "loans_cad",
-			label: "Loans (CAD)",
-			type: "text"
-		}
-	],
-	Column: [
-		{
-			name: "principal_obligations",
-			label: "Principal Obligations",
-			type: "text"
-		},
-		{
-			name: "currency",
-			label: "Currency",
-			type: "text"
-		},
-		{
-			name: "amount",
-			label: "Amount",
-			type: "text"
-		},
-		{
-			name: "spot_rate",
-			label: "Spot Rate",
-			type: "text"
-		}
-		// {
-		// 	name: "dollar_equivalent",
-		// 	label: "Dollar Equivalent",
-		// 	type: "text"
-		// }
-	]
+	"availability_borrower": {
+		Header: [
+			{
+				name: "determination_date",
+				label: "Determination Date",
+				type: "datePicker"
+			},
+			{
+				name: "revolving_closing_date",
+				label: "Revolving Closing Date",
+				type: "datePicker"
+			},
+			{
+				name: "commitment_period",
+				label: "Commitment Period",
+				type: "text"
+			},
+			{
+				name: "facility_size",
+				label: "Facility Size",
+				type: "text"
+			},
+			{
+				name: "loans_usd",
+				label: "Loans (USD)",
+				type: "text"
+			},
+			{
+				name: "loans_cad",
+				label: "Loans (CAD)",
+				type: "text"
+			}
+		]
+	},
+	"principal_obligations": {
+		Column: [
+			{
+				name: "principal_obligations",
+				label: "Principal Obligations",
+				type: "text"
+			},
+			{
+				name: "currency",
+				label: "Currency",
+				type: "text"
+			},
+			{
+				name: "amount",
+				label: "Amount",
+				type: "text"
+			},
+			{
+				name: "spot_rate",
+				label: "Spot Rate",
+				type: "text"
+			}
+		]
+	},
+	"subscription_bb": {
+		Column: [
+			{
+				name: "investor",
+				label: "Investor",
+				type: "text"
+			},
+			{
+				name: "master_or_feeder",
+				label: "Master/Feeder",
+				type: "text"
+			},
+			{
+				name: "ultimate_investor_parent",
+				label: "Ultimate Investor Parent",
+				type: "text"
+			},
+			{
+				name: "designation",
+				label: "Designation",
+				type: "text"
+			},
+			{
+				name: "commitment",
+				label: "Commitment",
+				type: "text"
+			},
+			{
+				name: "capital_called",
+				label: "Capital Called",
+				type: "text"
+			}
+		]
+	}
 };
 
 export const OTHER_INFO_OPTIONS = [
