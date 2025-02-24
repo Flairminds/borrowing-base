@@ -1,5 +1,5 @@
 import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
-import { Form, Input, DatePicker, Button, Radio } from "antd";
+import { Form, Input, DatePicker, Button, Radio, Tabs, Col, Row } from "antd";
 import Modal from "antd/es/modal/Modal";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
@@ -10,6 +10,8 @@ import { submitOtherInfo } from "../../services/dataIngestionApi";
 import { PFLTData, PCOFData, OTHER_INFO_OPTIONS } from "../../utils/constants/constants";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./AddAdditionalInformationModal.module.css";
+
+const { TabPane } = Tabs;
 
 export const AddAdditionalInformationModal = (
 	{
@@ -132,8 +134,6 @@ export const AddAdditionalInformationModal = (
 	};
 
 	const selectedData = previewFundType === "PCOF" ? PCOFData : PFLTData;
-	console.info(selectedData, 'sel');
-	console.info(initalFormData, 'initalFormData');
 
 	const intialFormData = selectedData == "PCOF" ? pcofEmptyFormStructure : pfltEmptyFormStructure;
 
@@ -224,97 +224,111 @@ export const AddAdditionalInformationModal = (
 				</div>
 
 				{addType === "add" &&
-					<>
-						{selectedData.Header.map((header) => (
-							<Form.Item
-								key={header.name}
-								label={header.label}
-								name={header.name}
-								rules={[{ required: true, message: `Please enter ${header.label.toLowerCase()}!` }]}
-								style={{ display: "inline-block", width: "20%", marginRight: "4%" }}
-							>
-								{header.type === "datePicker" ? (
-									<DatePicker style={{ width: "100%" }} />
-								) : (
-									<Input placeholder={`Enter ${header.label}`} />
-								)}
-							</Form.Item>
-						))}
+					<Form>
+						<Tabs defaultActiveKey="1">
+							{Object.keys(selectedData).map((sheet, index) => {
+								const formattedSheetName = sheet.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
-						<Form.List name="other_data">
-							{(fields, { add, remove }) => (
-								<>
-									<div className={styles.rowHeader}
-										style={{
-											display: "grid",
-											gridTemplateColumns: `repeat(${selectedData.Column.length}, 1fr)`, // Dynamic grid
-											gap: "10px",
-											padding: "10px"
-										}}>
-										{selectedData.Column.map((inputField) => (
-											<div key={inputField.label} className={styles.column}>
-												{inputField.label}
-											</div>
-										))}
-									</div>
+								return (
+									<TabPane tab={formattedSheetName} key={index + 1}>
+										<>
+											{selectedData[sheet]?.Header?.map((header) => (
+												<Form.Item
+													key={index}
+													label={header.label}
+													name={header.name}
+													rules={[{ required: true, message: `Please enter ${header.label.toLowerCase()}!` }]}
+													style={{ display: "inline-block", width: "20%", marginRight: "4%", marginBottom: "2.5rem" }}
+												>
+													{header.type === "datePicker" ? (
+														<DatePicker style={{ width: "100%" }} />
+													) : (
+														<Input placeholder={`Enter ${header.label}`} />
+													)}
+												</Form.Item>
+											))}
 
-									<div className={styles.rowContainer}>
-										{fields.map((field, index) => (
-											<div key={field.key} className={styles.row} 
-												style={{
-													display: "grid",
-													gridTemplateColumns: `repeat(${selectedData.Column.length}, 1fr)`, // Dynamic grid
-													gap: "10px",
-													padding: "10px"
-												}}
-											>
-												{selectedData.Column.map((inputField) => (
-													<Form.Item
-														key={inputField.name}
-														name={[field.name, inputField.name]}
-														noStyle
-													>
-														{inputField.type === "datePicker" ? (
-															<DatePicker
-																placeholder={inputField.label}
+											{selectedData[sheet]?.Column?.length > 0 &&
+												<Form.List name={selectedData[sheet]}>
+													{(fields, { add, remove }) => (
+														<>
+															<div className={styles.rowHeader}
 																style={{
-																	width: "100%",
-																	padding: "4px",
-																	borderRadius: "8px",
-																	border: "1px solid rgba(201, 196, 196, 0.6)",
-																}}
-															/>
-														) : (
-															<Input
-																placeholder={inputField.label}
-																style={{
-																	width: "100%",
-																	padding: "4px",
-																	borderRadius: "8px",
-																	border: "1px solid rgba(201, 196, 196, 0.6)",
-																}}
-															/>
-														)}
-													</Form.Item>
-												))}
+																	display: "grid",
+																	gridTemplateColumns: `repeat(${selectedData[sheet]?.Column?.length}, 1fr)`, // Dynamic grid
+																	gap: "10px",
+																	padding: "10px"
+																}}>
+																{selectedData[sheet]?.Column?.map((inputField) => (
+																	<div key={inputField.label} className={styles.column}>
+																		{inputField.label}
+																	</div>
+																))}
+															</div>
+
+															<div className={styles.rowContainer}>
+																{fields.map((field, index) => (
+																	<div key={index} className={styles.row}
+																		style={{
+																			display: "grid",
+																			gridTemplateColumns: `repeat(${selectedData[sheet]?.Column.length}, 1fr)`, // Dynamic grid
+																			gap: "10px",
+																			padding: "10px"
+																		}}
+																	>
+																		{selectedData[sheet]?.Column.map((inputField) => (
+																			<Form.Item
+																				key={inputField.name}
+																				name={[field.name, inputField.name]}
+																				noStyle
+																			>
+																				{inputField.type === "datePicker" ? (
+																					<DatePicker
+																						placeholder={inputField.label}
+																						style={{
+																							width: "100%",
+																							padding: "4px",
+																							borderRadius: "8px",
+																							border: "1px solid rgba(201, 196, 196, 0.6)",
+																						}}
+																					/>
+																				) : (
+																					<Input
+																						placeholder={inputField.label}
+																						style={{
+																							width: "100%",
+																							padding: "4px",
+																							borderRadius: "8px",
+																							border: "1px solid rgba(201, 196, 196, 0.6)",
+																						}}
+																					/>
+																				)}
+																			</Form.Item>
+																		))}
+																	</div>
+																))}
+															</div>
+
+															<Form.Item>
+																<Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+																	Add Details
+																</Button>
+															</Form.Item>
+														</>
+													)}
+												</Form.List>
+											}
+
+											<div className={styles.buttonContainer}>
+												<CustomButton isFilled={true} text="Save" onClick={() => form.submit()} />
+												<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
 											</div>
-										))}
-									</div>
-
-									<Form.Item>
-										<Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-											Add Details
-										</Button>
-									</Form.Item>
-								</>
-							)}
-						</Form.List>
-
-						<div className={styles.buttonContainer}>
-							<CustomButton isFilled={true} text="Save" onClick={() => form.submit()} />
-							<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
-						</div>
-					</>
+										</>
+									</TabPane>
+								);
+							})}
+						</Tabs>
+					</Form>
 				}
 
 				{addType === "upload" &&
