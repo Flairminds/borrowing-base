@@ -24,6 +24,7 @@ import { AssetInventory } from '../../../modal/assetInventoryModal/AssetInventor
 import { UpdateAssetDetailsModal } from '../../../modal/updateAssetWIA/updateAssetDetailsModal/UpdateAssetDetailsModal';
 import { SaveAnalysisConfirmationModel } from '../../../modal/saveanalysisconfirmationmodel/SaveAnalysisConfirmationModel';
 import { WhatIfAnalysisLib } from '../../../modal/whatIfAnalysisLibrary/WhatIfAnalysisLib';
+import { LoaderFullPage } from '../../../components/loader/loader';
 
 export const WhatIfAnalysis = ({
 	getTrendGraphData,
