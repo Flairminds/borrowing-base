@@ -74,6 +74,7 @@ def percentBBCash(dataframe, formula_column, cash_index, target_column):
 def borrowingBaseCash(dataframe, columnDL, columnDM, target_column, cash_index):
     # Calculate the result using the formula and assign it to the target column
     result = [dataframe.loc[cash_index, columnDL], dataframe.loc[cash_index, columnDM]]
+    result = [x for x in result if x is not None] 
     output = sum([i for i in result if not math.isnan(i)])
 
     dataframe.loc[cash_index, target_column] = output

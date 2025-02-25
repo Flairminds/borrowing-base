@@ -1,17 +1,23 @@
+import os
 import pandas as pd
 import numpy as np
 import datetime
 from sqlalchemy import text
 import openpyxl
+import pickle
 
-from models import db
+from models import db, BaseDataFile, ExtractedBaseDataInfo
 
+from source.utility.ServiceResponse import ServiceResponse
 from source.services.PCOF.calculation.functionsCall import calculation_for_build
+from source.services.PCOF.PcofDashboardService import PcofDashboardService
 
+pcofDashboardService = PcofDashboardService()
 
 def trigger_pcof_bb(bdi_id):
     try:
         engine = db.get_engine()
+        extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(id=bdi_id).first()
         with engine.connect() as connection:
             base_data_df = pd.DataFrame(connection.execute(text(f'select * from pcof_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
             base_data_mapping_df = pd.DataFrame(connection.execute(text("""select bd_sheet_name, bd_column_name, bd_column_lookup from base_data_mapping bdm where fund_type = 'PCOF'""")))
@@ -494,6 +500,61 @@ def trigger_pcof_bb(bdi_id):
 
         df_PL_BB_Build = base_data_df.copy()
 
+        # for now, hardcodedly adding cash row
+        cash_row_data = {
+            'Investment Name': ['Cash'], 
+            'Issuer': ['Cash'], 
+            'Investment Investment Type': ['Cash'],
+            'Investment Industry': ['Cash'], 
+            'Investment Closing Date': [None], 
+            'Investment Maturity': [None],
+            'Investment Par': [7489255], 
+            'Investment Cost': [7489255], 
+            'Investment External Valuation': [7489255],
+            'Investment Internal Valuation': [7489255], 
+            'Rates Fixed Coupon': [None],
+            'Rates Floating Cash Spread': [None], 
+            'Rates Current LIBOR/Floor': [None], 
+            'Rates PIK': [None],
+            'Rates Fixed / Floating': ['Floating'], 
+            'Classifications Quoted / Unquoted': ['Quoted'],
+            'Classifications Warehouse Asset': ['No'],
+            'Classifications Warehouse Asset Inclusion Date': [pd.NaT],
+            'Classifications Warehouse Asset Expected Rating': [None],
+            'Classifications Approved Foreign Jurisdiction': ['NA'],
+            'Classifications LTV Transaction': ['No'],
+            'Classifications Noteless Assigned Loan': ['No'],
+            'Classifications Undelivered Note': ['No'],
+            'Classifications Structured Finance Obligation': ['No'],
+            'Classifications Third Party Finance Company': ['No'],
+            'Classifications Affiliate Investment': ['No'],
+            'Classifications Defaulted / Restructured': ['No'],
+            'Financials LTM Revenue ($MMs)': [None], 
+            'Financials LTM EBITDA ($MMs)': [None],
+            'Leverage Revolver Commitment': [None], 
+            'Leverage Total Enterprise Value': [None],
+            'Leverage Total Leverage': [None], 
+            'Leverage PCOF IV Leverage': [None],
+            'Leverage Attachment Point': [None], 
+            'Leverage Total Capitalization': [None],
+            'Leverage LTV Thru PCOF IV': [None], 
+            'Final Eligibility Override': [None],
+            'Final Comment': [None], 
+            'Concentration Adjustment': [None], 
+            'Concentration Comment': [None],
+            'Borrowing Base Other Adjustment': [None],
+            'Borrowing Base Industry Concentration': [None], 
+            'Borrowing Base Comment': [None],
+            'Is Eligible Issuer': [None]
+        }
+        
+        cash_row_df = pd.DataFrame(cash_row_data)
+
+        cash_row_df = cash_row_df.reindex(columns=df_PL_BB_Build.columns)
+        # Concatenate df_PL_BB_Build and uploaded_df
+        df_PL_BB_Build = pd.concat([df_PL_BB_Build, cash_row_df], ignore_index=True)
+        df_PL_BB_Build.reset_index(drop=True, inplace=True)
+
         df_PL_BB_Build[["Classifications Structured Finance Obligation", 
                         "Classifications Third Party Finance Company", 
                         "Classifications Affiliate Investment", 
@@ -519,20 +580,45 @@ def trigger_pcof_bb(bdi_id):
 
         
 
-        df_PL_BB_Build = calculation_for_build(
-            df_PL_BB_Build, 
-            df_Inputs_Other_Metrics, 
-            df_Availability_Borrower,
-            total_capitalCalled,
-            df_Inputs_Portfolio_LeverageBorrowingBase,
-            total_uncalled_Capital,
-            df_Obligors_Net_Capital
-        )
+        # df_PL_BB_Build = calculation_for_build(
+        #     df_PL_BB_Build, 
+        #     df_Inputs_Other_Metrics, 
+        #     df_Availability_Borrower,
+        #     total_capitalCalled,
+        #     df_Inputs_Portfolio_LeverageBorrowingBase,
+        #     total_uncalled_Capital,
+        #     df_Obligors_Net_Capital
+        # ) # For now, checking PL BB Build
 
-        return {
-            "success": True,
-            "message": "Successfuly processed PL BB Build"
+        xl_df_map = {
+            "PL BB Build": df_PL_BB_Build,
+            "Other Metrics": df_Inputs_Other_Metrics,
+            "Availability Borrower": df_Availability_Borrower,
+            "Portfolio LeverageBorrowingBase": df_Inputs_Portfolio_LeverageBorrowingBase,
+            "Obligors' Net Capital": df_Obligors_Net_Capital
         }
+        pickled_xl_df_map = pickle.dumps(xl_df_map)
+
+        included_excluded_assets = pcofDashboardService.pcof_included_excluded_assets(xl_df_map)
+
+        dt_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        
+        base_data_file = BaseDataFile(
+            user_id=1,
+            file_data=pickled_xl_df_map,
+            fund_type='PCOF',
+            file_name ='Generated Data '+dt_string,
+            included_excluded_assets_map=included_excluded_assets,
+            closing_date=extracted_base_data_info.report_date
+        )
+        db.session.add(base_data_file)
+        db.session.commit()
+
+        wb2.close()
+        writer.close()
+        os.remove(file_name)
+
+        return ServiceResponse.success(message="Succesfully processed PL BB Build")
 
 
     except Exception as e:
