@@ -49,7 +49,7 @@ export const sidebarItemsArray = [
 
 // AddInfo Functionality
 export const PFLTData = {
-	"Inputs": {
+	input: {
 		Header: [
 			{
 				name: "determination_date",
@@ -108,8 +108,13 @@ export const PFLTData = {
 };
 
 export const PCOFData = {
-	"availability_borrower": {
+	availability_borrower: {
 		Header: [
+			{
+				name: "borrower",
+				label: "Borrower",
+				type: "text"
+			},
 			{
 				name: "determination_date",
 				label: "Determination Date",
@@ -121,28 +126,28 @@ export const PCOFData = {
 				type: "datePicker"
 			},
 			{
-				name: "commitment_period",
+				name: "commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)",
 				label: "Commitment Period",
 				type: "text"
 			},
 			{
-				name: "facility_size",
+				name: "(b)_facility_size",
 				label: "Facility Size",
 				type: "text"
 			},
 			{
-				name: "loans_usd",
+				name: "loans_(usd)",
 				label: "Loans (USD)",
 				type: "text"
 			},
 			{
-				name: "loans_cad",
+				name: "loans_(cad)",
 				label: "Loans (CAD)",
 				type: "text"
 			}
 		]
 	},
-	"principal_obligations": {
+	principle_obligations: {
 		Column: [
 			{
 				name: "principal_obligations",
@@ -166,7 +171,7 @@ export const PCOFData = {
 			}
 		]
 	},
-	"subscription_bb": {
+	subscription_bb: {
 		Column: [
 			{
 				name: "investor",
@@ -196,6 +201,131 @@ export const PCOFData = {
 			{
 				name: "capital_called",
 				label: "Capital Called",
+				type: "text"
+			}
+		]
+	},
+	pricing: {
+		Column: [
+			{
+				name: "pricing",
+				label: "Pricing",
+				type: "text"
+			},
+			{
+				name: "percent",
+				label: "Percent",
+				type: "text"
+			}
+		]
+	},
+	portfolio_leverageborrowingbase: {
+		Column: [
+			{
+				name: "investment_type",
+				label: "Investment Type",
+				type: "text"
+			},
+			{
+				name: "unquoted",
+				label: "Unquoted",
+				type: "text"
+			},
+			{
+				name: "quoted",
+				label: "Quoted",
+				type: "text"
+			}
+		]
+	},
+	advance_rates: {
+		Column: [
+			{
+				name: "investor_type",
+				label: "Investor Type",
+				type: "text"
+			},
+			{
+				name: "advance_rate",
+				label: "Advance Rate",
+				type: "text"
+			}
+		]
+	},
+	concentration_limits: {
+		Column: [
+			{
+				name: "investors",
+				label: "Investors",
+				type: "text"
+			},
+			{
+				name: "rank",
+				label: "Rank",
+				type: "text"
+			},
+			{
+				name: "concentration_limit",
+				label: "Concentration Limit",
+				type: "text"
+			}
+		]
+	},
+	other_metrics: {
+		Header: [
+			{
+				name: "first_lien_leverage_cut-off_point",
+				label: "First Lien Leverage Cut-Off Point",
+				type: "text"
+			},
+			{
+				name: "warehouse_first_lien_leverage_cut-off",
+				label: "Warehouse First Lien Leverage Cut-Off",
+				type: "text"
+			},
+			{
+				name: "last_out_attachment_point",
+				label: "Last Out Attachment Point",
+				type: "text"
+			},
+			{
+				name: "trailing_12-month_ebitda",
+				label: "Trailing 12-Month EBITDA",
+				type: "text"
+			},
+			{
+				name: "trailing_24-month_ebitda",
+				label: "Trailing 24-Month EBITDA",
+				type: "text"
+			},
+			{
+				name: "total_leverage",
+				label: "Total Leverage",
+				type: "text"
+			},
+			{
+				name: "ltv",
+				label: "LTV",
+				type: "text"
+			},
+			{
+				name: "concentration_test_threshold_1",
+				label: "Concentration Test Threshold 1",
+				type: "text"
+			},
+			{
+				name: "concentration_test_threshold_2",
+				label: "Concentration Test Threshold 2",
+				type: "text"
+			},
+			{
+				name: "threshold_1_advance_rate",
+				label: "Threshold 1 Advance Rate",
+				type: "text"
+			},
+			{
+				name: "threshold_2_advance_rate",
+				label: "Threshold 2 Advance Rate",
 				type: "text"
 			}
 		]
