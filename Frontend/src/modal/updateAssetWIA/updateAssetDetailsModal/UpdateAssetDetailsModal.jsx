@@ -14,6 +14,8 @@ import { addAssetAtIndex, deleteAssetAtIndex, duplicateAsset, getLatestPrevValue
 import { AddAssetDetailsModal } from '../addAssetDetailsModal/AddAssetDetailsModal';
 import Styles from './UpdateAssetDetailsModal.module.css';
 import {MoreOutlined} from '@ant-design/icons';
+import { CustomButton } from '../../../components/custombutton/CustomButton';
+import { ImportAssetFIleModal } from '../importAssetFIleModal/ImportAssetFIleModal';
 
 export const UpdateAssetDetailsModal = ({
 	isupdateAssetModalOpen,
@@ -46,10 +48,11 @@ export const UpdateAssetDetailsModal = ({
 		index: -1,
 		type: ''
 	});
-	const [loading, setLoading] = useState(false)
-	const [addAssetDetailsModalOpen , setAddAssetDetailsModalOpen] = useState(false);
-	const [showModification, setShowModification] = useState(false)
+	const [loading, setLoading] = useState(false);
+	const [addAssetDetailsModalOpen, setAddAssetDetailsModalOpen] = useState(false);
+	const [showModification, setShowModification] = useState(false);
 	const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+	const [importFilePopup, setImportFilePopup ] = useState(false);
 
 	useEffect(() => {
 		if (fundType) {
@@ -57,7 +60,10 @@ export const UpdateAssetDetailsModal = ({
 		}
 	}, [fundType]);
 
-	const previewSheets = updateAssetTableData?.table_data?.sheets
+	useEffect(() => {
+	}, [updateAssetTableData]);
+
+	const previewSheets = updateAssetTableData?.table_data?.sheets;
 
 	const handleCancel = () => {
 		setIsupdateAssetModalOpen(false);
@@ -304,19 +310,25 @@ export const UpdateAssetDetailsModal = ({
 								className={Styles.modificationSwitch}
 								size="small"
 								onChange={handleShowModificationChange}
-								style={{backgroundColor:showModification ? "#1EBEA5" : null }}
+								style={{backgroundColor: showModification ? "#1EBEA5" : null }}
 							/>
 							Show rows with modifications
 						</div>
 
 					</div>
 
-					<div className={Styles.tabsContainer}>
-						{previewSheets?.map((sheet, index) => (
-							<div key={index} onClick={() => handleSheetChange(sheet)} className={selectedSheetNumber == sheet ? Styles.active : Styles.tabs}>
-								{sheet}
-							</div>
-						))}
+					<div className={Styles.wiaoptionsContainer}>
+						<div className={Styles.tabsContainer}>
+							{previewSheets?.map((sheet, index) => (
+								<div key={index} onClick={() => handleSheetChange(sheet)} className={selectedSheetNumber == sheet ? Styles.active : Styles.tabs}>
+									{sheet}
+								</div>
+							))}
+						</div>
+						<div className={Styles.fileOptionButtons}>
+							<CustomButton text="Import" isFilled={true} onClick={() => setImportFilePopup(true)} />
+							<CustomButton text="Export" isFilled={true} />
+						</div>
 					</div>
 					<div className={Styles.tableContainer}>
 						<table className={Styles.table}>
@@ -396,6 +408,17 @@ export const UpdateAssetDetailsModal = ({
 				enteredInputData={enteredInputData}
 				setEnteredInputData={setEnteredInputData}
 			/>
+
+			<ImportAssetFIleModal
+				isOpen={importFilePopup}
+				setIsopen={setImportFilePopup}
+				updateAssetTableData={updateAssetTableData}
+				selectedSheetNumber={selectedSheetNumber}
+				appliedChanges={appliedChanges}
+				setAppliedChanges={setAppliedChanges}
+				setIsButtonDisabled={setIsButtonDisabled}
+			/>
+
 		</>
 	);
 };
