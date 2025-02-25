@@ -313,9 +313,9 @@ export const UpdateAssetDetailsModal = ({
 
 					<div className={Styles.tabsContainer}>
 						{previewSheets?.map((sheet, index) => (
-						<div onClick={() => handleSheetChange(sheet)} className={selectedSheetNumber == sheet ? Styles.active : Styles.tabs}>
-								{sheet} 
-						</div>
+							<div key={index} onClick={() => handleSheetChange(sheet)} className={selectedSheetNumber == sheet ? Styles.active : Styles.tabs}>
+								{sheet}
+							</div>
 						))}
 					</div>
 					<div className={Styles.tableContainer}>
