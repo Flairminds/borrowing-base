@@ -1393,33 +1393,39 @@ def get_unmapped_pflt_sec(cash_file_security):
 def get_cash_sec(security_type):
     engine = db.get_engine()
     with engine.connect() as connection:
-        if security_type == "all":
-            securities = pd.DataFrame(connection.execute(text('''select 
-                distinct "Security/Facility Name" as cashfile_securities, 
-                "Security ID" as "security_id", 
-                "Issuer/Borrower Name" as "issuer_borrower_name",
-                "P. Lot Current Par Amount (Deal Currency)" as "par_amout_deal",
-                "PIK Loan" as "pik_loan"
-            from sf_sheet_us_bank_holdings pubh 
-            left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
-            order by "Issuer/Borrower Name" asc''')).fetchall())
-        else:
-            securities = pd.DataFrame(connection.execute(text('''select 
-                distinct "Security/Facility Name" as cashfile_securities, 
-                "Security ID" as "security_id", 
-                "Issuer/Borrower Name" as "issuer_borrower_name",
-                "P. Lot Current Par Amount (Deal Currency)" as "par_amout_deal",
-                "PIK Loan" as "pik_loan"
-            from sf_sheet_us_bank_holdings pubh 
-            left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
-            where psm.id is null''')).fetchall())
+        all_securities = pd.DataFrame(connection.execute(text('''select 
+            distinct "Security/Facility Name" as cashfile_securities, 
+            "Security ID" as "security_id", 
+            "Issuer/Borrower Name" as "issuer_borrower_name",
+            "P. Lot Current Par Amount (Deal Currency)" as "par_amout_deal",
+            "Facility Category Desc" as facility_category_desc
+        from sf_sheet_us_bank_holdings pubh 
+        left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
+        order by "Issuer/Borrower Name" asc''')).fetchall())
+        unmapped_securities = pd.DataFrame(connection.execute(text('''select 
+            distinct "Security/Facility Name" as cashfile_securities, 
+            "Security ID" as "security_id", 
+            "Issuer/Borrower Name" as "issuer_borrower_name",
+            "P. Lot Current Par Amount (Deal Currency)" as "par_amout_deal",
+            "Facility Category Desc" as facility_category_desc
+        from sf_sheet_us_bank_holdings pubh 
+        left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
+        where psm.id is null''')).fetchall())
+
+    unammped_securities_count = unmapped_securities.shape[0]
+    all_securities_count = all_securities.shape[0]
+
+    if security_type == "all":
+        securities = all_securities
+    else: 
+        securities = unmapped_securities
 
     columns = [
         {"key": "security_id", "label": "Security ID", 'isEditable': False, 'isRequired': True},
         {"key": "cashfile_securities", "label": "Security/Facility Name", 'isEditable': False, 'isRequired': True},
         {"key": "issuer_borrower_name", "label": "Issuer/Borrower Name", 'isEditable': False, 'isRequired': True},
-        {"key": "par_amout_deal", "label": "P.L.Lot Current Par Amount (Deal Currency)", 'isEditable': False, 'isRequired': True},
-        {"key": "pik_loan", "label": "PIK Loan", 'isEditable': False, 'isRequired': True}
+        {"key": "par_amout_deal", "label": "P. Lot Current Par Amount (Deal Currency)", 'isEditable': False, 'isRequired': True},
+        {"key": "facility_category_desc", "label": "Facility Category Desc", 'isEditable': False, 'isRequired': True}
     ]
 
     securities = securities.fillna("")
@@ -1427,6 +1433,8 @@ def get_cash_sec(security_type):
 
     unmapped_securities_list = {
         "columns": columns,
-        "data": securities_dict
+        "data": securities_dict,
+        "all_securities_count": all_securities_count,
+        "unmapped_securities_count": unammped_securities_count
     }
     return ServiceResponse.success(data=unmapped_securities_list, message="All Securities")
