@@ -4,14 +4,23 @@
 
 .securityOverview {
 	display: flex;
-	margin: 1rem ;
+	margin: 0.2rem 1rem ;
 }
 
 .securityOverviewCard {
-	margin: 10px;
-	padding: 20px;
-	border: 1px solid grey;
-	border-radius: 10px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	padding: 10px;
+	margin: 0 5px;
+	/* height: 90px; */
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: box-shadow 0.3s ease;
+	}
+
+.cardTitle {
+	margin: 0;
+	padding: 0;
+	display: inline;
 }
 
 .pageTitle {
