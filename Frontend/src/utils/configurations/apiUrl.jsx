@@ -9,7 +9,7 @@
 // const apiURL = 'https://ts3pl306-5000.inc1.devtunnels.ms/api';
 
 // Deployed link
-// const apiURL = 'https://borrowing-base-uat.azurewebsites.net/api';
+const apiURL = 'https://borrowing-base-uat.azurewebsites.net/api';
 
 //const apiURL = 'https://borrowing-base-uat.azurewebsites.net/api';
 
