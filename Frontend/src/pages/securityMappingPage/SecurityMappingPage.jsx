@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FaRegEdit } from "react-icons/fa";
+import { Loader } from '../../components/loader/loader';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { HandleSecurityMappingModal } from '../../modal/securityMappingModals/handleSecurityMapping/HandleSecurityMappingModal';
 import { getUnmappedSecurityData } from '../../services/dataIngestionApi';
@@ -14,6 +15,7 @@ export const SecurityMappingPage = () => {
 	const [isMappingPopupOpen, setIsMappingPopupOpen] = useState(false);
 	const [securityViewType, setSecurityViewType] = useState("unmapped");
 	const [searchText, setSearchText] = useState("");
+	const [dataLoading, setDataLoading] = useState(false);
 	const navigate = useNavigate();
 
 	const handleSearch = (event) => {
@@ -31,10 +33,14 @@ export const SecurityMappingPage = () => {
 
 	const getMappingData = async (securityType) => {
 		try {
+			setUnmappedSecurities({});
+			setDataLoading(true);
 			const mappingRes = await getUnmappedSecurityData(securityType);
 			setUnmappedSecurities(mappingRes.data.result);
+			setDataLoading(false);
 		} catch (err) {
 			showToast("error", err?.response?.data?.message || "Failed to load data");
+			setDataLoading(false);
 		}
 	};
 
@@ -79,8 +85,6 @@ export const SecurityMappingPage = () => {
 				</div>
 			</div>
 
-
-
 			<div className={styles.tableContainer}>
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 					<div className={styles.pageTitle}>
@@ -94,7 +98,8 @@ export const SecurityMappingPage = () => {
 						onChange={handleSearch}
 					/>
 				</div>
-				<DynamicTableComponents data={dataToDisplay} columns={unmappedSecurities?.columns} additionalColumns={additionalColumns} />
+				{dataLoading ? <div style={{textAlign: 'center'}}><Loader /></div> :
+					<DynamicTableComponents data={dataToDisplay} columns={unmappedSecurities?.columns} additionalColumns={additionalColumns} />}
 			</div>
 			<HandleSecurityMappingModal isOpen={isMappingPopupOpen} setIsOpen={setIsMappingPopupOpen} activeSecurity={activeSecurity} getMappingData={getMappingData} />
 

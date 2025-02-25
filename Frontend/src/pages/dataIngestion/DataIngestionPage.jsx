@@ -10,6 +10,7 @@ import { fundOptionsArray } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './DataIngestionPage.module.css';
 import { DynamicSwitchComponent } from '../../components/reusableComponents/dynamicSwichComponent/DynamicSwitchComponent';
+import { Loader } from '../../components/loader/loader';
 
 export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
@@ -22,12 +23,14 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [archiveToggle, setArchiveToggle] = useState(false);
 	const [archiveFilesData, setArchiveFilesData] = useState(null);
 	const [isbuttonDisable, setButtonDisable] = useState(false);
+	const [dataLoading, setDataLoading] = useState(false);
 
 	const navigate = useNavigate();
 	let extractionInterval;
 
 	const blobFilesList = async(fundType) => {
 		try {
+			setDataLoading(true);
 			const payload = fundType === 1 ? 'PCOF' : 'PFLT';
 			const fileresponse = await getBlobFilesList(payload);
 			const responseData = fileresponse.data.result;
@@ -58,10 +61,12 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
 			const updatedcolumns = [...columnsToAdd, ...responseData.columns];
 			setDataIngestionFileListColumns(updatedcolumns);
+			setDataLoading(false);
 
 		} catch (err) {
 			console.error(err);
 			showToast("error", err.response.data.message);
+			setDataLoading(false);
 		}
 	};
 
@@ -244,25 +249,27 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 							</div>
 						</div> */}
 
-					<div className={styles.tableContainer}>
-						{
-							archiveToggle ?
-								<DynamicTableComponents data={archiveFilesData?.data} columns={archiveFilesData?.columns}	/>
-								:
-								<DynamicTableComponents data={dataIngestionFileListData} columns={dataIngestionFileListColumns} />
-						}
-					</div>
+					{dataLoading ? <Loader /> :
+						<><div className={styles.tableContainer}>
+							{
+								archiveToggle ?
+									<DynamicTableComponents data={archiveFilesData?.data} columns={archiveFilesData?.columns}	/>
+									:
+									<DynamicTableComponents data={dataIngestionFileListData} columns={dataIngestionFileListColumns} />
+							}
+						</div>
 
-					<div className={styles.extractDataBtn}>
-					{!isbuttonDisable && (
-						<CustomButton
-							isFilled={true}
-							onClick={handleFileExtraction}
-							text='Extract Base Data'
-							// loading={fileExtractionLoading}
-						/>
-					)}
-					</div>
+						<div className={styles.extractDataBtn}>
+							{!isbuttonDisable && (
+								<CustomButton
+									isFilled={true}
+									onClick={handleFileExtraction}
+									text='Extract Base Data'
+									// loading={fileExtractionLoading}
+								/>
+							)}
+						</div>
+						</>}
 				</div>
 			</div>
 

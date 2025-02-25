@@ -93,7 +93,7 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity, 
 	const additionalColumns = [{
 		key: "",
 		label: "",
-		'render': (value, row) => <div onClick={() => handleMapSecurity(row.id, activeSecurity)} style={{ textAlign: 'center', cursor: 'pointer' }}> Use </div>
+		'render': (value, row) => <div onClick={() => handleMapSecurity(row.id, activeSecurity)} style={{ textAlign: 'center', cursor: 'pointer', color: '#0EB198' }}> Use </div>
 	}];
 
 	const getProbableMappings = async () => {
