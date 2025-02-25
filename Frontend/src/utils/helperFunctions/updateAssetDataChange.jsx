@@ -131,3 +131,11 @@ export const getLatestPrevValue = (PrevChanges, currdata, rowName, columnName) =
 	}
 	return null;
 };
+
+
+export const getCurrencyNumber = (str) => {
+	if (typeof (str) == "number") {
+		return str;
+	}
+	return parseFloat(str.replace(/[$,]/g, ""));
+};
