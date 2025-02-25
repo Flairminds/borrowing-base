@@ -1,6 +1,8 @@
 import { Button, Modal, Popover, Tooltip,Switch } from 'antd';
+import { saveAs } from "file-saver";
 import { useEffect, useRef, useState } from 'preact/hooks';
 import React from 'react'
+import * as XLSX from "xlsx";
 import AddIcon from '../../../assets/AddIcon.svg';
 import CrossIcon from '../../../assets/CrossIcon.svg';
 import DeleteIcon from '../../../assets/DeleteIcon.svg';
@@ -8,14 +10,14 @@ import RightIcon from '../../../assets/RightIcon.svg';
 import DuplicateAssetIcon from '../../../assets/updateAssetIcons/DuplicateAssetIcon.svg'
 import MoreOptionsIcon from '../../../assets/updateAssetIcons/MoreOptionsIcon.svg'
 import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css';
+import { CustomButton } from '../../../components/custombutton/CustomButton';
 import { getUpdateAssetData, updateModifiedAssets, updateSheetValues } from '../../../services/api';
 import { updateAssetDefaultColumnsData, updateAssetModalData } from '../../../utils/constants/constants';
 import { addAssetAtIndex, deleteAssetAtIndex, duplicateAsset, getLatestPrevValue, updateDataAfterChange } from '../../../utils/helperFunctions/updateAssetDataChange';
 import { AddAssetDetailsModal } from '../addAssetDetailsModal/AddAssetDetailsModal';
+import { ImportAssetFIleModal } from '../importAssetFIleModal/ImportAssetFIleModal';
 import Styles from './UpdateAssetDetailsModal.module.css';
 import {MoreOutlined} from '@ant-design/icons';
-import { CustomButton } from '../../../components/custombutton/CustomButton';
-import { ImportAssetFIleModal } from '../importAssetFIleModal/ImportAssetFIleModal';
 
 export const UpdateAssetDetailsModal = ({
 	isupdateAssetModalOpen,
@@ -280,6 +282,29 @@ export const UpdateAssetDetailsModal = ({
 		setShowModification(checked);
 	};
 
+	const handleFileExport = () => {
+		console.info(updateAssetTableData.table_data[selectedSheetNumber]?.data, 'update asset CLO 1');
+		const excelFileData = updateAssetTableData.table_data[selectedSheetNumber]?.data.map((el) => {
+			return {
+				"Security Name": el.Security_Name,
+				"Obligor Name": el.Obligor_Name,
+				"Total Commitment (Issue Currency)": el["Total_Commitment_(Issue_Currency)"],
+				"Outstanding Principal Balance (Issue Currency)": el["Outstanding_Principal_Balance_(Issue_Currency)"],
+				"Total Commitment (Issue Currency) CLO": "0",
+				"Outstanding Principal Balance (Issue Currency) CLO": "0"
+			};
+		});
+		const ws = XLSX.utils.json_to_sheet(excelFileData);
+
+		const wb = XLSX.utils.book_new();
+		XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+
+		const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+		const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+		saveAs(blob, "CLO data.xlsx");
+	};
+
+
 	return (
 		<>
 			<Modal
@@ -325,10 +350,12 @@ export const UpdateAssetDetailsModal = ({
 								</div>
 							))}
 						</div>
-						<div className={Styles.fileOptionButtons}>
-							<CustomButton text="Import" isFilled={true} onClick={() => setImportFilePopup(true)} />
-							<CustomButton text="Export" isFilled={true} />
-						</div>
+						{(selectedSheetNumber == "PL BB Build" || selectedSheetNumber == "Loan List") &&
+							<div className={Styles.fileOptionButtons}>
+								<CustomButton text="Import CLO" isFilled={true} onClick={() => setImportFilePopup(true)} />
+								<CustomButton text="Export" isFilled={true} onClick={handleFileExport} />
+							</div>
+						}
 					</div>
 					<div className={Styles.tableContainer}>
 						<table className={Styles.table}>
