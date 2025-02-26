@@ -35,7 +35,7 @@ export const AddAdditionalInformationModal = (
 		const formData = {};
 		if (previewFundType === "PCOF") {
 			formData["borrower"] = uploadedData["borrower"] || data?.other_data?.["borrower"] || null;
-			formData["determination_date"] = uploadedData.determination_date ? uploadedData.determination_date : dayjs(data?.other_data?.determination_date) || null;
+			formData["determination_date"] = uploadedData.determination_date ? dayjs(uploadedData.determination_date) : dayjs(data?.other_data?.determination_date) || null;
 			formData["revolving_closing_date"] = uploadedData.revolving_closing_date ? dayjs(uploadedData.revolving_closing_date) : dayjs(data?.other_data?.revolving_closing_date) || null;
 			formData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] = uploadedData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || data?.other_data?.["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || null;
 			formData["(b)_facility_size"] = uploadedData["(b)_facility_size"] || data?.other_data?.["(b)_facility_size"] || null;
@@ -101,7 +101,6 @@ export const AddAdditionalInformationModal = (
 
 	const handleSubmit = async (values) => {
 		const extractionInfoId = dataId;
-
 		try {
 			let other_data = {};
 			if (previewFundType === "PCOF") {
@@ -111,10 +110,10 @@ export const AddAdditionalInformationModal = (
 						"borrower": values.borrower,
 						"commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)": values["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"],
 						"(b)_facility_size": values["(b)_facility_size"],
-						"revolving_closing_date": values.revolving_closing_date.format("YYYY-MM-DD"),
-						"determination_date": values.determination_date.format("YYYY-MM-DD"),
-						"loans_(cad)": values["loans_(cad)"],
-						"loans_(usd)": values["loans_(usd)"],
+						"revolving_closing_date": dayjs(values?.revolving_closing_date?.format("YYYY-MM-DD")),
+						"determination_date": dayjs(values?.determination_date),
+						"loans_(cad)": values?.["loans_(cad)"],
+						"loans_(usd)": values?.["loans_(usd)"],
 					},
 					"other_metrics": {
 						"first_lien_leverage_cut-off_point": values["first_lien_leverage_cut-off_point"],
@@ -139,7 +138,7 @@ export const AddAdditionalInformationModal = (
 
 			const transformedData = {
 				"extraction_info_id": extractionInfoId,
-				"determination_date": dayjs(values.determination_date.format("YYYY-MM-DD")),
+				"determination_date": values.determination_date || dayjs(values.determination_date.format("YYYY-MM-DD")),
 				"other_data": other_data,
 				"fund_type": previewFundType
 			};
