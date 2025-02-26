@@ -1181,57 +1181,28 @@ def pflt_add_base_data_other_info(extraction_info_id, determination_date, minimu
     except Exception as e:
         Log.func_error(e)
         return ServiceResponse.error(message="Failed to add")
-def pcof_add_base_data_other_info(
+def add_base_data_other_info(
         extraction_info_id,
         determination_date, 
-        revolving_closing_date, 
-        commitment_period,
-        facility_size,
-        loans_usd,
-        loans_cad, 
         fund_type, 
         other_data
     ):
     try:
-        table_list = []
-
         existing_record = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).first()
-
-        for value in other_data:
-            table_list.append ({
-                "principal_obligations": value.get("principal_obligations"),
-                "currency": value.get("currency"),
-                "amount": value.get("amount"),
-                "spot_rate": value.get("spot_rate"),
-            })
 
         if existing_record:
             existing_record.determination_date = determination_date
             existing_record.fund_type = fund_type
-            existing_record.other_info_list = {
-                "revolving_closing_date": revolving_closing_date,
-                "commitment_period": commitment_period,
-                "facility_size": facility_size,
-                "loans_usd": loans_usd,
-                "loans_cad": loans_cad,
-                "table_list": table_list
-            }
+            existing_record.other_info_list = other_data
         else:
             base_data_other_info =  BaseDataOtherInfo(
                 extraction_info_id = extraction_info_id,
                 determination_date = determination_date,
                 fund_type = fund_type,
-                other_info_list = {
-                    "revolving_closing_date": revolving_closing_date,
-                    "commitment_period": commitment_period,
-                    "facility_size": facility_size,
-                    "loans_usd": loans_usd,
-                    "loans_cad": loans_cad,
-                    "table_list": table_list
-                }
+                other_info_list = other_data
             )
+        
             db.session.add(base_data_other_info)
-
         db.session.commit()
 
         return ServiceResponse.success(message="Data added sucessfully")
@@ -1250,24 +1221,12 @@ def get_base_data_other_info(extraction_info_id, fund_type):
         ).filter(BaseDataOtherInfo.extraction_info_id == extraction_info_id).first()
         res = {}
         if other_info:
-            common_fields = {
+            res = {
                 "id": other_info.id,
                 "extraction_info_id": other_info.extraction_info_id,
                 "determination_date": other_info.determination_date,
-                "other_data": other_info.other_info_list["table_list"]
+                "other_data": other_info.other_info_list
             }
-            if fund_type == "PFLT":
-                res = {**common_fields, "minimum_equity_amount_floor": other_info.other_info_list["minimum_equity_amount_floor"]}
-
-            elif fund_type == "PCOF":
-                res = {
-                    **common_fields, 
-                    "revolving_closing_date": other_info.other_info_list["revolving_closing_date"],
-                    "commitment_period": other_info.other_info_list["commitment_period"],
-                    "facility_size": other_info.other_info_list["facility_size"],
-                    "loans_cad": other_info.other_info_list["loans_cad"],
-                    "loans_usd": other_info.other_info_list["loans_usd"]
-                }
 
         return ServiceResponse.success(data = res)
     except Exception as e:
