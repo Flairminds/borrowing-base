@@ -171,3 +171,61 @@ export const OTHER_INFO_OPTIONS = [
 	{ label: 'Enter Data', value: 'add' },
 	{ label: 'Upload File', value: 'upload'}
 ];
+
+export const cloWhatIfData = {
+	'PFLT': {
+		defaultSelectedColumns: [
+			{
+				"key": "Security_Name",
+				"label": "Security Name"
+			},
+			{
+				"key": "Obligor_Name",
+				"label": "Obligor Name"
+			},
+			{
+				"key": "Total_Commitment_(Issue_Currency)",
+				"label": "Total Commitment (Issue Currency)"
+			},
+			{
+				"key": "Outstanding_Principal_Balance_(Issue_Currency)",
+				"label": "Outstanding Principal Balance (Issue Currency)"
+			}
+		],
+		additionalInputColumns: [
+			{
+				"key": "Total Commitment (Issue Currency) CLO",
+				"label": "Total Commitment (Issue Currency) CLO",
+				"initialValue": "0"
+			},
+			{
+				"key": "Outstanding Principal Balance (Issue Currency) CLO",
+				"label": "Outstanding Principal Balance (Issue Currency) CLO",
+				"initialValue": "0"
+			}
+		]
+	},
+	'PCOF': {
+		defaultSelectedColumns: [
+			{
+				"key": "Investment_Name",
+				"label": "Investment Name"
+			},
+			{
+				"key": "Issuer",
+				"label": "Issuer"
+			},
+			{
+				"key": "Investment_Par",
+				"label": "Investment Par"
+			}
+		],
+		additionalInputColumns: [
+			{
+				"key": "Investment Par CLO",
+				"label": "Investment Par CLO",
+				"initialValue": "0"
+			}
+		]
+	}
+};

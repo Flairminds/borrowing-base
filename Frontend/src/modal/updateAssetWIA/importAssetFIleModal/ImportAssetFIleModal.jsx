@@ -16,7 +16,8 @@ export const ImportAssetFIleModal = (
 		selectedSheetNumber,
 		appliedChanges,
 		setAppliedChanges,
-		setIsButtonDisabled
+		setIsButtonDisabled,
+		fundType
 	}) => {
 
 	const [selectedFiles, setSelectedFiles] = useState([]);
