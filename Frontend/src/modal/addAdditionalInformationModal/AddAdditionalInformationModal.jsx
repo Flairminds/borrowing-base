@@ -257,7 +257,7 @@ export const AddAdditionalInformationModal = (
 							const formattedSheetName = sheet.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
 							return (
-								<TabPane tab={formattedSheetName} key={index + 1} onChange={key => console.log(key)}>
+								<TabPane tab={formattedSheetName} key={index + 1} forceRender>
 									<>
 										{selectedData[sheet]?.Header?.map((header, ind) => (
 											<Form.Item
