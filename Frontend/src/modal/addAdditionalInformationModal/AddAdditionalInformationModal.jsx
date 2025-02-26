@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
 import { CustomButton } from "../../components/custombutton/CustomButton";
+import { generateBaseDataFile } from "../../services/api";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
 import { PFLTData, PCOFData, OTHER_INFO_OPTIONS } from "../../utils/constants/constants";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
@@ -23,13 +24,16 @@ export const AddAdditionalInformationModal = (
 		handleBaseDataPreview,
 		previewFundType,
 		selectedFiles,
-		setSelectedFiles
+		setSelectedFiles,
+		baseFilePreviewData,
+		previewPageId
 	}
 ) => {
 	const [form] = Form.useForm();
 	const [initialFormData, setInitialFormData] = useState(null);
 	const [addType, setAddType] = useState("add");
 	const [uploadedData, setUploadedData] = useState({});
+	const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
 
 	useEffect(() => {
 		const formData = {};
@@ -42,29 +46,23 @@ export const AddAdditionalInformationModal = (
 			formData["loans_(cad)"] = uploadedData["loans_(cad)"] ? uploadedData["loans_(cad)"] : data?.other_data?.["loans_(cad)"] || null;
 			formData["loans_(usd)"] = uploadedData["loans_(usd)"] || data?.other_data?.["loans_(usd)"] || null;
 
-			formData["principle_obligations"] = (uploadedData["Principle Obligations"]?.length > 0)
-				? [...(data?.other_data?.["principle_obligations"] || []), ...uploadedData["Principle Obligations"]]
-				: (data?.other_data?.["principle_obligations"]?.length > 0 ? data.other_data["principle_obligations"] : null);
+			formData["principle_obligations"] = uploadedData["Principle Obligations"]?.length > 0 ? uploadedData["Principle Obligations"]
+				: data?.other_data?.["principle_obligations"]?.length > 0 ? data.other_data["principle_obligations"] : null;
 
-			formData["advance_rates"] = (uploadedData["Advance Rates"]?.length > 0)
-				? [...(data?.other_data?.["advance_rates"] || []), ...uploadedData["Advance Rates"]]
-				: (data?.other_data?.["advance_rates"]?.length > 0 ? data.other_data["advance_rates"] : null);
+			formData["advance_rates"] = uploadedData["Advance Rates"]?.length > 0 ? uploadedData["Advance Rates"]
+				: data?.other_data?.["advance_rates"]?.length > 0 ? data.other_data["advance_rates"] : null;
 
-			formData["subscription_bb"] = (uploadedData["Subscription BB"]?.length > 0)
-				? [...(data?.other_data?.["subscription_bb"] || []), ...uploadedData["Subscription BB"]]
-				: (data?.other_data?.["subscription_bb"]?.length > 0 ? data.other_data["subscription_bb"] : null);
+			formData["subscription_bb"] = uploadedData["Subscription BB"]?.length > 0 ? uploadedData["Subscription BB"]
+				: data?.other_data?.["subscription_bb"]?.length > 0 ? data.other_data["subscription_bb"] : null;
 
-			formData["pricing"] = (uploadedData["Pricing"]?.length > 0)
-				? [...(data?.other_data?.["pricing"] || []), ...uploadedData["Pricing"]]
-				: (data?.other_data?.["pricing"]?.length > 0 ? data.other_data["pricing"] : null);
+			formData["pricing"] = uploadedData["Pricing"]?.length > 0 ? uploadedData["Pricing"]
+				: data?.other_data?.["pricing"]?.length > 0 ? data.other_data["pricing"] : null;
 
-			formData["portfolio_leverageborrowingbase"] = (uploadedData["Portfolio LeverageBorrowingBase"]?.length > 0)
-				? [...(data?.other_data?.["portfolio_leverageborrowingbase"] || []), ...uploadedData["Portfolio LeverageBorrowingBase"]]
-				: (data?.other_data?.["portfolio_leverageborrowingbase"]?.length > 0 ? data.other_data["portfolio_leverageborrowingbase"] : null);
+			formData["portfolio_leverageborrowingbase"] = uploadedData["Portfolio LeverageBorrowingBase"]?.length > 0 ? uploadedData["Portfolio LeverageBorrowingBase"]
+				: data?.other_data?.["portfolio_leverageborrowingbase"]?.length > 0 ? data.other_data["portfolio_leverageborrowingbase"] : null;
 
-			formData["concentration_limits"] = (uploadedData["Concentration Limits"]?.length > 0)
-				? [...(data?.other_data?.["concentration_limits"] || []), ...uploadedData["Concentration Limits"]]
-				: (data?.other_data?.["concentration_limits"]?.length > 0 ? data.other_data["concentration_limits"] : null);
+			formData["concentration_limits"] = uploadedData["Concentration Limits"]?.length > 0	? uploadedData["Concentration Limits"]
+				: data?.other_data?.["concentration_limits"]?.length > 0 ? data.other_data["concentration_limits"] : null;
 
 			formData["first_lien_leverage_cut-off_point"] = uploadedData["first_lien_leverage_cut-off_point"] || data?.other_data?.["first_lien_leverage_cut-off_point"] || null;
 			formData["warehouse_first_lien_leverage_cut-off"] = uploadedData["warehouse_first_lien_leverage_cut-off"] || data?.other_data?.["warehouse_first_lien_leverage_cut-off"] || null;
@@ -81,13 +79,7 @@ export const AddAdditionalInformationModal = (
 		} else if (previewFundType === "PFLT") {
 			formData["minimum_equity_amount_floor"] = uploadedData.minimum_equity_amount_floor ? uploadedData.minimum_equity_amount_floor : data?.other_data?.minimum_equity_amount_floor ? data.other_data.minimum_equity_amount_floor : null;
 			formData["determination_date"] = uploadedData.determination_date ? dayjs(uploadedData.determination_date) : data?.determination_date ? dayjs(data.determination_date) : null;
-			formData["input"] = uploadedData?.other_sheet?.length > 0 && data?.other_data?.input.length > 0
-				? [...data.other_data.input, ...uploadedData.other_sheet]
-				: uploadedData?.other_sheet?.length > 0
-					? uploadedData.other_sheet
-					: data?.other_data?.input.length > 0
-						? data.other_data.input
-						: null;
+			formData["input"] = uploadedData?.other_sheet?.length > 0 ? uploadedData.other_sheet : data?.other_data?.input.length > 0 ? data.other_data.input : null;
 		}
 		setInitialFormData(formData);
 	}, [data, uploadedData]);
@@ -234,6 +226,32 @@ export const AddAdditionalInformationModal = (
 		reader.readAsArrayBuffer(file);
 	};
 
+	const generateBaseData = async (e) => {
+		// e.preventDefault();
+		setTriggerBBCalculation(true);
+		form.submit();
+		try {
+			let run = false;
+			if (baseFilePreviewData?.cardData['Unmapped Securities'] > 0) {
+				if (confirm('The calculation will be inaccurate due to some unmapped securities. Do you want to proceed?')) {
+					run = true;
+				}
+			} else {
+				run = true;
+			}
+			if (run) {
+				const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
+				const detail = response?.data;
+				showToast('success', detail?.message);
+			}
+			setTriggerBBCalculation(false);
+			return;
+		} catch (error) {
+			setTriggerBBCalculation(false);
+			showToast('error', error.message);
+		}
+	};
+
 	return (
 		<Modal open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"}>
 			<h3>Additional Information</h3>
@@ -349,6 +367,7 @@ export const AddAdditionalInformationModal = (
 
 										<div className={styles.buttonContainer}>
 											<CustomButton isFilled={true} text="Save" onClick={() => form.submit()} />
+											<CustomButton isFilled={true} onClick={(e) => generateBaseData(e)} text={triggerBBCalculation ? '...Calculating' : 'Save & Trigger'} />
 											<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
 										</div>
 									</>

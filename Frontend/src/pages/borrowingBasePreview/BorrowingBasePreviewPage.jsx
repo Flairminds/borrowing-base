@@ -16,7 +16,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [mapping, setMapping] = useState({});
 	const [cellDetail, setCellDetail] = useState({});
 	const [isAddFieldModalOpen, setIsAddFieldModalOpen] = useState(false);
-	const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
+	// const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
 	const [obligorFliteredValue, setObligorFliteredValue] = useState([]);
 	const [securityFilteredValue, setSecurityFilteredValue] = useState([]);
 	const [filteredData, setFilteredData] = useState(baseFilePreviewData?.baseData?.data);
@@ -141,30 +141,30 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		}
 	};
 
-	const generateBaseData = async (e) => {
-		// e.preventDefault();
-		setTriggerBBCalculation(true);
-		try {
-			let run = false;
-			if (baseFilePreviewData?.cardData['Unmapped Securities'] > 0) {
-				if (confirm('The calculation will be inaccurate due to some unmapped securities. Do you want to proceed?')) {
-					run = true;
-				}
-			} else {
-				run = true;
-			}
-			if (run) {
-				const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
-				const detail = response?.data;
-				showToast('success', detail?.message);
-			}
-			setTriggerBBCalculation(false);
-			return;
-		} catch (error) {
-			setTriggerBBCalculation(false);
-			showToast('error', error.message);
-		}
-	};
+	// const generateBaseData = async (e) => {
+	// 	// e.preventDefault();
+	// 	setTriggerBBCalculation(true);
+	// 	try {
+	// 		let run = false;
+	// 		if (baseFilePreviewData?.cardData['Unmapped Securities'] > 0) {
+	// 			if (confirm('The calculation will be inaccurate due to some unmapped securities. Do you want to proceed?')) {
+	// 				run = true;
+	// 			}
+	// 		} else {
+	// 			run = true;
+	// 		}
+	// 		if (run) {
+	// 			const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
+	// 			const detail = response?.data;
+	// 			showToast('success', detail?.message);
+	// 		}
+	// 		setTriggerBBCalculation(false);
+	// 		return;
+	// 	} catch (error) {
+	// 		setTriggerBBCalculation(false);
+	// 		showToast('error', error.message);
+	// 	}
+	// };
 
 	// const filterData = async(cardTitle) => {
 	// 	if (cardTitle == 'Unmapped Securities') {
@@ -208,8 +208,10 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						</div>
 					</div>
 					<div>
-						<button onClick={(e) => generateBaseData(e)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px' }}>{triggerBBCalculation ? '...Calculating' : 'Trigger BB Calculation'}</button>
-						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Add Other Info</button>
+						{/* <button onClick={(e) => generateBaseData(e)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px' }}>{triggerBBCalculation ? '...Calculating' : 'Trigger BB Calculation'}</button> */}
+						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Trigger Calculation</button>
+						{/* <button onClick={(e) => generateBaseData(e)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px' }}>{triggerBBCalculation ? '...Calculating' : 'Trigger BB Calculation'}</button>
+						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Add Other Info</button> */}
 					</div>
 				</div>
 				{/* {baseFilePreviewData.fundType == 'PFLT' && */}
@@ -260,6 +262,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				previewFundType={previewFundType}
 				selectedFiles={selectedFiles}
 				setSelectedFiles={setSelectedFiles}
+				baseFilePreviewData= {baseFilePreviewData}
+				previewPageId= {previewPageId}
 			/>
 		</div>
 		// <div>
