@@ -34,36 +34,60 @@ export const AddAdditionalInformationModal = (
 	useEffect(() => {
 		const formData = {};
 		if (previewFundType === "PCOF") {
-			formData["borrower"] = uploadedData["borrower"] || data.other_data["borrower"] || null;
-			formData["determination_date"] = uploadedData.determination_date ? uploadedData.determination_date : dayjs(data.other_data.determination_date) || null;
-			formData["revolving_closing_date"] = uploadedData.revolving_closing_date ? dayjs(uploadedData.revolving_closing_date) : dayjs(data.other_data.revolving_closing_date) || null;
-			formData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] = uploadedData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || data.other_data["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || null;
-			formData["(b)_facility_size"] = uploadedData["(b)_facility_size"] || data.other_data["(b)_facility_size"] || null;
-			formData["loans_(cad)"] = uploadedData["loans_(cad)"] ? uploadedData["loans_(cad)"] : data.other_data["loans_(cad)"] || null;
-			formData["loans_(usd)"] = uploadedData["loans_(usd)"] || data.other_data["loans_(usd)"] || null;
+			formData["borrower"] = uploadedData["borrower"] || data?.other_data?.["borrower"] || null;
+			formData["determination_date"] = uploadedData.determination_date ? uploadedData.determination_date : dayjs(data?.other_data?.determination_date) || null;
+			formData["revolving_closing_date"] = uploadedData.revolving_closing_date ? dayjs(uploadedData.revolving_closing_date) : dayjs(data?.other_data?.revolving_closing_date) || null;
+			formData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] = uploadedData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || data?.other_data?.["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || null;
+			formData["(b)_facility_size"] = uploadedData["(b)_facility_size"] || data?.other_data?.["(b)_facility_size"] || null;
+			formData["loans_(cad)"] = uploadedData["loans_(cad)"] ? uploadedData["loans_(cad)"] : data?.other_data?.["loans_(cad)"] || null;
+			formData["loans_(usd)"] = uploadedData["loans_(usd)"] || data?.other_data?.["loans_(usd)"] || null;
 
-			formData["principle_obligations"] = uploadedData["Principle Obligations"] ? [...data.other_data["principle_obligations"], ...uploadedData["Principle Obligations"]] : data.other_data["principle_obligations"] || null;
-			formData["advance_rates"] = uploadedData["Advance Rates"] ? [...data.other_data["advance_rates"], ...uploadedData["Advance Rates"]] : data.other_data["advance_rates"] || null;
-			formData["subscription_bb"] = uploadedData["Subscription BB"] ? [...data.other_data["subscription_bb"], ...uploadedData["Subscription BB"]] : data.other_data["subscription_bb"] || null;
-			formData["pricing"] = uploadedData["Pricing"] ? [...data.other_data["pricing"], ...uploadedData["Pricing"]] : data.other_data["pricing"] || null;
-			formData["portfolio_leverageborrowingbase"] = uploadedData["Portfolio LeverageBorrowingBase"] ? [...data.other_data["portfolio_leverageborrowingbase"], ...uploadedData["Portfolio LeverageBorrowingBase"]] : data.other_data["portfolio_leverageborrowingbase"] || null;
-			formData["concentration_limits"] = uploadedData["Concentration Limits"] ? [...data.other_data["concentration_limits"], ...uploadedData["Concentration Limits"]] : data.other_data["concentration_limits"] || null;
+			formData["principle_obligations"] = (uploadedData["Principle Obligations"]?.length > 0)
+				? [...(data?.other_data?.["principle_obligations"] || []), ...uploadedData["Principle Obligations"]]
+				: (data?.other_data?.["principle_obligations"]?.length > 0 ? data.other_data["principle_obligations"] : null);
 
-			formData["first_lien_leverage_cut-off_point"] = uploadedData["first_lien_leverage_cut-off_point"] || data.other_data["first_lien_leverage_cut-off_point"] || null;
-			formData["warehouse_first_lien_leverage_cut-off"] = uploadedData["warehouse_first_lien_leverage_cut-off"] || data.other_data["warehouse_first_lien_leverage_cut-off"] || null;
-			formData["last_out_attachment_point"] = uploadedData["last_out_attachment_point"] || data.other_data["last_out_attachment_point"] || null;
-			formData["trailing_12-month_ebitda"] = uploadedData["trailing_12-month_ebitda"] || data.other_data["trailing_12-month_ebitda"] || null;
-			formData["trailing_24-month_ebitda"] = uploadedData["trailing_24-month_ebitda"] || data.other_data["trailing_24-month_ebitda"] || null;
-			formData["total_leverage"] = uploadedData["total_leverage"] || data.other_data["total_leverage"] || null;
-			formData["ltv"] = uploadedData["ltv"] || data.other_data["ltv"] || null;
-			formData["concentration_test_threshold_1"] = uploadedData["concentration_test_threshold_1"] || data.other_data["concentration_test_threshold_1"] || null;
-			formData["concentration_test_threshold_2"] = uploadedData["concentration_test_threshold_2"] || data.other_data["concentration_test_threshold_2"] || null;
-			formData["threshold_1_advance_rate"] = uploadedData["threshold_1_advance_rate"] || data.other_data["threshold_1_advance_rate"] || null;
-			formData["threshold_2_advance_rate"] = uploadedData["threshold_2_advance_rate"] || data.other_data["threshold_2_advance_rate"] || null;
-		} else if (previewFundType === "PFLT") {			
-			formData["minimum_equity_amount_floor"] = uploadedData.minimum_equity_amount_floor ? uploadedData.minimum_equity_amount_floor : data.other_data.minimum_equity_amount_floor || null;
-			formData["determination_date"] = uploadedData.determination_date ? dayjs(uploadedData.determination_date) : dayjs(data.determination_date) || null;
-			formData["input"] = uploadedData.other_sheet ? [...data.other_data.input, ...uploadedData.other_sheet] : data.other_data.input || null;
+			formData["advance_rates"] = (uploadedData["Advance Rates"]?.length > 0)
+				? [...(data?.other_data?.["advance_rates"] || []), ...uploadedData["Advance Rates"]]
+				: (data?.other_data?.["advance_rates"]?.length > 0 ? data.other_data["advance_rates"] : null);
+
+			formData["subscription_bb"] = (uploadedData["Subscription BB"]?.length > 0)
+				? [...(data?.other_data?.["subscription_bb"] || []), ...uploadedData["Subscription BB"]]
+				: (data?.other_data?.["subscription_bb"]?.length > 0 ? data.other_data["subscription_bb"] : null);
+
+			formData["pricing"] = (uploadedData["Pricing"]?.length > 0)
+				? [...(data?.other_data?.["pricing"] || []), ...uploadedData["Pricing"]]
+				: (data?.other_data?.["pricing"]?.length > 0 ? data.other_data["pricing"] : null);
+
+			formData["portfolio_leverageborrowingbase"] = (uploadedData["Portfolio LeverageBorrowingBase"]?.length > 0)
+				? [...(data?.other_data?.["portfolio_leverageborrowingbase"] || []), ...uploadedData["Portfolio LeverageBorrowingBase"]]
+				: (data?.other_data?.["portfolio_leverageborrowingbase"]?.length > 0 ? data.other_data["portfolio_leverageborrowingbase"] : null);
+
+			formData["concentration_limits"] = (uploadedData["Concentration Limits"]?.length > 0)
+				? [...(data?.other_data?.["concentration_limits"] || []), ...uploadedData["Concentration Limits"]]
+				: (data?.other_data?.["concentration_limits"]?.length > 0 ? data.other_data["concentration_limits"] : null);
+
+			formData["first_lien_leverage_cut-off_point"] = uploadedData["first_lien_leverage_cut-off_point"] || data?.other_data?.["first_lien_leverage_cut-off_point"] || null;
+			formData["warehouse_first_lien_leverage_cut-off"] = uploadedData["warehouse_first_lien_leverage_cut-off"] || data?.other_data?.["warehouse_first_lien_leverage_cut-off"] || null;
+			formData["last_out_attachment_point"] = uploadedData["last_out_attachment_point"] || data?.other_data?.["last_out_attachment_point"] || null;
+			formData["trailing_12-month_ebitda"] = uploadedData["trailing_12-month_ebitda"] || data?.other_data?.["trailing_12-month_ebitda"] || null;
+			formData["trailing_24-month_ebitda"] = uploadedData["trailing_24-month_ebitda"] || data?.other_data?.["trailing_24-month_ebitda"] || null;
+			formData["total_leverage"] = uploadedData["total_leverage"] || data?.other_data?.["total_leverage"] || null;
+			formData["ltv"] = uploadedData["ltv"] || data?.other_data?.["ltv"] || null;
+			formData["concentration_test_threshold_1"] = uploadedData["concentration_test_threshold_1"] || data?.other_data?.["concentration_test_threshold_1"] || null;
+			formData["concentration_test_threshold_2"] = uploadedData["concentration_test_threshold_2"] || data?.other_data?.["concentration_test_threshold_2"] || null;
+			formData["threshold_1_advance_rate"] = uploadedData["threshold_1_advance_rate"] || data?.other_data?.["threshold_1_advance_rate"] || null;
+			formData["threshold_2_advance_rate"] = uploadedData["threshold_2_advance_rate"] || data?.other_data?.["threshold_2_advance_rate"] || null;
+
+		} else if (previewFundType === "PFLT") {
+			formData["minimum_equity_amount_floor"] = uploadedData.minimum_equity_amount_floor ? uploadedData.minimum_equity_amount_floor : data?.other_data?.minimum_equity_amount_floor ? data.other_data.minimum_equity_amount_floor : null;
+			formData["determination_date"] = uploadedData.determination_date ? dayjs(uploadedData.determination_date) : data?.determination_date ? dayjs(data.determination_date) : null;
+			formData["input"] = uploadedData?.other_sheet?.length > 0 && data?.other_data?.input.length > 0
+				? [...data.other_data.input, ...uploadedData.other_sheet]
+				: uploadedData?.other_sheet?.length > 0
+					? uploadedData.other_sheet
+					: data?.other_data?.input.length > 0
+						? data.other_data.input
+						: null;
 		}
 		setInitialFormData(formData);
 	}, [data, uploadedData]);
@@ -79,46 +103,46 @@ export const AddAdditionalInformationModal = (
 		const extractionInfoId = dataId;
 
 		try {
-            let other_data = {};
-            if (previewFundType === "PCOF") {
-            other_data = {
-                ...values,
-                "availability_borrower": {
-                    "borrower": values.borrower,
-                    "commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)": values["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"],
-                    "(b)_facility_size": values["(b)_facility_size"],
-                    "revolving_closing_date": values.revolving_closing_date.format("YYYY-MM-DD"),
-                    "determination_date": values.determination_date.format("YYYY-MM-DD"),
-                    "loans_(cad)": values["loans_(cad)"],
-                    "loans_(usd)": values["loans_(usd)"],
-                },
-                "other_metrics": {
-                    "first_lien_leverage_cut-off_point": values["first_lien_leverage_cut-off_point"],
-                    "last_out_attachment_point": values["last_out_attachment_point"],
-                    "concentration_test_threshold_1": values["concentration_test_threshold_1"],
-                    "concentration_test_threshold_2": values["concentration_test_threshold_2"],
-                    "ltv": values["ltv"],
-                    "threshold_1_advance_rate": values["threshold_1_advance_rate"],
-                    "threshold_2_advance_rate": values["threshold_2_advance_rate"],
-                    "total_leverage": values["total_leverage"],
-                    "trailing_12-month_ebitda": values["trailing_12-month_ebitda"],
-                    "trailing_24-month_ebitda": values["trailing_24-month_ebitda"],
-                    "warehouse_first_lien_leverage_cut-off": values["warehouse_first_lien_leverage_cut-off"]
-                }
-            };
-        } else if (previewFundType === "PFLT") {
-            other_data = {
-                "input": values.input,
-                "minimum_equity_amount_floor": values["minimum_equity_amount_floor"]
-            }|| {};
-        }
+			let other_data = {};
+			if (previewFundType === "PCOF") {
+				other_data = {
+					...values,
+					"availability_borrower": {
+						"borrower": values.borrower,
+						"commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)": values["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"],
+						"(b)_facility_size": values["(b)_facility_size"],
+						"revolving_closing_date": values.revolving_closing_date.format("YYYY-MM-DD"),
+						"determination_date": values.determination_date.format("YYYY-MM-DD"),
+						"loans_(cad)": values["loans_(cad)"],
+						"loans_(usd)": values["loans_(usd)"],
+					},
+					"other_metrics": {
+						"first_lien_leverage_cut-off_point": values["first_lien_leverage_cut-off_point"],
+						"last_out_attachment_point": values["last_out_attachment_point"],
+						"concentration_test_threshold_1": values["concentration_test_threshold_1"],
+						"concentration_test_threshold_2": values["concentration_test_threshold_2"],
+						"ltv": values["ltv"],
+						"threshold_1_advance_rate": values["threshold_1_advance_rate"],
+						"threshold_2_advance_rate": values["threshold_2_advance_rate"],
+						"total_leverage": values["total_leverage"],
+						"trailing_12-month_ebitda": values["trailing_12-month_ebitda"],
+						"trailing_24-month_ebitda": values["trailing_24-month_ebitda"],
+						"warehouse_first_lien_leverage_cut-off": values["warehouse_first_lien_leverage_cut-off"]
+					}
+				};
+			} else if (previewFundType === "PFLT") {
+				other_data = {
+					"input": values.input,
+					"minimum_equity_amount_floor": values["minimum_equity_amount_floor"]
+				}|| {};
+			}
 
-        const transformedData = {
-            "extraction_info_id": extractionInfoId,
-            "determination_date": dayjs(values.determination_date.format("YYYY-MM-DD")),
-            "other_data": other_data,
-            "fund_type": previewFundType
-        };
+			const transformedData = {
+				"extraction_info_id": extractionInfoId,
+				"determination_date": dayjs(values.determination_date.format("YYYY-MM-DD")),
+				"other_data": other_data,
+				"fund_type": previewFundType
+			};
 
 			const response = await submitOtherInfo(transformedData);
 			await handleBaseDataPreview();
@@ -188,10 +212,10 @@ export const AddAdditionalInformationModal = (
 			let uploadedDataValues = {};
 			sheetsData.map((sheet) => {
 				if (
-                    sheet.sheetName.toLocaleLowerCase() === "availability borrower" ||
+					sheet.sheetName.toLocaleLowerCase() === "availability borrower" ||
                     sheet.sheetName.toLocaleLowerCase() === "other metrics" ||
                     sheet.sheetName.toLocaleLowerCase() === "input"
-                ) {
+				) {
 					const data = Object.fromEntries(sheet?.data?.slice(1).filter(row => row.length === 2));
 					const transformedData = Object.fromEntries(
 						Object.entries(data).map(([key, value]) => {
@@ -204,16 +228,7 @@ export const AddAdditionalInformationModal = (
 					uploadedDataValues[sheet.sheetName] = mapDataToPrincipalObligations(sheet.data);
 				}
 			});
-			// const headers = otherSheetData[0];
-			// const uploadedOtherInfo = otherSheetData.slice(1)
-			// 	.filter(row => row.some(cell => cell != null && cell !== ""))
-			// 	.map(row => Object.fromEntries(headers.map((key, index) => [key.toLowerCase().replace(/\s+/g, "_"), row[index] ?? null])));
-
-			// setUploadedData({
-			// 	"inputData": inputSheetData,
-			// 	"otherInfoData": uploadedOtherInfo
-			// });
-			setUploadedData(uploadedDataValues);
+			setUploadedData((prevState) => ({ ...prevState, ...uploadedDataValues }));
 			setSelectedFiles([]);
 			setAddType("add");
 		};
