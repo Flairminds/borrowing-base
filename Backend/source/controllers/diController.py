@@ -284,8 +284,9 @@ def trigger_bb_calculation():
         req_body = flask.request.get_json()
         bdi_id = req_body.get('bdi_id')
         service_response = diService.trigger_bb_calculation(bdi_id)
-        # if not service_response["success"]:
-        #     return HTTPResponse.error(message="Could not get source file data")
+        if not service_response["success"]:
+            return HTTPResponse.error(message=service_response.get("message"))
+            return HTTPResponse.error(message="Could not get source file data")
         return HTTPResponse.success(message="Successfully processed. Visit the Borrowing Base module to check the data.", result=[])
     except Exception as e:
         # Log.func_error(e)
