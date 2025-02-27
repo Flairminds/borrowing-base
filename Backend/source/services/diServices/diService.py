@@ -1078,7 +1078,8 @@ def trigger_bb_calculation(bdi_id):
         wb2.close()
         writer.close()
         os.remove(file_name)
-        return pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
+        result = pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
+        return ServiceResponse.success(data=result)
 
     except Exception as e:
         print(e)
