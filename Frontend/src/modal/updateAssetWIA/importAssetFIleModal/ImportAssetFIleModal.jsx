@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
 import { CustomButton } from '../../../components/custombutton/CustomButton';
-import { updateAssetDefaultColumnsData } from '../../../utils/constants/constants';
+import { cloWhatIfData, updateAssetDefaultColumnsData } from '../../../utils/constants/constants';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import { getCurrencyNumber, updateDataAfterChange } from '../../../utils/helperFunctions/updateAssetDataChange';
 import styles from './ImportAssetFIleModal.module.css';
@@ -44,46 +44,71 @@ export const ImportAssetFIleModal = (
 			let changesArray = [];
 			for (let i = 0; i < excelFileData.length; i++) {
 				const currentEntry = excelFileData[i];
-				let filteredData = updateAssetTableData.table_data[selectedSheetNumber].data?.filter(el => el.Security_Name == currentEntry["Security Name"] && el.Obligor_Name == currentEntry["Obligor Name"]);
+				// let filteredData = updateAssetTableData.table_data[selectedSheetNumber].data?.filter(el => el.Security_Name == currentEntry["Security Name"] && el.Obligor_Name == currentEntry["Obligor Name"]);
+				let filteredData = updateAssetTableData.table_data[selectedSheetNumber].data?.
+					filter((el) => {
+						let isMatch = true;
+						cloWhatIfData[fundType].matchingColumns.forEach((col) => {
+							if (el[col.key] != currentEntry[col.label]) {
+								isMatch = false;
+							}
+						});
+						return isMatch;
+					});
 				if (filteredData.length <= 0) continue;
 				filteredData = filteredData[0];
 
-				// Update total commitment
-				const updatedCommitment = getCurrencyNumber(currentEntry["Total Commitment (Issue Currency)"]) - getCurrencyNumber(currentEntry["Total Commitment (Issue Currency) CLO"]);
-				const commitmentChanges = {
-					"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
-					"column_name": "Total Commitment (Issue Currency)",
-					"updated_value": `${updatedCommitment}`,
-					"prev_value": filteredData['Total_Commitment_(Issue_Currency)']
-				};
-				changesArray.push(commitmentChanges);
+				if (fundType === "PCOF") {
+					const updatedPar = getCurrencyNumber(currentEntry["Investment Par"]) - getCurrencyNumber(currentEntry["Investment Par CLO"]);
+					const commitmentChanges = {
+						"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						"column_name": "Investment Par",
+						"updated_value": `${updatedPar}`,
+						"prev_value": filteredData['Investment_Par']
+					};
+					changesArray.push(commitmentChanges);
+					updateDataAfterChange(
+						updateAssetTableData,
+						filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						'Investment_Par',
+						selectedSheetNumber,
+						updatedPar
+					);
+				} else {
+					// Update total commitment
+					const updatedCommitment = getCurrencyNumber(currentEntry["Total Commitment (Issue Currency)"]) - getCurrencyNumber(currentEntry["Total Commitment (Issue Currency) CLO"]);
+					const commitmentChanges = {
+						"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						"column_name": "Total Commitment (Issue Currency)",
+						"updated_value": `${updatedCommitment}`,
+						"prev_value": filteredData['Total_Commitment_(Issue_Currency)']
+					};
+					changesArray.push(commitmentChanges);
+					updateDataAfterChange(
+						updateAssetTableData,
+						filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						'Total_Commitment_(Issue_Currency)',
+						selectedSheetNumber,
+						updatedCommitment
+					);
+					// Update Outstanding principal
+					const updatedOutstanding = getCurrencyNumber(currentEntry["Outstanding Principal Balance (Issue Currency)"]) - getCurrencyNumber(currentEntry["Outstanding Principal Balance (Issue Currency) CLO"]);
+					const outstandingChanges = {
+						"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						"column_name": "Outstanding Principal Balance (Issue Currency)",
+						"updated_value": `${updatedOutstanding}`,
+						"prev_value": filteredData['Outstanding_Principal_Balance_(Issue_Currency)']
+					};
+					changesArray.push(outstandingChanges);
+					updateDataAfterChange(
+						updateAssetTableData,
+						filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						'Outstanding_Principal_Balance_(Issue_Currency)',
+						selectedSheetNumber,
+						updatedOutstanding
+					);
 
-				updateDataAfterChange(
-					updateAssetTableData,
-					filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
-					'Total_Commitment_(Issue_Currency)',
-					selectedSheetNumber,
-					updatedCommitment
-				);
-
-				// Update Outstanding principal
-				const updatedOutstanding = getCurrencyNumber(currentEntry["Outstanding Principal Balance (Issue Currency)"]) - getCurrencyNumber(currentEntry["Outstanding Principal Balance (Issue Currency) CLO"]);
-
-				const outstandingChanges = {
-					"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
-					"column_name": "Outstanding Principal Balance (Issue Currency)",
-					"updated_value": `${updatedOutstanding}`,
-					"prev_value": filteredData['Outstanding_Principal_Balance_(Issue_Currency)']
-				};
-				changesArray.push(outstandingChanges);
-
-				updateDataAfterChange(
-					updateAssetTableData,
-					filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
-					'Outstanding_Principal_Balance_(Issue_Currency)',
-					selectedSheetNumber,
-					updatedOutstanding
-				);
+				}
 
 			}
 

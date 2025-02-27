@@ -203,6 +203,16 @@ export const cloWhatIfData = {
 				"label": "Outstanding Principal Balance (Issue Currency) CLO",
 				"initialValue": "0"
 			}
+		],
+		matchingColumns: [
+			{
+				"key": "Security_Name",
+				"label": "Security Name"
+			},
+			{
+				"key": "Obligor_Name",
+				"label": "Obligor Name"
+			}
 		]
 	},
 	'PCOF': {
@@ -225,6 +235,16 @@ export const cloWhatIfData = {
 				"key": "Investment Par CLO",
 				"label": "Investment Par CLO",
 				"initialValue": "0"
+			}
+		],
+		matchingColumns: [
+			{
+				"key": "Investment_Name",
+				"label": "Investment Name"
+			},
+			{
+				"key": "Issuer",
+				"label": "Issuer"
 			}
 		]
 	}
