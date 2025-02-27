@@ -13,6 +13,7 @@ import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css';
 import { CustomButton } from '../../../components/custombutton/CustomButton';
 import { getUpdateAssetData, updateModifiedAssets, updateSheetValues } from '../../../services/api';
 import { updateAssetDefaultColumnsData, updateAssetModalData } from '../../../utils/constants/constants';
+import { fmtDisplayVal } from '../../../utils/helperFunctions/formatDisplayData';
 import { addAssetAtIndex, deleteAssetAtIndex, duplicateAsset, getLatestPrevValue, updateDataAfterChange } from '../../../utils/helperFunctions/updateAssetDataChange';
 import { AddAssetDetailsModal } from '../addAssetDetailsModal/AddAssetDetailsModal';
 import { ImportAssetFIleModal } from '../importAssetFIleModal/ImportAssetFIleModal';
@@ -384,7 +385,7 @@ export const UpdateAssetDetailsModal = ({
 														className={showModification && getLatestPrevValue(updateAssetTableData?.changes, appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) ? Styles.currValueInput : Styles.assetUpdateInput}
 														onFocus={() => handleInputFocus(row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label)}
 														type="text"
-														value={selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label ? updateAssetInputText : row[col.key]}
+														value={fmtDisplayVal(selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label ? updateAssetInputText : row[col.key])}
 														onChange={(e) => handleCellInputChange(e)}
 													/>
 													{selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label &&

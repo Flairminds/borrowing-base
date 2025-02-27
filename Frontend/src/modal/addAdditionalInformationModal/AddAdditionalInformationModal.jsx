@@ -144,12 +144,12 @@ export const AddAdditionalInformationModal = (
 			};
 
 			const response = await submitOtherInfo(transformedData);
-			await handleBaseDataPreview();
 			if (response.message) {
 				showToast("success", response.message);
 				form.resetFields();
 				onClose();
 			}
+			await handleBaseDataPreview();
 		} catch (error) {
 			const errorMessage = error.response?.message || "Error: Failed to submit form data";
 			console.error(error);
@@ -236,6 +236,7 @@ export const AddAdditionalInformationModal = (
 
 	return (
 		<Modal open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"}>
+			<h3>Additional Information</h3>
 			<Form
 				form={form}
 				layout="vertical"

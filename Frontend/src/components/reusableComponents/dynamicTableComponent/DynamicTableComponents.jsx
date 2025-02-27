@@ -6,6 +6,7 @@ import CrossIcon from '../../../assets/CrossIcon.svg';
 import RightIcon from '../../../assets/RightIcon.svg';
 import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
 import { updateSeletedColumns } from '../../../services/dataIngestionApi';
+import { fmtDisplayVal } from '../../../utils/helperFunctions/formatDisplayData';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePreviewReorder.jsx/BaseFilePreviewReorder';
 import { DynamicInputComponent } from '../dynamicInputsComponent/DynamicInputComponent';
@@ -222,7 +223,7 @@ export const DynamicTableComponents = ({
 										return (
 											<td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
 												style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white', color: cellActualValue != cellOldValue ? 'red' : 'auto'}}
-												onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + cellActualValue + '\nPrevious: ' + cellOldValue : cellTitleValue}`}>
+												onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + fmtDisplayVal(cellActualValue) + '\nPrevious: ' + fmtDisplayVal(cellOldValue) : fmtDisplayVal(cellTitleValue)}`}>
 												{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 													(
 														<div className={tableStyles.editIconsContainer}>
@@ -242,7 +243,7 @@ export const DynamicTableComponents = ({
 														</div>
 													)
 													:
-													col.render ? col.render(cellDisplayValue, row) : (cellDisplayValue ? cellDisplayValue : '-')
+													col.render ? col.render(cellDisplayValue, row) : (cellDisplayValue ? fmtDisplayVal(cellDisplayValue) : '-')
 												}
 											</td>
 										);

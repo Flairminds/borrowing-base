@@ -333,6 +333,6 @@ export const PCOFData = {
 };
 
 export const OTHER_INFO_OPTIONS = [
-	{ label: 'Enter Data', value: 'add' },
-	{ label: 'Upload File', value: 'upload'}
+	{ label: 'Enter data manually', value: 'add' },
+	{ label: 'Upload file and extract', value: 'upload'}
 ];

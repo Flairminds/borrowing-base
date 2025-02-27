@@ -490,7 +490,8 @@ def get_base_data(info_id):
             "Total Commitment": numerize.numerize(total_commitment, 2),
             "Total Outstanding Balance": numerize.numerize(total_outstanding_balance, 2),
             "Unmapped Securities": unmapped_records,
-            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d")
+            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
+            "Fund Type": base_data_info.fund_type
         }]
     else:
         base_data = PcofBaseData.query.filter_by(base_data_info_id = info_id).order_by(PcofBaseData.id).all()
