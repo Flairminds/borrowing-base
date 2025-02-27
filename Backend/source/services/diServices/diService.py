@@ -318,6 +318,15 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             end_time = datetime.now()
             time_difference = (end_time - start_time).total_seconds() * 10**3
             print('successfully stored base data')
+            existing_record = BaseDataOtherInfo.query.filter_by(fund_type=fund_type).order_by(BaseDataOtherInfo.created_at.desc()).first()
+            determination_date = existing_record.determination_date
+            other_data = existing_record.other_info_list
+            add_base_data_other_info(
+                extracted_base_data_info.id,
+                determination_date,
+                fund_type, 
+                other_data
+            )
         except Exception as e:
             Log.func_error(e)
             extracted_base_data_info.status = "failed"

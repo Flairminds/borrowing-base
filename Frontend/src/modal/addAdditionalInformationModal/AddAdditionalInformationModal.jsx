@@ -5,6 +5,8 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
+import PCOF_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pcof_other_info.xlsx';
+import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pflt_other_info.xlsx';
 import { CustomButton } from "../../components/custombutton/CustomButton";
 import { generateBaseDataFile } from "../../services/api";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
@@ -265,8 +267,9 @@ export const AddAdditionalInformationModal = (
 				{useEffect(() => {
 					form.setFieldsValue(initialFormData);
 				}, [initialFormData, form, uploadedData])}
-				<div style={{margin: "1rem 0"}}>
+				<div style={{display: "flex", justifyContent: "space-between", margin: "1rem 0"}}>
 					<Radio.Group options={OTHER_INFO_OPTIONS} value={addType} onChange={handleChange} />
+					{addType === "upload" && <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{paddingRight: "1rem"}}>Download sample file template</a>}
 				</div>
 
 				{addType === "add" && (
