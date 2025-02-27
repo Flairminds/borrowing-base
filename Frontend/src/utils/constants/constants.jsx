@@ -336,3 +336,16 @@ export const OTHER_INFO_OPTIONS = [
 	{ label: 'Enter data manually', value: 'add' },
 	{ label: 'Upload file and extract', value: 'upload'}
 ];
+
+// For Multiple select
+export const COLUMN_GROUPS = {
+	unmapped: [
+		{ key: "cashfile_securities", label: "Security/Facility Name" },
+		{ key: "issuer_borrower_name", label: "Issuer/Borrower Name" },
+		{ key: "facility_category_desc", label: "Facility Category Desc" }
+	],
+	all: [
+		{ key: "cashfile_securities", label: "Security/Facility Name" },
+		{ key: "issuer_borrower_name", label: "Issuer/Borrower Name" }
+	]
+};

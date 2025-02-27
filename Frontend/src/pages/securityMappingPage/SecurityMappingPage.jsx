@@ -8,28 +8,33 @@ import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from "./SecurityMappingPage.module.css";
 import { BackOption } from '../../components/BackOption/BackOption';
 import { useNavigate } from 'react-router';
+import { FilterMultiSelect } from '../../utils/helperFunctions/FilterMultiSelect';
+import { COLUMN_GROUPS } from '../../utils/constants/constants';
 
 export const SecurityMappingPage = () => {
 	const [unmappedSecurities, setUnmappedSecurities] = useState([]);
 	const [activeSecurity, setActiveSecurity] = useState("");
 	const [isMappingPopupOpen, setIsMappingPopupOpen] = useState(false);
 	const [securityViewType, setSecurityViewType] = useState("unmapped");
-	const [searchText, setSearchText] = useState("");
+	// const [searchText, setSearchText] = useState("");
 	const [dataLoading, setDataLoading] = useState(false);
+	const [filteredData, setFilteredData] = useState([]);
+
+	
 	const navigate = useNavigate();
 
-	const handleSearch = (event) => {
-		setSearchText(event.target.value);
-	};
+	// const handleSearch = (event) => {
+	// 	setSearchText(event.target.value);
+	// };
 
-	const filteredData = unmappedSecurities?.data
-		? unmappedSecurities.data.filter((item) =>
-			item["cashfile_securities"] &&
-			item["cashfile_securities"].toLowerCase().includes(searchText.toLowerCase())
-		)
-		: [];
+	// const filteredData = unmappedSecurities?.data
+	// 	? unmappedSecurities.data.filter((item) =>
+	// 		item["cashfile_securities"] &&
+	// 		item["cashfile_securities"].toLowerCase().includes(searchText.toLowerCase())
+	// 	)
+	// 	: [];
 
-	const dataToDisplay = searchText ? filteredData : unmappedSecurities?.data;
+	// const dataToDisplay = searchText ? filteredData : unmappedSecurities?.data;
 
 	const getMappingData = async (securityType) => {
 		try {
@@ -49,6 +54,13 @@ export const SecurityMappingPage = () => {
 			getMappingData(securityViewType);
 		}
 	}, []);
+
+	useEffect(() => {
+		if (unmappedSecurities?.data) {
+			setFilteredData(unmappedSecurities.data);
+		}
+	}, [unmappedSecurities]);
+
 
 	const handleSecurityEdit = (security) => {
 		setActiveSecurity(security);
@@ -90,16 +102,19 @@ export const SecurityMappingPage = () => {
 					<div className={styles.pageTitle}>
 						{securityViewType === "all" ? <>All Securities</> : <>Unmapped Securities</>}
 					</div>
-					<input
+					<FilterMultiSelect data={unmappedSecurities?.data} columns={COLUMN_GROUPS[securityViewType]}
+						onFilterChange={(filtered) => setFilteredData(filtered)}
+					/>
+					{/* <input
 						type="text"
 						placeholder="Security/Facility Name"
 						style={{ width: '350px', borderRadius: '5px', outline: "none", border: "1px solid #888D8D", padding: '7px' }}
 						value={searchText}
 						onChange={handleSearch}
-					/>
+					/> */}
 				</div>
 				{dataLoading ? <div style={{textAlign: 'center'}}><Loader /></div> :
-					<DynamicTableComponents data={dataToDisplay} columns={unmappedSecurities?.columns} additionalColumns={additionalColumns} />}
+					<DynamicTableComponents data={filteredData} columns={unmappedSecurities?.columns} additionalColumns={additionalColumns} />}
 			</div>
 			<HandleSecurityMappingModal isOpen={isMappingPopupOpen} setIsOpen={setIsMappingPopupOpen} activeSecurity={activeSecurity} getMappingData={getMappingData} />
 
