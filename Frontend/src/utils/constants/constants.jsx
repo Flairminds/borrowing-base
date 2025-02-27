@@ -328,6 +328,16 @@ export const PCOFData = {
 				label: "Threshold 2 Advance Rate",
 				type: "text"
 			}
+		],
+		matchingColumns: [
+			{
+				"key": "Investment_Name",
+				"label": "Investment Name"
+			},
+			{
+				"key": "Issuer",
+				"label": "Issuer"
+			}
 		]
 	}
 };

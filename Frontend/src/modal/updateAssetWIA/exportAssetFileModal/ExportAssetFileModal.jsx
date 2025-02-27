@@ -53,7 +53,7 @@ export const ExportAssetFileModal = ({isOpen, setIsOpen, updateAssetTableData, s
 	return (
 		<Modal open={isOpen} onCancel={handleCancel} footer={null} width={"80%"}>
 			<div className={styles.popupTitle}>
-				Upload File
+				Select columns for export
 			</div>
 			<div className={styles.columnsDisplayContainer}>
 				{columnsData?.map((column) => {
