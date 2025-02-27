@@ -47,12 +47,13 @@ export const AllSecurityModal = ({ isOpen, setIsOpen, security, getMappingData }
 
         try {
             const payload = {
-				// master_comp_security_name: formData.master_comp_security_name || '',
-                // security_type: formData.security_type || '',
+				
                 id: security.id,
                 family_name: formData.family_name || '',
                 cashfile_security_name: formData.cashfile_security_name,
                 soi_name: formData.soi_name || '',
+				master_comp_security_name: formData.master_comp_security_name || '',
+                security_type: formData.security_type || '',
             };
 
             const response = await editPfltSecMapping([payload]);
@@ -79,7 +80,7 @@ export const AllSecurityModal = ({ isOpen, setIsOpen, security, getMappingData }
 
     return (
         <Modal open={isOpen} onCancel={handleCancel} footer={null} width={"40%"}>
-            <h6>Edit Security</h6>
+            <h6>Edit Security Mapping</h6>
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <div style={{ padding: '20px', border: '1px solid #d9d9d9', borderRadius: '4px', width: '90%' }}>
                 <div style={{ marginBottom: 20 }}>
@@ -99,7 +100,6 @@ export const AllSecurityModal = ({ isOpen, setIsOpen, security, getMappingData }
                             name="master_comp_security_name"
                             value={formData.master_comp_security_name}
                             onChange={handleChange}
-                            disabled
                         />
                     </div>
                     <div style={{ marginBottom: 20 }}>
@@ -118,7 +118,6 @@ export const AllSecurityModal = ({ isOpen, setIsOpen, security, getMappingData }
                             name="security_type"
                             value={formData.security_type}
                             onChange={handleChange}
-							disabled
                         />
                     </div>
                     <div style={{ marginBottom: 14 }}>

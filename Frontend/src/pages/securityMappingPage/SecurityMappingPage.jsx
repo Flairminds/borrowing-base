@@ -19,7 +19,7 @@ export const SecurityMappingPage = () => {
 	const [searchText, setSearchText] = useState("");
 	const [dataLoading, setDataLoading] = useState(false);
 	const [isModalVisible, setIsModalVisible] = useState(false);
-	 const [selectedSecurity, setSelectedSecurity] = useState(null);
+	const [selectedSecurity, setSelectedSecurity] = useState(null);
 	const navigate = useNavigate();
 
 	const handleSearch = (event) => {
@@ -63,9 +63,9 @@ export const SecurityMappingPage = () => {
 	};
 
 	const handleAllSecurities = (security) => {
-        setSelectedSecurity(security);
-        setIsModalVisible(true);
-    };
+		setSelectedSecurity(security);
+		setIsModalVisible(true);
+	};
 	const changeSecurityView = (securityType) => {
 		setSecurityViewType(securityType);
 		getMappingData(securityType);
@@ -114,11 +114,11 @@ export const SecurityMappingPage = () => {
 						onChange={handleSearch}
 					/>
 				</div>
-				{dataLoading ? <div style={{textAlign: 'center'}}><Loader /></div> :
+				{dataLoading ? <div style={{ textAlign: 'center' }}><Loader /></div> :
 					<DynamicTableComponents data={dataToDisplay} columns={unmappedSecurities?.columns} additionalColumns={additionalColumns} />}
 			</div>
 			<HandleSecurityMappingModal isOpen={isMappingPopupOpen} setIsOpen={setIsMappingPopupOpen} activeSecurity={activeSecurity} getMappingData={getMappingData} />
-			<AllSecurityModal isOpen={isModalVisible} setIsOpen={setIsModalVisible} security={selectedSecurity} getMappingData={getMappingData}/>
+			<AllSecurityModal isOpen={isModalVisible} setIsOpen={setIsModalVisible} security={selectedSecurity} getMappingData={getMappingData} />
 		</div>
 	);
 };
