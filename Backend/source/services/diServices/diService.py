@@ -292,7 +292,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             
             
             # update security mapping table
-            # helper_functions.update_security_mapping(engine)
+            helper_functions.update_security_mapping(engine)
 
             # if new_source_file:
             # if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
@@ -306,9 +306,9 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                 else:
                     raise Exception(service_response.get("message"))
             else:
-                if cash_file_details == None or master_comp_file_details == None:
+                if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
                     raise Exception('Proper files not selected.')
-                base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
+                base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details)
                 extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
             # else:
                 # extracted_base_data_info.status = "repeated"

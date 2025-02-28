@@ -41,7 +41,7 @@ def base_data_mapping(cf, engine, bs = None):
                     "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
                 })
 
-def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details):
+def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details):
     try:
         with engine.connect() as connection:
             cash_file = pd.DataFrame(connection.execute(text('''select distinct
@@ -60,7 +60,7 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	ch."Deal Issue (Derived) Rating - S&P" as current_sp_rating,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as initial_fixed_charge_coverage_ratio,
 	null as date_of_default,
-	case when usbh."Market Value Indenture" is not null then avg(usbh."Market Value Indenture" / 100) else 0 end as market_value,
+	ssmb."Market Value" as market_value,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as current_fixed_charge_coverage_ratio,
 	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA" as current_interest_coverage_ratio,
 	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization" as initial_debt_to_capitalization_ratio,
@@ -107,11 +107,12 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 from sf_sheet_us_bank_holdings usbh
 left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
 	and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
+left join sf_sheet_marketbook ssmb on ch."Issuer/Borrower Name" = ssmb."Issuer" 
 left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
 left join sf_sheet_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
-where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id) and
+where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AND ssmb.source_file_id= :market_book_file_id) and
 ((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND (pbb.source_file_id = :master_comp_file_id or pbb.source_file_id is null) AND bs.source_file_id= :master_comp_file_id) or sm.id is null)
     group by usbh."Issuer/Borrower Name", usbh."Security/Facility Name", pbb."Defaulted Collateral Loan at Acquisition",
 	ss."Security", pbb."Credit Improved Loan", pbb."Stretch Senior (Y/N)", ch."Issue Name",
@@ -123,8 +124,8 @@ where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id) 
 	pbb."Equity Security", pbb."Subject of an Offer or Called for Redemption", pbb."Margin Stock", pbb."Subject to Withholding Tax", pbb."Zero Coupon Obligation",
 	pbb."Covenant Lite", pbb."Structured Finance Obligation / finance lease", pbb."Material Non-Credit Related Risk", pbb."Primarily Secured by Real Estate",
 	pbb."Interest Only Security", pbb."Satisfies Other Criteria(1)", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio", bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA",
-	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon"
-order by security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id':master_comp_file_details.id}).fetchall())
+	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon", ssmb."Market Value"
+order by security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}).fetchall())
             df = cash_file
             if df.empty:
                 raise Exception('Base data is empty')
