@@ -329,6 +329,7 @@ class BaseDataMapping(db.Model):
 class BaseDataMappingColumnInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     fund_type = db.Column(db.String(15), nullable=False)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"))
     bdm_id = db.Column(db.Integer, db.ForeignKey("base_data_mapping.bdm_id"), nullable=False)
     sequence = db.Column(db.Integer, nullable=False)
     modified_at = db.Column(db.DateTime(timezone=True))
@@ -407,6 +408,7 @@ class PfltBaseData(db.Model):
 
 class BaseDataOtherInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"))
     extraction_info_id = db.Column(db.Integer, db.ForeignKey("extracted_base_data_info.id"), nullable=True)
     determination_date = db.Column(db.String(255))
     fund_type = db.Column(db.String(255))

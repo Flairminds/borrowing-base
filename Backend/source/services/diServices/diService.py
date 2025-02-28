@@ -318,6 +318,15 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             end_time = datetime.now()
             time_difference = (end_time - start_time).total_seconds() * 10**3
             print('successfully stored base data')
+            existing_record = BaseDataOtherInfo.query.filter_by(fund_type=fund_type).order_by(BaseDataOtherInfo.created_at.desc()).first()
+            determination_date = existing_record.determination_date
+            other_data = existing_record.other_info_list
+            add_base_data_other_info(
+                extracted_base_data_info.id,
+                determination_date,
+                fund_type, 
+                other_data
+            )
         except Exception as e:
             Log.func_error(e)
             extracted_base_data_info.status = "failed"
@@ -464,7 +473,8 @@ def get_base_data(info_id):
         BaseDataMapping.is_editable,
         BaseDataMappingColumnInfo.sequence,
         BaseDataMappingColumnInfo.is_selected
-    ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
+    ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMapping.bd_column_name.asc()).all()
+
 
     card_data = []
 
@@ -499,18 +509,19 @@ def get_base_data(info_id):
         with engine.connect() as connection:
             result = connection.execute(text('''
                 select count(distinct pbd.issuer) as no_of_issuers, 
-                        count(distinct pbd.investment_name) as no_of_investments 
+                        count(distinct pbd.investment_name) as no_of_investments, 
                         --sum(pbd.total_commitment::float) as total_commitment, 
                         --sum(pbd.outstanding_principal::float) as total_outstanding_balance,
-                        --(select count(distinct obligor_name) from pflt_base_data pbd where --security_name is null and pbd.base_data_info_id = :info_id) as unmapped_records
+                        (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
                 from pcof_base_data pbd
                 where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
             final_result = result[0]
-        no_of_issuers, no_of_investments = final_result
+        no_of_issuers, no_of_investments, unmapped_records = final_result
         card_data = [{
             "No of Issuers": no_of_issuers,
             "No of Investments": no_of_investments,
-            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d")
+            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
+            "Unmapped Securities": unmapped_records
         }]
 
     temp = []
@@ -1076,7 +1087,8 @@ def trigger_bb_calculation(bdi_id):
         wb2.close()
         writer.close()
         os.remove(file_name)
-        return pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
+        result = pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
+        return ServiceResponse.success(data=result)
 
     except Exception as e:
         print(e)
@@ -1138,50 +1150,6 @@ def update_archive(list_of_ids, to_archive):
         Log.func_error(e=e)
         return ServiceResponse.error(message="Could not update the files.", status_code = 500)
 
-def pflt_add_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor, fund_type, other_data):
-    try:
-        table_list = []
-
-        existing_record  = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).first()
-    
-        for value in other_data:
-            table_list.append ({
-                "currency": value.get("currency"),
-                "exchange_rates": value.get("exchange_rates"),
-                "cash_current_and_preborrowing": value.get("cash_current_and_preborrowing"),
-                "borrowing": value.get("borrowing"),
-                "additional_expenses_1": value.get("additional_expenses_1"),
-                "additional_expenses_2": value.get("additional_expenses_2"),
-                "additional_expenses_3": value.get("additional_expenses_3"),
-                "current_credit_facility_balance": value.get("current_credit_facility_balance")
-            })
-
-        if existing_record:
-            existing_record.determination_date = determination_date
-            existing_record.fund_type = fund_type
-            existing_record.other_info_list = {
-                "minimum_equity_amount_floor": minimum_equity_amount_floor,
-                "table_list": table_list
-            }
-        else:
-            base_data_other_info =  BaseDataOtherInfo(
-                extraction_info_id = extraction_info_id,
-                determination_date = determination_date,
-                fund_type = fund_type,
-                other_info_list = {
-                    "minimum_equity_amount_floor": minimum_equity_amount_floor,
-                    "table_list": table_list
-                }
-            )
-            db.session.add(base_data_other_info)
-
-        db.session.commit()
-
-        return ServiceResponse.success(message="Data added sucessfully")
-        
-    except Exception as e:
-        Log.func_error(e)
-        return ServiceResponse.error(message="Failed to add")
 def add_base_data_other_info(
         extraction_info_id,
         determination_date, 
@@ -1190,19 +1158,22 @@ def add_base_data_other_info(
     ):
     try:
         existing_record = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).first()
+        extraction_info = ExtractedBaseDataInfo.query.filter_by(id=extraction_info_id).first()
+        company_id = extraction_info.company_id
 
         if existing_record:
             existing_record.determination_date = determination_date
             existing_record.fund_type = fund_type
             existing_record.other_info_list = other_data
+            existing_record.company_id = company_id
         else:
             base_data_other_info =  BaseDataOtherInfo(
                 extraction_info_id = extraction_info_id,
                 determination_date = determination_date,
                 fund_type = fund_type,
-                other_info_list = other_data
+                other_info_list = other_data,
+                company_id = company_id
             )
-        
             db.session.add(base_data_other_info)
         db.session.commit()
 
