@@ -41,10 +41,10 @@ export const sidebarItemsArray = [
 	{ imgSrc: HomeIcon, imgAlt: "Home Icon", name: 'Home', route: '/' },
 	{ imgSrc: ThreeBarIcon, imgAlt: "ThreeBar Icon", name: 'Concentration Test Setup', route: '/fund-setup' },
 	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: '/base-data-list' },
-	// { imgSrc: DoneCheckIcon, imgAlt: "DoneCheck Icon" },
-	// { imgSrc: suitcasePortfolioIcon, imgAlt: "suitcasePortfolio Icon" },
-	// { imgSrc: GroupUserIcon, imgAlt: "GroupUser Icon" },
-	// { imgSrc: dollarMoneyCurrencyIcon, imgAlt: "dollarMoneyCurrency Icon" }
+	{ imgSrc: DoneCheckIcon, imgAlt: "DoneCheck Icon" },
+	{ imgSrc: suitcasePortfolioIcon, imgAlt: "suitcasePortfolio Icon" },
+	{ imgSrc: GroupUserIcon, imgAlt: "GroupUser Icon" },
+	{ imgSrc: dollarMoneyCurrencyIcon, imgAlt: "dollarMoneyCurrency Icon" }
 ];
 
 // AddInfo Functionality
@@ -333,6 +333,83 @@ export const PCOFData = {
 };
 
 export const OTHER_INFO_OPTIONS = [
-	{ label: 'Enter data manually', value: 'add' },
-	{ label: 'Upload file and extract', value: 'upload'}
+	{ label: 'Enter Data', value: 'add' },
+	{ label: 'Upload File', value: 'upload'}
 ];
+
+export const cloWhatIfData = {
+	'PFLT': {
+		defaultSelectedColumns: [
+			{
+				"key": "Security_Name",
+				"label": "Security Name"
+			},
+			{
+				"key": "Obligor_Name",
+				"label": "Obligor Name"
+			},
+			{
+				"key": "Total_Commitment_(Issue_Currency)",
+				"label": "Total Commitment (Issue Currency)"
+			},
+			{
+				"key": "Outstanding_Principal_Balance_(Issue_Currency)",
+				"label": "Outstanding Principal Balance (Issue Currency)"
+			}
+		],
+		additionalInputColumns: [
+			{
+				"key": "Total Commitment (Issue Currency) CLO",
+				"label": "Total Commitment (Issue Currency) CLO",
+				"initialValue": "0"
+			},
+			{
+				"key": "Outstanding Principal Balance (Issue Currency) CLO",
+				"label": "Outstanding Principal Balance (Issue Currency) CLO",
+				"initialValue": "0"
+			}
+		],
+		matchingColumns: [
+			{
+				"key": "Security_Name",
+				"label": "Security Name"
+			},
+			{
+				"key": "Obligor_Name",
+				"label": "Obligor Name"
+			}
+		]
+	},
+	'PCOF': {
+		defaultSelectedColumns: [
+			{
+				"key": "Investment_Name",
+				"label": "Investment Name"
+			},
+			{
+				"key": "Issuer",
+				"label": "Issuer"
+			},
+			{
+				"key": "Investment_Par",
+				"label": "Investment Par"
+			}
+		],
+		additionalInputColumns: [
+			{
+				"key": "Investment Par CLO",
+				"label": "Investment Par CLO",
+				"initialValue": "0"
+			}
+		],
+		matchingColumns: [
+			{
+				"key": "Investment_Name",
+				"label": "Investment Name"
+			},
+			{
+				"key": "Issuer",
+				"label": "Issuer"
+			}
+		]}
+};
