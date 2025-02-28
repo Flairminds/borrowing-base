@@ -50,7 +50,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 				});
 			setPreviewPageId(row.id);
 			setPreviewFundType(row.fund);
-			navigate('/base-data-preview');
+			navigate(`/base-data-preview/${row.id}`);
 		} catch (err) {
 			showToast("error", err.response.data.message);
 			setDataLoading(false);

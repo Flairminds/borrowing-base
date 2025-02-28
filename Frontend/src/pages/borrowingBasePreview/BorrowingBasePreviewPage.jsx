@@ -8,11 +8,13 @@ import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api'
 import { editBaseData, getBaseFilePreviewData } from '../../services/dataIngestionApi';
 import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
 import { filterPreviewTable } from '../../utils/helperFunctions/filterPreviewTable';
+import { fmtDisplayVal } from '../../utils/helperFunctions/formatDisplayData';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 
 export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType}) => {
 	const navigate = useNavigate();
+	// const { infoId } = useParams();
 	const [mapping, setMapping] = useState({});
 	const [cellDetail, setCellDetail] = useState({});
 	const [isAddFieldModalOpen, setIsAddFieldModalOpen] = useState(false);
@@ -22,10 +24,12 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [filteredData, setFilteredData] = useState(baseFilePreviewData?.baseData?.data);
 
 	const [selectedFiles, setSelectedFiles] = useState([]);
+	// console.log("infoId", infoId);
 
 	useEffect(() => {
 		let col = [];
 		if (!baseFilePreviewData.reportDate) {
+			// handleBaseDataPreview();
 			showToast('info', 'No report date selected. Redirecting...');
 			setTimeout(() => {
 				navigate('/base-data-list');
@@ -177,7 +181,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							{baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
 								<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/security-mapping') : () => {}}>
 									<div><b>{cardTitle}</b></div>
-									<div className={styles.cardTitle}>{baseFilePreviewData?.cardData[cardTitle]}</div>
+									<div className={styles.cardTitle}>{fmtDisplayVal(baseFilePreviewData?.cardData[cardTitle], 0)}</div>
 								</div>
 							))}
 						</div>

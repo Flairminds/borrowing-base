@@ -40,16 +40,17 @@ export const ImportAssetFIleModal = (
 
 	const updateWhatIfSheetData = (excelFileData) => {
 		if (excelFileData.length > 0) {
-
 			let changesArray = [];
 			for (let i = 0; i < excelFileData.length; i++) {
 				const currentEntry = excelFileData[i];
-				// let filteredData = updateAssetTableData.table_data[selectedSheetNumber].data?.filter(el => el.Security_Name == currentEntry["Security Name"] && el.Obligor_Name == currentEntry["Obligor Name"]);
+				if (!currentEntry["Obligor Name"]) continue;
+				// let filteredData = updateAssetTableData.table_data[selectedSheetNumber].data?.filter(el => el.Security_Name.toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, "") == currentEntry["Security Name"].toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, "") && el.Obligor_Name.toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, "") == currentEntry["Obligor Name"].toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, ""));
+
 				let filteredData = updateAssetTableData.table_data[selectedSheetNumber].data?.
 					filter((el) => {
 						let isMatch = true;
 						cloWhatIfData[fundType].matchingColumns.forEach((col) => {
-							if (el[col.key] != currentEntry[col.label]) {
+							if (el[col.key].toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, "") != currentEntry[col.label].toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, "")) {
 								isMatch = false;
 							}
 						});
@@ -59,7 +60,7 @@ export const ImportAssetFIleModal = (
 				filteredData = filteredData[0];
 
 				if (fundType === "PCOF") {
-					const updatedPar = getCurrencyNumber(currentEntry["Investment Par"]) - getCurrencyNumber(currentEntry["Investment Par CLO"]);
+					const updatedPar = getCurrencyNumber(filteredData["Investment Par"]) - getCurrencyNumber(currentEntry["Investment Par CLO"]);
 					const commitmentChanges = {
 						"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
 						"column_name": "Investment Par",
@@ -76,7 +77,12 @@ export const ImportAssetFIleModal = (
 					);
 				} else {
 					// Update total commitment
-					const updatedCommitment = getCurrencyNumber(currentEntry["Total Commitment (Issue Currency)"]) - getCurrencyNumber(currentEntry["Total Commitment (Issue Currency) CLO"]);
+					let updatedCommitment = getCurrencyNumber(filteredData['Total_Commitment_(Issue_Currency)']) - getCurrencyNumber(currentEntry["Total Commitment (Issue Currency) CLO"]);
+
+					if (updatedCommitment < 0) {
+						updatedCommitment = 0;
+					}
+
 					const commitmentChanges = {
 						"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
 						"column_name": "Total Commitment (Issue Currency)",
@@ -92,7 +98,11 @@ export const ImportAssetFIleModal = (
 						updatedCommitment
 					);
 					// Update Outstanding principal
-					const updatedOutstanding = getCurrencyNumber(currentEntry["Outstanding Principal Balance (Issue Currency)"]) - getCurrencyNumber(currentEntry["Outstanding Principal Balance (Issue Currency) CLO"]);
+					let updatedOutstanding = getCurrencyNumber(filteredData["Outstanding_Principal_Balance_(Issue_Currency)"]) - getCurrencyNumber(currentEntry["Outstanding Principal Balance (Issue Currency) CLO"]);
+
+					if (updatedOutstanding < 0) {
+						updatedOutstanding = 0;
+					}
 					const outstandingChanges = {
 						"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
 						"column_name": "Outstanding Principal Balance (Issue Currency)",
@@ -129,9 +139,12 @@ export const ImportAssetFIleModal = (
 			const data = new Uint8Array(event.target.result);
 			const workbook = XLSX.read(data, { type: "array" });
 
-			const sheetName = workbook.SheetNames[0];
+			// const sheetName = workbook.SheetNames[0];
+			const sheetName = 'CLO Data';
 			const sheet = workbook.Sheets[sheetName];
-
+			if (!sheet) {
+				alert("File should have a 'CLO Data' sheet with required data. Please export for template.");
+			}
 			const excelFileData = XLSX.utils.sheet_to_json(sheet);
 			updateWhatIfSheetData(excelFileData);
 		};

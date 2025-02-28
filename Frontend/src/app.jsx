@@ -126,7 +126,7 @@ export function App() {
 							/>
 						}
 					/>
-					<Route path='/base-data-preview'
+					<Route path='/base-data-preview/:infoId'
 						element={
 							<BorrowingBasePreviewPage
 								baseFilePreviewData={baseFilePreviewData}

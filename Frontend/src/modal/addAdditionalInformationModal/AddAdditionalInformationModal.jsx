@@ -170,7 +170,7 @@ export const AddAdditionalInformationModal = (
 
 	const mapDataToPrincipalObligations = (data) => {
 		const header = data[0];
-		return data.slice(1).map((row) => {
+		return data.slice(1)?.map((row) => {
 			const record = {};
 			row.forEach((value, index) => {
 				record[header[index].toLowerCase().replace(/ /g, "_")] = value;
@@ -275,7 +275,7 @@ export const AddAdditionalInformationModal = (
 
 				{addType === "add" && (
 					<Tabs defaultActiveKey="1">
-						{Object.keys(selectedData).map((sheet, index) => {
+						{Object.keys(selectedData)?.map((sheet, index) => {
 							const formattedSheetName = sheet.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
 							return (
@@ -316,7 +316,7 @@ export const AddAdditionalInformationModal = (
 														</div>
 
 														<div className={styles.rowContainer}>
-															{fields.map((field, index) => (
+															{fields?.map((field, index) => (
 																<div key={index} className={styles.row}
 																	style={{
 																		display: "grid",
@@ -325,7 +325,7 @@ export const AddAdditionalInformationModal = (
 																		padding: "10px"
 																	}}
 																>
-																	{selectedData[sheet]?.Column.map((inputField, index) => (
+																	{selectedData[sheet]?.Column?.map((inputField, index) => (
 																		<Form.Item
 																			key={index}
 																			name={[field.name, inputField.name]}
