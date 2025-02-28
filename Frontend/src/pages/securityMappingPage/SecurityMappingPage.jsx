@@ -8,6 +8,8 @@ import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from "./SecurityMappingPage.module.css";
 import { BackOption } from '../../components/BackOption/BackOption';
 import { useNavigate } from 'react-router';
+import { AllSecurityModal } from '../../modal/allSecurityModal/AllSecurityModal';
+import { Select } from 'antd';
 
 export const SecurityMappingPage = () => {
 	const [unmappedSecurities, setUnmappedSecurities] = useState([]);
@@ -16,6 +18,8 @@ export const SecurityMappingPage = () => {
 	const [securityViewType, setSecurityViewType] = useState("unmapped");
 	const [searchText, setSearchText] = useState("");
 	const [dataLoading, setDataLoading] = useState(false);
+	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [selectedSecurity, setSelectedSecurity] = useState(null);
 	const navigate = useNavigate();
 
 	const handleSearch = (event) => {
@@ -44,6 +48,9 @@ export const SecurityMappingPage = () => {
 		}
 	};
 
+
+
+
 	useEffect(() => {
 		if (securityViewType) {
 			getMappingData(securityViewType);
@@ -55,16 +62,27 @@ export const SecurityMappingPage = () => {
 		setIsMappingPopupOpen(true);
 	};
 
+	const handleAllSecurities = (security) => {
+		setSelectedSecurity(security);
+		setIsModalVisible(true);
+	};
 	const changeSecurityView = (securityType) => {
 		setSecurityViewType(securityType);
 		getMappingData(securityType);
 	};
 
-	const additionalColumns = securityViewType == "unmapped" ? [{
+	const additionalColumns = [{
 		key: "",
 		label: "",
-		'render': (value, row) => <div style={{ textAlign: 'center', cursor: 'pointer' }}> <FaRegEdit onClick={() => handleSecurityEdit(row.cashfile_securities)} /> </div>
-	}] : [];
+		'render': (value, row) => (
+			<div style={{ textAlign: 'center', cursor: 'pointer' }}>
+				{securityViewType == "unmapped"
+					? <FaRegEdit onClick={() => handleSecurityEdit(row.cashfile_securities)} />
+					: <FaRegEdit onClick={() => handleAllSecurities(row)} />}
+			</div>
+		)
+	}];
+
 
 	return (
 		<div>
@@ -73,7 +91,6 @@ export const SecurityMappingPage = () => {
 				<BackOption onClick={() => navigate('/base-data-list')}
 					text={`<- Base Data`} />
 			</div>
-
 			<div className={styles.securityOverview}>
 				<div onClick={() => changeSecurityView("all")} className={securityViewType == "all" ? `${styles.securityOverviewCard} ${styles.background}` : `${styles.securityOverviewCard}`}>
 					<div><b>All Securities</b></div>
@@ -84,7 +101,6 @@ export const SecurityMappingPage = () => {
 					<div className={styles.cardTitle}>{unmappedSecurities?.unmapped_securities_count}</div>
 				</div>
 			</div>
-
 			<div className={styles.tableContainer}>
 				<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 					<div className={styles.pageTitle}>
@@ -98,11 +114,11 @@ export const SecurityMappingPage = () => {
 						onChange={handleSearch}
 					/>
 				</div>
-				{dataLoading ? <div style={{textAlign: 'center'}}><Loader /></div> :
+				{dataLoading ? <div style={{ textAlign: 'center' }}><Loader /></div> :
 					<DynamicTableComponents data={dataToDisplay} columns={unmappedSecurities?.columns} additionalColumns={additionalColumns} />}
 			</div>
 			<HandleSecurityMappingModal isOpen={isMappingPopupOpen} setIsOpen={setIsMappingPopupOpen} activeSecurity={activeSecurity} getMappingData={getMappingData} />
-
+			<AllSecurityModal isOpen={isModalVisible} setIsOpen={setIsModalVisible} security={selectedSecurity} getMappingData={getMappingData} />
 		</div>
 	);
 };
