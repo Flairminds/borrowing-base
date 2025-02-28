@@ -112,7 +112,7 @@ left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security
 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
 left join sf_sheet_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
-where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AND ssmb.source_file_id= :market_book_file_id) and
+where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AND (ssmb.source_file_id is null or ssmb.source_file_id = :market_book_file_id)) and
 ((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND (pbb.source_file_id = :master_comp_file_id or pbb.source_file_id is null) AND bs.source_file_id= :master_comp_file_id) or sm.id is null)
     group by usbh."Issuer/Borrower Name", usbh."Security/Facility Name", pbb."Defaulted Collateral Loan at Acquisition",
 	ss."Security", pbb."Credit Improved Loan", pbb."Stretch Senior (Y/N)", ch."Issue Name",

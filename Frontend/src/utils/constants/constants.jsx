@@ -41,10 +41,10 @@ export const sidebarItemsArray = [
 	{ imgSrc: HomeIcon, imgAlt: "Home Icon", name: 'Home', route: '/' },
 	{ imgSrc: ThreeBarIcon, imgAlt: "ThreeBar Icon", name: 'Concentration Test Setup', route: '/fund-setup' },
 	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: '/base-data-list' },
-	{ imgSrc: DoneCheckIcon, imgAlt: "DoneCheck Icon" },
-	{ imgSrc: suitcasePortfolioIcon, imgAlt: "suitcasePortfolio Icon" },
-	{ imgSrc: GroupUserIcon, imgAlt: "GroupUser Icon" },
-	{ imgSrc: dollarMoneyCurrencyIcon, imgAlt: "dollarMoneyCurrency Icon" }
+	// { imgSrc: DoneCheckIcon, imgAlt: "DoneCheck Icon" },
+	// { imgSrc: suitcasePortfolioIcon, imgAlt: "suitcasePortfolio Icon" },
+	// { imgSrc: GroupUserIcon, imgAlt: "GroupUser Icon" },
+	// { imgSrc: dollarMoneyCurrencyIcon, imgAlt: "dollarMoneyCurrency Icon" }
 ];
 
 // AddInfo Functionality
@@ -333,8 +333,8 @@ export const PCOFData = {
 };
 
 export const OTHER_INFO_OPTIONS = [
-	{ label: 'Enter Data', value: 'add' },
-	{ label: 'Upload File', value: 'upload'}
+	{ label: 'Enter Data manually', value: 'add' },
+	{ label: 'Upload file to extract', value: 'upload'}
 ];
 
 export const cloWhatIfData = {

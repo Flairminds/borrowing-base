@@ -29,6 +29,7 @@ export const DynamicTableComponents = ({
 }) => {
 
 	const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
+	const [columnSelectionList, setColumnSelectionList] = useState(columns);
 	const [showSettingsDiv, setShowSettingsDiv] = useState(false);
 	const [breaks, setBreaks] = useState([]);
 	const [selectedColumns, setSelectedColumns] = useState([]);
@@ -44,6 +45,8 @@ export const DynamicTableComponents = ({
 		if (columns && columns?.length > 0) {
 			const temp = [...columns, ...additionalColumns];
 			setUpdatedColumnsData(temp);
+			const temp1 = [...temp];
+			setColumnSelectionList(temp1.sort((a, b) => a.label < b.label ? -1 : 1));
 			let selectedColumntoDisplay = [];
 			if (showSettings) {
 				selectedColumntoDisplay = columns.filter((col) => col.is_selected);
@@ -166,7 +169,7 @@ export const DynamicTableComponents = ({
 						if (i !== 0) {
 							return (
 								<div className={tableStyles.columnSelectionContainer} key={i}>
-									{updatedColumnsData?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
+									{columnSelectionList?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
 										return <>
 											<div key={index} className={tableStyles.columnContainer} style={{fontSize: 'small'}}>
 												<input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)}/>
@@ -187,7 +190,7 @@ export const DynamicTableComponents = ({
 							if (selectedColumns.includes(col.label)) {
 								return (
 									<>
-										<th key={index} className={enableStickyColumns ? tableStyles.stickyColTh : tableStyles.th} title={col.label}>
+										<th key={index} className={enableStickyColumns && index < 3 ? tableStyles.stickyColTh : tableStyles.th} title={col.label}>
 											{col.label}
 										</th>
 									</>
@@ -200,7 +203,7 @@ export const DynamicTableComponents = ({
 					{data?.length > 0 ?
 						data?.map((row, rowIndex) => (
 							<tr key={rowIndex} onClick={() => setActiveRowIndex(rowIndex)}>
-								{updatedColumnsData?.map((col) => {
+								{updatedColumnsData?.map((col, colIndex) => {
 									if (selectedColumns.includes(col.label)) {
 										const isEditable = enableColumnEditing && col.isEditable;
 										let cellDisplayValue = row[col.key];
@@ -221,7 +224,7 @@ export const DynamicTableComponents = ({
 										}
 										const isValueEmpty = isEditable && !cellDisplayValue;
 										return (
-											<td key={col.key} className={enableStickyColumns ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
+											<td key={col.key} className={enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
 												style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white', color: cellActualValue != cellOldValue ? 'red' : 'auto'}}
 												onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + fmtDisplayVal(cellActualValue) + '\nPrevious: ' + fmtDisplayVal(cellOldValue) : fmtDisplayVal(cellTitleValue)}`}>
 												{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
