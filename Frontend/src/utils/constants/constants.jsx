@@ -413,3 +413,18 @@ export const cloWhatIfData = {
 			}
 		]}
 };
+
+
+export const COLUMN_GROUPS = {
+	unmapped: [
+		{ key: "cashfile_securities", label: "Security/Facility Name" },
+		{ key: "issuer_borrower_name", label: "Issuer/Borrower Name" },
+		{ key: "facility_category_desc", label: "Facility Category Desc" }
+	],
+	all: [
+		{ key: "soi_name", label: "SOI Name" },
+		{ key: "master_comp_security_name", label: "Security Name" },
+		{ key: "family_name", label: "Family Name" }
+
+	]
+};
