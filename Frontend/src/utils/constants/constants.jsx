@@ -345,7 +345,9 @@ export const COLUMN_GROUPS = {
 		{ key: "facility_category_desc", label: "Facility Category Desc" }
 	],
 	all: [
-		{ key: "cashfile_securities", label: "Security/Facility Name" },
-		{ key: "issuer_borrower_name", label: "Issuer/Borrower Name" }
+		{ key: "soi_name", label: "SOI Name" },
+		{ key: "master_comp_security_name", label: "Security Name" },
+		{ key: "family_name", label: "Family Name" }
+
 	]
 };
