@@ -170,7 +170,7 @@ export const AddAdditionalInformationModal = (
 
 	const mapDataToPrincipalObligations = (data) => {
 		const header = data[0];
-		return data.slice(1).map((row) => {
+		return data.slice(1)?.map((row) => {
 			const record = {};
 			row.forEach((value, index) => {
 				record[header[index].toLowerCase().replace(/ /g, "_")] = value;
@@ -255,7 +255,7 @@ export const AddAdditionalInformationModal = (
 	};
 
 	return (
-		<Modal open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"}>
+		<Modal open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"} style={{top: 10}}>
 			<h3>Additional Information</h3>
 			<Form
 				form={form}
@@ -268,14 +268,14 @@ export const AddAdditionalInformationModal = (
 				{useEffect(() => {
 					form.setFieldsValue(initialFormData);
 				}, [initialFormData, form, uploadedData])}
-				<div style={{display: "flex", justifyContent: "space-between", margin: "1rem 0"}}>
+				<div style={{display: "flex", justifyContent: "space-between", margin: "0"}}>
 					<Radio.Group options={OTHER_INFO_OPTIONS} value={addType} onChange={handleChange} />
 					{addType === "upload" && <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{paddingRight: "1rem"}}>Download sample file template</a>}
 				</div>
 
 				{addType === "add" && (
 					<Tabs defaultActiveKey="1">
-						{Object.keys(selectedData).map((sheet, index) => {
+						{Object.keys(selectedData)?.map((sheet, index) => {
 							const formattedSheetName = sheet.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
 							return (
@@ -287,7 +287,7 @@ export const AddAdditionalInformationModal = (
 												label={header.label}
 												name={header.name}
 												rules={[{ required: true, message: `Please enter ${header.label.toLowerCase()}!` }]}
-												style={{ display: "inline-block", width: "20%", marginRight: "4%", marginBottom: "2.5rem" }}
+												style={{ display: "inline-block", width: "20%", margin: "0 1rem 1rem 1rem" }}
 											>
 												{header.type === "datePicker" ? (
 													<DatePicker style={{ width: "100%" }} />
@@ -316,7 +316,7 @@ export const AddAdditionalInformationModal = (
 														</div>
 
 														<div className={styles.rowContainer}>
-															{fields.map((field, index) => (
+															{fields?.map((field, index) => (
 																<div key={index} className={styles.row}
 																	style={{
 																		display: "grid",
@@ -325,7 +325,7 @@ export const AddAdditionalInformationModal = (
 																		padding: "10px"
 																	}}
 																>
-																	{selectedData[sheet]?.Column.map((inputField, index) => (
+																	{selectedData[sheet]?.Column?.map((inputField, index) => (
 																		<Form.Item
 																			key={index}
 																			name={[field.name, inputField.name]}

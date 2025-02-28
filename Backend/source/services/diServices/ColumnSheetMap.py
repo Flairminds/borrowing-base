@@ -45,13 +45,14 @@ sheet_column_mapper = {
     "PFLT Borrowing Base": {},
     "PCOF III Borrrowing Base": PCOF_III_BB,
     "PCOF IV": PCOF_IV,
-    "MarketBook": MARKET_BOOK
+    "MarketBook": MARKET_BOOK,
+    "Sheet1": {}
 }
 
 FUND_SHEETS = {
     'cashfile': ["US Bank Holdings", "Client Holdings"],
     'master_comp': ["Borrower Stats", "Securities Stats", "SOI Mapping", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV"],
-    "market_book": ["MarketBook"]
+    "market_book": ["Sheet1"]
 }
 
 def get_file_sheets(fund, file_type):

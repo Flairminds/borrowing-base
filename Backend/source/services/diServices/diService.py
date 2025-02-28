@@ -360,7 +360,7 @@ def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_c
         extrcted_df = {}
         cashFileSheet = ["US Bank Holdings", "Client Holdings"]
         masterCompSheet = ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping"]
-        marketBookSheets = ["MarketBook"]
+        marketBookSheets = ["Sheet1"]
 
         uploaded_file.seek(0)
         sheet_df_map = pd.read_excel(uploaded_file, sheet_name=None)
@@ -377,7 +377,6 @@ def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_c
             elif sheet_name in marketBookSheets:
                 required_sheets = marketBookSheets
                 file_type = "market_book_file"
-
         for sheet in required_sheets:
             column_level_map = sheet_column_mapper[sheet]
             df_result = get_sheet_data(sheet_df_map[sheet], sheet, column_level_map, args)
@@ -473,7 +472,7 @@ def get_base_data(info_id):
         BaseDataMapping.is_editable,
         BaseDataMappingColumnInfo.sequence,
         BaseDataMappingColumnInfo.is_selected
-    ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMapping.bd_column_name.asc()).all()
+    ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
 
 
     card_data = []

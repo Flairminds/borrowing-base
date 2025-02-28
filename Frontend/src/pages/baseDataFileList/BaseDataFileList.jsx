@@ -50,7 +50,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 				});
 			setPreviewPageId(row.id);
 			setPreviewFundType(row.fund);
-			navigate('/base-data-preview');
+			navigate(`/base-data-preview/${row.id}`);
 		} catch (err) {
 			showToast("error", err.response.data.message);
 			setDataLoading(false);
@@ -74,7 +74,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 					...col,
 					render: (value, row) => (
 						<div>
-							{row.source_file_details?.map((file) => (
+							{row.source_file_details?.map((file, index) => (
 								<div
 									key={file.file_id}
 									onClick={() => handleSourceFileClick(file)}
@@ -85,7 +85,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 										marginBottom: '2px'
 									}}
 								>
-									{file.file_name + file.extension}
+									{index + 1}. {file.file_name + file.extension}
 								</div>
 							))}
 						</div>
