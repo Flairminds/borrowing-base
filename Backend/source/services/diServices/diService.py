@@ -709,11 +709,11 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_t
     if extracted_base_data_info_id:
         extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(id = extracted_base_data_info_id)
     else:
-        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.extraction_date.desc())
+        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.report_date.desc())
     if fund_type:
-        extracted_base_datas = extracted_base_datas.filter_by(fund_type=fund_type)
+        extracted_base_datas = extracted_base_datas.filter_by(fund_type=fund_type).order_by(ExtractedBaseDataInfo.report_date.desc())
         
-    extracted_base_datas = extracted_base_datas.order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
+    extracted_base_datas = extracted_base_datas.order_by(ExtractedBaseDataInfo.report_date.desc()).all()
     
     extraction_result = {
         "columns": [{
