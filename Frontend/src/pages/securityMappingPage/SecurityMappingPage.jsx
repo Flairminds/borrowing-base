@@ -19,6 +19,7 @@ export const SecurityMappingPage = () => {
 	const [isMappingPopupOpen, setIsMappingPopupOpen] = useState(false);
 	const [securityViewType, setSecurityViewType] = useState("unmapped");
 	// const [searchText, setSearchText] = useState("");
+	// const [searchText, setSearchText] = useState("");
 	const [dataLoading, setDataLoading] = useState(false);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [selectedSecurity, setSelectedSecurity] = useState(null);
