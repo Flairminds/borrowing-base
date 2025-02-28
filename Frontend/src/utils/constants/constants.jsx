@@ -179,7 +179,7 @@ export const PCOFData = {
 				type: "text"
 			},
 			{
-				name: "master_or_feeder",
+				name: "master/feeder",
 				label: "Master/Feeder",
 				type: "text"
 			},

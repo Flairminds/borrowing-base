@@ -5,14 +5,16 @@ import datetime
 from sqlalchemy import text
 import openpyxl
 import pickle
+import json
 
-from models import db, BaseDataFile, ExtractedBaseDataInfo
+from models import db, BaseDataFile, ExtractedBaseDataInfo, BaseDataOtherInfo
 
 from source.utility.ServiceResponse import ServiceResponse
-from source.services.PCOF.calculation.functionsCall import calculation_for_build
+from source.services.PCOF.PcofBBCalculator import PcofBBCalculator
 from source.services.PCOF.PcofDashboardService import PcofDashboardService
 
 pcofDashboardService = PcofDashboardService()
+pcofBBCalculator = PcofBBCalculator()
 
 def trigger_pcof_bb(bdi_id):
     try:
@@ -21,6 +23,10 @@ def trigger_pcof_bb(bdi_id):
         with engine.connect() as connection:
             base_data_df = pd.DataFrame(connection.execute(text(f'select * from pcof_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
             base_data_mapping_df = pd.DataFrame(connection.execute(text("""select bd_sheet_name, bd_column_name, bd_column_lookup from base_data_mapping bdm where fund_type = 'PCOF'""")))
+            pl_bb_result_security_df = pd.DataFrame(connection.execute(text('''select ps.security_name as "Security" from pcof_securities ps''')))
+            input_industries_df = pd.DataFrame(connection.execute(text('''select pi.industry_name as "Industries" from pcof_indsutries pi''')))
+            pl_bb_results = pd.DataFrame(connection.execute(text('''select ct.test_name as "Concentration Tests", fct.limit_percentage as "Concentration Limit" from concentration_test ct, fund_concentration_test fct where fct.fund_id = 1''')))
+
 
             base_data_df = base_data_df.replace({np.nan: None})
             report_date = base_data_df['report_date'][0].strftime("%Y-%m-%d")
@@ -79,392 +85,110 @@ def trigger_pcof_bb(bdi_id):
         base_data_df.to_excel(writer, sheet_name="PL BB Build", index=False, header=True)
         writer.save()
 
+        base_data_other_info = BaseDataOtherInfo.query.filter_by(extraction_info_id=bdi_id).first()
+
+        # availability_borrower_data = [
+        #     {"A": "Borrower:", "B": "PennantPark Credit Opportunities Fund IV"},
+        #     {"A": "Date of determination:", "B": datetime.datetime(2024, 12, 31, 0, 0, 0)},
+        #     {"A": "Revolving Closing Date", "B": datetime.datetime(2022, 12, 19, 0, 0, 0)},
+        #     {"A": "Commitment Period (3 years from Final Closing Date, as defined in LPA):", "B": "Yes"},
+        #     {"A": "(b) Facility Size:", "B":  240000000},
+        #     {"A": "Loans (USD)", "B":  None},
+        #     {"A": "Loans (CAD)", "B":  None}
+        # ]
         availability_borrower_data = [
-            {"A": "Borrower:", "B": "PennantPark Credit Opportunities Fund IV"},
-            {"A": "Date of determination:", "B": datetime.datetime(2024, 12, 31, 0, 0, 0)},
-            {"A": "Revolving Closing Date", "B": datetime.datetime(2022, 12, 19, 0, 0, 0)},
-            {"A": "Commitment Period (3 years from Final Closing Date, as defined in LPA):", "B": "Yes"},
-            {"A": "(b) Facility Size:", "B":  240000000},
-            {"A": "Loans (USD)", "B":  None},
-            {"A": "Loans (CAD)", "B":  None}
+            {"A": "Borrower:", "B": base_data_other_info.other_info_list.get('availability_borrower').get('borrower')},
+            {"A": "Date of determination:", "B": pd.to_datetime(base_data_other_info.other_info_list.get('availability_borrower').get('determination_date'))},
+            {"A": "Revolving Closing Date", "B": pd.to_datetime(base_data_other_info.other_info_list.get('availability_borrower').get('revolving_closing_date'))},
+            {"A": "Commitment Period (3 years from Final Closing Date, as defined in LPA)", "B": base_data_other_info.other_info_list.get('availability_borrower').get('commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)')},
+            {"A": "(b) Facility Size", "B":  base_data_other_info.other_info_list.get('availability_borrower').get('(b)_facility_size')},
+            {"A": "Loans (USD)", "B":  base_data_other_info.other_info_list.get('availability_borrower').get('loans_(usd)')},
+            {"A": "Loans (CAD)", "B":  base_data_other_info.other_info_list.get('availability_borrower').get('loans_(cad)')}
         ]
         df_Availability_Borrower = pd.DataFrame(availability_borrower_data)
 
         subscription_bb_data = [
             {
-                "Investor": "Kemper Corporation",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 15000000,
-                "Capital Called": 6169500
-            },
-            {
-                "Investor": "Teamsters 120",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 20000000,
-                "Capital Called": 8226000
-            },
-            {
-                "Investor": "Pompano General",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 5000000,
-                "Capital Called": 2056500
-            },
-            {
-                "Investor": "Miramar Police",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 5000000,
-                "Capital Called": 2056500
-            },
-            {
-                "Investor": "Plantation Police",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 3000000,
-                "Capital Called": 1233900
-            },
-            {
-                "Investor": "Lauderhill Police",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 4000000,
-                "Capital Called": 1645200
-            },
-            {
-                "Investor": "Hollywood Police",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 4000000,
-                "Capital Called": 1645200
-            },
-            {
-                "Investor": "Cape Coral Police",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 5000000,
-                "Capital Called": 2056500
-            },
-            {
-                "Investor": "Boynton Beach Employees Pension Plan",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 5000000,
-                "Capital Called": 2056500
-            },
-            {
-                "Investor": "City of Riviera Beach General Employees Retirement System",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 3000000,
-                "Capital Called": 1233900
-            },
-            {
-                "Investor": "City of Boca Raton General Employees Pension Plan",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 5000000,
-                "Capital Called": 2056500
-            },
-            {
-                "Investor": "City of Pompano Beach Police and Firefighters Retirement System",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 7000000,
-                "Capital Called": 2879100
-            },
-            {
-                "Investor": "Davie Firefighters' Pension Fund",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 5000000,
-                "Capital Called": 2056500
-            },
-            {
-                "Investor": "City of Riviera Beach Firefighters Retirement System",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 3000000,
-                "Capital Called": 1233900
-            },
-            {
-                "Investor": "Wayne County Employee Retirement System",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 12000000,
-                "Capital Called": 4935600
-            },
-            {
-                "Investor": "New England Teamsters & Trucking Industry Pension Fund",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 20000000,
-                "Capital Called": 8226000
-            },
-            {
-                "Investor": "Moody Gardens",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 1000000,
-                "Capital Called": 411300
-            },
-            {
-                "Investor": "Mary Moody Northern",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 1000000,
-                "Capital Called": 411300
-            },
-            {
-                "Investor": "Illinois Municipal Retirement Fund",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 50000000,
-                "Capital Called": 20565001
-            },
-            {
-                "Investor": "Miami Firefighters Relief and Pension",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 10000000,
-                "Capital Called": 4113000
-            },
-            {
-                "Investor": "St Lucie County Fire District",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 5000000,
-                "Capital Called": 2056500
-            },
-            {
-                "Investor": "City of Plantation Employees Retirement System",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 5000000,
-                "Capital Called": 2056500
-            },
-            {
-                "Investor": "Macomb County Retiree Health Care Trust",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 2100000,
-                "Capital Called": 863730
-            },
-            {
-                "Investor": "Macomb County Retirement System",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 7000000,
-                "Capital Called": 2879100
-            },
-            {
-                "Investor": "Macomb County Intermediate Retirees' Medical Benefits",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": "",
-                "Designation": "Institutional Investors",
-                "Commitment": 1750000,
-                "Capital Called": 719775
-            },
-            {
-                "Investor": "City of Plantation Volunteer Firefighters Retirement System",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 750000,
-                "Capital Called": 308475
-            },
-            {
-                "Investor": "Pantheon (Aggregate)",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 41000000,
-                "Capital Called": 16863301
-            },
-            {
-                "Investor": "Holyoke Retirement Board",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 5000000,
-                "Capital Called": 2056500
-            },
-            {
-                "Investor": "City of Delray Beach Police Retirement System",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 3000000,
-                "Capital Called": 1233900
-            },
-            {
-                "Investor": "City of Hialeah Employees' Retirement System",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 5000000,
-                "Capital Called": 2056500
-            },
-            {
-                "Investor": "Town of Jupiter Police Officers' Retirement Fund",
-                "Master/Feeder": None,
-                "Ultimate Investor Parent": None,
-                "Designation": "Institutional Investors",
-                "Commitment": 3000000,
-                "Capital Called": 1233900
-            }
-        ]
+                "Investor": sub_bb_data.get('investor'),
+                "Master/Feeder": sub_bb_data.get('master/feeder'),
+                "Ultimate Investor Parent": sub_bb_data.get('ultimate_investor_parent'),
+                "Designation": sub_bb_data.get('designation'),
+                "Commitment": sub_bb_data.get('commitment'),
+                "Capital Called": sub_bb_data.get('capital_called')
+            } for sub_bb_data in base_data_other_info.other_info_list.get('subscription_bb')]
+
+    
         df_subscription_bb = pd.DataFrame(subscription_bb_data)
         df_subscription_bb["Uncalled Capital"] = (df_subscription_bb["Commitment"] - df_subscription_bb["Capital Called"])
         total_capitalCalled = df_subscription_bb["Capital Called"].sum()
         total_uncalled_Capital = df_subscription_bb["Uncalled Capital"].sum()
 
-        input_other_metrics_data = [
-            {
+        input_other_metrics_data = [{
                 "Other Metrics": "First Lien Leverage Cut-Off Point",
-                "values": 4.0
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('first_lien_leverage_cut-off_point')
             },
             {
                 "Other Metrics": "Warehouse First Lien Leverage Cut-Off",
-                "values": 4.5
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('warehouse_first_lien_leverage_cut-off')
             },
             {
                 "Other Metrics": "Last Out Attachment Point",
-                "values": 2.25
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('last_out_attachment_point')
             },
             {
                 "Other Metrics": "1 out of 2 Test",
-                "values": None
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('1_out_of_2_test')
             },
             {
                 "Other Metrics": "Trailing 12-Month EBITDA",
-                "values": 10.0
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('trailing_12-month_ebitda')
             },
             {
                 "Other Metrics": "Trailing 24-Month EBITDA",
-                "values": 20.0
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('trailing_24-month_ebitda')
             },
             {
                 "Other Metrics": "Total Leverage",
-                "values": 4.5
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('total_leverage')
             },
             {
                 "Other Metrics": "LTV",
-                "values": 0.65
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('ltv')
             },
             {
                 "Other Metrics": "Concentration Test Threshold 1",
-                "values": 0.075
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('concentration_test_threshold_1')
             },
             {
                 "Other Metrics": "Concentration Test Threshold 1",
-                "values": 0.010
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('concentration_test_threshold_2')
             },
             {
                 "Other Metrics": "Threshold 1 Advance Rate",
-                "values": 0.50
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('threshold_1_advance_rate')
             },
             {
                 "Other Metrics": "Threshold 2 Advance Rate",
-                "values": 0.0
-            }
-        ]
+                "values": base_data_other_info.other_info_list.get('other_metrics').get('threshold_2_advance_rate')
+            }]
         df_Inputs_Other_Metrics = pd.DataFrame(input_other_metrics_data)
 
-        inputs_portfolio_lev_bb_data = [
-            {
-                "Investment Type": "Cash",
-                "Unquoted": None,
-                "Quoted": 1.0
-            },
-            {
-                "Investment Type": "Cash Equivalent",
-                "Unquoted": None,
-                "Quoted": 1.0
-            },
-            {
-                "Investment Type": "LT US Debt",
-                "Unquoted": None,
-                "Quoted": 0.85
-            },
-            {
-                "Investment Type": "First Lien",
-                "Unquoted": 0.65,
-                "Quoted": 0.75
-            },
-            {
-                "Investment Type": "Warehouse First Lien",
-                "Unquoted": 0.70,
-                "Quoted": 0.75
-            },
-            {
-                "Investment Type": "Last Out",
-                "Unquoted": 0.55,
-                "Quoted": 0.65
-            },
-            {
-                "Investment Type": "Second Lien",
-                "Unquoted": 0.50,
-                "Quoted": 0.60
-            },
-            {
-                "Investment Type": "High Yield",
-                "Unquoted": 0.45,
-                "Quoted": 0.55
-            },
-            {
-                "Investment Type": "Mezzanine",
-                "Unquoted": 0.40,
-                "Quoted": 0.50
-            },
-            {
-                "Investment Type": "Cov-Lite",
-                "Unquoted": 0.40,
-                "Quoted": 0.50
-            },
-            {
-                "Investment Type": "PIK",
-                "Unquoted": 0.35,
-                "Quoted": 0.40
-            },
-            {
-                "Investment Type": "Preferred Stock",
-                "Unquoted": 0.20,
-                "Quoted": 0.30
-            },
-            {
-                "Investment Type": "Equity",
-                "Unquoted": 0.0,
-                "Quoted": 0.0
-            }
+        
+        inputs_portfolio_lev_bb_data = [{
+                "Investment Type": plbb_data.get('investment_type'),
+                "Unquoted": None if plbb_data.get('unquoted') == 'n/a' else plbb_data.get('unquoted'),
+                "Quoted": plbb_data.get('quoted')
+            } for plbb_data in base_data_other_info.other_info_list.get('portfolio_leverageborrowingbase')
         ]
         df_Inputs_Portfolio_LeverageBorrowingBase = pd.DataFrame(inputs_portfolio_lev_bb_data)
+
+        concentration_limits_data = [{
+                'Investors': cld.get('investors'),
+                'Rates': cld.get('rates'),
+                'Concentration Limit': cld.get('concentration_limit')
+            } for cld in base_data_other_info.other_info_list.get('concentration_limits')
+        ]
+        concentration_limits_df = pd.DataFrame(concentration_limits_data)
 
         obligors_net_capital_data =[
             {
@@ -497,6 +221,28 @@ def trigger_pcof_bb(bdi_id):
             }
         ]
         df_Obligors_Net_Capital = pd.DataFrame(obligors_net_capital_data)
+
+        advance_rates_data = [{
+                'Investor Type': ard.get('investor_type'),
+                'Advance Rate': ard.get('advance_rate')
+            } for ard in base_data_other_info.other_info_list.get('advance_rates')
+        ]
+        advance_rates_df = pd.DataFrame(advance_rates_data)
+
+        principle_obligation_data = [{
+            "Principal Obligations": pod.get('principal_obligations'),
+            "Currency": pod.get('currency'),
+            "Amount": pod.get('amount'),
+            "Spot Rate": pod.get('spot_rate'),
+            "Dollar Equivalent": pod.get('dollar_equivalent')
+        } for pod in  base_data_other_info.other_info_list.get('principle_obligations')]
+        principle_obligation_df = pd.DataFrame(principle_obligation_data)
+
+        pricing_data = [{
+            'Pricing': p_data.get('pricing'),
+            'percent': p_data.get('percent')
+        } for p_data in base_data_other_info.other_info_list.get('pricing')] 
+        pricing_df = pd.DataFrame(pricing_data)     
 
         df_PL_BB_Build = base_data_df.copy()
 
@@ -595,7 +341,15 @@ def trigger_pcof_bb(bdi_id):
             "Other Metrics": df_Inputs_Other_Metrics,
             "Availability Borrower": df_Availability_Borrower,
             "Portfolio LeverageBorrowingBase": df_Inputs_Portfolio_LeverageBorrowingBase,
-            "Obligors' Net Capital": df_Obligors_Net_Capital
+            "Obligors' Net Capital": df_Obligors_Net_Capital,
+            "PL BB Results": pl_bb_results,
+            "Subscription BB": df_subscription_bb,
+            "PL_BB_Results_Security": pl_bb_result_security_df,
+            "Inputs Industries": input_industries_df,
+            "Advance Rates": advance_rates_df,
+            "Concentration Limits": concentration_limits_df,
+            "Principle Obligations": principle_obligation_df,
+            "Pricing": pricing_df
         }
         pickled_xl_df_map = pickle.dumps(xl_df_map)
 
@@ -613,6 +367,8 @@ def trigger_pcof_bb(bdi_id):
         )
         db.session.add(base_data_file)
         db.session.commit()
+        print(f'[PCOF]Generated Data {dt_string}')
+        # bb_response = pcofBBCalculator.get_bb_calculation(base_data_file=base_data_file, selected_assets=json.loads(included_excluded_assets), user_id=1)
 
         wb2.close()
         writer.close()
