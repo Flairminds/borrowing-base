@@ -103,7 +103,8 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	case when pbb."Primarily Secured by Real Estate" = 0 then 'No' when pbb."Primarily Secured by Real Estate" = 1 then 'Yes' else null end as primarily_secured_by_real_estate_or_loan,
 	case when pbb."Interest Only Security" = 0 then 'No' when pbb."Interest Only Security" = 1 then 'Yes' else null end as interest_only_security,
 	case when pbb."Satisfies Other Criteria(1)" = 0 then 'No' when pbb."Satisfies Other Criteria(1)" = 1 then 'Yes' else null end as satisfies_all_other_eligibility_criteria,
-	null as excess_concentration_amount
+	null as excess_concentration_amount,
+	ch."LoanX ID" as "loanx_id"
 from sf_sheet_us_bank_holdings usbh
 left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
 	and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
@@ -124,7 +125,7 @@ where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id A
 	pbb."Equity Security", pbb."Subject of an Offer or Called for Redemption", pbb."Margin Stock", pbb."Subject to Withholding Tax", pbb."Zero Coupon Obligation",
 	pbb."Covenant Lite", pbb."Structured Finance Obligation / finance lease", pbb."Material Non-Credit Related Risk", pbb."Primarily Secured by Real Estate",
 	pbb."Interest Only Security", pbb."Satisfies Other Criteria(1)", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio", bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA",
-	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon", ssmb."Market Value"
+	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon", ssmb."Market Value", ch."LoanX ID"
 order by security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}).fetchall())
             df = cash_file
             if df.empty:

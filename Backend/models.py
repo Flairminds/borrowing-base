@@ -405,6 +405,7 @@ class PfltBaseData(db.Model):
     interest_only_security = db.Column(db.String)
     satisfies_all_other_eligibility_criteria = db.Column(db.String)
     excess_concentration_amount = db.Column(db.String)
+    loanx_id = db.Column(db.String)
 
 class BaseDataOtherInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -490,6 +491,7 @@ class PfltBaseDataHistory(db.Model):
     interest_only_security = db.Column(db.String)
     satisfies_all_other_eligibility_criteria = db.Column(db.String)
     excess_concentration_amount = db.Column(db.String)
+    loanx_id = db.Column(db.String)
 
 class PcofBaseData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

@@ -1105,7 +1105,7 @@ def trigger_bb_calculation(bdi_id):
             file_name='Generated Data ' + dt_string,
             included_excluded_assets_map=json.dumps(included_excluded_assets_map),
         )
-        print('[PFLT]Generated Data ' + dt_string)
+        print('Generated Data ' + dt_string)
         db.session.add(base_data_file)
         db.session.commit()
 
