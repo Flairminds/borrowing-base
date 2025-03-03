@@ -49,7 +49,7 @@ export const sidebarItemsArray = [
 
 // AddInfo Functionality
 export const PFLTData = {
-	input: {
+	other_sheet: {
 		Header: [
 			{
 				name: "determination_date",
@@ -427,4 +427,226 @@ export const COLUMN_GROUPS = {
 		{ key: "family_name", label: "Family Name" }
 
 	]
+};
+
+
+export const PFLT_COLUMNS_NAME = {
+	"input": {
+		"columns_info": [
+			{
+				"col_name": "inputs",
+				"sequence": 1,
+				"display_name": "INPUTS"
+			},
+			{
+				"col_name": "values",
+				"sequence": 2,
+				"display_name": "Values"
+			}
+		]
+	},
+	"other_sheet": {
+		"columns_info": [
+			{
+				"col_name": "currency",
+				"sequence": 1,
+				"display_name": "Currency"
+			},
+			{
+				"col_name": "exchange_rates",
+				"sequence": 2,
+				"display_name": "Exchange Rates"
+			},
+			{
+				"col_name": "cash_current_and_preborrowing",
+				"sequence": 3,
+				"display_name": "Cash Current and PreBorrowing"
+			},
+			{
+				"col_name": "borrowing",
+				"sequence": 4,
+				"display_name": "Borrowing"
+			},
+			{
+				"col_name": "additional_expenses_1",
+				"sequence": 5,
+				"display_name": "Additional Expenses 1"
+			},
+			{
+				"col_name": "additional_expenses_2",
+				"sequence": 6,
+				"display_name": "Additional Expenses 2"
+			},
+			{
+				"col_name": "additional_expenses_3",
+				"sequence": 7,
+				"display_name": "Additional Expenses 3"
+			},
+			{
+				"col_name": "current_credit_facility_balance",
+				"sequence": 8,
+				"display_name": "Current Credit Facility Balance"
+			}
+		]
+	}
+};
+
+export const PCOF_COLUMNS_NAME = {
+	"availability_borrower": {
+		"columns_info": [
+			{
+				"col_name": "a",
+				"sequence": 1,
+				"display_name": "A"
+			},
+			{
+				"col_name": "b",
+				"sequence": 2,
+				"display_name": "B"
+			}
+		]
+	},
+	"principle_obligations": {
+		"columns_info": [
+			{
+				"col_name": "principal_obligations",
+				"sequence": 1,
+				"display_name": "Principal Obligations"
+			},
+			{
+				"col_name": "currency",
+				"sequence": 2,
+				"display_name": "Currency"
+			},
+			{
+				"col_name": "amount",
+				"sequence": 3,
+				"display_name": "Amount"
+			},
+			{
+				"col_name": "spot_rate",
+				"sequence": 4,
+				"display_name": "Spot Rate"
+			},
+			{
+				"col_name": "dollar_equivalent",
+				"sequence": 5,
+				"display_name": "Dollar Equivalent"
+			}
+		]
+	},
+	"subscription_bb": {
+		"columns_info": [
+			{
+				"col_name": "investor",
+				"sequence": 1,
+				"display_name": "Investor"
+			},
+			{
+				"col_name": "master/feeder",
+				"sequence": 2,
+				"display_name": "Master/Feeder"
+			},
+			{
+				"col_name": "ultimate_investor_parent",
+				"sequence": 3,
+				"display_name": "Ultimate Investor Parent"
+			},
+			{
+				"col_name": "designation",
+				"sequence": 4,
+				"display_name": "Designation"
+			},
+			{
+				"col_name": "commitment",
+				"sequence": 5,
+				"display_name": "Commitment"
+			},
+			{
+				"col_name": "capital_called",
+				"sequence": 6,
+				"display_name": "Capital Called"
+			}
+		]
+	},
+	"pricing": {
+		"columns_info": [
+			{
+				"col_name": "pricing",
+				"sequence": 1,
+				"display_name": "Pricing"
+			},
+			{
+				"col_name": "percent",
+				"sequence": 2,
+				"display_name": "percent"
+			}
+		]
+	},
+	"advance_rates": {
+		"columns_info": [
+			{
+				"col_name": "investor_type",
+				"sequence": 1,
+				"display_name": "Investor Type"
+			},
+			{
+				"col_name": "advance_rate",
+				"sequence": 2,
+				"display_name": "Advance Rate"
+			}
+		]
+	},
+	"portfolio_leverageborrowingbase": {
+		"columns_info": [
+			{
+				"col_name": "investment_type",
+				"sequence": 1,
+				"display_name": "Investment Type"
+			},
+			{
+				"col_name": "unquoted",
+				"sequence": 2,
+				"display_name": "Unquoted"
+			},
+			{
+				"col_name": "quoted",
+				"sequence": 3,
+				"display_name": "Quoted"
+			}
+		]
+	},
+	"concentration_limits": {
+		"columns_info": [
+			{
+				"col_name": "investors",
+				"sequence": 1,
+				"display_name": "Investors"
+			},
+			{
+				"col_name": "rank",
+				"sequence": 2,
+				"display_name": "Rank"
+			},
+			{
+				"col_name": "concentration_limit",
+				"sequence": 3,
+				"display_name": "Concentration Limit"
+			}
+		]
+	},
+	"other_metrics": {
+		"columns_info": [
+			{
+				"col_name": "other_metrics",
+				"sequence": 1,
+				"display_name": "Other Metrics"
+			},
+			{
+				"col_name": "values",
+				"sequence": 2,
+				"display_name": "values"
+			}
+		]
+	}
 };
