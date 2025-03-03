@@ -16,6 +16,7 @@ import tableStyles from './DynamicTableComponents.module.css';
 export const DynamicTableComponents = ({
 	data,
 	columns,
+	initialAdditionalColumns = [],
 	additionalColumns = [],
 	showCellDetailsModal = false,
 	showSettings = false,
@@ -43,7 +44,7 @@ export const DynamicTableComponents = ({
 
 	useEffect(() => {
 		if (columns && columns?.length > 0) {
-			const temp = [...columns, ...additionalColumns];
+			const temp = [...initialAdditionalColumns, ...columns, ...additionalColumns];
 			setUpdatedColumnsData(temp);
 			const temp1 = [...temp];
 			setColumnSelectionList(temp1.sort((a, b) => a.label < b.label ? -1 : 1));
@@ -53,7 +54,7 @@ export const DynamicTableComponents = ({
 			} else {
 				selectedColumntoDisplay = columns;
 			}
-			const initalColumnsConsidered = [...selectedColumntoDisplay, ...additionalColumns];
+			const initalColumnsConsidered = [...initialAdditionalColumns, ...selectedColumntoDisplay, ...additionalColumns];
 			const intialColumns = initalColumnsConsidered.map((t) => t.label);
 			console.info(intialColumns, 'test', initalColumnsConsidered);
 			setSelectedColumns(intialColumns);

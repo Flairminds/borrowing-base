@@ -1,21 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { FaRegEdit } from "react-icons/fa";
+import { useNavigate } from 'react-router';
+import { BackOption } from '../../components/BackOption/BackOption';
+import { CustomButton } from '../../components/custombutton/CustomButton';
 import { Loader } from '../../components/loader/loader';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { AllSecurityModal } from '../../modal/allSecurityModal/AllSecurityModal';
 import { HandleSecurityMappingModal } from '../../modal/securityMappingModals/handleSecurityMapping/HandleSecurityMappingModal';
 import { getUnmappedSecurityData } from '../../services/dataIngestionApi';
+import { COLUMN_GROUPS } from '../../utils/constants/constants';
+import { FilterMultiSelect } from '../../utils/helperFunctions/FilterMultiSelect';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from "./SecurityMappingPage.module.css";
-import { BackOption } from '../../components/BackOption/BackOption';
-import { useNavigate } from 'react-router';
-import { AllSecurityModal } from '../../modal/allSecurityModal/AllSecurityModal';
-import { Select } from 'antd';
-import { FilterMultiSelect } from '../../utils/helperFunctions/FilterMultiSelect';
-import { COLUMN_GROUPS } from '../../utils/constants/constants';
 
-export const SecurityMappingPage = () => {
+export const SecurityMappingPage = ({selectedSecurities}) => {
 	const [unmappedSecurities, setUnmappedSecurities] = useState([]);
-	const [activeSecurity, setActiveSecurity] = useState("");
 	const [isMappingPopupOpen, setIsMappingPopupOpen] = useState(false);
 	const [securityViewType, setSecurityViewType] = useState("unmapped");
 	// const [searchText, setSearchText] = useState("");
@@ -24,6 +23,7 @@ export const SecurityMappingPage = () => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [selectedSecurity, setSelectedSecurity] = useState(null);
 	const [filteredData, setFilteredData] = useState([]);
+	// const [selectedSecurities, setSelectedSecurities] = useState([]);
 	const navigate = useNavigate();
 
 	// const handleSearch = (event) => {
@@ -54,7 +54,6 @@ export const SecurityMappingPage = () => {
 
 
 
-
 	useEffect(() => {
 		if (securityViewType) {
 			getMappingData(securityViewType);
@@ -68,8 +67,7 @@ export const SecurityMappingPage = () => {
 	}, [unmappedSecurities]);
 
 
-	const handleSecurityEdit = (security) => {
-		setActiveSecurity(security);
+	const handleMappingPopup = () => {
 		setIsMappingPopupOpen(true);
 	};
 
@@ -82,14 +80,32 @@ export const SecurityMappingPage = () => {
 		getMappingData(securityType);
 	};
 
-	const additionalColumns = [{
+	const hanldeCheckBoxClick = (security) => {
+		console.info(selectedSecurities.current, 'multiple mapping 2');
+		if (selectedSecurities.current.includes(security)) {
+			selectedSecurities.current = selectedSecurities.current.filter(sec => sec != security);
+		} else {
+			selectedSecurities.current = [...selectedSecurities.current, security];
+		}
+		console.info(selectedSecurities.current, 'multiple mapping 3');
+	};
+
+	const additionalColumns = securityViewType == "all" ? [{
 		key: "",
 		label: "",
 		'render': (value, row) => (
 			<div style={{ textAlign: 'center', cursor: 'pointer' }}>
-				{securityViewType == "unmapped"
-					? <FaRegEdit onClick={() => handleSecurityEdit(row.cashfile_securities)} />
-					: <FaRegEdit onClick={() => handleAllSecurities(row)} />}
+				<FaRegEdit onClick={() => handleAllSecurities(row)} />
+			</div>
+		)
+	}] : [];
+
+	const initialAdditionalColumns = [{
+		key: "",
+		label: "",
+		'render': (value, row) => (
+			<div style={{ textAlign: 'center', cursor: 'pointer' }}>
+				<input type="checkbox" checked={selectedSecurities.current?.includes(row.cashfile_securities)} onClick={() => hanldeCheckBoxClick(row.cashfile_securities)} />
 			</div>
 		)
 	}];
@@ -117,21 +133,25 @@ export const SecurityMappingPage = () => {
 					<div className={styles.pageTitle}>
 						{securityViewType === "all" ? <>All Securities</> : <>Unmapped Securities</>}
 					</div>
-					<FilterMultiSelect data={unmappedSecurities?.data} columns={COLUMN_GROUPS[securityViewType]}
-						onFilterChange={(filtered) => setFilteredData(filtered)}
-					/>
-					{/* <input
-						type="text"
-						placeholder="Security/Facility Name"
-						style={{ width: '350px', borderRadius: '5px', outline: "none", border: "1px solid #888D8D", padding: '7px' }}
-						value={searchText}
-						onChange={handleSearch}
-					/> */}
+					<div style={{ display: "flex"}}>
+						<FilterMultiSelect data={unmappedSecurities?.data} columns={COLUMN_GROUPS[securityViewType]}
+							onFilterChange={(filtered) => setFilteredData(filtered)}
+						/>
+						{/* <input
+							type="text"
+							placeholder="Security/Facility Name"
+							style={{ width: '350px', borderRadius: '5px', outline: "none", border: "1px solid #888D8D", padding: '7px' }}
+							value={searchText}
+							onChange={handleSearch}
+						/> */}
+						{securityViewType == "unmapped" && <CustomButton text='Edit Mapping' isFilled={true} onClick={handleMappingPopup} /> }
+					</div>
+
 				</div>
 				{dataLoading ? <div style={{textAlign: 'center'}}><Loader /></div> :
-					<DynamicTableComponents data={filteredData} columns={unmappedSecurities?.columns} additionalColumns={additionalColumns} />}
+					<DynamicTableComponents data={filteredData} columns={unmappedSecurities?.columns} initialAdditionalColumns={initialAdditionalColumns} additionalColumns={additionalColumns} />}
 			</div>
-			<HandleSecurityMappingModal isOpen={isMappingPopupOpen} setIsOpen={setIsMappingPopupOpen} activeSecurity={activeSecurity} getMappingData={getMappingData} />
+			<HandleSecurityMappingModal isOpen={isMappingPopupOpen} setIsOpen={setIsMappingPopupOpen} selectedSecurities={selectedSecurities} getMappingData={getMappingData} />
 			<AllSecurityModal isOpen={isModalVisible} setIsOpen={setIsModalVisible} security={selectedSecurity} getMappingData={getMappingData} />
 		</div>
 	);
