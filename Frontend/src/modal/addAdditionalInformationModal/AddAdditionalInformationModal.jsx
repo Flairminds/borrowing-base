@@ -10,11 +10,16 @@ import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pflt_other
 import { CustomButton } from "../../components/custombutton/CustomButton";
 import { generateBaseDataFile } from "../../services/api";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
-import { PFLTData, PCOFData, OTHER_INFO_OPTIONS } from "../../utils/constants/constants";
+import { PFLTData, PCOFData, OTHER_INFO_OPTIONS, PFLT_COLUMNS_NAME, PCOF_COLUMNS_NAME } from "../../utils/constants/constants";
+import { fmtDisplayVal } from "../../utils/helperFunctions/formatDisplayData";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./AddAdditionalInformationModal.module.css";
 
 const { TabPane } = Tabs;
+
+const getHeaderFromColumnsInfo = (columnsInfo) => {
+	return columnsInfo.map(col => col.display_name);
+};
 
 export const AddAdditionalInformationModal = (
 	{
@@ -79,9 +84,9 @@ export const AddAdditionalInformationModal = (
 			formData["threshold_2_advance_rate"] = uploadedData["threshold_2_advance_rate"] || data?.other_data?.["threshold_2_advance_rate"] || null;
 
 		} else if (previewFundType === "PFLT") {
-			formData["minimum_equity_amount_floor"] = uploadedData.minimum_equity_amount_floor ? uploadedData.minimum_equity_amount_floor : data?.other_data?.minimum_equity_amount_floor ? data.other_data.minimum_equity_amount_floor : null;
-			formData["determination_date"] = uploadedData.determination_date ? dayjs(uploadedData.determination_date) : data?.determination_date ? dayjs(data.determination_date) : null;
-			formData["input"] = uploadedData?.other_sheet?.length > 0 ? uploadedData.other_sheet : data?.other_data?.input.length > 0 ? data.other_data.input : null;
+			formData["minimum_equity_amount_floor"] = uploadedData?.minimum_equity_amount_floor ? uploadedData.minimum_equity_amount_floor : data?.other_data?.input?.minimum_equity_amount_floor ? data.other_data.input.minimum_equity_amount_floor : null;
+			formData["determination_date"] = uploadedData?.determination_date ? dayjs(uploadedData.determination_date) : data?.determination_date ? dayjs(data.determination_date) : null;
+			formData["other_sheet"] = uploadedData?.other_sheet?.length > 0 ? uploadedData.other_sheet : data?.other_data?.other_sheet?.length > 0 ? data.other_data.other_sheet : null;
 		}
 		setInitialFormData(formData);
 	}, [data, uploadedData]);
@@ -96,9 +101,9 @@ export const AddAdditionalInformationModal = (
 	const handleSubmit = async (values) => {
 		const extractionInfoId = dataId;
 		try {
-			let other_data = {};
+			let otherData = {};
 			if (previewFundType === "PCOF") {
-				other_data = {
+				otherData = {
 					...values,
 					"availability_borrower": {
 						"borrower": values.borrower,
@@ -107,7 +112,7 @@ export const AddAdditionalInformationModal = (
 						"revolving_closing_date": dayjs(values?.revolving_closing_date?.format("YYYY-MM-DD")),
 						"determination_date": dayjs(values?.determination_date),
 						"loans_(cad)": values?.["loans_(cad)"],
-						"loans_(usd)": values?.["loans_(usd)"],
+						"loans_(usd)": values?.["loans_(usd)"]
 					},
 					"other_metrics": {
 						"first_lien_leverage_cut-off_point": values["first_lien_leverage_cut-off_point"],
@@ -121,19 +126,24 @@ export const AddAdditionalInformationModal = (
 						"trailing_12-month_ebitda": values["trailing_12-month_ebitda"],
 						"trailing_24-month_ebitda": values["trailing_24-month_ebitda"],
 						"warehouse_first_lien_leverage_cut-off": values["warehouse_first_lien_leverage_cut-off"]
-					}
+					},
+					"column_info": PCOF_COLUMNS_NAME
 				};
 			} else if (previewFundType === "PFLT") {
-				other_data = {
-					"input": values.input,
-					"minimum_equity_amount_floor": values["minimum_equity_amount_floor"]
-				}|| {};
+				otherData = {
+					"other_sheet": values["other_sheet"],
+					"input": {
+						"minimum_equity_amount_floor": `$${values["minimum_equity_amount_floor"]}`,
+						"determination_date": values.determination_date
+					},
+					"column_info": PFLT_COLUMNS_NAME
+				};
 			}
 
 			const transformedData = {
 				"extraction_info_id": extractionInfoId,
 				"determination_date": values.determination_date || dayjs(values.determination_date.format("YYYY-MM-DD")),
-				"other_data": other_data,
+				"other_data": otherData,
 				"fund_type": previewFundType
 			};
 
@@ -194,10 +204,44 @@ export const AddAdditionalInformationModal = (
 				const sheet = workbook.Sheets[sheetName];
 				const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
 
-				const formattedData = rawData.map(row =>
-					row.map(cell =>
-						cell instanceof Date ? dayjs(cell).format("YYYY-MM-DD") : cell // Format dates, keep other values
-					)
+				const isPercentageCell = (row, cell) => {
+					const columnIndex = row.indexOf(cell);
+					let isPercentageColumn = false;
+					if (columnIndex === 2) {
+						isPercentageColumn = true;
+					} else {
+						const header = rawData[0][columnIndex];
+						if (header && (header.toLowerCase().includes("percentage") ||
+							header.toLowerCase().includes("percent") ||
+							header.toLowerCase().includes("advance rate")
+						)) {
+							isPercentageColumn = true;
+						}
+					}
+
+					if (isPercentageColumn) {
+						if (typeof cell === 'number' && cell === 0) {
+							return false;
+						}
+						return true;
+					}
+
+					return false;
+				};
+
+				const formattedData = rawData.map((row) =>
+					row.map((cell) => {
+						if (cell instanceof Date) {
+							return dayjs(cell).format("YYYY-MM-DD");
+						}
+						if (typeof cell === "string" && cell.includes("%")) {
+							return cell;
+						}
+						if (typeof cell === "number" && cell >= 0 && cell <= 1 && isPercentageCell(row, cell)) {
+							return `${(cell * 100).toFixed(1)}%`;
+						}
+						return cell;
+					})
 				);
 				return { sheetName, data: formattedData };
 			});
@@ -254,9 +298,65 @@ export const AddAdditionalInformationModal = (
 		}
 	};
 
+	const exportSample = () => {
+		const wb = XLSX.utils.book_new();
+
+		const processData = (obj, sheetName) => {
+			const rows = [];
+
+			const columnsInfo = data?.other_data?.column_info[sheetName]?.columns_info;
+			if (columnsInfo) {
+				const headerRow = getHeaderFromColumnsInfo(columnsInfo);
+				rows.push(headerRow);
+			}
+
+			if (sheetName === "input" || sheetName === "availability_borrower" || sheetName === "other_metrics") {
+				for (const key in obj) {
+					const formattedValue = fmtDisplayVal(obj[key]);
+					rows.push([key, formattedValue]);
+				}
+			} else {
+				obj.forEach((item) => {
+					const row = columnsInfo.map(col => {
+						const value = item[col.col_name] || "";
+						return fmtDisplayVal(value);
+					});
+					rows.push(row);
+				});
+			}
+
+			const sheet = XLSX.utils.aoa_to_sheet(rows);
+			const sheetNameForObject = sheetName.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+
+			XLSX.utils.book_append_sheet(wb, sheet, sheetNameForObject);
+		};
+
+		Object.entries(data.other_data || {}).forEach(([key]) => {
+			if (Array.isArray(data.other_data[key]) || typeof data.other_data[key] === 'object' && data.other_data[key] !== null) {
+				if (key !== 'column_info') processData(data.other_data[key], key);
+			}
+		});
+
+		const xlsxArray = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+		const xlsxBlob = new Blob([xlsxArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+		saveAs(xlsxBlob, 'financial_data.xlsx');
+	};
+
 	return (
 		<Modal open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"} style={{top: 10}}>
 			<h3>Additional Information</h3>
+			<div style={{display: "flex", justifyContent: "space-between", margin: "1rem 0"}}>
+				<Radio.Group options={OTHER_INFO_OPTIONS} value={addType} onChange={handleChange} />
+				{addType === "upload" && (
+					<>
+						{(typeof data === 'object' && data !== null)
+							? <a onClick={exportSample} style={{paddingRight: "1rem", color: "blue", textDecoration: "underline"}}>Export sample file template</a>
+							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{paddingRight: "1rem"}}>Export sample file template</a> 
+						}
+					</>
+				)}
+			</div>
 			<Form
 				form={form}
 				layout="vertical"
@@ -268,10 +368,6 @@ export const AddAdditionalInformationModal = (
 				{useEffect(() => {
 					form.setFieldsValue(initialFormData);
 				}, [initialFormData, form, uploadedData])}
-				<div style={{display: "flex", justifyContent: "space-between", margin: "0"}}>
-					<Radio.Group options={OTHER_INFO_OPTIONS} value={addType} onChange={handleChange} />
-					{addType === "upload" && <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{paddingRight: "1rem"}}>Download sample file template</a>}
-				</div>
 
 				{addType === "add" && (
 					<Tabs defaultActiveKey="1">
