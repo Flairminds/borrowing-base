@@ -1197,15 +1197,15 @@ def add_base_data_other_info(
     ):
     try:
         existing_record = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).first()
-        extraction_info = ExtractedBaseDataInfo.query.filter_by(id=extraction_info_id).first()
-        company_id = extraction_info.company_id
 
         if existing_record:
             existing_record.determination_date = determination_date
             existing_record.fund_type = fund_type
             existing_record.other_info_list = other_data
-            existing_record.company_id = company_id
+            existing_record.company_id = 1
         else:
+            extraction_info = ExtractedBaseDataInfo.query.filter_by(id=extraction_info_id).first()
+            company_id = extraction_info.company_id
             base_data_other_info =  BaseDataOtherInfo(
                 extraction_info_id = extraction_info_id,
                 determination_date = determination_date,
