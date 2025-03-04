@@ -605,3 +605,48 @@ class PcofBaseDataHistory(db.Model):
     borrowing_base_industry_concentration = db.Column(db.String)
     borrowing_base_comment = db.Column(db.String)
     is_eligible_issuer = db.Column(db.String)
+
+
+class LoanTypeMaster(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    created_by = db.Column(db.Integer, nullable=True)
+    modified_by = db.Column(db.Integer, nullable=True)
+    modified_at = db.Column(db.DateTime(timezone=True))
+    loan_type = db.Column(db.String)
+    loan_type_lookup = db.Column(db.String)
+    description = db.Column(db.String)
+
+class LoanTypeMapping(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    created_by = db.Column(db.Integer, nullable=True)
+    modified_by = db.Column(db.Integer, nullable=True)
+    modified_at = db.Column(db.DateTime(timezone=True))
+    master_loan_type_id = db.Column(db.Integer, db.ForeignKey("loan_type_master.id"), nullable=True)
+    loan_type = db.Column(db.String)
+    loan_type_lookup = db.Column(db.String)
+
+class LienTypeMaster(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    created_by = db.Column(db.Integer, nullable=True)
+    modified_by = db.Column(db.Integer, nullable=True)
+    modified_at = db.Column(db.DateTime(timezone=True))
+    lien_type = db.Column(db.String)
+    lien_type_lookup = db.Column(db.String)
+    description = db.Column(db.String)
+
+class LienTypeMapping(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    created_by = db.Column(db.Integer, nullable=True)
+    modified_by = db.Column(db.Integer, nullable=True)
+    modified_at = db.Column(db.DateTime(timezone=True))
+    master_lien_type_id = db.Column(db.Integer, db.ForeignKey("lien_type_master.id"), nullable=True)
+    lien_type = db.Column(db.String)
+    lien_type_lookup = db.Column(db.String)
