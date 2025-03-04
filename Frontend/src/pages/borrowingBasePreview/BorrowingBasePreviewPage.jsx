@@ -171,6 +171,20 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		setFilteredData(securityFilterData);
 	};
 
+	const filterSelections = {
+		'PFLT': [{
+			placeholder: "Filter by Obligor Name(s)",
+			onChange: handleObligorChange,
+			options: baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'obligor_name'),
+			value: obligorFliteredValue
+		}, {
+			placeholder: "Filter by Security Name(s)",
+			onChange: handleSecurityChange,
+			options: baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'security_name'),
+			value: securityFilteredValue
+		}]
+	};
+
 
 	return (
 		<div className={styles.previewPage}>
@@ -180,8 +194,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						<div className={styles.cardContainer}>
 							{baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
 								<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/security-mapping') : () => {}}>
-									<div><b>{cardTitle}</b></div>
-									<div className={styles.cardTitle}>{fmtDisplayVal(baseFilePreviewData?.cardData[cardTitle], 0)}</div>
+									<div>{cardTitle}</div>
+									<div className={styles.cardTitle}><b>{fmtDisplayVal(baseFilePreviewData?.cardData[cardTitle], 0)}</b></div>
 								</div>
 							))}
 						</div>
@@ -190,28 +204,6 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Trigger Calculation</button>
 					</div>
 				</div>
-				{/* {baseFilePreviewData.fundType == 'PFLT' && */}
-				<div>
-					<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '600px', gap: '16px', padding: '5px' }}>
-						<Select
-							mode="multiple"
-							allowClear
-							style={{flex: 1}}
-							placeholder="Filter by Obligor Name(s)"
-							onChange={handleObligorChange}
-							options={baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'obligor_name')}
-						/>
-						<Select
-							mode="multiple"
-							allowClear
-							style={{flex: 1}}
-							placeholder="Filter by Security Name(s)"
-							onChange={handleSecurityChange}
-							options={baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'security_name')}
-						/>
-					</div>
-				</div>
-				{/* } */}
 				<div>
 					<DynamicTableComponents
 						data={filteredData}
@@ -225,6 +217,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						cellDetail={cellDetail}
 						refreshDataFunction={handleBaseDataPreview}
 						previewFundType={previewFundType}
+						filterSelections={filterSelections[baseFilePreviewData.fundType]}
 					/>
 				</div>
 			</div>

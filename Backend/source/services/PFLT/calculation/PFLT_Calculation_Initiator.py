@@ -214,40 +214,43 @@ class PFLTCalculationInitiator(SLC, PBC, PCTC):
         )
 
     def PFLTBB_calculation_First_Level_Formulas(self):
+        try:
 
-        # Call all functions sequentially
-        # self.Loan_Number()
-        self.obligors()
-        self.Convertible_to_Equity()
-        self.Equity_Security()
-        self.Subject_to_Offer_or_Redemption()
-        self.Margin_Stock()
-        self.Subject_to_withholding_tax()
-        self.At_Acquisition_Defaulted_Collateral_Loan()
-        self.Zero_Coupon_Obligation()
-        self.Covenant_Lite()
-        self.Structured_Finance_Obligation()
-        self.Interest_Paid_Semi_Annually()
-        self.Material_Non_Credit_Related_Risk()
-        # self.Real_Estate_Construction_or_Project_Finance_Loan()
-        self.Interest_Only_Security()
-        self.Satisfies_all_Other_Eligibility_Criteria()
-        self.Foreign_Currency_Variability_Factor()
+            # Call all functions sequentially
+            # self.Loan_Number()
+            self.obligors()
+            self.Convertible_to_Equity()
+            self.Equity_Security()
+            self.Subject_to_Offer_or_Redemption()
+            self.Margin_Stock()
+            self.Subject_to_withholding_tax()
+            self.At_Acquisition_Defaulted_Collateral_Loan()
+            self.Zero_Coupon_Obligation()
+            self.Covenant_Lite()
+            self.Structured_Finance_Obligation()
+            self.Interest_Paid_Semi_Annually()
+            self.Material_Non_Credit_Related_Risk()
+            # self.Real_Estate_Construction_or_Project_Finance_Loan()
+            self.Interest_Only_Security()
+            self.Satisfies_all_Other_Eligibility_Criteria()
+            self.Foreign_Currency_Variability_Factor()
 
-        # test add
-        self.Specified_Term_SOFR = 0.0532981
-        self.Loan_Number()
-        self.Cash_Spread_On_Floating_Rate_Loans()  # column BB new
-        self.Cash_Spread_On_Fixed_Rate_Loans()  # column BC new
-        # calculate all other columns
-        self.PFLTBB_calculation_Second_Level_Formulas()
+            # test add
+            self.Specified_Term_SOFR = 0.0532981
+            self.Loan_Number()
+            self.Cash_Spread_On_Floating_Rate_Loans()  # column BB new
+            self.Cash_Spread_On_Fixed_Rate_Loans()  # column BC new
+            # calculate all other columns
+            self.PFLTBB_calculation_Second_Level_Formulas()
 
-        # calculate borrowing base sheet
-        self.Borrowing_Base_Sheet()
+            # calculate borrowing base sheet
+            self.Borrowing_Base_Sheet()
 
-        # calculate borrowing base sheet
-        self.Concentration_Sheet_Sheet()
-        # self.Obligor_new_GX_new_HE()
+            # calculate borrowing base sheet
+            self.Concentration_Sheet_Sheet()
+            # self.Obligor_new_GX_new_HE()
+        except Exception as e:
+            print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
 
 
 # file_path = pathlib.Path("PFLT Sub - Borrowing Base - 06.26.24 PF Truist Base.xlsx")

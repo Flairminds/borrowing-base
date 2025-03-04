@@ -355,6 +355,10 @@ export const cloWhatIfData = {
 				"label": "Security Name"
 			},
 			{
+				"key": "LoanX_ID",
+				"label": "LoanX ID"
+			},
+			{
 				"key": "Obligor_Name",
 				"label": "Obligor Name"
 			},

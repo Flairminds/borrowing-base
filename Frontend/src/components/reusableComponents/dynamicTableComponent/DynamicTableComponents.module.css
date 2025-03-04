@@ -1,6 +1,6 @@
 .columnContainer {
     margin: 1px;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 .checkbox {
@@ -11,6 +11,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: small;
+    border: 1px solid #DCDEDE;
 }
 
 .th::-webkit-scrollbar,
@@ -45,9 +46,10 @@
 }
 
 .th{
-    padding: 8px;
+    padding: 12px 8px;
     text-align: left;
-    border: 1px solid #DCDEDE;
+    /* border-top: 1px solid #DCDEDE; */
+    border-bottom: 1px solid #DCDEDE;
     font-weight: 600;
     /* min-width: 3rem; */
     max-width: 200px;
@@ -64,9 +66,8 @@
 .td {
     padding: 8px;
     text-align: left;
+    border-top: 1px solid #DCDEDE;
     border-bottom: 1px solid #DCDEDE;
-    border-left: 1px solid #DCDEDE;
-    border-right: 1px solid #DCDEDE;
     /* min-width: 3rem; */
     max-width: 200px;
     align-items: center;
@@ -79,9 +80,10 @@
 .stickyColTh{
     padding: 8px;
     text-align: left;
+    /* border-top: 1px solid #DCDEDE; */
     border-bottom: 1px solid #DCDEDE;
     /* border-radius: 5px; */
-    border: 1px solid #DCDEDE;
+    /* border: 1px solid #DCDEDE; */
     font-weight: 600;
     width: 175px;
     align-items: center;
@@ -98,9 +100,8 @@
     padding: 8px;
     text-align: left;
     vertical-align: top;
+    border-top: 1px solid #DCDEDE;
     border-bottom: 1px solid #DCDEDE;
-    border-left: 1px solid #DCDEDE;
-    border-right: 1px solid #DCDEDE;
     width: 175px;
     align-items: center;
     justify-content: center;
@@ -146,7 +147,7 @@
     justify-content: center;
     overflow: hidden;
     white-space: nowrap;
-    background-color: rgb(255, 214, 214) !important;
+    /* background-color: rgb(255, 214, 214) !important; */
 }
 
 .editIconsContainer {
@@ -168,4 +169,15 @@
 .columnSelectionContainer
 {
     margin: 20px 0px;
+}
+
+.tableIcons {
+    display: inline-block;
+    margin: 0px 5px;
+    padding: 7px;
+    border-radius: 5px;
+}
+
+.tableIconsActive {
+    background-color: #c7c7c7;
 }

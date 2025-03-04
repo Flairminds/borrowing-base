@@ -46,7 +46,8 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 					baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
 					cardData: result?.card_data && result.card_data[0],
 					infoId: row.id,
-					otherInfo: result.other_info
+					otherInfo: result.other_info,
+					fundType: result?.fund_type
 				});
 			setPreviewPageId(row.id);
 			setPreviewFundType(row.fund);
@@ -88,6 +89,23 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 									{index + 1}. {file.file_name + file.extension}
 								</div>
 							))}
+						</div>
+					)
+				};
+			}
+			if (col.key === 'extraction_status') {
+				return {
+					...col,
+					render: (value, row) => (
+						<div>
+							{row.extraction_status == 'completed' ?
+								<span style={{display: 'inline-block', backgroundColor: 'green', padding: '3px', borderRadius: '8px', color: 'white'}}>
+									{row.extraction_status}
+								</span> :
+								<span style={{display: 'inline-block', backgroundColor: 'red', padding: '3px', borderRadius: '8px', color: 'white'}}>
+									{row.extraction_status}
+								</span>
+							}
 						</div>
 					)
 				};

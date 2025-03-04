@@ -292,7 +292,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             
             
             # update security mapping table
-            helper_functions.update_security_mapping(engine)
+            # helper_functions.update_security_mapping(engine)
 
             # if new_source_file:
             # if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
@@ -1197,15 +1197,15 @@ def add_base_data_other_info(
     ):
     try:
         existing_record = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).first()
-        extraction_info = ExtractedBaseDataInfo.query.filter_by(id=extraction_info_id).first()
-        company_id = extraction_info.company_id
 
         if existing_record:
             existing_record.determination_date = determination_date
             existing_record.fund_type = fund_type
             existing_record.other_info_list = other_data
-            existing_record.company_id = company_id
+            existing_record.company_id = 1
         else:
+            extraction_info = ExtractedBaseDataInfo.query.filter_by(id=extraction_info_id).first()
+            company_id = extraction_info.company_id
             base_data_other_info =  BaseDataOtherInfo(
                 extraction_info_id = extraction_info_id,
                 determination_date = determination_date,
@@ -1367,34 +1367,34 @@ def get_unmapped_pflt_sec(cash_file_security):
 def get_cash_sec(security_type):
     engine = db.get_engine()
     with engine.connect() as connection:
-        all_securities = pd.DataFrame(connection.execute(text('''select id, soi_name, master_comp_security_name, family_name, security_type, cashfile_security_name from pflt_security_mapping where company_id = 1 order by soi_name ASC''')).fetchall())
+        all_securities = pd.DataFrame(connection.execute(text('''select id, soi_name, master_comp_security_name, family_name, security_type, cashfile_security_name from pflt_security_mapping where company_id = 1 order by cashfile_security_name, master_comp_security_name ASC''')).fetchall())
         unmapped_securities = pd.DataFrame(connection.execute(text('''select
             distinct "Security/Facility Name" as cashfile_securities,
             "Security ID" as "security_id",
+            "LoanX ID" as "loanx_id",
             "Issuer/Borrower Name" as "issuer_borrower_name",
             sum("P. Lot Current Par Amount (Deal Currency)"::float) as "par_amout_deal",
             "Facility Category Desc" as facility_category_desc
         from sf_sheet_us_bank_holdings pubh
         left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name"
         where psm.id is null
-        group by "Security/Facility Name", "Security ID", "Issuer/Borrower Name", "Facility Category Desc"''')).fetchall())
+        group by "Security/Facility Name", "Security ID", "LoanX ID", "Issuer/Borrower Name", "Facility Category Desc"''')).fetchall())
  
     unammped_securities_count = unmapped_securities.shape[0]
     all_securities_count = all_securities.shape[0]
  
     if security_type == "all":
         securities = all_securities
-        columns = [
-            {
+        columns = [{
                 'key': "soi_name",
                 'label': "SOI Name",
                 'isEditable': False,
                 'isRequired': True
             }, {
                 'key': "master_comp_security_name",
-                'label': "Security Name",
+                'label': "Security Name [Mastercomp file -> SOI Mapping]",
                 'isEditable': False
-            },  {
+            }, {
                 'key': "family_name",
                 'label': "Family Name",
                 'isEditable': True
@@ -1404,7 +1404,7 @@ def get_cash_sec(security_type):
                 'isEditable': False
             }, {
                 'key': "cashfile_security_name",
-                'label': "Security/Facility Name",
+                'label': "Security/Facility Name [Cashfile -> US Bank Holdings]",
                 'isEditable': True
             }
         ]
@@ -1414,7 +1414,8 @@ def get_cash_sec(security_type):
         securities = unmapped_securities
         columns = [
             {"key": "security_id", "label": "Security ID", 'isEditable': False, 'isRequired': True},
-            {"key": "cashfile_securities", "label": "Security/Facility Name", 'isEditable': False, 'isRequired': True},
+            {"key": "loanx_id", "label": "LoanX ID", 'isEditable': False, 'isRequired': True},
+            {"key": "cashfile_securities", "label": "Security/Facility Name [Cashfile -> US Bank Holdings]", 'isEditable': False, 'isRequired': True},
             {"key": "issuer_borrower_name", "label": "Issuer/Borrower Name", 'isEditable': False, 'isRequired': True},
             {"key": "par_amout_deal", "label": "P. Lot Current Par Amount (Deal Currency)", 'isEditable': False, 'isRequired': True},
             {"key": "facility_category_desc", "label": "Facility Category Desc", 'isEditable': False, 'isRequired': True}

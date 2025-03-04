@@ -36,7 +36,7 @@ export const ExportAssetFileModal = ({isOpen, setIsOpen, updateAssetTableData, s
 		const ws = XLSX.utils.json_to_sheet(excelFileData);
 
 		const wb = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+		XLSX.utils.book_append_sheet(wb, ws, "CLO Data");
 
 		const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
 		const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
@@ -51,17 +51,17 @@ export const ExportAssetFileModal = ({isOpen, setIsOpen, updateAssetTableData, s
 	}, [isOpen]);
 
 	return (
-		<Modal open={isOpen} onCancel={handleCancel} footer={null} width={"80%"}>
+		<Modal open={isOpen} onCancel={handleCancel} footer={null} width={"90%"}>
 			<div className={styles.popupTitle}>
 				Select columns for export
 			</div>
 			<div className={styles.columnsDisplayContainer}>
-				{columnsData?.map((column) => {
+				{columnsData && columnsData.length > 0 && [...columnsData]?.sort((a, b) => a.label < b.label ? -1 : 1).map((column) => {
 					const isselected = selectedColumns?.filter(el => el.label == column.label).length > 0;
 					return (
 						<div key={column.label} className={styles.columnItem}>
 							<input type="checkbox" id={column.key} name={column.key} value={isselected} checked={isselected} onClick={(e) => handleCheckboxClick(e, column)} />
-							<label htmlFor={column.key}>{column.label}</label>
+							<label htmlFor={column.key} style={{display: 'inline-block'}}>{column.label}</label>
 						</div>
 					);
 				})}
