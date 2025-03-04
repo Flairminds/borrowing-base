@@ -325,12 +325,15 @@ def base_data_other_info():
         fund_type = req_body.get("fund_type")
         other_data = req_body.get("other_data")
 
-        service_response = diService.add_base_data_other_info(
-            extraction_info_id,
-            determination_date,
-            fund_type, 
-            other_data
-        )
+        if extraction_info_id:
+            service_response = diService.add_base_data_other_info(
+                extraction_info_id,
+                determination_date,
+                fund_type, 
+                other_data
+            )
+        else:
+            return HTTPResponse.error(message="extraction_info_id is missing")
 
         if(service_response["success"]):
             return HTTPResponse.success(message=service_response.get("message"))

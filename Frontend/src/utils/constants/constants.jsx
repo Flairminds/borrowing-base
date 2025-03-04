@@ -215,7 +215,8 @@ export const PCOFData = {
 			{
 				name: "percent",
 				label: "Percent",
-				type: "text"
+				type: "text",
+				unit: "percent"
 			}
 		]
 	},
@@ -229,12 +230,14 @@ export const PCOFData = {
 			{
 				name: "unquoted",
 				label: "Unquoted",
-				type: "text"
+				type: "text",
+				unit: "percent"
 			},
 			{
 				name: "quoted",
 				label: "Quoted",
-				type: "text"
+				type: "text",
+				unit: "percent"
 			}
 		]
 	},
@@ -248,7 +251,8 @@ export const PCOFData = {
 			{
 				name: "advance_rate",
 				label: "Advance Rate",
-				type: "text"
+				type: "text",
+				unit: "percent"
 			}
 		]
 	},
@@ -267,7 +271,8 @@ export const PCOFData = {
 			{
 				name: "concentration_limit",
 				label: "Concentration Limit",
-				type: "text"
+				type: "text",
+				unit: "percent"
 			}
 		]
 	},
@@ -306,27 +311,32 @@ export const PCOFData = {
 			{
 				name: "ltv",
 				label: "LTV",
-				type: "text"
+				type: "text",
+				unit: "percent"
 			},
 			{
 				name: "concentration_test_threshold_1",
 				label: "Concentration Test Threshold 1",
-				type: "text"
+				type: "text",
+				unit: "percent"
 			},
 			{
 				name: "concentration_test_threshold_2",
 				label: "Concentration Test Threshold 2",
-				type: "text"
+				type: "text",
+				unit: "percent"
 			},
 			{
 				name: "threshold_1_advance_rate",
 				label: "Threshold 1 Advance Rate",
-				type: "text"
+				type: "text",
+				unit: "percent"
 			},
 			{
 				name: "threshold_2_advance_rate",
 				label: "Threshold 2 Advance Rate",
-				type: "text"
+				type: "text",
+				unit: "percent"
 			}
 		]
 	}

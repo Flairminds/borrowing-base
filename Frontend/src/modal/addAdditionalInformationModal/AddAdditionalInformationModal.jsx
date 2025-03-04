@@ -98,12 +98,39 @@ export const AddAdditionalInformationModal = (
 		setAddType("add");
 	};
 
-	const handleSubmit = async (values) => {
+	const generateBaseData = async (e) => {
+		// e.preventDefault();
+		setTriggerBBCalculation(true);
+		try {
+			let run = false;
+			if (baseFilePreviewData?.cardData['Unmapped Securities'] > 0) {
+				if (confirm('The calculation will be inaccurate due to some unmapped securities. Do you want to proceed?')) {
+					run = true;
+				}
+			} else {
+				run = true;
+			}
+			if (run) {
+				const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
+				const detail = response?.data;
+				showToast('success', detail?.message);
+			}
+			setTriggerBBCalculation(false);
+			return;
+		} catch (error) {
+			setTriggerBBCalculation(false);
+			showToast('error', error.message);
+		}
+	};
+
+	const handleSubmit = async (isTriggerCalled) => {
 		const extractionInfoId = dataId;
+		let values = form.getFieldsValue();
+
 		try {
 			let otherData = {};
 			if (previewFundType === "PCOF") {
-				otherData = {
+				values = {
 					...values,
 					"availability_borrower": {
 						"borrower": values.borrower,
@@ -126,16 +153,66 @@ export const AddAdditionalInformationModal = (
 						"trailing_12-month_ebitda": values["trailing_12-month_ebitda"],
 						"trailing_24-month_ebitda": values["trailing_24-month_ebitda"],
 						"warehouse_first_lien_leverage_cut-off": values["warehouse_first_lien_leverage_cut-off"]
-					},
+					}
+				};
+				Object.keys(values).forEach((key) => {
+					if (PCOFData[key]) {
+						(PCOFData[key].Column || PCOFData[key].Header)?.forEach((item) => {
+							if (item?.unit === "percent") {
+								if (Array.isArray(values[key])) {
+									values[key].forEach((ele) => {
+										Object.keys(ele).forEach((element) => {
+											if (element === item.name) {
+												if (ele[element] !== "n/a" && `${ele[element]}`.includes("%")) {
+													ele[element] = parseFloat(
+														(parseFloat(ele[element].replace("%", "")) / 100).toFixed(2)
+													);
+												}
+											}
+										});
+									});
+								}
+							}
+						});
+					}
+				});
+
+				otherData = {
+					...values,
 					"column_info": PCOF_COLUMNS_NAME
 				};
 			} else if (previewFundType === "PFLT") {
-				otherData = {
+				values = {
+					...values,
 					"other_sheet": values["other_sheet"],
 					"input": {
-						"minimum_equity_amount_floor": `$${values["minimum_equity_amount_floor"]}`,
+						"minimum_equity_amount_floor": `${values["minimum_equity_amount_floor"]}`,
 						"determination_date": values.determination_date
-					},
+					}
+				};
+				Object.keys(values).forEach((key) => {
+					if (PFLTData[key]) {
+						(PFLTData[key].Column || PFLTData[key].Header)?.forEach((item) => {
+							if (item?.unit === "percent") {
+								if (Array.isArray(values[key])) {
+									values[key].forEach((ele) => {
+										Object.keys(ele).forEach((element) => {
+											if (element === item.name) {
+												if (ele[element] !== "n/a" && `${ele[element]}`.includes("%")) {
+													ele[element] = parseFloat(
+														(parseFloat(ele[element].replace("%", "")) / 100).toFixed(2)
+													);
+												}
+											}
+										});
+									});
+								}
+							}
+						});
+					}
+				});
+				otherData = {
+					...values,
 					"column_info": PFLT_COLUMNS_NAME
 				};
 			}
@@ -154,6 +231,10 @@ export const AddAdditionalInformationModal = (
 				onClose();
 			}
 			await handleBaseDataPreview();
+
+			if (isTriggerCalled && response["success"]) {
+				generateBaseData();
+			}
 		} catch (error) {
 			const errorMessage = error.response?.message || "Error: Failed to submit form data";
 			console.error(error);
@@ -270,32 +351,6 @@ export const AddAdditionalInformationModal = (
 			setAddType("add");
 		};
 		reader.readAsArrayBuffer(file);
-	};
-
-	const generateBaseData = async (e) => {
-		// e.preventDefault();
-		setTriggerBBCalculation(true);
-		form.submit();
-		try {
-			let run = false;
-			if (baseFilePreviewData?.cardData['Unmapped Securities'] > 0) {
-				if (confirm('The calculation will be inaccurate due to some unmapped securities. Do you want to proceed?')) {
-					run = true;
-				}
-			} else {
-				run = true;
-			}
-			if (run) {
-				const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
-				const detail = response?.data;
-				showToast('success', detail?.message);
-			}
-			setTriggerBBCalculation(false);
-			return;
-		} catch (error) {
-			setTriggerBBCalculation(false);
-			showToast('error', error.message);
-		}
 	};
 
 	const exportSample = () => {
@@ -465,8 +520,8 @@ export const AddAdditionalInformationModal = (
 										)}
 
 										<div className={styles.buttonContainer}>
-											<CustomButton isFilled={true} text="Save" onClick={() => form.submit()} />
-											<CustomButton isFilled={true} onClick={(e) => generateBaseData(e)} text={triggerBBCalculation ? '...Calculating' : 'Save & Trigger'} />
+											<CustomButton isFilled={true} text="Save" onClick={() => handleSubmit(false)} />
+											<CustomButton isFilled={true} onClick={() => handleSubmit(true)} text={triggerBBCalculation ? '...Calculating' : 'Save & Trigger'} />
 											<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
 										</div>
 									</>
