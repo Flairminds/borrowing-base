@@ -155,3 +155,7 @@ export const uploadAddMoreSecFile = (file, dataId, fundType, reportDate) => {
 	});
 };
 
+export const getLoanTypeMappingData = () => {
+	const mappingDataRes = axios.get(`${ApiURL}/mapping/loan_type`);
+	return mappingDataRes;
+};
