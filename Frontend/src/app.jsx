@@ -14,6 +14,7 @@ import { ConcentrationTestMaster } from './pages/testMaster/ConcentrationTestMas
 import { landingPageData } from './services/api';
 import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
 import { SecurityMappingPage } from './pages/securityMappingPage/SecurityMappingPage';
+import { ConfigurationPage } from './pages/configurationPage/ConfigurationPage';
 
 
 
@@ -137,6 +138,8 @@ export function App() {
 						}
 					/>
 					<Route path='/security-mapping' element={<SecurityMappingPage />} />
+					<Route path='/configuration' element={<ConfigurationPage />} />
+
 					<Route path='/securities-mapping' element={<SecurityMapping />} />
 				</Route>
 			</Routes>

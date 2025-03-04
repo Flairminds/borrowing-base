@@ -140,3 +140,9 @@ export const getProbableSecuritiesData = (cashSecurity) => {
 	const fileListResponse = axios.post(`${ApiURL}/data_ingestion/get_unmapped_pflt_sec`, payload);
 	return fileListResponse;
 };
+
+export const getLoanTypeMappingData = () => {
+	const mappingDataRes = axios.get(`${ApiURL}/mapping/loan_type`);
+	return mappingDataRes;
+};
+
