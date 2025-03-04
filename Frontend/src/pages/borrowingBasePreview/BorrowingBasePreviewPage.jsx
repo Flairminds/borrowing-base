@@ -8,24 +8,28 @@ import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api'
 import { editBaseData, getBaseFilePreviewData } from '../../services/dataIngestionApi';
 import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
 import { filterPreviewTable } from '../../utils/helperFunctions/filterPreviewTable';
+import { fmtDisplayVal } from '../../utils/helperFunctions/formatDisplayData';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 
 export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType}) => {
 	const navigate = useNavigate();
+	// const { infoId } = useParams();
 	const [mapping, setMapping] = useState({});
 	const [cellDetail, setCellDetail] = useState({});
 	const [isAddFieldModalOpen, setIsAddFieldModalOpen] = useState(false);
-	const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
+	// const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
 	const [obligorFliteredValue, setObligorFliteredValue] = useState([]);
 	const [securityFilteredValue, setSecurityFilteredValue] = useState([]);
 	const [filteredData, setFilteredData] = useState(baseFilePreviewData?.baseData?.data);
 
 	const [selectedFiles, setSelectedFiles] = useState([]);
+	// console.log("infoId", infoId);
 
 	useEffect(() => {
 		let col = [];
 		if (!baseFilePreviewData.reportDate) {
+			// handleBaseDataPreview();
 			showToast('info', 'No report date selected. Redirecting...');
 			setTimeout(() => {
 				navigate('/base-data-list');
@@ -141,31 +145,6 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		}
 	};
 
-	const generateBaseData = async (e) => {
-		// e.preventDefault();
-		setTriggerBBCalculation(true);
-		try {
-			let run = false;
-			if (baseFilePreviewData?.cardData['Unmapped Securities'] > 0) {
-				if (confirm('The calculation will be inaccurate due to some unmapped securities. Do you want to proceed?')) {
-					run = true;
-				}
-			} else {
-				run = true;
-			}
-			if (run) {
-				const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
-				const detail = response?.data;
-				showToast('success', detail?.message);
-			}
-			setTriggerBBCalculation(false);
-			return;
-		} catch (error) {
-			setTriggerBBCalculation(false);
-			showToast('error', error.message);
-		}
-	};
-
 	// const filterData = async(cardTitle) => {
 	// 	if (cardTitle == 'Unmapped Securities') {
 	// 		const temp = [...baseFilePreviewData?.baseData?.data];
@@ -192,6 +171,20 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		setFilteredData(securityFilterData);
 	};
 
+	const filterSelections = {
+		'PFLT': [{
+			placeholder: "Filter by Obligor Name(s)",
+			onChange: handleObligorChange,
+			options: baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'obligor_name'),
+			value: obligorFliteredValue
+		}, {
+			placeholder: "Filter by Security Name(s)",
+			onChange: handleSecurityChange,
+			options: baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'security_name'),
+			value: securityFilteredValue
+		}]
+	};
+
 
 	return (
 		<div className={styles.previewPage}>
@@ -201,39 +194,16 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						<div className={styles.cardContainer}>
 							{baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
 								<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/security-mapping') : () => {}}>
-									<div><b>{cardTitle}</b></div>
-									<div className={styles.cardTitle}>{baseFilePreviewData?.cardData[cardTitle]}</div>
+									<div>{cardTitle}</div>
+									<div className={styles.cardTitle}><b>{fmtDisplayVal(baseFilePreviewData?.cardData[cardTitle], 0)}</b></div>
 								</div>
 							))}
 						</div>
 					</div>
 					<div>
-						<button onClick={(e) => generateBaseData(e)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px' }}>{triggerBBCalculation ? '...Calculating' : 'Trigger BB Calculation'}</button>
-						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Add Other Info</button>
+						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Trigger Calculation</button>
 					</div>
 				</div>
-				{/* {baseFilePreviewData.fundType == 'PFLT' && */}
-				<div>
-					<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: '600px', gap: '16px', padding: '5px' }}>
-						<Select
-							mode="multiple"
-							allowClear
-							style={{flex: 1}}
-							placeholder="Filter by Obligor Name(s)"
-							onChange={handleObligorChange}
-							options={baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'obligor_name')}
-						/>
-						<Select
-							mode="multiple"
-							allowClear
-							style={{flex: 1}}
-							placeholder="Filter by Security Name(s)"
-							onChange={handleSecurityChange}
-							options={baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'security_name')}
-						/>
-					</div>
-				</div>
-				{/* } */}
 				<div>
 					<DynamicTableComponents
 						data={filteredData}
@@ -247,6 +217,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						cellDetail={cellDetail}
 						refreshDataFunction={handleBaseDataPreview}
 						previewFundType={previewFundType}
+						filterSelections={filterSelections[baseFilePreviewData.fundType]}
 					/>
 				</div>
 			</div>
@@ -260,6 +231,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				previewFundType={previewFundType}
 				selectedFiles={selectedFiles}
 				setSelectedFiles={setSelectedFiles}
+				baseFilePreviewData= {baseFilePreviewData}
+				previewPageId= {previewPageId}
 			/>
 		</div>
 		// <div>

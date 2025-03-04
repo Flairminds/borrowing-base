@@ -25,6 +25,7 @@ from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, 
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
+from source.services.diServices.PCOF import BBTrigger as PCOF_BBTrigger
 from source.services.diServices import ColumnSheetMap
 from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
@@ -305,9 +306,9 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                 else:
                     raise Exception(service_response.get("message"))
             else:
-                if cash_file_details == None or master_comp_file_details == None:
+                if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
                     raise Exception('Proper files not selected.')
-                base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
+                base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details)
                 extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
             # else:
                 # extracted_base_data_info.status = "repeated"
@@ -317,6 +318,16 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             end_time = datetime.now()
             time_difference = (end_time - start_time).total_seconds() * 10**3
             print('successfully stored base data')
+            existing_record = BaseDataOtherInfo.query.filter_by(fund_type=fund_type).order_by(BaseDataOtherInfo.created_at.desc()).first()
+            if existing_record:
+                determination_date = existing_record.determination_date
+                other_data = existing_record.other_info_list
+                add_base_data_other_info(
+                    extracted_base_data_info.id,
+                    determination_date,
+                    fund_type, 
+                    other_data
+                )
         except Exception as e:
             Log.func_error(e)
             extracted_base_data_info.status = "failed"
@@ -344,29 +355,29 @@ def get_sheet_data(blob_data, sheet_name, output_file_name, args):
         return {"success_status": True, "error": None, "dataframe": new_df}
     except Exception as e:
         return {"success_status": False, "error": str(e), "dataframe": None}
+    
+def get_file_type(sheet_name_list):
+    cashFileSheetList = {"US Bank Holdings", "Client Holdings"} 
+    masterCompSheetList = {"Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping"} 
+    marketValueSheetList = {"Sheet1"}
+
+    if cashFileSheetList.issubset(set(sheet_name_list)):  
+        return "cashfile", list(cashFileSheetList)
+    elif masterCompSheetList.issubset(set(sheet_name_list)): 
+        return "master_comp", list(masterCompSheetList)
+    elif marketValueSheetList.issubset(set(sheet_name_list)): 
+        return "market_book_file", list(marketValueSheetList)
 
 def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_column_mapper, args):
     try:
         extrcted_df = {}
-        cashFileSheet = ["US Bank Holdings", "Client Holdings"]
-        masterCompSheet = ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping"]
-        marketBookSheets = ["MarketBook"]
 
         uploaded_file.seek(0)
         sheet_df_map = pd.read_excel(uploaded_file, sheet_name=None)
 
         sheet_name_list = list(sheet_df_map.keys())
 
-        for sheet_name in sheet_name_list:
-            if sheet_name in cashFileSheet:
-                required_sheets = cashFileSheet
-                file_type = "cashfile"
-            elif sheet_name in masterCompSheet:
-                required_sheets = masterCompSheet
-                file_type = "master_comp"
-            elif sheet_name in marketBookSheets:
-                required_sheets = marketBookSheets
-                file_type = "market_book_file"
+        file_type, required_sheets = get_file_type(sheet_name_list)
 
         for sheet in required_sheets:
             column_level_map = sheet_column_mapper[sheet]
@@ -465,6 +476,7 @@ def get_base_data(info_id):
         BaseDataMappingColumnInfo.is_selected
     ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
 
+
     card_data = []
 
     engine = db.get_engine()
@@ -489,7 +501,8 @@ def get_base_data(info_id):
             "Total Commitment": numerize.numerize(total_commitment, 2),
             "Total Outstanding Balance": numerize.numerize(total_outstanding_balance, 2),
             "Unmapped Securities": unmapped_records,
-            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d")
+            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
+            "Fund Type": base_data_info.fund_type
         }]
     else:
         base_data = PcofBaseData.query.filter_by(base_data_info_id = info_id).order_by(PcofBaseData.id).all()
@@ -497,18 +510,19 @@ def get_base_data(info_id):
         with engine.connect() as connection:
             result = connection.execute(text('''
                 select count(distinct pbd.issuer) as no_of_issuers, 
-                        count(distinct pbd.investment_name) as no_of_investments 
+                        count(distinct pbd.investment_name) as no_of_investments, 
                         --sum(pbd.total_commitment::float) as total_commitment, 
                         --sum(pbd.outstanding_principal::float) as total_outstanding_balance,
-                        --(select count(distinct obligor_name) from pflt_base_data pbd where --security_name is null and pbd.base_data_info_id = :info_id) as unmapped_records
+                        (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
                 from pcof_base_data pbd
                 where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
             final_result = result[0]
-        no_of_issuers, no_of_investments = final_result
+        no_of_issuers, no_of_investments, unmapped_records = final_result
         card_data = [{
             "No of Issuers": no_of_issuers,
             "No of Investments": no_of_investments,
-            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d")
+            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
+            "Unmapped Securities": unmapped_records
         }]
 
     temp = []
@@ -696,11 +710,11 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_t
     if extracted_base_data_info_id:
         extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(id = extracted_base_data_info_id)
     else:
-        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.extraction_date.desc())
+        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.report_date.desc())
     if fund_type:
-        extracted_base_datas = extracted_base_datas.filter_by(fund_type=fund_type)
+        extracted_base_datas = extracted_base_datas.filter_by(fund_type=fund_type).order_by(ExtractedBaseDataInfo.report_date.desc())
         
-    extracted_base_datas = extracted_base_datas.order_by(ExtractedBaseDataInfo.extraction_date.desc()).all()
+    extracted_base_datas = extracted_base_datas.order_by(ExtractedBaseDataInfo.report_date.desc()).all()
     
     extraction_result = {
         "columns": [{
@@ -906,6 +920,10 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
 
 def trigger_bb_calculation(bdi_id):
     try:
+        extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(id=bdi_id).first()
+        if extracted_base_data_info.fund_type == 'PCOF':
+            pcof_bb_trigger_response = PCOF_BBTrigger.trigger_pcof_bb(bdi_id)
+            return pcof_bb_trigger_response
         engine = db.get_engine()
         with engine.connect() as connection:
             df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
@@ -971,10 +989,19 @@ def trigger_bb_calculation(bdi_id):
         df.to_excel(writer, sheet_name="Loan List", index=False, header=True)
         writer.save()
 
+        base_data_other_info = BaseDataOtherInfo.query.filter_by(extraction_info_id=bdi_id).first()
 
-        data = {'INPUTS': ['Determination Date', 'Minimum Equity Amount Floor'], '': ['', ''], 'Values': ['12-31-24', '30000000']}
-        data = pd.DataFrame.from_dict(data)
-        xl_df_map['Inputs'] = data
+        inputs_sheet_data = [{
+                "INPUTS": "Determination Date",
+                "Values": base_data_other_info.determination_date
+            }, {
+                "INPUTS": "Minimum Equity Amount Floor",
+                "Values": base_data_other_info.other_info_list["input"].get('minimum_equity_amount_floor')
+            }
+        ]
+        inputs_df = pd.DataFrame(inputs_sheet_data)
+        
+        xl_df_map['Inputs'] = inputs_df
 
         # book = load_workbook(file_name)
         # writer = pd.ExcelWriter(file_name, engine="openpyxl")
@@ -982,9 +1009,16 @@ def trigger_bb_calculation(bdi_id):
         # data.to_excel(writer, sheet_name="Inputs", index=False, header=True)
         # writer.save()
 
-        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rate': [1.000000, 0.695230, 0.618820, 1.035400]}
-        data = pd.DataFrame.from_dict(data)
-        xl_df_map['Exchange Rates'] = data
+        
+        # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rate': [1.000000, 0.695230, 0.618820, 1.035400]}
+        # data = pd.DataFrame.from_dict(data)
+        exchange_rates_data = [
+            {
+                'Currency': input_data.get('currency'), 
+                'Exchange Rate': input_data.get('exchange_rates')
+            } for input_data in base_data_other_info.other_info_list.get('other_sheet')]
+        exchange_rates_df = pd.DataFrame(exchange_rates_data)
+        xl_df_map['Exchange Rates'] = exchange_rates_df
 
         # book = load_workbook(file_name)
         # writer = pd.ExcelWriter(file_name, engine="openpyxl")
@@ -992,9 +1026,21 @@ def trigger_bb_calculation(bdi_id):
         # data.to_excel(writer, sheet_name="Exchange Rates", index=False, header=True)
         # writer.save()
 
-        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': [1.000000, 0.695230, 0.618820, 1.035400], 'Cash - Current & PreBorrowing': [21455041.84, 216583.15, 0, 0], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': [0, 0, 0, 0], 'Additional Expences 2': [0, 0, 0, 0], 'Additional Expences 3': [0, 0, 0, 0]}
-        data = pd.DataFrame.from_dict(data)
-        xl_df_map['Cash Balance Projections'] = data
+        cash_balance_projection_data = [
+            {
+                'Currency': input_data.get('currency'), 
+                'Exchange Rates': input_data.get('exchange_rates'),
+                'Cash - Current & PreBorrowing': input_data.get('Cash - Current & PreBorrowing'),
+                'Borrowing': input_data.get('borrowing'),
+                'Additional Expences 1': input_data.get('additional_expenses_1'),
+                'Additional Expences 2': input_data.get('additional_expenses_2'),
+                'Additional Expences 3': input_data.get('additional_expenses_3')
+            } for input_data in base_data_other_info.other_info_list.get('other_sheet')]
+        cash_balance_projection_df = pd.DataFrame(cash_balance_projection_data)
+
+        # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': [1.000000, 0.695230, 0.618820, 1.035400], 'Cash - Current & PreBorrowing': [21455041.84, 216583.15, 0, 0], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': [0, 0, 0, 0], 'Additional Expences 2': [0, 0, 0, 0], 'Additional Expences 3': [0, 0, 0, 0]}
+        # data = pd.DataFrame.from_dict(data)
+        xl_df_map['Cash Balance Projections'] = cash_balance_projection_df
 
         # book = load_workbook(file_name)
         # writer = pd.ExcelWriter(file_name, engine="openpyxl")
@@ -1002,9 +1048,16 @@ def trigger_bb_calculation(bdi_id):
         # data.to_excel(writer, sheet_name="Cash Balance Projections", index=False, header=True)
         # writer.save()
 
-        data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Current Credit Facility Balance': [442400000, 2000000, 0, 0]}
-        data = pd.DataFrame.from_dict(data)
-        xl_df_map['Credit Balance Projection'] = data
+        # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Current Credit Facility Balance': [442400000, 2000000, 0, 0]}
+        # data = pd.DataFrame.from_dict(data)
+
+        credit_balance_projection_data = [
+            {
+                'Currency': input_data.get('currency'), 
+                'Current Credit Facility Balance': input_data.get('current_credit_facility_balance')
+            } for input_data in base_data_other_info.other_info_list.get('other_sheet')]
+        credit_balance_projection_df = pd.DataFrame(credit_balance_projection_data)
+        xl_df_map['Credit Balance Projection'] = credit_balance_projection_df
 
         # book = load_workbook(file_name)
         # writer = pd.ExcelWriter(file_name, engine="openpyxl")
@@ -1054,7 +1107,7 @@ def trigger_bb_calculation(bdi_id):
             file_name='Generated Data ' + dt_string,
             included_excluded_assets_map=json.dumps(included_excluded_assets_map),
         )
-
+        print('Generated Data ' + dt_string)
         db.session.add(base_data_file)
         db.session.commit()
 
@@ -1069,11 +1122,15 @@ def trigger_bb_calculation(bdi_id):
         selected_assets = included_excluded_assets_map['included_assets']
         wb2.close()
         writer.close()
+        del writer
+        del wb2
         os.remove(file_name)
-        return pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
+        bb_response = pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
+        return ServiceResponse.success(message="Successfully processed. Visit the Borrowing Base module to check the data.", data=bb_response)
 
     except Exception as e:
         print(e)
+        return ServiceResponse.error(message="Something went wring while triggering calculation")
 
 def get_archived_file_list():
 
@@ -1132,101 +1189,31 @@ def update_archive(list_of_ids, to_archive):
         Log.func_error(e=e)
         return ServiceResponse.error(message="Could not update the files.", status_code = 500)
 
-def pflt_add_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor, fund_type, other_data):
-    try:
-        table_list = []
-
-        existing_record  = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).first()
-    
-        for value in other_data:
-            table_list.append ({
-                "currency": value.get("currency"),
-                "exchange_rates": value.get("exchange_rates"),
-                "cash_current_and_preborrowing": value.get("cash_current_and_preborrowing"),
-                "borrowing": value.get("borrowing"),
-                "additional_expenses_1": value.get("additional_expenses_1"),
-                "additional_expenses_2": value.get("additional_expenses_2"),
-                "additional_expenses_3": value.get("additional_expenses_3"),
-                "current_credit_facility_balance": value.get("current_credit_facility_balance")
-            })
-
-        if existing_record:
-            existing_record.determination_date = determination_date
-            existing_record.fund_type = fund_type
-            existing_record.other_info_list = {
-                "minimum_equity_amount_floor": minimum_equity_amount_floor,
-                "table_list": table_list
-            }
-        else:
-            base_data_other_info =  BaseDataOtherInfo(
-                extraction_info_id = extraction_info_id,
-                determination_date = determination_date,
-                fund_type = fund_type,
-                other_info_list = {
-                    "minimum_equity_amount_floor": minimum_equity_amount_floor,
-                    "table_list": table_list
-                }
-            )
-            db.session.add(base_data_other_info)
-
-        db.session.commit()
-
-        return ServiceResponse.success(message="Data added sucessfully")
-        
-    except Exception as e:
-        Log.func_error(e)
-        return ServiceResponse.error(message="Failed to add")
-def pcof_add_base_data_other_info(
+def add_base_data_other_info(
         extraction_info_id,
         determination_date, 
-        revolving_closing_date, 
-        commitment_period,
-        facility_size,
-        loans_usd,
-        loans_cad, 
         fund_type, 
         other_data
     ):
     try:
-        table_list = []
-
         existing_record = BaseDataOtherInfo.query.filter_by(extraction_info_id=extraction_info_id).first()
-
-        for value in other_data:
-            table_list.append ({
-                "principal_obligations": value.get("principal_obligations"),
-                "currency": value.get("currency"),
-                "amount": value.get("amount"),
-                "spot_rate": value.get("spot_rate"),
-            })
 
         if existing_record:
             existing_record.determination_date = determination_date
             existing_record.fund_type = fund_type
-            existing_record.other_info_list = {
-                "revolving_closing_date": revolving_closing_date,
-                "commitment_period": commitment_period,
-                "facility_size": facility_size,
-                "loans_usd": loans_usd,
-                "loans_cad": loans_cad,
-                "table_list": table_list
-            }
+            existing_record.other_info_list = other_data
+            existing_record.company_id = 1
         else:
+            extraction_info = ExtractedBaseDataInfo.query.filter_by(id=extraction_info_id).first()
+            company_id = extraction_info.company_id
             base_data_other_info =  BaseDataOtherInfo(
                 extraction_info_id = extraction_info_id,
                 determination_date = determination_date,
                 fund_type = fund_type,
-                other_info_list = {
-                    "revolving_closing_date": revolving_closing_date,
-                    "commitment_period": commitment_period,
-                    "facility_size": facility_size,
-                    "loans_usd": loans_usd,
-                    "loans_cad": loans_cad,
-                    "table_list": table_list
-                }
+                other_info_list = other_data,
+                company_id = company_id
             )
             db.session.add(base_data_other_info)
-
         db.session.commit()
 
         return ServiceResponse.success(message="Data added sucessfully")
@@ -1245,24 +1232,12 @@ def get_base_data_other_info(extraction_info_id, fund_type):
         ).filter(BaseDataOtherInfo.extraction_info_id == extraction_info_id).first()
         res = {}
         if other_info:
-            common_fields = {
+            res = {
                 "id": other_info.id,
                 "extraction_info_id": other_info.extraction_info_id,
                 "determination_date": other_info.determination_date,
-                "other_data": other_info.other_info_list["table_list"]
+                "other_data": other_info.other_info_list
             }
-            if fund_type == "PFLT":
-                res = {**common_fields, "minimum_equity_amount_floor": other_info.other_info_list["minimum_equity_amount_floor"]}
-
-            elif fund_type == "PCOF":
-                res = {
-                    **common_fields, 
-                    "revolving_closing_date": other_info.other_info_list["revolving_closing_date"],
-                    "commitment_period": other_info.other_info_list["commitment_period"],
-                    "facility_size": other_info.other_info_list["facility_size"],
-                    "loans_cad": other_info.other_info_list["loans_cad"],
-                    "loans_usd": other_info.other_info_list["loans_usd"]
-                }
 
         return ServiceResponse.success(data = res)
     except Exception as e:
@@ -1392,51 +1367,65 @@ def get_unmapped_pflt_sec(cash_file_security):
 def get_cash_sec(security_type):
     engine = db.get_engine()
     with engine.connect() as connection:
-        all_securities = pd.DataFrame(connection.execute(text('''select 
-            distinct "Security/Facility Name" as cashfile_securities, 
-            "Security ID" as "security_id", 
+        all_securities = pd.DataFrame(connection.execute(text('''select id, soi_name, master_comp_security_name, family_name, security_type, cashfile_security_name from pflt_security_mapping where company_id = 1 order by cashfile_security_name, master_comp_security_name ASC''')).fetchall())
+        unmapped_securities = pd.DataFrame(connection.execute(text('''select
+            distinct "Security/Facility Name" as cashfile_securities,
+            "Security ID" as "security_id",
+            "LoanX ID" as "loanx_id",
             "Issuer/Borrower Name" as "issuer_borrower_name",
             sum("P. Lot Current Par Amount (Deal Currency)"::float) as "par_amout_deal",
             "Facility Category Desc" as facility_category_desc
-        from sf_sheet_us_bank_holdings pubh 
-        left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
-        group by "Security/Facility Name", "Security ID", "Issuer/Borrower Name", "Facility Category Desc"
-        order by "Issuer/Borrower Name" asc''')).fetchall())
-        unmapped_securities = pd.DataFrame(connection.execute(text('''select 
-            distinct "Security/Facility Name" as cashfile_securities, 
-            "Security ID" as "security_id", 
-            "Issuer/Borrower Name" as "issuer_borrower_name",
-            sum("P. Lot Current Par Amount (Deal Currency)"::float) as "par_amout_deal",
-            "Facility Category Desc" as facility_category_desc
-        from sf_sheet_us_bank_holdings pubh 
-        left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name" 
+        from sf_sheet_us_bank_holdings pubh
+        left join pflt_security_mapping psm on psm.cashfile_security_name = pubh."Security/Facility Name"
         where psm.id is null
-        group by "Security/Facility Name", "Security ID", "Issuer/Borrower Name", "Facility Category Desc"''')).fetchall())
-
+        group by "Security/Facility Name", "Security ID", "LoanX ID", "Issuer/Borrower Name", "Facility Category Desc"''')).fetchall())
+ 
     unammped_securities_count = unmapped_securities.shape[0]
     all_securities_count = all_securities.shape[0]
-
+ 
     if security_type == "all":
         securities = all_securities
-    else: 
+        columns = [{
+                'key': "soi_name",
+                'label': "SOI Name",
+                'isEditable': False,
+                'isRequired': True
+            }, {
+                'key': "master_comp_security_name",
+                'label': "Security Name [Mastercomp file -> SOI Mapping]",
+                'isEditable': False
+            }, {
+                'key': "family_name",
+                'label': "Family Name",
+                'isEditable': True
+            }, {
+                'key': "security_type",
+                'label': "Security Type",
+                'isEditable': False
+            }, {
+                'key': "cashfile_security_name",
+                'label': "Security/Facility Name [Cashfile -> US Bank Holdings]",
+                'isEditable': True
+            }
+        ]
+        securities = securities.fillna("")
+        securities_dict = securities.to_dict(orient='records')
+    else:
         securities = unmapped_securities
-
-    columns = [
-        {"key": "security_id", "label": "Security ID", 'isEditable': False, 'isRequired': True},
-        {"key": "cashfile_securities", "label": "Security/Facility Name", 'isEditable': False, 'isRequired': True},
-        {"key": "issuer_borrower_name", "label": "Issuer/Borrower Name", 'isEditable': False, 'isRequired': True},
-        {"key": "par_amout_deal", "label": "P. Lot Current Par Amount (Deal Currency)", 'isEditable': False, 'isRequired': True},
-        {"key": "facility_category_desc", "label": "Facility Category Desc", 'isEditable': False, 'isRequired': True}
-    ]
-
-    securities = securities.fillna("")
-
-
-    securities_dict = securities.to_dict(orient='records')
-    for s in securities_dict:
-        if isinstance(s['par_amout_deal'], (int, float, complex)):
-            s['par_amout_deal'] = numerize.numerize(float(s['par_amout_deal']), 2)
-
+        columns = [
+            {"key": "security_id", "label": "Security ID", 'isEditable': False, 'isRequired': True},
+            {"key": "loanx_id", "label": "LoanX ID", 'isEditable': False, 'isRequired': True},
+            {"key": "cashfile_securities", "label": "Security/Facility Name [Cashfile -> US Bank Holdings]", 'isEditable': False, 'isRequired': True},
+            {"key": "issuer_borrower_name", "label": "Issuer/Borrower Name", 'isEditable': False, 'isRequired': True},
+            {"key": "par_amout_deal", "label": "P. Lot Current Par Amount (Deal Currency)", 'isEditable': False, 'isRequired': True},
+            {"key": "facility_category_desc", "label": "Facility Category Desc", 'isEditable': False, 'isRequired': True}
+        ]
+        securities = securities.fillna("")
+        securities_dict = securities.to_dict(orient='records')
+        for s in securities_dict:
+            if isinstance(s['par_amout_deal'], (int, float, complex)):
+                s['par_amout_deal'] = numerize.numerize(float(s['par_amout_deal']), 2)
+ 
     unmapped_securities_list = {
         "columns": columns,
         "data": securities_dict,
@@ -1444,3 +1433,15 @@ def get_cash_sec(security_type):
         "unmapped_securities_count": unammped_securities_count
     }
     return ServiceResponse.success(data=unmapped_securities_list, message="All Securities")
+
+def add_to_base_data_table(file):
+    try:
+        engine = db.get_engine()
+        df = pd.read_excel(file, engine='openpyxl')
+
+        df.to_sql('pcof_base_data', con=engine, if_exists='append', index=False)
+
+        return ServiceResponse.success(message="Data added succesfully.")
+    
+    except Exception as e:
+        return ServiceResponse.error(message="Something went wrong.")

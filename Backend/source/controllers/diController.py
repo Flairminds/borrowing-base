@@ -284,9 +284,9 @@ def trigger_bb_calculation():
         req_body = flask.request.get_json()
         bdi_id = req_body.get('bdi_id')
         service_response = diService.trigger_bb_calculation(bdi_id)
-        # if not service_response["success"]:
-        #     return HTTPResponse.error(message="Could not get source file data")
-        return HTTPResponse.success(message="Successfully processed. Visit the Borrowing Base module to check the data.", result=[])
+        if not service_response["success"]:
+            return HTTPResponse.error(message=service_response.get("message"))
+        return HTTPResponse.success(message=service_response.get("message"), result=[])
     except Exception as e:
         # Log.func_error(e)
         print("here",e)
@@ -322,31 +322,19 @@ def base_data_other_info():
         req_body = flask.request.get_json()
         extraction_info_id = req_body.get("extraction_info_id")
         determination_date= req_body.get("determination_date")
-        commitment_period = req_body.get("commitment_period")
-        facility_size= req_body.get("facility_size")
-        loans_usd= req_body.get("loans_usd")
-        loans_cad= req_body.get("loans_cad")
         fund_type = req_body.get("fund_type")
         other_data = req_body.get("other_data")
 
-        if(fund_type == "PFLT"):
-            minimum_equity_amount_floor= req_body.get("minimum_equity_amount_floor")
-            service_response = diService.pflt_add_base_data_other_info(extraction_info_id, determination_date, minimum_equity_amount_floor,fund_type, other_data)
-        if(fund_type == "PCOF"):
-            revolving_closing_date= req_body.get("revolving_closing_date")
-            service_response = diService.pcof_add_base_data_other_info(
+        if extraction_info_id:
+            service_response = diService.add_base_data_other_info(
                 extraction_info_id,
                 determination_date,
-                revolving_closing_date, 
-                commitment_period,
-                facility_size,
-                loans_usd,
-                loans_cad,
                 fund_type, 
                 other_data
             )
+        else:
+            return HTTPResponse.error(message="extraction_info_id is missing")
 
-        
         if(service_response["success"]):
             return HTTPResponse.success(message=service_response.get("message"))
 

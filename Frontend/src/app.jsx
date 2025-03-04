@@ -38,6 +38,7 @@ export function App() {
 
 	// const [selectedIds, setSelectedIds] = useState([]);
 	const selectedIds = useRef([]);
+	const selectedSecurities = useRef([]);
 
 	const getLandingPageData = async() => {
 		try {
@@ -126,7 +127,7 @@ export function App() {
 							/>
 						}
 					/>
-					<Route path='/base-data-preview'
+					<Route path='/base-data-preview/:infoId'
 						element={
 							<BorrowingBasePreviewPage
 								baseFilePreviewData={baseFilePreviewData}
@@ -136,7 +137,7 @@ export function App() {
 							/>
 						}
 					/>
-					<Route path='/security-mapping' element={<SecurityMappingPage />} />
+					<Route path='/security-mapping' element={<SecurityMappingPage selectedSecurities={selectedSecurities} />} />
 					<Route path='/securities-mapping' element={<SecurityMapping />} />
 				</Route>
 			</Routes>

@@ -90,7 +90,7 @@ def Portfolio_Effective_Advance_Rate_on_FMV_of_Portfolio(avail, pl_bb_build, res
         avail.loc[len(avail)] = new_dict
 
     except:
-        new_dict = {"A": "Effective Advance Rate on FMV of Portfolio", "B": "N/A"}
+        new_dict = {"A": "Effective Advance Rate on FMV of Portfolio", "B": 0}
         avail.loc[len(avail)] = new_dict
     return avail
 

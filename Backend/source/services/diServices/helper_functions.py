@@ -87,7 +87,11 @@ def store_sheet_data(data_dict):
             print(f"Processing sheet: {sheet_name}")
 
             df = truncate_and_rename_columns(df)
-            table_name = 'sf_sheet' + '_' + sheet_name.lower().replace(" ", "_")
+            if (sheet_name == "Sheet1"):
+                table_name = "sf_sheet_marketbook"
+            else:
+                table_name = 'sf_sheet' + '_' + sheet_name.lower().replace(" ", "_")
+
             with engine.connect() as connection:
                 columns = connection.execute(text(f'''SELECT column_name FROM information_schema.columns WHERE table_schema = 'public' AND table_name = :table_name'''), {'table_name': table_name}).fetchall()
             columns_list = []

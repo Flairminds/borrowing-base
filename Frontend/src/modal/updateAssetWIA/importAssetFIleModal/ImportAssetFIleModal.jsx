@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
 import { CustomButton } from '../../../components/custombutton/CustomButton';
-import { updateAssetDefaultColumnsData } from '../../../utils/constants/constants';
+import { cloWhatIfData, updateAssetDefaultColumnsData } from '../../../utils/constants/constants';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import { getCurrencyNumber, updateDataAfterChange } from '../../../utils/helperFunctions/updateAssetDataChange';
 import styles from './ImportAssetFIleModal.module.css';
@@ -16,7 +16,8 @@ export const ImportAssetFIleModal = (
 		selectedSheetNumber,
 		appliedChanges,
 		setAppliedChanges,
-		setIsButtonDisabled
+		setIsButtonDisabled,
+		fundType
 	}) => {
 
 	const [selectedFiles, setSelectedFiles] = useState([]);
@@ -39,50 +40,85 @@ export const ImportAssetFIleModal = (
 
 	const updateWhatIfSheetData = (excelFileData) => {
 		if (excelFileData.length > 0) {
-
 			let changesArray = [];
 			for (let i = 0; i < excelFileData.length; i++) {
 				const currentEntry = excelFileData[i];
-				let filteredData = updateAssetTableData.table_data[selectedSheetNumber].data?.filter(el => el.Security_Name == currentEntry["Security Name"] && el.Obligor_Name == currentEntry["Obligor Name"]);
+				if (!currentEntry["Obligor Name"]) continue;
+				// let filteredData = updateAssetTableData.table_data[selectedSheetNumber].data?.filter(el => el.Security_Name.toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, "") == currentEntry["Security Name"].toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, "") && el.Obligor_Name.toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, "") == currentEntry["Obligor Name"].toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, ""));
+
+				let filteredData = updateAssetTableData.table_data[selectedSheetNumber].data?.
+					filter((el) => {
+						let isMatch = true;
+						cloWhatIfData[fundType].matchingColumns.forEach((col) => {
+							if (el[col.key].toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, "") != currentEntry[col.label].toLowerCase().replace(/-/g, " ").replace(/,/g, "").replace(/\./g, "")) {
+								isMatch = false;
+							}
+						});
+						return isMatch;
+					});
 				if (filteredData.length <= 0) continue;
 				filteredData = filteredData[0];
 
-				// Update total commitment
-				const updatedCommitment = getCurrencyNumber(currentEntry["Total Commitment (Issue Currency)"]) - getCurrencyNumber(currentEntry["Total Commitment (Issue Currency) CLO"]);
-				const commitmentChanges = {
-					"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
-					"column_name": "Total Commitment (Issue Currency)",
-					"updated_value": `${updatedCommitment}`,
-					"prev_value": filteredData['Total_Commitment_(Issue_Currency)']
-				};
-				changesArray.push(commitmentChanges);
+				if (fundType === "PCOF") {
+					const updatedPar = getCurrencyNumber(filteredData["Investment Par"]) - getCurrencyNumber(currentEntry["Investment Par CLO"]);
+					const commitmentChanges = {
+						"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						"column_name": "Investment Par",
+						"updated_value": `${updatedPar}`,
+						"prev_value": filteredData['Investment_Par']
+					};
+					changesArray.push(commitmentChanges);
+					updateDataAfterChange(
+						updateAssetTableData,
+						filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						'Investment_Par',
+						selectedSheetNumber,
+						updatedPar
+					);
+				} else {
+					// Update total commitment
+					let updatedCommitment = getCurrencyNumber(filteredData['Total_Commitment_(Issue_Currency)']) - getCurrencyNumber(currentEntry["Total Commitment (Issue Currency) CLO"]);
 
-				updateDataAfterChange(
-					updateAssetTableData,
-					filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
-					'Total_Commitment_(Issue_Currency)',
-					selectedSheetNumber,
-					updatedCommitment
-				);
+					if (updatedCommitment < 0) {
+						updatedCommitment = 0;
+					}
 
-				// Update Outstanding principal
-				const updatedOutstanding = getCurrencyNumber(currentEntry["Outstanding Principal Balance (Issue Currency)"]) - getCurrencyNumber(currentEntry["Outstanding Principal Balance (Issue Currency) CLO"]);
+					const commitmentChanges = {
+						"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						"column_name": "Total Commitment (Issue Currency)",
+						"updated_value": `${updatedCommitment}`,
+						"prev_value": filteredData['Total_Commitment_(Issue_Currency)']
+					};
+					changesArray.push(commitmentChanges);
+					updateDataAfterChange(
+						updateAssetTableData,
+						filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						'Total_Commitment_(Issue_Currency)',
+						selectedSheetNumber,
+						updatedCommitment
+					);
+					// Update Outstanding principal
+					let updatedOutstanding = getCurrencyNumber(filteredData["Outstanding_Principal_Balance_(Issue_Currency)"]) - getCurrencyNumber(currentEntry["Outstanding Principal Balance (Issue Currency) CLO"]);
 
-				const outstandingChanges = {
-					"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
-					"column_name": "Outstanding Principal Balance (Issue Currency)",
-					"updated_value": `${updatedOutstanding}`,
-					"prev_value": filteredData['Outstanding_Principal_Balance_(Issue_Currency)']
-				};
-				changesArray.push(outstandingChanges);
+					if (updatedOutstanding < 0) {
+						updatedOutstanding = 0;
+					}
+					const outstandingChanges = {
+						"row_name": filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						"column_name": "Outstanding Principal Balance (Issue Currency)",
+						"updated_value": `${updatedOutstanding}`,
+						"prev_value": filteredData['Outstanding_Principal_Balance_(Issue_Currency)']
+					};
+					changesArray.push(outstandingChanges);
+					updateDataAfterChange(
+						updateAssetTableData,
+						filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
+						'Outstanding_Principal_Balance_(Issue_Currency)',
+						selectedSheetNumber,
+						updatedOutstanding
+					);
 
-				updateDataAfterChange(
-					updateAssetTableData,
-					filteredData[updateAssetDefaultColumnsData[selectedSheetNumber]],
-					'Outstanding_Principal_Balance_(Issue_Currency)',
-					selectedSheetNumber,
-					updatedOutstanding
-				);
+				}
 
 			}
 
@@ -103,9 +139,12 @@ export const ImportAssetFIleModal = (
 			const data = new Uint8Array(event.target.result);
 			const workbook = XLSX.read(data, { type: "array" });
 
-			const sheetName = workbook.SheetNames[0];
+			// const sheetName = workbook.SheetNames[0];
+			const sheetName = 'CLO Data';
 			const sheet = workbook.Sheets[sheetName];
-
+			if (!sheet) {
+				alert("File should have a 'CLO Data' sheet with required data. Please export for template.");
+			}
 			const excelFileData = XLSX.utils.sheet_to_json(sheet);
 			updateWhatIfSheetData(excelFileData);
 		};

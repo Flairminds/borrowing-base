@@ -13,8 +13,10 @@ import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css';
 import { CustomButton } from '../../../components/custombutton/CustomButton';
 import { getUpdateAssetData, updateModifiedAssets, updateSheetValues } from '../../../services/api';
 import { updateAssetDefaultColumnsData, updateAssetModalData } from '../../../utils/constants/constants';
+import { fmtDisplayVal } from '../../../utils/helperFunctions/formatDisplayData';
 import { addAssetAtIndex, deleteAssetAtIndex, duplicateAsset, getLatestPrevValue, updateDataAfterChange } from '../../../utils/helperFunctions/updateAssetDataChange';
 import { AddAssetDetailsModal } from '../addAssetDetailsModal/AddAssetDetailsModal';
+import { ExportAssetFileModal } from '../exportAssetFileModal/ExportAssetFileModal';
 import { ImportAssetFIleModal } from '../importAssetFIleModal/ImportAssetFIleModal';
 import Styles from './UpdateAssetDetailsModal.module.css';
 import {MoreOutlined} from '@ant-design/icons';
@@ -55,6 +57,7 @@ export const UpdateAssetDetailsModal = ({
 	const [showModification, setShowModification] = useState(false);
 	const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 	const [importFilePopup, setImportFilePopup ] = useState(false);
+	const [exportFilePopup, setExportFilePopup] = useState(false);
 
 	useEffect(() => {
 		if (fundType) {
@@ -283,25 +286,26 @@ export const UpdateAssetDetailsModal = ({
 	};
 
 	const handleFileExport = () => {
-		console.info(updateAssetTableData.table_data[selectedSheetNumber]?.data, 'update asset CLO 1');
-		const excelFileData = updateAssetTableData.table_data[selectedSheetNumber]?.data.map((el) => {
-			return {
-				"Security Name": el.Security_Name,
-				"Obligor Name": el.Obligor_Name,
-				"Total Commitment (Issue Currency)": el["Total_Commitment_(Issue_Currency)"],
-				"Outstanding Principal Balance (Issue Currency)": el["Outstanding_Principal_Balance_(Issue_Currency)"],
-				"Total Commitment (Issue Currency) CLO": "0",
-				"Outstanding Principal Balance (Issue Currency) CLO": "0"
-			};
-		});
-		const ws = XLSX.utils.json_to_sheet(excelFileData);
+		console.info(updateAssetTableData.table_data[selectedSheetNumber]?.data, 'clo generic update asset  1');
+		setExportFilePopup(true);
+		// const excelFileData = updateAssetTableData.table_data[selectedSheetNumber]?.data.map((el) => {
+		// 	return {
+		// 		"Security Name": el.Security_Name,
+		// 		"Obligor Name": el.Obligor_Name,
+		// 		"Total Commitment (Issue Currency)": el["Total_Commitment_(Issue_Currency)"],
+		// 		"Outstanding Principal Balance (Issue Currency)": el["Outstanding_Principal_Balance_(Issue_Currency)"],
+		// 		"Total Commitment (Issue Currency) CLO": "0",
+		// 		"Outstanding Principal Balance (Issue Currency) CLO": "0"
+		// 	};
+		// });
+		// const ws = XLSX.utils.json_to_sheet(excelFileData);
 
-		const wb = XLSX.utils.book_new();
-		XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+		// const wb = XLSX.utils.book_new();
+		// XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
 
-		const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-		const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
-		saveAs(blob, "CLO data.xlsx");
+		// const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+		// const blob = new Blob([excelBuffer], { type: "application/octet-stream" });
+		// saveAs(blob, "CLO data.xlsx");
 	};
 
 
@@ -384,7 +388,7 @@ export const UpdateAssetDetailsModal = ({
 														className={showModification && getLatestPrevValue(updateAssetTableData?.changes, appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) ? Styles.currValueInput : Styles.assetUpdateInput}
 														onFocus={() => handleInputFocus(row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label)}
 														type="text"
-														value={selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label ? updateAssetInputText : row[col.key]}
+														value={fmtDisplayVal(selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label ? updateAssetInputText : row[col.key])}
 														onChange={(e) => handleCellInputChange(e)}
 													/>
 													{selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label &&
@@ -444,6 +448,15 @@ export const UpdateAssetDetailsModal = ({
 				appliedChanges={appliedChanges}
 				setAppliedChanges={setAppliedChanges}
 				setIsButtonDisabled={setIsButtonDisabled}
+				fundType={fundType}
+			/>
+
+			<ExportAssetFileModal
+				isOpen={exportFilePopup}
+				setIsOpen={setExportFilePopup}
+				updateAssetTableData={updateAssetTableData}
+				selectedSheetNumber={selectedSheetNumber}
+				fundType={fundType}
 			/>
 
 		</>

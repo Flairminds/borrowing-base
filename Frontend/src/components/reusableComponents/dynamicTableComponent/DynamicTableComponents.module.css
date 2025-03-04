@@ -1,6 +1,6 @@
 .columnContainer {
     margin: 1px;
-    overflow: hidden;
+    /* overflow: hidden; */
 }
 
 .checkbox {
@@ -11,6 +11,7 @@
     width: 100%;
     border-collapse: collapse;
     font-size: small;
+    border: 1px solid #DCDEDE;
 }
 
 .th::-webkit-scrollbar,
@@ -45,11 +46,12 @@
 }
 
 .th{
-    padding: 8px;
+    padding: 12px 8px;
     text-align: left;
+    /* border-top: 1px solid #DCDEDE; */
     border-bottom: 1px solid #DCDEDE;
     font-weight: 600;
-    min-width: 4rem;
+    /* min-width: 3rem; */
     max-width: 200px;
     align-items: center;
     justify-content: center;
@@ -57,30 +59,33 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    overflow-x: auto;
-    white-space: nowrap;
+    /* overflow-x: auto; */
+    /* white-space: nowrap; */
 }
   
 .td {
     padding: 8px;
     text-align: left;
+    border-top: 1px solid #DCDEDE;
     border-bottom: 1px solid #DCDEDE;
-    border-left: 1px solid #DCDEDE;
-    border-right: 1px solid #DCDEDE;
-    min-width: 4rem;
+    /* min-width: 3rem; */
     max-width: 200px;
     align-items: center;
     justify-content: center;
+    vertical-align: top;
     overflow-x: auto;
-    white-space: nowrap;
+    /* white-space: nowrap; */
 }
 
 .stickyColTh{
     padding: 8px;
     text-align: left;
+    /* border-top: 1px solid #DCDEDE; */
     border-bottom: 1px solid #DCDEDE;
+    /* border-radius: 5px; */
+    /* border: 1px solid #DCDEDE; */
     font-weight: 600;
-    width: 150px;
+    width: 175px;
     align-items: center;
     justify-content: center;
     background-color: #f2f2f2;
@@ -88,20 +93,20 @@
     top: 0;
     z-index: 100;
     overflow-x: auto;
-    white-space: nowrap;
+    /* white-space: nowrap; */
 }
 
 .stickyColTd {
     padding: 8px;
     text-align: left;
+    vertical-align: top;
+    border-top: 1px solid #DCDEDE;
     border-bottom: 1px solid #DCDEDE;
-    border-left: 1px solid #DCDEDE;
-    border-right: 1px solid #DCDEDE;
-    width: 150px;
+    width: 175px;
     align-items: center;
     justify-content: center;
     overflow-x: auto;
-    white-space: nowrap;
+    /* white-space: nowrap; */
 }
 
 .stickyColTh:first-child,
@@ -114,14 +119,14 @@
 .stickyColTh:nth-child(2),
 .stickyColTd:nth-child(2) {
     position: sticky;
-    left: 150px;
+    left: 175px;
     z-index: 200;
 }
 
 .stickyColTh:nth-child(3),
 .stickyColTd:nth-child(3) {
     position: sticky;
-    left: 300px;
+    left: 350px;
     z-index: 200;
 }
 
@@ -142,7 +147,7 @@
     justify-content: center;
     overflow: hidden;
     white-space: nowrap;
-    background-color: rgb(255, 214, 214) !important;
+    /* background-color: rgb(255, 214, 214) !important; */
 }
 
 .editIconsContainer {
@@ -164,4 +169,15 @@
 .columnSelectionContainer
 {
     margin: 20px 0px;
+}
+
+.tableIcons {
+    display: inline-block;
+    margin: 0px 5px;
+    padding: 7px;
+    border-radius: 5px;
+}
+
+.tableIconsActive {
+    background-color: #c7c7c7;
 }

@@ -85,7 +85,7 @@ export const OverviewTableData = (value, fileId, user_id) => {
 	return response;
 };
 
-export const get_preview_table = (selectedFiles, fundType) => {
+export const getPreviewTable = (selectedFiles, fundType) => {
 	const formData = new FormData();
 	selectedFiles.forEach((selectedFile) => {
 		formData.append('file', selectedFile);

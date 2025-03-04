@@ -1,0 +1,26 @@
+.popupTitle {
+	font-size: 17px;
+	font-weight: bold;
+	margin: 10px 0px;
+}
+
+.columnsDisplayContainer {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr); 
+	max-height: 60vh;
+	overflow-y: auto;
+	padding: 10px;
+}
+
+.columnItem {
+	padding: 1px 5px;
+	font-size: small;
+}
+.columnItem input{
+	margin: 1px 3px;
+	/* background-color: red; */
+}
+
+.popupFooter {
+	text-align: right;
+}

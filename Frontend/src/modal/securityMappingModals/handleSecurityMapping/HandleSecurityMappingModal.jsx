@@ -10,12 +10,24 @@ import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import styles from './HandleSecurityMappingModal.module.css';
 
 
-export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity, getMappingData }) => {
+export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, selectedSecurities, getMappingData }) => {
 
 	const [probableEntriesData, setProbableEntriesData] = useState();
 	const [selectedOption, setSelectedOption] = useState('mapToExisting');
 	const [errors, setErrors] = useState({});
 	const [formValues, setFormValues] = useState({});
+	const [activeSecurity, setActiveSecurity] = useState("");
+	const [activeIndex, setActiveIndex] = useState(-1);
+
+	console.info("multiple mapping 4", selectedSecurities);
+
+
+	useEffect(() => {
+		if (isOpen && selectedSecurities?.current?.length > 0) {
+			setActiveIndex(0);
+			setActiveSecurity(selectedSecurities.current[0]);
+		}
+	}, [isOpen]);
 
 
 	const handleOptionChange = e => {
@@ -61,6 +73,13 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity, 
 			console.error("API Error:", error);
 			showToast('error', error?.response?.data?.message || 'Error: Failed to add security mapping');
 		}
+		setSelectedOption("mapToExisting");
+		if (activeIndex + 1 == selectedSecurities.current.length) {
+			handleCancel();
+		} else {
+			setActiveIndex(activeIndex + 1);
+			setActiveSecurity(selectedSecurities.current[activeIndex + 1]);
+		}
 	};
 	// const handleFormCancel = () => {
 	// 	setFormValues({});
@@ -71,6 +90,7 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity, 
 		setIsOpen(false);
 		setFormValues({});
 		setErrors({});
+		selectedSecurities.current = [];
 		// setProbableEntriesData(null);
 	};
 
@@ -87,7 +107,12 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity, 
 			showToast("error", error?.response?.data?.message || "Failed to update data");
 		}
 		setProbableEntriesData(null);
-		setIsOpen(false);
+		if (activeIndex + 1 == selectedSecurities.current.length) {
+			handleCancel();
+		} else {
+			setActiveIndex(activeIndex + 1);
+			setActiveSecurity(selectedSecurities.current[activeIndex + 1]);
+		}
 	};
 
 	const additionalColumns = [{
@@ -99,6 +124,15 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity, 
 	const getProbableMappings = async () => {
 		const res = await getProbableSecuritiesData(activeSecurity);
 		setProbableEntriesData(res.data.result);
+	};
+
+	const handleSkip = () => {
+		if (activeIndex + 1 == selectedSecurities.current.length) {
+			handleCancel();
+		} else {
+			setActiveIndex(activeIndex + 1);
+			setActiveSecurity(selectedSecurities.current[activeIndex + 1]);
+		}
 	};
 
 	useEffect(() => {
@@ -163,6 +197,11 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, activeSecurity, 
 					</div>
 				</div>
 			)}
+
+			<div className={styles.skipContainer}>
+				<CustomButton isFilled={true} text="Skip" onClick={handleSkip} />
+			</div>
+
 		</Modal>
 	);
 };
