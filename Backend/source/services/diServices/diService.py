@@ -319,14 +319,15 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             time_difference = (end_time - start_time).total_seconds() * 10**3
             print('successfully stored base data')
             existing_record = BaseDataOtherInfo.query.filter_by(fund_type=fund_type).order_by(BaseDataOtherInfo.created_at.desc()).first()
-            determination_date = existing_record.determination_date
-            other_data = existing_record.other_info_list
-            add_base_data_other_info(
-                extracted_base_data_info.id,
-                determination_date,
-                fund_type, 
-                other_data
-            )
+            if existing_record:
+                determination_date = existing_record.determination_date
+                other_data = existing_record.other_info_list
+                add_base_data_other_info(
+                    extracted_base_data_info.id,
+                    determination_date,
+                    fund_type, 
+                    other_data
+                )
         except Exception as e:
             Log.func_error(e)
             extracted_base_data_info.status = "failed"
@@ -360,7 +361,7 @@ def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_c
         extrcted_df = {}
         cashFileSheet = ["US Bank Holdings", "Client Holdings"]
         masterCompSheet = ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping"]
-        marketBookSheets = ["Sheet1"]
+        marketBookSheets = ["MarketBook"]
 
         uploaded_file.seek(0)
         sheet_df_map = pd.read_excel(uploaded_file, sheet_name=None)
@@ -994,7 +995,7 @@ def trigger_bb_calculation(bdi_id):
                 "Values": base_data_other_info.determination_date
             }, {
                 "INPUTS": "Minimum Equity Amount Floor",
-                "Values": base_data_other_info.other_info_list.get('minimum_equity_amount_floor')
+                "Values": base_data_other_info.other_info_list["input"].get('minimum_equity_amount_floor')
             }
         ]
         inputs_df = pd.DataFrame(inputs_sheet_data)
@@ -1014,7 +1015,7 @@ def trigger_bb_calculation(bdi_id):
             {
                 'Currency': input_data.get('currency'), 
                 'Exchange Rate': input_data.get('exchange_rates')
-            } for input_data in base_data_other_info.other_info_list.get('input')]
+            } for input_data in base_data_other_info.other_info_list.get('other_sheet')]
         exchange_rates_df = pd.DataFrame(exchange_rates_data)
         xl_df_map['Exchange Rates'] = exchange_rates_df
 
@@ -1033,7 +1034,7 @@ def trigger_bb_calculation(bdi_id):
                 'Additional Expences 1': input_data.get('additional_expenses_1'),
                 'Additional Expences 2': input_data.get('additional_expenses_2'),
                 'Additional Expences 3': input_data.get('additional_expenses_3')
-            } for input_data in base_data_other_info.other_info_list.get('input')]
+            } for input_data in base_data_other_info.other_info_list.get('other_sheet')]
         cash_balance_projection_df = pd.DataFrame(cash_balance_projection_data)
 
         # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': [1.000000, 0.695230, 0.618820, 1.035400], 'Cash - Current & PreBorrowing': [21455041.84, 216583.15, 0, 0], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': [0, 0, 0, 0], 'Additional Expences 2': [0, 0, 0, 0], 'Additional Expences 3': [0, 0, 0, 0]}
@@ -1053,7 +1054,7 @@ def trigger_bb_calculation(bdi_id):
             {
                 'Currency': input_data.get('currency'), 
                 'Current Credit Facility Balance': input_data.get('current_credit_facility_balance')
-            } for input_data in base_data_other_info.other_info_list.get('input')]
+            } for input_data in base_data_other_info.other_info_list.get('other_sheet')]
         credit_balance_projection_df = pd.DataFrame(credit_balance_projection_data)
         xl_df_map['Credit Balance Projection'] = credit_balance_projection_df
 
@@ -1428,3 +1429,15 @@ def get_cash_sec(security_type):
         "unmapped_securities_count": unammped_securities_count
     }
     return ServiceResponse.success(data=unmapped_securities_list, message="All Securities")
+
+def add_to_base_data_table(file):
+    try:
+        engine = db.get_engine()
+        df = pd.read_excel(file, engine='openpyxl')
+
+        df.to_sql('pcof_base_data', con=engine, if_exists='append', index=False)
+
+        return ServiceResponse.success(message="Data added succesfully.")
+    
+    except Exception as e:
+        return ServiceResponse.error(message="Something went wrong.")
