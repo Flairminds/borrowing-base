@@ -355,29 +355,30 @@ def get_sheet_data(blob_data, sheet_name, output_file_name, args):
         return {"success_status": True, "error": None, "dataframe": new_df}
     except Exception as e:
         return {"success_status": False, "error": str(e), "dataframe": None}
+    
+def get_file_type(sheet_name_list):
+    cashFileSheetList = {"US Bank Holdings", "Client Holdings"} 
+    masterCompSheetList = {"Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping"} 
+    marketValueSheetList = {"Sheet1"}
+
+    if cashFileSheetList.issubset(set(sheet_name_list)):  
+        return "cashfile", list(cashFileSheetList)
+    elif masterCompSheetList.issubset(set(sheet_name_list)): 
+        return "master_comp", list(masterCompSheetList)
+    elif marketValueSheetList.issubset(set(sheet_name_list)): 
+        return "market_book_file", list(marketValueSheetList)
 
 def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_column_mapper, args):
     try:
         extrcted_df = {}
-        cashFileSheet = ["US Bank Holdings", "Client Holdings"]
-        masterCompSheet = ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping"]
-        marketBookSheets = ["MarketBook"]
 
         uploaded_file.seek(0)
         sheet_df_map = pd.read_excel(uploaded_file, sheet_name=None)
 
         sheet_name_list = list(sheet_df_map.keys())
 
-        for sheet_name in sheet_name_list:
-            if sheet_name in cashFileSheet:
-                required_sheets = cashFileSheet
-                file_type = "cashfile"
-            elif sheet_name in masterCompSheet:
-                required_sheets = masterCompSheet
-                file_type = "master_comp"
-            elif sheet_name in marketBookSheets:
-                required_sheets = marketBookSheets
-                file_type = "market_book_file"
+        file_type, required_sheets = get_file_type(sheet_name_list)
+
         for sheet in required_sheets:
             column_level_map = sheet_column_mapper[sheet]
             df_result = get_sheet_data(sheet_df_map[sheet], sheet, column_level_map, args)
@@ -1121,6 +1122,8 @@ def trigger_bb_calculation(bdi_id):
         selected_assets = included_excluded_assets_map['included_assets']
         wb2.close()
         writer.close()
+        del writer
+        del wb2
         os.remove(file_name)
         bb_response = pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
         return ServiceResponse.success(message="Successfully processed. Visit the Borrowing Base module to check the data.", data=bb_response)
