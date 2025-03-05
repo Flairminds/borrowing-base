@@ -14,6 +14,11 @@
     border: 1px solid #DCDEDE;
 }
 
+.tr {
+    /* background-color: red; */
+    /* box-shadow: 5px 10px 15px 5px rgba(0,0,0,0.5); */
+}
+
 .th::-webkit-scrollbar,
 .stickyColTh::-webkit-scrollbar,
 .td::-webkit-scrollbar,
@@ -66,7 +71,7 @@
 .td {
     padding: 8px;
     text-align: left;
-    border-top: 1px solid #DCDEDE;
+    /* border-top: 1px solid #DCDEDE; */
     border-bottom: 1px solid #DCDEDE;
     /* min-width: 3rem; */
     max-width: 200px;

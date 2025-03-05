@@ -32,7 +32,7 @@ export const updateAssetModalData = (fundType) => {
 };
 
 export const fundOptionsArray = [
-	{ value: 0, label: 'Select Fund' },
+	{ value: 0, label: '-- Select Fund --' },
 	{ value: 1, label: 'PCOF' },
 	{ value: 2, label: 'PFLT' }
 ];

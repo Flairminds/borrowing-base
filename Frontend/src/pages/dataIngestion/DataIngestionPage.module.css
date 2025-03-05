@@ -7,13 +7,15 @@
 
 .ingestionPage
 {
-  width: 75%;
+  width: 90%;
 }
 
 .buttonsContainer {
 	display: flex;
 	justify-content: space-between;
-	margin: 1rem 1rem;
+	margin: 1px 0;
+  padding: 0;
+  align-items: center;
 }
 
 .uploadFileBtnContainer {

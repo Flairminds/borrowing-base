@@ -245,7 +245,7 @@ export const DynamicTableComponents = ({
 					<tbody>
 						{data?.length > 0 ?
 							data?.map((row, rowIndex) => (
-								<tr key={rowIndex} onClick={() => setActiveRowIndex(rowIndex)}>
+								<tr key={rowIndex} className={tableStyles.tr} onClick={() => setActiveRowIndex(rowIndex)}>
 									{updatedColumnsData?.map((col, colIndex) => {
 										if (selectedColumns.includes(col.label)) {
 											const isEditable = enableColumnEditing && col.isEditable;

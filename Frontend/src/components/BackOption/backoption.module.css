@@ -1,7 +1,9 @@
 .filledBtn {
     color: #0EB198 !important;
     border-width: 0px;
+    box-shadow: none;
     background-color: white;
-    min-width: 75px;
-    margin: 0.1rem 0.5rem;
+    width: 100%;
+    text-align: left;
+    margin: 3px 0;
 }
