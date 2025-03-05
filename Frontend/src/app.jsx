@@ -15,6 +15,7 @@ import { landingPageData } from './services/api';
 import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
 import { SecurityMappingPage } from './pages/securityMappingPage/SecurityMappingPage';
 import { ConfigurationPage } from './pages/configurationPage/ConfigurationPage';
+import { ConfigurationPage } from './pages/configurationPage/ConfigurationPage';
 
 
 
