@@ -20,6 +20,7 @@ import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { Calender } from '../calender/Calender';
 import { ProgressBar } from '../progressBar/ProgressBar';
 import stylesUload from './UploadFile.module.css';
+import Radio from 'antd/es/radio/radio';
 
 
 export const UploadFile = ({
@@ -48,9 +49,10 @@ export const UploadFile = ({
 	const [duplicateFileModalOpen, setDuplicateFileModalOpen] = useState(false);
 	const [date, setDate] = useState(null);
 	const [selectedOption, setSelectedOption] = useState(0);
-
 	const [displayFetchData, setDisplayFetchData] = useState([]);
 	const [searchTerm, setSearchTerm] = useState('');
+	const [selectedTab, setSelectedTab] = useState('upload');
+
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -308,7 +310,7 @@ export const UploadFile = ({
 				:
 				<div className={stylesUload.modalDiv} >
 					<Modal
-						title={<span style={{ fontWeight: '500', fontSize: '20px', padding: '0 0 0 3%' }}>Import File</span>}
+						title={<span style={{ fontWeight: '500', fontSize: '20px'}}>Import File</span>}
 						centered
 						style={{
 							top: 10
@@ -328,93 +330,105 @@ export const UploadFile = ({
 							</div>
 						]}
 					>
-						<div className={stylesUload.container}>
-							<div>
-								{/* <div className={stylesUload.uploadHeadingDiv} >
+						<div style={{ marginBottom: '1rem' }}>
+							<Radio.Group value={selectedTab} onChange={(e) => setSelectedTab(e.target.value)}>
+								<Radio value="upload">Upload File</Radio>
+								<Radio value="existing">List of Existing Files</Radio>
+							</Radio.Group>
+						</div>
+
+						{selectedTab === "upload" && (
+							<div className={stylesUload.container}>
+								<div>
+									{/* <div className={stylesUload.uploadHeadingDiv} >
                   <p className={stylesUload.uploadHeading} >Upload File</p>
                 </div> */}
-								<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-									<div style={{ padding: '0 5px 0 0' }}>
-										<Calender
-											setReportDate={setReportDate}
-											setDate={setDate}
-											fileUpload={true}
-											setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
-											availableClosingDates={availableClosingDates}
-										/>
-									</div>
-									<div style={{ padding: '0 5px 0 0' }}>
-										<Select
-											defaultValue="Select Fund"
-											style={{ width: 140, borderRadius: '8px', margin: "0.5rem 0rem" }}
-											onChange={handleDropdownChange}
-											value={selectedOption}
-											onSelect={(value) => {
-												setFundType(fundOptionValueToFundName(value)),
-												setSelectedOption(value);
-											}
-											}
-											options={fundOptionsArray}
-										/>
-									</div>
-									<div style={{ marginLeft: 'auto', order: '2' }}>
-										{selectedOption != 0 && (
-											<Popover placement="bottomRight" open={guidePopupOpen} content={<>Refer to sample template file</>}>
-												<a
-													href={fundType === "PCOF" ? PCOFSampleFile : PFLTSampleFile}
-													rel="noreferrer"
-													download={fundType === "PCOF" ? 'PCOFBaseFile_template.xlsx' : 'PFLTBaseFile_template.xlsx'}
-												>
-													Download sample file template
-												</a>
-											</Popover>
-										)}
-									</div>
+									<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+										<div style={{ padding: '0 5px 0 0' }}>
+											<Calender
+												setReportDate={setReportDate}
+												setDate={setDate}
+												fileUpload={true}
+												setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
+												availableClosingDates={availableClosingDates}
+											/>
+										</div>
+										<div style={{ padding: '0 5px 0 0' }}>
+											<Select
+												defaultValue={fundOptionsArray[0].label}
+												style={{ width: 150, borderRadius: '8px', margin: "0.5rem 0rem" }}
+												onChange={handleDropdownChange}
+												value={selectedOption}
+												onSelect={(value) => {
+													setFundType(fundOptionValueToFundName(value)),
+													setSelectedOption(value);
+												}
+												}
+												options={fundOptionsArray}
+											/>
+										</div>
+										<div style={{ marginLeft: 'auto', order: '2' }}>
+											{selectedOption != 0 && (
+												<Popover placement="bottomRight" open={guidePopupOpen} content={<>Refer to sample template file</>}>
+													<a
+														href={fundType === "PCOF" ? PCOFSampleFile : PFLTSampleFile}
+														rel="noreferrer"
+														download={fundType === "PCOF" ? 'PCOFBaseFile_template.xlsx' : 'PFLTBaseFile_template.xlsx'}
+													>
+														Download sample file template
+													</a>
+												</Popover>
+											)}
+										</div>
 
-								</div>
-								<div>
-									<div className={stylesUload.visible}>
-										<div {...getRootProps({ className: 'dropzone' })}>
-											<input {...getInputProps()} />
-											<div>
-												<span>
-													<b>{selectedFiles.length ? selectedFiles.map((file) => file.name).join(', ') : 'Drag and drop files here, or'}</b>
-												</span>
-												<span
-													style={{
-														color: '#3B7DDD',
-														textDecoration: 'underline',
-														cursor: 'pointer',
-														marginLeft: '5px'
-													}}
-												>
-													Browse
-												</span>
+									</div>
+									<div>
+										<div className={stylesUload.visible}>
+											<div {...getRootProps({ className: 'dropzone' })}>
+												<input {...getInputProps()} />
+												<div>
+													<span>
+														<b>{selectedFiles.length ? selectedFiles.map((file) => file.name).join(', ') : 'Drag and drop files here, or'}</b>
+													</span>
+													<span
+														style={{
+															color: '#3B7DDD',
+															textDecoration: 'underline',
+															cursor: 'pointer',
+															marginLeft: '5px'
+														}}
+													>
+														Browse
+													</span>
+												</div>
+												<p className={stylesUload.supportHeading}>Supported file format: CSV, XLSX</p>
 											</div>
-											<p className={stylesUload.supportHeading}>Supported file format: CSV, XLSX</p>
 										</div>
 									</div>
 								</div>
-							</div>
-							<div className={stylesUload.uploadedFileDiv}>
-								{lastUpdatedState === 'selectedFiles' &&
-									selectedFiles.map((file, index) => (
-										<div className={stylesUload.dataMapping} key={index}>
-										</div>
-									))}
-								{lastUpdatedState === 'selectedUploadedFiles' &&
-									selectedUploadedFiles.map((file, index) => (
-										<div className={stylesUload.dataMapping} key={index}>
-											<div className={stylesUload.hoverContainer}>
-												<div className={stylesUload.crossButton} onClick={() => handleRemoveFile(file)}>
-													<img src={cross} alt={`Remove ${file.file_name}`} />
-												</div>
-												<img className={stylesUload.imgStyle} src={fileImg} alt={`Workflow ${index + 1}`} />
-												<a>{file.file_name}</a>
+								<div className={stylesUload.uploadedFileDiv}>
+									{lastUpdatedState === 'selectedFiles' &&
+										selectedFiles.map((file, index) => (
+											<div className={stylesUload.dataMapping} key={index}>
 											</div>
-										</div>
-									))}
+										))}
+									{lastUpdatedState === 'selectedUploadedFiles' &&
+										selectedUploadedFiles.map((file, index) => (
+											<div className={stylesUload.dataMapping} key={index}>
+												<div className={stylesUload.hoverContainer}>
+													<div className={stylesUload.crossButton} onClick={() => handleRemoveFile(file)}>
+														<img src={cross} alt={`Remove ${file.file_name}`} />
+													</div>
+													<img className={stylesUload.imgStyle} src={fileImg} alt={`Workflow ${index + 1}`} />
+													<a>{file.file_name}</a>
+												</div>
+											</div>
+										))}
+								</div>
 							</div>
+						)}
+
+						{selectedTab === "existing" && (
 							<div className={stylesUload.existingFileDiv}>
 								<div className={stylesUload.headingFiles} >
 									List of Existing Files
@@ -454,7 +468,7 @@ export const UploadFile = ({
 									<div>No Data Available</div>
 								)}
 							</div>
-						</div>
+						)}
 					</Modal>
 				</div>
 			}

@@ -7,7 +7,7 @@ export const PageLayout = () => {
 	return (
 		<div className='d-flex'>
 			<Sidebar />
-			<div className='w-100' style={{textAlign: 'center'}}>
+			<div className='w-100'>
 				<Navbar />
 				<Outlet />
 			</div>

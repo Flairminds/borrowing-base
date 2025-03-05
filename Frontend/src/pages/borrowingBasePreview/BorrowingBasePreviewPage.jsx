@@ -11,6 +11,7 @@ import { filterPreviewTable } from '../../utils/helperFunctions/filterPreviewTab
 import { fmtDisplayVal } from '../../utils/helperFunctions/formatDisplayData';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
+import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
 
 export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType}) => {
 	const navigate = useNavigate();
@@ -22,8 +23,18 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [obligorFliteredValue, setObligorFliteredValue] = useState([]);
 	const [securityFilteredValue, setSecurityFilteredValue] = useState([]);
 	const [filteredData, setFilteredData] = useState(baseFilePreviewData?.baseData?.data);
-
 	const [selectedFiles, setSelectedFiles] = useState([]);
+	const [isOpenFileUpload, setIsOpenFileUpload] = useState(false);
+	const [addsecFiles, setAddsecFiles] = useState([]);
+
+	const showModal = () => {
+		setIsOpenFileUpload(true);
+	};
+
+	const handleCancel = () => {
+		setIsOpenFileUpload(false);
+	};
+
 	// console.log("infoId", infoId);
 
 	useEffect(() => {
@@ -201,6 +212,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						</div>
 					</div>
 					<div>
+						<button onClick={showModal} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }} title={'Add more securities data in the base data'}>Add Securities Data</button>
 						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Trigger Calculation</button>
 					</div>
 				</div>
@@ -233,6 +245,16 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				setSelectedFiles={setSelectedFiles}
 				baseFilePreviewData= {baseFilePreviewData}
 				previewPageId= {previewPageId}
+			/>
+			<FileUploadModal
+				isOpenFileUpload={isOpenFileUpload}
+				handleCancel={handleCancel}
+				handleBaseDataPreview={handleBaseDataPreview}
+				dataId={baseFilePreviewData.infoId}
+				reportId={baseFilePreviewData.reportDate}
+				addsecFiles={addsecFiles}
+				setAddsecFiles={setAddsecFiles}
+				previewFundType={previewFundType}
 			/>
 		</div>
 		// <div>
