@@ -1434,12 +1434,52 @@ def get_cash_sec(security_type):
     }
     return ServiceResponse.success(data=unmapped_securities_list, message="All Securities")
 
-def add_to_base_data_table(file):
+def validate_add_securities(file, fund_type, base_data_info_id, company_id, report_date):
+    required_fields = {
+        "file": file,
+        "fund type": fund_type,
+        "base data info id": base_data_info_id,
+        "company id": company_id,
+        "report date": report_date
+    }
+    
+    for field, value in required_fields.items():
+        if not value:
+            return ServiceResponse.error(message=f"Invalid {field} provided.")
+
+    return ServiceResponse.success()
+
+
+def add_to_base_data_table(file, fund_type, base_data_info_id, company_id, report_date):
     try:
         engine = db.get_engine()
         df = pd.read_excel(file, engine='openpyxl')
 
-        df.to_sql('pcof_base_data', con=engine, if_exists='append', index=False)
+        df['base_data_info_id'] = base_data_info_id
+        df['company_id'] = company_id
+        df['report_date'] = report_date
+        df["is_manually_added"] = True
+
+        if fund_type == 'PCOF':
+            sheet_name = "PL BB Build"
+            base_data_name = 'pcof_base_data'
+        if fund_type == 'PFLT':
+            sheet_name = "Loan List"
+            base_data_name = 'pflt_base_data'
+
+        base_data_mapping = (
+            BaseDataMapping.query
+                .with_entities(BaseDataMapping.bd_column_lookup, BaseDataMapping.bd_column_name)
+                .filter(
+                    BaseDataMapping.fund_type == fund_type,
+                    BaseDataMapping.bd_sheet_name == sheet_name,
+                )
+                .all()
+        )
+        
+        column_mapping = {item.bd_column_name: item.bd_column_lookup for item in base_data_mapping}
+        df.rename(columns=column_mapping, inplace=True)
+        df.to_sql(base_data_name, con=engine, if_exists='append', index=False)
 
         return ServiceResponse.success(message="Data added succesfully.")
     
