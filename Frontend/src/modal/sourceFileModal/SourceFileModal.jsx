@@ -14,8 +14,9 @@ export const SourceFileModal = ({ isVisible, onClose, fileDetails }) => {
 
     // Static mapping for sheets by file type
     const staticSheetMapping = {
-         cashfile: ["US Bank Holdings", "Client Holdings"],
-        'master_comp': ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"]
+         'cashfile': ["US Bank Holdings", "Client Holdings"],
+        'master_comp': ["Borrower Stats", "Securities Stats", "PFLT Borrowing Base"],
+        'market_book_file': ["Sheet1"]
     };
 
     const fetchSourceFileData = async (sheetName) => {
@@ -35,6 +36,7 @@ export const SourceFileModal = ({ isVisible, onClose, fileDetails }) => {
     };
 
     useEffect(() => {
+        console.log('fileDetails -- ', fileDetails)
         if (fileDetails?.file_type) {
             const sheets = staticSheetMapping[fileDetails.file_type] || [];
             setSheetOptions(sheets);

@@ -16,3 +16,55 @@
 	transition: box-shadow 0.3s ease;
 	cursor: pointer;
 }
+
+.unmappedLoanTypesContainer {
+	border: 1px solid rgb(213, 210, 210);
+	border-radius: 10px;
+	margin: 15px 5px;
+}
+
+.unmappedLoantypeList {
+	padding: 10px;
+	display: flex;
+	height: 20vh;
+	flex-wrap: wrap;
+	overflow-y: auto;
+}
+
+.mappedTypesList {
+	display: flex;
+	padding: 10px;
+	flex-wrap: wrap;
+}
+
+.loanMasterMappingContainer {
+	margin: 15px 10px;
+}
+
+.loanMasterMapContainer {
+	display: flex;
+}
+
+.loanMasterMapContainer {
+	display: flex;
+}
+
+.loanMasterTab {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 49%;
+}
+
+.loanMaster {
+	border: 1px solid rgb(213, 210, 210);
+	width: 80%;
+	padding: 5px;
+	border-radius: 5px;
+}
+
+.loanMasterList {
+	border: 1px solid rgb(213, 210, 210);
+	padding: 5px;
+	border-radius: 5px;
+}

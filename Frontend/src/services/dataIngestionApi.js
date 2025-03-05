@@ -159,3 +159,11 @@ export const getLoanTypeMappingData = () => {
 	const mappingDataRes = axios.get(`${ApiURL}/mapping/loan_type`);
 	return mappingDataRes;
 };
+
+export const updateLoanTypeMapping = (loanMapData) => {
+	const payload = {
+		"mappings": [loanMapData]
+	};
+	const fileListResponse = axios.post(`${ApiURL}/mapping/map_loan_type`, payload);
+	return fileListResponse;
+};
