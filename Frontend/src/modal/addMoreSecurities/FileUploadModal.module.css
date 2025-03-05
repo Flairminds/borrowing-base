@@ -1,0 +1,38 @@
+.downloadContainer {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 10px;
+}
+
+.downloadLink {
+    text-decoration: underline;
+    color: #3B7DDD;
+}
+
+.dropzone {
+    text-align: center;
+    padding: 20px;
+    background-color: #FAFBFC;
+    border: 1px dashed #D1D5DB;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.browseText {
+    color: #3B7DDD;
+    text-decoration: underline;
+    cursor: pointer;
+    margin-left: 5px;
+}
+
+.supportedFormats {
+    font-weight: 400;
+    color: rgb(109, 110, 111);
+    margin-top: 5px;
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
