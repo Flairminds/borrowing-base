@@ -40,7 +40,7 @@ export const ImportAssetFIleModal = (
 
 	const updateWhatIfSheetData = (excelFileData) => {
 		if (excelFileData.length > 0) {
-			let changesArray = [];
+			const changesArray = [];
 			for (let i = 0; i < excelFileData.length; i++) {
 				const currentEntry = excelFileData[i];
 				if (!currentEntry["Obligor Name"]) continue;
