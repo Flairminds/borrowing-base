@@ -225,7 +225,7 @@ export const DynamicTableComponents = ({
 					</div>}
 				</div>}
 			</div>
-			<div style={{overflow: 'auto', maxHeight: '70vh'}}>
+			<div style={{overflow: 'auto', maxHeight: '75vh'}}>
 				<table className={tableStyles.table} style={{tableLayout: enableStickyColumns ? 'fixed' : 'auto'}}>
 					<thead>
 						<tr className={tableStyles.headRow}>

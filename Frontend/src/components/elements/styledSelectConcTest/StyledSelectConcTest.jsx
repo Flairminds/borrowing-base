@@ -54,15 +54,9 @@ export const StyledSelectConcTest = ({optionsArray, onChange}) => {
     <>
         <Select
             removeIcon={true}
-            style={{
-            // width: "100%",
-            height: "30px",
-            borderRadius: "8px 8px 8px 8px",
-            width: "80%",
-            margin:'0rem 1rem'
-            }}
             showSearch
             placeholder="Select Test"
+            style={{ width: "650px", margin: '0 0.5rem'}}
             onChange={(value) => onChange(value)}
             options={options}
             // onSearch={filterOption}

@@ -310,7 +310,7 @@ export const UploadFile = ({
 				:
 				<div className={stylesUload.modalDiv} >
 					<Modal
-						title={<span style={{ fontWeight: '500', fontSize: '20px', padding: '0 0 0 3%' }}>Import File</span>}
+						title={<span style={{ fontWeight: '500', fontSize: '20px'}}>Import File</span>}
 						centered
 						style={{
 							top: 10
@@ -355,8 +355,8 @@ export const UploadFile = ({
 										</div>
 										<div style={{ padding: '0 5px 0 0' }}>
 											<Select
-												defaultValue="Select Fund"
-												style={{ width: 140, borderRadius: '8px', margin: "0.5rem 0rem" }}
+												defaultValue={fundOptionsArray[0].label}
+												style={{ width: 150, borderRadius: '8px', margin: "0.5rem 0rem" }}
 												onChange={handleDropdownChange}
 												value={selectedOption}
 												onSelect={(value) => {

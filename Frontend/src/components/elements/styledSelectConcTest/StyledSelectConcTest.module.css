@@ -1,17 +1,18 @@
 .optionParent
 {
     display: flex;
-    padding: 0.3rem 0.2rem;
+    padding: 0.2rem;
 }
 
 .testName
 {
     width: 40%;
     font-weight: bold;
-    padding: 0.3rem;
+    text-wrap: wrap;
 }
 
 .description
 {
     width: 60%;
+    text-wrap: wrap;
 }

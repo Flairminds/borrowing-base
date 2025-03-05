@@ -7,6 +7,7 @@ import { changeConcentrationTestMasterData, getConcentrationTestMasterData } fro
 import { defaultFund, ConctestMasterdropdownValues } from '../../utils/configurations/fundsDetails';
 import { convertToDropdownOptions, getConcTestChnages, styledDropdownOptions } from '../../utils/helperFunctions/concentrationMasterData';
 import styles from './ConcentrationTestMaster.module.css';
+import { FUND_BG_COLOR } from '../../utils/styles';
 
 export const ConcentrationTestMaster = () => {
 	const [tableData, setTableData] = useState([]);
@@ -123,18 +124,23 @@ export const ConcentrationTestMaster = () => {
 
 	return (
 		<>
-			<div className={styles.dropDownHeading}>Fund Type</div>
-			<Select
-				defaultValue={defaultFund}
-				style={{ width: "150px", borderRadius: '8px', margin: "0.5rem 1rem" }}
-				onChange={handleDropdownChange}
-				options={convertToDropdownOptions(ConctestMasterdropdownValues)}
-			/>
-
-			<div className={styles.dropDownHeading}>
-				Concentration Test
+			<div style={{display: 'flex', width: '100%'}}>
+				<div className={styles.dropDownHeading}>
+					Fund Type
+					<Select
+						defaultValue={defaultFund}
+						style={{ width: "150px", margin: '0 0.5rem'}}
+						onChange={handleDropdownChange}
+						options={convertToDropdownOptions(ConctestMasterdropdownValues)}
+					/>
+				</div>
+				<div className={styles.dropDownHeading}>
+					Concentration Test
+					<div style={{display: 'inline-block'}}>
+						<StyledSelectConcTest optionsArray={optionsArray} onChange={handleTestSelect} />
+					</div>
+				</div>
 			</div>
-			<StyledSelectConcTest optionsArray={optionsArray} onChange={handleTestSelect} />
 
 
 			<div className={styles.tableContainer}>
@@ -169,7 +175,7 @@ export const ConcentrationTestMaster = () => {
 												column.key == "eligible_funds" ?
 													<>
 														{row[column.key]?.map((el) => (
-															<span key={el} className={styles.fundNameTag}>{el}</span>
+															<span key={el} className={styles.fundNameTag} style={{backgroundColor: FUND_BG_COLOR[el]}}>{el}</span>
 														))}
 													</>
 													:
@@ -207,7 +213,7 @@ export const ConcentrationTestMaster = () => {
 			</div>
 
 			<div className={styles.updateBtn}>
-				<Button onClick={submitChnages} loading={submitBtnLoading} className={buttonStyles.filledBtn}>{submitBtnLoading ? 'Analyzing' : 'Analyze'}</Button>
+				<Button onClick={submitChnages} loading={submitBtnLoading} className={buttonStyles.filledBtn}>{submitBtnLoading ? 'Updating' : 'Update'}</Button>
 			</div>
 
 		</>

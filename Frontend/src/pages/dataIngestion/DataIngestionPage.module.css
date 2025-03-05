@@ -20,6 +20,7 @@
 
 .uploadFileBtnContainer {
 	order: 1;
+  display: flex;
 }
 
 .tableContainer
@@ -31,10 +32,10 @@
   margin: 0.5rem;
 }
 
-.extractDataBtns
+.extractDataBtn
 {
   margin: 1rem 0rem;
-  text-align: right;
+  text-align: left;
 }
 
 .tableHeading {

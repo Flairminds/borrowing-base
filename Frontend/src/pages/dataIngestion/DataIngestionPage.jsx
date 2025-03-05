@@ -12,6 +12,7 @@ import { fundOptionsArray } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import styles from './DataIngestionPage.module.css';
+import { Calender } from '../../components/calender/Calender';
 
 export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
@@ -25,6 +26,9 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [archiveFilesData, setArchiveFilesData] = useState(null);
 	const [isbuttonDisable, setButtonDisable] = useState(false);
 	const [dataLoading, setDataLoading] = useState(false);
+	const [filteredData, setFilteredData] = useState([]);
+	const [filterDate, setFilterDate] = useState(null);
+	const [reportDates, setReportDates] = useState([]);
 
 	const navigate = useNavigate();
 	let extractionInterval;
@@ -42,7 +46,16 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			// 	};
 			// });
 			// responseData.data = temp;
+			const reportDatesArr = [];
+			responseData?.data?.forEach(d => reportDatesArr.push(d.report_date));
+			setReportDates(reportDatesArr);
 			setDataIngestionFileListData(responseData.data);
+			if (filterDate) {
+				const temp = responseData.data.filter(t => t.report_date == filterDate);
+				setFilteredData(temp);
+			} else {
+				setFilteredData(responseData.data);
+			}
 
 			const columnsToAdd = [{
 				'key': 'file_select',
@@ -242,6 +255,22 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 		}
 	};
 
+	const filterByDate = (value, dateString) => {
+		try {
+			if (dateString) {
+				setFilterDate(dateString);
+				let temp = [...dataIngestionFileListData];
+				temp = temp.filter(t => t.report_date == dateString);
+				setFilteredData(temp);
+			} else {
+				setFilterDate(null);
+				setFilteredData(dataIngestionFileListData);
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
 	return (
 		<>
 			<div className={styles.ingestionPageContainer}>
@@ -255,12 +284,15 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 						</div>
 						<div className={styles.uploadFileBtnContainer}>
 							{/* <div style={{ textAlign: 'left' }}> */}
-							<Select
+							{!archiveToggle ? <><Select
 								defaultValue={selectedFundType}
-								style={{ width: 140, borderRadius: '8px', margin: '0.3rem 1rem' }}
+								style={{ width: 140, borderRadius: '8px', margin: '0rem 0.5rem' }}
 								options={fundOptionsArray}
 								onChange={handleDropdownChange}
 							/>
+							<div>
+								<Calender availableClosingDates={reportDates} onDateChange={filterByDate} fileUpload={true} />
+							</div></> : <></>}
 							{/* </div> */}
 							<DynamicSwitchComponent switchOnText="Archives" switchOffText="Source Files" switchOnChange={toggleArchiveFiles} />
 							<CustomButton isFilled={true} onClick={updateFilesArchiveStatus} text={archiveToggle ? 'Unarchive' : 'Add to Archives'} />
@@ -291,7 +323,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 								archiveToggle ?
 									<DynamicTableComponents data={archiveFilesData?.data} columns={archiveFilesData?.columns}	/>
 									:
-									<DynamicTableComponents data={dataIngestionFileListData} columns={dataIngestionFileListColumns} />
+									<DynamicTableComponents data={filteredData} columns={dataIngestionFileListColumns} />
 							}
 						</div>
 

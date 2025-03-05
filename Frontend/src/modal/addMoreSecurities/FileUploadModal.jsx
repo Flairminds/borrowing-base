@@ -48,7 +48,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 	return (
 		<Modal
-			title="Upload Files"
+			title="Add Securities Data"
 			open={isOpenFileUpload}
 			onCancel={handleCancel}
 			footer={null}
