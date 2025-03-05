@@ -140,3 +140,18 @@ export const getProbableSecuritiesData = (cashSecurity) => {
 	const fileListResponse = axios.post(`${ApiURL}/data_ingestion/get_unmapped_pflt_sec`, payload);
 	return fileListResponse;
 };
+
+export const uploadAddMoreSecFile = (file, dataId, fundType, reportDate) => {
+	const formData = new FormData();
+	formData.append('base_data_info_id', dataId);
+	formData.append('fund_type', fundType);
+	formData.append('report_date', reportDate);
+	formData.append('file', file); // Append the file
+
+	return axios.post(`${ApiURL}/data_ingestion/add_base_data`, formData, {
+		headers: {
+			'Content-Type': 'multipart/form-data'
+		}
+	});
+};
+
