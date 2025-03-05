@@ -225,7 +225,7 @@ export const DynamicTableComponents = ({
 					</div>}
 				</div>}
 			</div>
-			<div style={{overflow: 'auto', maxHeight: '70vh'}}>
+			<div style={{overflow: 'auto', maxHeight: '75vh'}}>
 				<table className={tableStyles.table} style={{tableLayout: enableStickyColumns ? 'fixed' : 'auto'}}>
 					<thead>
 						<tr className={tableStyles.headRow}>
@@ -245,7 +245,7 @@ export const DynamicTableComponents = ({
 					<tbody>
 						{data?.length > 0 ?
 							data?.map((row, rowIndex) => (
-								<tr key={rowIndex} onClick={() => setActiveRowIndex(rowIndex)}>
+								<tr key={rowIndex} className={tableStyles.tr} onClick={() => setActiveRowIndex(rowIndex)}>
 									{updatedColumnsData?.map((col, colIndex) => {
 										if (selectedColumns.includes(col.label)) {
 											const isEditable = enableColumnEditing && col.isEditable;

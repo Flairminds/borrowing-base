@@ -1,0 +1,11 @@
+export const FUND_BG_COLOR = {
+	'PFLT': '#d14bff',
+	'PCOF': '#4b8aff'
+};
+
+export const STATUS_BG_COLOR = {
+	'completed': 'green',
+	'Completed': 'green',
+	'in progress': 'blue',
+	'failed': 'red'
+};

@@ -10,6 +10,8 @@ import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
 import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
 import { Loader, LoaderSmall } from '../../components/loader/loader';
+import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
+import { Calender } from '../../components/calender/Calender';
 
 export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, setPreviewFundType }) => {
 	const [baseDataFilesList, setBaseDataFilesList] = useState({});
@@ -18,6 +20,9 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 	const [popupContent, setPopupContent] = useState(null);
 	const [selectedFundType, setSelectedFundType] = useState(0);
 	const [dataLoading, setDataLoading] = useState(false);
+	const [reportDates, setReportDates] = useState([]);
+	const [filteredData, setFilteredData] = useState([]);
+	const [filterDate, setFilterDate] = useState(null);
 
 	const navigate = useNavigate();
 
@@ -98,14 +103,21 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 					...col,
 					render: (value, row) => (
 						<div>
-							{row.extraction_status == 'completed' ?
-								<span style={{display: 'inline-block', backgroundColor: 'green', padding: '3px', borderRadius: '8px', color: 'white'}}>
-									{row.extraction_status}
-								</span> :
-								<span style={{display: 'inline-block', backgroundColor: 'red', padding: '3px', borderRadius: '8px', color: 'white'}}>
-									{row.extraction_status}
-								</span>
-							}
+							<span style={{display: 'inline-block', backgroundColor: STATUS_BG_COLOR[row.extraction_status], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
+								{row.extraction_status}
+							</span>
+						</div>
+					)
+				};
+			}
+			if (col.key === 'fund') {
+				return {
+					...col,
+					render: (value, row) => (
+						<div>
+							<span style={{display: 'inline-block', backgroundColor: FUND_BG_COLOR[row.fund], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
+								{row.fund}
+							</span>
 						</div>
 					)
 				};
@@ -130,7 +142,16 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 			const filesRes = await getBaseDataFilesList(data);
 			const updatedColumns = injectRenderForSourceFiles(filesRes.data.result.columns);
 			setBaseDataFilesList({ ...filesRes.data.result, columns: updatedColumns });
+			const reportDatesArr = [];
+			filesRes.data.result?.data?.forEach(d => reportDatesArr.push(d.report_date));
+			setReportDates(reportDatesArr);
 			setDataLoading(false);
+			if (filterDate) {
+				const temp = filesRes.data.result.data.filter(t => t.report_date == filterDate);
+				setFilteredData(temp);
+			} else {
+				setFilteredData(filesRes.data.result.data);
+			}
 		} catch (err) {
 			showToast('error', err?.response?.data.message);
 			setDataLoading(false);
@@ -163,6 +184,22 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 		getFilesList(value);
 	};
 
+	const filterByDate = (value, dateString) => {
+		try {
+			if (dateString) {
+				setFilterDate(dateString);
+				let temp = [...baseDataFilesList.data];
+				temp = temp.filter(t => t.report_date == dateString);
+				setFilteredData(temp);
+			} else {
+				setFilterDate(null);
+				setFilteredData(baseDataFilesList.data);
+			}
+		} catch (error) {
+			console.error(error);
+		}
+	};
+
 	return (
 		<div className={styles.pageContainer}>
 			<div className={styles.baseFileListPage}>
@@ -173,11 +210,14 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 					<div className={styles.buttonsContainer}>
 						<div style={{margin: 'auto'}}>
 							<Select
-								defaultValue="Select Fund"
-								style={{ width: 140, borderRadius: '8px'}}
+								defaultValue="-- Select Fund --"
+								style={{ width: 150, borderRadius: '8px'}}
 								options={fundOptionsArray}
 								onChange={handleDropdownChange}
 							/>
+						</div>
+						<div>
+							<Calender availableClosingDates={reportDates} onDateChange={filterByDate} fileUpload={true} />
 						</div>
 						<CustomButton isFilled={true} onClick={handleSecurityMapping} text="Security Mapping" />
 						<CustomButton isFilled={true} onClick={handleExtractNew} text="Extract New Base Data" />
@@ -185,7 +225,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 				</div>
 				{dataLoading ? <Loader /> :
 					<div className={styles.baseDataTableContainer}>
-						<DynamicTableComponents data={baseDataFilesList?.data} columns={baseDataFilesList?.columns} additionalColumns={columnsToAdd} />
+						<DynamicTableComponents data={filteredData} columns={baseDataFilesList?.columns} additionalColumns={columnsToAdd} />
 					</div>}
 			</div>
 			{/* File Details Modal */}

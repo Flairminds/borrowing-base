@@ -99,19 +99,23 @@ export const ParameterChange = ({ parameterList, selectedOptionUpdateValue, setP
     return (
         <div>
             <div style={{ display: "flex", justifyContent: "start", padding: "0rem 0 0.5rem 0rem", alignItems: "center" }}>
-                <span>Additive Leverage Change in selected investment (%):</span>
-                <input
-                    placeholder='Range: -99% to 100%'
-                    value={allInputValue}
-                    onChange={e => setAllInputValue(e.target.value)}
-                    style={{ padding: "6px", border: "none", outline: "none", borderBottom: "1px solid rgb(84 79 79)" }}
-                />
-                <button style={{ marginLeft: "0px", border: "none", background: "transparent" }} onClick={handleAddButtonClick}>
-                    <img src={tickIcon} alt="tick" />
-                </button>
-                <button style={{ marginLeft: "0px", border: "none", background: "transparent" }} onClick={handleCrossButtonClick}>
-                    <img src={crossIcon} alt="cross" />
-                </button>
+                <span>Additive Leverage Change in selected investment:</span>
+                <div style={{display: 'inline-block', borderBottom: "1px solid rgb(84 79 79)", padding: '0 6px'}}>
+                    <input
+                        placeholder='Range: -99 to 100'
+                        value={allInputValue}
+                        onChange={e => setAllInputValue(e.target.value)}
+                        style={{ padding: "6px", border: "none", outline: "none", width: '125px' }}
+                    />%
+                </div>
+                <div style={{margin: '0 5px'}}>
+                    <button style={{ marginLeft: "0px", border: "none", background: "transparent" }} onClick={handleAddButtonClick}>
+                        <img src={tickIcon} alt="tick" />
+                    </button>
+                    <button style={{ marginLeft: "0px", border: "none", background: "transparent" }} onClick={handleCrossButtonClick}>
+                        <img src={crossIcon} alt="cross" />
+                    </button>
+                </div>
             </div>
             <div className={stylesUload.tableContainer}>
                 <table className={stylesUload.table}>

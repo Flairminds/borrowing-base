@@ -7,17 +7,20 @@
 
 .ingestionPage
 {
-  width: 75%;
+  width: 90%;
 }
 
 .buttonsContainer {
 	display: flex;
 	justify-content: space-between;
-	margin: 1rem 1rem;
+	margin: 1px 0;
+  padding: 0;
+  align-items: center;
 }
 
 .uploadFileBtnContainer {
 	order: 1;
+  display: flex;
 }
 
 .tableContainer
@@ -29,10 +32,10 @@
   margin: 0.5rem;
 }
 
-.extractDataBtns
+.extractDataBtn
 {
   margin: 1rem 0rem;
-  text-align: right;
+  text-align: left;
 }
 
 .tableHeading {
