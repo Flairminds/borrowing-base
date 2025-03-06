@@ -1,0 +1,96 @@
+
+.ingestionPageContainer
+{
+  display: flex;
+  justify-content: center;
+}
+
+.ingestionPage
+{
+  width: 90%;
+}
+
+.buttonsContainer {
+	display: flex;
+	justify-content: space-between;
+	margin: 1px 0;
+  padding: 0;
+  align-items: center;
+}
+
+.uploadFileBtnContainer {
+	order: 1;
+  display: flex;
+}
+
+.tableContainer
+{
+  /* border: 1px solid #DCDEDE;
+  border-radius: 8px; */
+  max-height: 70vh;
+  overflow-y: auto;
+  margin: 0.5rem;
+}
+
+.extractDataBtn
+{
+  margin: 1rem 0rem;
+  text-align: left;
+}
+
+.tableHeading {
+  font-size: 25px;
+  font-weight: bold;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+.th{
+  padding: 8px;
+  padding-left: 15px;
+  text-align: left;
+  border-bottom: 1px solid #DCDEDE;
+  font-weight: 600;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+  background-color: #f2f2f2;
+}
+
+.td {
+  padding: 8px;
+  padding-left: 15px;
+  text-align: left;
+  border-bottom: 1px solid #DCDEDE;
+  font-weight: 400;
+  font-size: 14px;
+  align-items: center;
+  justify-content: center;
+  
+}
+
+.headRow .th:first-child
+{
+  border-top-left-radius: 9px;
+}
+
+.headRow .th:last-child 
+{
+  border-top-right-radius: 9px;
+}
+
+.lastRow .totalRow:first-child
+{
+  border-bottom-left-radius: 8px;
+}
+
+.lastRow .totalRow:last-child
+{
+  border-bottom-right-radius: 8px;
+}
+
+
+  

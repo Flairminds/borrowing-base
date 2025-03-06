@@ -1,0 +1,33 @@
+.pageContainer {
+    display: flex;
+    justify-content: center;
+    /* padding: 1rem; */
+}
+
+.baseFileListPage {
+    width: 95%;
+    margin: 1rem 0;
+}
+
+.headerContainer {
+    display: flex; 
+    justify-content: space-between; 
+}
+
+.buttonsContainer {
+    display: flex; 
+    justify-content: flex-end; 
+    gap: 1rem; 
+}
+
+.tableHeading
+{
+    font-size: 25px;
+    font-weight: bold;
+}
+
+.baseDataTableContainer {
+    overflow: auto;
+    max-height: 80vh;
+    margin: 1rem 0rem;
+}

@@ -7,51 +7,81 @@ from source.services.commons import commonServices
 from source.services import dashboardService
 from source.services.PCOF.PcofDashboardService import PcofDashboardService
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
+from Exceptions.StdFileFormatException import StdFileFormatException
+from source.services.PCOF.standardFileFormat import std_file_format as PCOF_STANDARD_FILE_FORMAT
+from source.services.PFLT.PFLT_std_file_format import std_file_format as PFLT_STANDARD_FILE_FORMAT
 
 pcofDashboardService = PcofDashboardService()
 pfltDashboardService = PfltDashboardService()
 
 
 def handle_upload_fund_file():
-    excel_file = request.files.get("file")
-    closing_date = datetime.strptime(
-        request.form.get("closing_date"), "%Y-%m-%d"
-    ).date()
-    fund_type = request.form.get("fund_type")
-    over_write = request.form.get("over_write")
-    isExist, base_data_file = dashboardService.validate_file(
-        excel_file, closing_date, fund_type, over_write
-    )
-
-    if(isExist):
-        return HTTPResponse.error(
-            message="This file already exists in the system. Do you want to replace it? You might lose what if analysis data.",
-            status_code=409
+    try:
+        excel_file = request.files.get("file")
+        closing_date = datetime.strptime(
+            request.form.get("closing_date"), "%Y-%m-%d"
+        ).date()
+        fund_type = request.form.get("fund_type")
+        over_write = request.form.get("over_write")
+        
+        isExist, base_data_file = dashboardService.validate_file(
+            excel_file, closing_date, fund_type, over_write
         )
 
-    xl_sheet_df_map = None
-    included_excluded_assets_map = None
+        if(isExist):
+            return HTTPResponse.error(
+                message="This file already exists in the system. Do you want to replace it? You might lose what if analysis data.",
+                status_code=409
+            )
+
+        xl_sheet_df_map = None
+        included_excluded_assets_map = None
+        
+        if fund_type == "PCOF":
+            std_file_format = PCOF_STANDARD_FILE_FORMAT
+            xl_sheet_df_map =  pcofDashboardService.validate_standard_file_format(excel_file, std_file_format)
+            included_excluded_assets_map = pcofDashboardService.pcof_included_excluded_assets(xl_sheet_df_map)
+
+        if fund_type == "PFLT":
+            std_file_format = PFLT_STANDARD_FILE_FORMAT
+            xl_sheet_df_map = pfltDashboardService.validate_standard_file_format(excel_file, std_file_format)
+            included_excluded_assets_map = pfltDashboardService.pflt_included_excluded_assets(xl_sheet_df_map)
+
+        if bool(int(over_write)) == False:
+            base_data_file = dashboardService.upload_file(excel_file, xl_sheet_df_map, closing_date, fund_type, included_excluded_assets_map)
+        else:
+            base_data_file = dashboardService.override_file(base_data_file, excel_file, xl_sheet_df_map, fund_type, included_excluded_assets_map)
+
+        return HTTPResponse.success(
+            result={
+                "id": base_data_file.id,
+                "user_id": base_data_file.user_id,
+                "file_name": base_data_file.file_name
+            }
+        )
     
-    if fund_type == "PCOF":
-        xl_sheet_df_map =  pcofDashboardService.pcof_validate_file(excel_file, fund_type)
-        included_excluded_assets_map = pcofDashboardService.pcof_included_excluded_assets(xl_sheet_df_map)
-
-    if fund_type == "PFLT":
-        xl_sheet_df_map = pfltDashboardService.pflt_validate_file(excel_file, fund_type)
-        included_excluded_assets_map = pfltDashboardService.pflt_included_excluded_assets(xl_sheet_df_map)
-
-    if bool(int(over_write)) == False:
-       base_data_file = dashboardService.upload_file(excel_file, xl_sheet_df_map, closing_date, fund_type, included_excluded_assets_map)
-    else:
-       base_data_file = dashboardService.override_file(base_data_file, excel_file, xl_sheet_df_map, fund_type, included_excluded_assets_map)
-
-    return HTTPResponse.success(
-        result={
-            "id": base_data_file.id,
-            "user_id": base_data_file.user_id,
-            "file_name": base_data_file.file_name
-        }
-    )
+    except StdFileFormatException as ffe:
+        return (
+            jsonify(
+                {
+                    "error": True,
+                    "error_type": "File Format Error",
+                    "error_message": ffe.error_map,
+                }
+            ),
+            400,
+        )
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "error": str(e),
+                    "error_type": str(type(e).__name__),
+                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
+                }
+            ),
+            500,
+        )
 
 def get_card_overview_data():
     try:
@@ -185,17 +215,20 @@ def calculate_bb():
         base_data_file = commonServices.get_base_data_file(
             base_data_file_id=base_data_file_id
         )
+
+        base_data_files = BaseDataFile.query.filter_by(user_id=user_id).all()
+        closing_dates = [
+            base_data_file.closing_date.strftime("%Y-%m-%d")
+            for base_data_file in base_data_files
+        ]
+
         if base_data_file.fund_type == "PCOF":
-            return pcofDashboardService.calculate_bb(
-                base_data_file, selected_assets, user_id
-            )
+            response = pcofDashboardService.calculate_bb(base_data_file, selected_assets, user_id)
         else:
-            return pfltDashboardService.calculate_bb(
-                base_data_file, selected_assets, user_id
-            )
+            response = pfltDashboardService.calculate_bb(base_data_file, selected_assets, user_id)
+
+        response["closing_dates"] = closing_dates
+
+        return HTTPResponse.success(result=response)
     except Exception as e:
-        return {
-            "error": str(e),
-            "error_type": str(type(e).__name__),
-            "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
-        }, 500
+        return HTTPResponse.error(message="Internal Server Error")

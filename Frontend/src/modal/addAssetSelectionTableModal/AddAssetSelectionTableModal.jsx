@@ -1,25 +1,25 @@
-import React from 'react'
-import { AddAssetDynamicTable } from '../../components/addAssetDynamicTable/AddAssetDynamicTable'
-// import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
-// import {Whatif_Columns,Whatif_data} from "../../utils/Whatif_Data"
-import  buttonStyle from '../../components/Buttons/ButtonStyle.module.css'
 import { Modal } from 'antd';
 import { useEffect, useState } from 'preact/hooks';
+import React from 'react';
+import { AddAssetDynamicTable } from '../../components/addAssetDynamicTable/AddAssetDynamicTable';
+// import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
+// import {Whatif_Columns,Whatif_data} from "../../utils/Whatif_Data"
+import buttonStyle from '../../components/Buttons/ButtonStyle.module.css';
+import { generateAssetFormData, generateEmptyAssetFormData } from '../../utils/helperFunctions/addAssetFormData';
 import { CreateAssetModal } from '../createAssetModal/CreateAssetModal';
-import { generateAssetFormData, generateEmptyAssetFormData } from '../../utils/helperFunctions/addAssetFormData'
 
-export const AddAssetSelectionTableModal = ({previewModal,isPreviewModal,previewColumns,previewData,setPreviewData,setAddAssetSelectedData}) => {
+export const AddAssetSelectionTableModal = ({previewModal, isPreviewModal, previewColumns, previewData, setPreviewData, setAddAssetSelectedData}) => {
     const handleCancel = () => {
-        isPreviewModal(false)
+        isPreviewModal(false);
       };
 
       const [createAssetModalOpen, setCreateAssetModalOpen]= useState(false);
       const [createAssetFormData, setCreateAssetFormData] = useState();
       const [modificationData, setModificationData] = useState({
-        data : '',
+        data: '',
         index:''
       });
-      
+
 
       const [selectedAssets, setSelectedAssets] = useState([]);
       const [showModifyButton, setShowModifyButton] = useState(true);
@@ -27,13 +27,13 @@ export const AddAssetSelectionTableModal = ({previewModal,isPreviewModal,preview
 
       useEffect(() => {
         setSelectedAssets(Array(previewData?.length).fill(true))
-      },[previewData])
+      }, [previewData]);
 
       const modifyAssetsData = (index, data) =>
       {
-        if(index != -1)
+        if (index != -1)
         {
-          const previewDataArray  = previewData;
+          const previewDataArray = previewData;
           previewDataArray[index] = data;
           setPreviewData(previewDataArray);
         }
@@ -41,29 +41,29 @@ export const AddAssetSelectionTableModal = ({previewModal,isPreviewModal,preview
         {
           setPreviewData([data, ...previewData]);
         }
-        
-      }
+
+      };
 
       const handleCreateAsset = () => {
         const modifiedData = generateEmptyAssetFormData()
         setShowModifyButton(false);
         setCreateAssetFormData(modifiedData);
         setCreateAssetModalOpen(true);
-      }
+      };
 
       const handleSubmit = () => {
         let selectedData = [];
-        for(let i =0 ; i<previewData.length ; i++)
+        for (let i = 0; i < previewData.length; i++)
           {
             if(selectedAssets[i] == true)
               {
                 selectedData.push(previewData[i]);
               }
-    
+
           }
           setAddAssetSelectedData(selectedData);
-          isPreviewModal(false)
-        }
+          isPreviewModal(false);
+        };
 
 
   return (
@@ -77,35 +77,35 @@ export const AddAssetSelectionTableModal = ({previewModal,isPreviewModal,preview
                 onCancel={handleCancel}
                 width={'70%'}
                 footer={[
-                  
+
                   ]}
             >
-              <div style={{textAlign:'end', padding:'1rem'}} >
+              <div style={{textAlign: 'end', padding: '1rem'}} >
                   <button className={buttonStyle.filledBtn} onClick={handleCreateAsset} > Create Asset </button>
               </div>
-                
-                <div style={{height:"70vh"}}>
+
+                <div style={{height: "70vh"}}>
                   <AddAssetDynamicTable data={previewData} columns={previewColumns} selectedAssets={selectedAssets} setSelectedAssets={setSelectedAssets} setModificationData={setModificationData} setCreateAssetModalOpen={setCreateAssetModalOpen} setCreateAssetFormData={setCreateAssetFormData}/>
                 </div>
 
-                <div style={{margin:'1rem', textAlign:'end'}}>
-                  <button className={buttonStyle.filledBtn} style={{padding:'0.3rem 0.7rem'}} onClick={handleSubmit}> Submit</button>
+                <div style={{margin: '1rem', textAlign: 'end'}}>
+                  <button className={buttonStyle.filledBtn} style={{padding: '0.3rem 0.7rem'}} onClick={handleSubmit}> Submit</button>
                 </div>
 
-                <CreateAssetModal 
-                  createAssetModalOpen={createAssetModalOpen} 
-                  setCreateAssetModalOpen={setCreateAssetModalOpen} 
-                  createAssetFormData={createAssetFormData} 
-                  setCreateAssetFormData={setCreateAssetFormData} 
-                  modifyAssetsData={modifyAssetsData} 
-                  modificationData={modificationData} 
-                  setModificationData={setModificationData} 
+                <CreateAssetModal
+                  createAssetModalOpen={createAssetModalOpen}
+                  setCreateAssetModalOpen={setCreateAssetModalOpen}
+                  createAssetFormData={createAssetFormData}
+                  setCreateAssetFormData={setCreateAssetFormData}
+                  modifyAssetsData={modifyAssetsData}
+                  modificationData={modificationData}
+                  setModificationData={setModificationData}
                   showModifyButton={showModifyButton}
                   setShowModifyButton={setShowModifyButton}
                 />
 
             </Modal>
-            
+
     </div>
-  )
-}
+  );
+};

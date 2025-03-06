@@ -1244,14 +1244,26 @@ def calculate_Warehouse_Day_Count(df_PL_BB_Build, date_as_of):
 
 # AB All_In
 def calculate_All_In_helper(w, x, y, z):
-    if math.isnan(w):
-        w = 0
-    if math.isnan(x):
+    if pd.isna(w):
+        w =0
+    else:
+        if math.isnan(w):
+            w = 0
+    if pd.isna(x):
         x = 0
-    if math.isnan(y):
+    else:
+        if math.isnan(x):
+            x = 0
+    if pd.isna(y):
         y = 0
-    if math.isnan(z):
+    else:
+        if math.isnan(y):
+            y = 0
+    if pd.isna(z):
         z = 0
+    else:
+        if math.isnan(z):
+            z = 0
     return w + y + x + z
 
 
@@ -1781,18 +1793,15 @@ def calculate_Borrowing_Base_helper(
     Borrowing_Base_Other_Adjustment,
     Borrowing_Base_Industry_Concentration,
 ):
+    required_cols = [Borrowing_Base_Adj_Contribution, Borrowing_Base_Other_Adjustment, Borrowing_Base_Industry_Concentration]
     try:
         a = np.array(
-            [
-                Borrowing_Base_Adj_Contribution,
-                Borrowing_Base_Other_Adjustment,
-                Borrowing_Base_Industry_Concentration,
-            ]
+            [np.nan if x is None else x for x in required_cols]
         )
         return a[~np.isnan(a)].sum()
         # return Borrowing_Base_Adj_Contribution+Borrowing_Base_Other_Adjustment+Borrowing_Base_Industry_Concentration
     except:
-        return "n/a"
+        return 0.0
 
 
 def calculate_Borrowing_Base(df_PL_BB_Build):
@@ -1851,9 +1860,7 @@ def calculate_Eligible_Issuers(df_PL_BB_Build):
 
     l = len(df_PL_BB_Build[df_PL_BB_Build["Is Eligible Issuer"] == "Yes"])
 
-    df_PL_BB_Build[df_PL_BB_Build["Is Eligible Issuer"] == "Yes"][
-        "Eligible Issuers"
-    ] = 0  # Initialize the new column with zeros
+    df_PL_BB_Build["Eligible Issuers"] = 0  # Initialize the new column with zeros
 
     df_PL_BB_Build.loc[0, "Eligible Issuers"] = 1  # Set the value of the first row to 1
 
@@ -1864,10 +1871,10 @@ def calculate_Eligible_Issuers(df_PL_BB_Build):
             or (df_PL_BB_Build.at[i, "Issuer"] == 0)
         )
 
-        df_PL_BB_Build.at[i, "Eligible Issuers"] = (
-            df_PL_BB_Build.at[i - 1, "Eligible Issuers"]
-            if condition
-            else df_PL_BB_Build.at[i - 1, "Eligible Issuers"] + 1
-        )
+        if condition:
+            df_PL_BB_Build.at[i, "Eligible Issuers"] = df_PL_BB_Build.at[i - 1, "Eligible Issuers"]
+        else:
+            df_PL_BB_Build.at[i, "Eligible Issuers"] = df_PL_BB_Build.at[i - 1, "Eligible Issuers"] + 1
+
 
     return df_PL_BB_Build

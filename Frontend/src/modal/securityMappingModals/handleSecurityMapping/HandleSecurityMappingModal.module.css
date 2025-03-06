@@ -1,0 +1,10 @@
+.errorText {
+    color: red;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  .skipContainer {
+    margin-top: 10px;
+    text-align: right;
+  }

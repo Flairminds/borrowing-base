@@ -8,7 +8,7 @@ from source.services.PCOF import utility as pcofUtility
 from source.services.PCOF.calculation.functionsCall import calculate_bb
 from source.services.PCOF.WIA import responseGenerator
 from source.services.PCOF.WIA import responseGenerator2
-from source.services import wiaService
+from source.services.WIA import wiaService
 
 
 def add_asset(base_data_file, selected_assets):
@@ -47,9 +47,7 @@ def add_asset(base_data_file, selected_assets):
         "included_assets"
     ]
 
-    df_PL_BB_Build = df_PL_BB_Build[
-        df_PL_BB_Build["Investment Name"].isin(included_assets)
-    ]
+    df_PL_BB_Build = df_PL_BB_Build[df_PL_BB_Build["Investment Name"].isin(included_assets)].reset_index(drop=True)
     initial_pl_bb_build = df_PL_BB_Build.copy(deep=True)
 
     uploaded_df = pd.DataFrame(selected_assets)

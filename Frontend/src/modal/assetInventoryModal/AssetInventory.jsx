@@ -1,26 +1,26 @@
-import React, { useState } from 'react';
 import { Modal } from 'antd';
-import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css"; 
+import React, { useState } from 'react';
+import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
 import { assetInventory } from "../../utils/asset";
 import styles from "./AssestInventory.module.css";
 
 export const AssetInventory = ({ isAssetInventoryModal, setIsAssetInventoryModal }) => {
-    const [selectedSheet, setSelectedSheet] = useState('Included'); 
+    const [selectedSheet, setSelectedSheet] = useState('Included');
 
     const handleCancel = () => {
       setIsAssetInventoryModal(false);
     };
-  
+
     const previewSheets = Object.keys(assetInventory);
-  
+
     const { columns, data } = assetInventory[selectedSheet];
-  
+
     return (
       <div>
         <Modal
           title={<span style={{ color: '#909090', fontWeight: '500', fontSize: '14px', padding: '0 0 0 3%' }}>Asset Inventory</span>}
           centered
-          visible={isAssetInventoryModal} 
+          visible={isAssetInventoryModal}
           width={'70%'}
           footer={[
             <div key="footer-buttons" className="px-4">
@@ -41,7 +41,7 @@ export const AssetInventory = ({ isAssetInventoryModal, setIsAssetInventoryModal
               </button>
             ))}
           </div>
-  
+
           <div className={styles.tableContainer}>
             <table className={styles.table}>
               <thead className={styles.stickyHeader}>
@@ -66,5 +66,5 @@ export const AssetInventory = ({ isAssetInventoryModal, setIsAssetInventoryModal
       </div>
     );
   };
-  
+
   export default AssetInventory;

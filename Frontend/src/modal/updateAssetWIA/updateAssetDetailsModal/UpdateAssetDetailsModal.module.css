@@ -227,4 +227,12 @@
     background-color: #CDFFF7;
   }
   
+  .wiaoptionsContainer {
+    display: flex;
+    justify-content: space-between;
+  }
 
+  .fileOptionButtons {
+    display: flex;
+    align-items: center;
+  }

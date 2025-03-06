@@ -42,8 +42,7 @@ def get_concentration_test_master_list_function():
         for test in fund_tests:
             limit_percentage = test.limit_percentage
             if test.test_name not in [
-                "Min. Eligible Issuers (#)",
-                "8 or 9 Issuers?",
+                
                 "Max. Weighted Average Maturity (Years)",
                 "Max. Weighted Average Leverage thru Borrower",
             ]:
@@ -114,8 +113,7 @@ def change_conc_test_config_function():
                 id=fund_test.test_id
             ).first()
             if cocentration_test.test_name in [
-                "Min. Eligible Issuers (#)",
-                "8 or 9 Issuers?",
+                
                 "Max. Weighted Average Maturity (Years)",
                 "Max. Weighted Average Leverage thru Borrower",
             ]:
@@ -176,7 +174,7 @@ class ConcentrationTestExecutor:
         self.test_library = {
             "Max. Industry Concentration (% BB)": self.execute_Max_Industry_Concentration_percent_BB,
             "Min. Eligible Issuers (#)": self.execute_Min_Eligible_Issuers,
-            "8 or 9 Issuers?": self.execute_8_or_9_Issuers,
+            "Number of Issuers": self.execute_number_of_issuers,
             "Second Lien and Split Lien": self.execute_Second_Lien_and_Split_Lien,
             "Second Lien": self.execute_Second_Lien,
             "DIP Collateral Loans": self.execute_DIP_Collateral_Loans,
@@ -213,15 +211,15 @@ class ConcentrationTestExecutor:
         )
         max_bb = test_required_col_df["Borrowing Base"].max()
         actual_percent = max_bb / test_required_col_df["Borrowing Base"].sum()
-
-        if actual_percent < self.limit_percent:
+        rounded_actual = round(actual_percent, 3)
+        if rounded_actual <= self.limit_percent:
             result = "Pass"
         else:
             result = "Fail"
         row_data = {
             "Concentration Tests": [test_name],
             "Concentration Limit": [self.limit_percent],
-            "Actual": [actual_percent],
+            "Actual": [rounded_actual],
             "Result": [result],
         }
         row_df = pd.DataFrame(row_data)
@@ -234,7 +232,7 @@ class ConcentrationTestExecutor:
         self, test_name, test_required_col_df, concentration_test_df
     ):
         actual = test_required_col_df["Eligible Issuer"].max()
-        if actual > self.limit_percent:
+        if actual >= self.limit_percent:
             result = "Pass"
         else:
             result = "Fail"
@@ -250,11 +248,11 @@ class ConcentrationTestExecutor:
         )
         return concentration_test_df
 
-    def execute_8_or_9_Issuers(
+    def execute_number_of_issuers(
         self, test_name, test_required_col_df, concentration_test_df
     ):
         actual = test_required_col_df["Eligible Issuer"].max()
-        if actual == 8 or actual == 9:
+        if actual == self.limit_percent:
             result = "Pass"
         else:
             result = "Fail"
@@ -367,8 +365,8 @@ class ConcentrationTestExecutor:
                 yes_sum = row["Borrowing Base"]
 
         actual = yes_sum / ltv_transaction_grouped_df["Borrowing Base"].sum()
-
-        if actual < self.limit_percent:
+        rounded_actual = round(actual, 3)
+        if rounded_actual <= self.limit_percent:
             result = "Pass"
         else:
             result = "Fail"
@@ -376,7 +374,7 @@ class ConcentrationTestExecutor:
         row_data = {
             "Concentration Tests": [test_name],
             "Concentration Limit": [self.limit_percent],
-            "Actual": [actual],
+            "Actual": [rounded_actual],
             "Result": [result],
         }
         row_df = pd.DataFrame(row_data)
@@ -400,7 +398,7 @@ class ConcentrationTestExecutor:
 
         actual = yes_sum / approved_foreign_jurisdiction_df["Borrowing Base"].sum()
 
-        if actual < self.limit_percent:
+        if actual <= self.limit_percent:
             result = "Pass"
         else:
             result = "Fail"
@@ -432,7 +430,8 @@ class ConcentrationTestExecutor:
 
         actual = yes_sum / warehouse_assetn_df["Borrowing Base"].sum()
 
-        if actual < self.limit_percent:
+        rounded_actual = round(actual, 3)
+        if rounded_actual <= self.limit_percent:
             result = "Pass"
         else:
             result = "Fail"
@@ -440,7 +439,7 @@ class ConcentrationTestExecutor:
         row_data = {
             "Concentration Tests": [test_name],
             "Concentration Limit": [self.limit_percent],
-            "Actual": [actual],
+            "Actual": [rounded_actual],
             "Result": [result],
         }
         row_df = pd.DataFrame(row_data)
@@ -467,10 +466,13 @@ class ConcentrationTestExecutor:
 
         actual = 0
         sum_of_BB = 0
+        bb_sum = test_required_col_df["Borrowing Base"].sum()
         for index, row in test_required_col_df.iterrows():
             if row["Tenor"] > 8:
-                actual = sum_of_BB + row["Borrowing Base"]
-        if actual < self.limit_percent:
+                actual = sum_of_BB + row["Borrowing Base"] / bb_sum
+        
+        rounded_actual = round(actual, 3)
+        if rounded_actual <= self.limit_percent:
             result = "Pass"
         else:
             result = "Fail"
@@ -478,7 +480,7 @@ class ConcentrationTestExecutor:
         row_data = {
             "Concentration Tests": [test_name],
             "Concentration Limit": [self.limit_percent],
-            "Actual": [actual],
+            "Actual": [rounded_actual],
             "Result": [result],
         }
         row_df = pd.DataFrame(row_data)
@@ -500,9 +502,12 @@ class ConcentrationTestExecutor:
             test_required_col_df["Borrowing Base"] / BB_sum
         )
 
+        # check after demo
+        if test_required_col_df.empty:
+            return concentration_test_df
         actual = self.get_kth_largest_percent_BB(test_required_col_df, 1)
-
-        if actual < self.limit_percent:
+        rounded_actual = round(actual, 3)
+        if rounded_actual <= self.limit_percent:
             result = "Pass"
         else:
             result = "Fail"
@@ -510,7 +515,7 @@ class ConcentrationTestExecutor:
         row_data = {
             "Concentration Tests": [test_name],
             "Concentration Limit": [self.limit_percent],
-            "Actual": [actual],
+            "Actual": [rounded_actual],
             "Result": [result],
         }
         row_df = pd.DataFrame(row_data)
@@ -532,9 +537,13 @@ class ConcentrationTestExecutor:
             test_required_col_df["Borrowing Base"] / BB_sum
         )
 
-        actual = self.get_kth_largest_percent_BB(test_required_col_df, 2)
+        # check after demo
+        if test_required_col_df.empty:
+            return concentration_test_df
 
-        if actual < self.limit_percent:
+        actual = self.get_kth_largest_percent_BB(test_required_col_df, 2)
+        rounded_actual = round(actual, 3)
+        if rounded_actual <= self.limit_percent:
             result = "Pass"
         else:
             result = "Fail"
@@ -542,7 +551,7 @@ class ConcentrationTestExecutor:
         row_data = {
             "Concentration Tests": [test_name],
             "Concentration Limit": [self.limit_percent],
-            "Actual": [actual],
+            "Actual": [rounded_actual],
             "Result": [result],
         }
         row_df = pd.DataFrame(row_data)
@@ -592,10 +601,6 @@ class ConcentrationTestExecutor:
                     columns=test_data.keys(),
                 )
 
-                # perform_test
-                # if test.test_name == "Max. Issuer Concentration (% BB)":
-                #     concentration_test_df = self.execute_Max_Issuer_Concentration_percent_BB("Max. Issuer Concentration (% BB)", test_required_col_df, concentration_test_df)
-
                 concentration_test_df = self.test_library[test.test_name](
                     test.test_name, test_required_col_df, concentration_test_df
                 )
@@ -610,7 +615,7 @@ class ConcentraionTestFormatter:
     def convert_to_std_table_format(self):
         rows_to_keep = [
             "Min. Eligible Issuers (#)",
-            "8 or 9 Issuers?",
+            "Number of Issuers",
             "Max. Weighted Average Maturity (Years)",
             "Max. Weighted Average Leverage thru Borrower",
         ]

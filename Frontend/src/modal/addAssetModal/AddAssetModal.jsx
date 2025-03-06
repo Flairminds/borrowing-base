@@ -1,36 +1,35 @@
-import { Button, Modal } from 'antd'
-import React from 'react'
-import Styles from './AddAssetModal.module.css'
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css'
+import { Button, Modal } from 'antd';
+import React from 'react';
 import { useDropzone } from 'react-dropzone';
+import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
 import { AddAssetSelectionTableModal } from '../addAssetSelectionTableModal/AddAssetSelectionTableModal';
+import Styles from './AddAssetModal.module.css';
 
 export const AddAssetModal = (
     {
-        isModalVisible, 
-        handleOk, 
-        handleCancel, 
-        loading, 
-        selectedFiles, 
-        setSelectedFiles, 
-        setSelectedUploadedFiles, 
-        setLastUpdatedState, 
-        isPreviewModal, 
+        isModalVisible,
+        handleOk,
+        handleCancel,
+        loading,
+        selectedFiles,
+        setSelectedFiles,
+        setSelectedUploadedFiles,
+        setLastUpdatedState,
+        isPreviewModal,
         handleDownloadExcel,
         previewModal,
         previewData,
         setPreviewData,
         previewColumns,
         setAddAssetSelectedData
-    }   
+    }
     ) => {
 
     const { getRootProps, getInputProps } = useDropzone({
-        accept: [
-          'text/csv',
-          'document/csv',
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ],
+      accept: {
+        'text/csv': [],
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [],
+      },
         multiple: true,
         onDrop: (acceptedFiles) => {
           setSelectedFiles([...selectedFiles, ...acceptedFiles]);
@@ -54,10 +53,10 @@ export const AddAssetModal = (
                 <button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
                     Cancel
                 </button>
-                <Button className={ButtonStyles.filledBtn}  loading={loading} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={handleOk}>
+                <Button className={ButtonStyles.filledBtn} loading={loading} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={handleOk}>
                     Load
                 </Button>
-                </div>,
+                </div>
                 ]}
         >
           <div className={Styles.container}>
@@ -79,7 +78,7 @@ export const AddAssetModal = (
                           color: '#3B7DDD',
                           textDecoration: 'underline',
                           cursor: 'pointer',
-                          marginLeft: '5px',
+                          marginLeft: '5px'
                         }}
                       >
                         Browse
@@ -91,7 +90,7 @@ export const AddAssetModal = (
                 <br />
               </div>
             </div>
-            
+
             <div style={{ display: "flex", justifyContent: "space-between", paddingRight: "1rem" }}>
                 {selectedFiles.length > 0 ? (
                   <div style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
@@ -100,7 +99,7 @@ export const AddAssetModal = (
                         color: '#3B7DDD',
                         textDecoration: 'underline',
                         cursor: 'pointer',
-                        marginLeft: '5px',
+                        marginLeft: '5px'
                       }}
                       onClick={handleDownloadExcel}
                     >
@@ -112,7 +111,7 @@ export const AddAssetModal = (
                 <AddAssetSelectionTableModal previewModal={previewModal} isPreviewModal={isPreviewModal} previewData={previewData} setPreviewData={setPreviewData} previewColumns={previewColumns} setAddAssetSelectedData={setAddAssetSelectedData} />
               </div>
 
-            
+
             <div>
             {/* <Popover   placement="bottomRight" open={guidePopupOpen} content={<>Refer to sample template file</>} >
                   <a href="">Download sample file template</a>
@@ -121,5 +120,5 @@ export const AddAssetModal = (
           </div>
         </Modal>
     </>
-  )
-}
+  );
+};

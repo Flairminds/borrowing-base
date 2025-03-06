@@ -1,0 +1,105 @@
+.pageContainer {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+}
+
+.soiMappingPage {
+    width: 95%;
+}
+
+.tableContainer
+{
+  max-height: 75vh;
+  overflow-y: scroll;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.th{
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #DCDEDE;
+  font-weight: 600;
+  font-size: 14px;
+  min-width: 5rem;
+  align-items: center;
+  justify-content: center;
+  background-color: #f2f2f2;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid #DCDEDE;
+  font-size: 14px;
+  overflow: hidden;
+  white-space: nowrap;
+  max-width: 200px;
+}
+
+.headRow .th:first-child
+{
+  border-top-left-radius: 9px;
+}
+
+.headRow .th:last-child 
+{
+  border-top-right-radius: 9px;
+}
+
+.input {
+  width: 100%;
+  padding: 5px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.updateInput {
+  outline: none;
+  border: 0px;
+}
+
+.editIconsContainer {
+  display: flex;
+  align-items: center;
+}
+
+.iconButton {
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+.updateInput:focus {
+  outline: none;
+  border-bottom: 1px solid black;
+}
+
+.saveIcon,
+.cancelIcon {
+  cursor: pointer;
+  margin-left: 5px;
+  width: 16px;
+  height: 16px;
+}
+
+.emptyValue {
+  background-color: rgb(255, 214, 214); 
+}
+
+.navContainer {
+	display: flex;
+	justify-content: space-between;
+	margin: 0.5rem;
+}
+
+.mappingContainer {
+  min-width: 75%;
+}

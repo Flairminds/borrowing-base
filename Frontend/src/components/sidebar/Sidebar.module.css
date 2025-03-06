@@ -1,5 +1,7 @@
 .sidebarContainer{
     /* height: 100%; */
     background-color: #3A4850;
-    min-height: 110vh;
+    min-height: 100vh;
+    cursor: pointer;
+    color: white;
 }

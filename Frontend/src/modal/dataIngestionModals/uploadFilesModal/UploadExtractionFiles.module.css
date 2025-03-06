@@ -1,0 +1,17 @@
+.visible {
+    height: 120px;
+    border: 1px dashed rgba(59, 125, 221, 0.2);
+    border-radius: 6px;
+    background-color: rgba(59, 125, 221, 0.02);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    margin-right: 0px;
+}
+
+.supportHeading{
+    font-weight: 400;
+    color:rgb(109, 110, 111) ;
+  }

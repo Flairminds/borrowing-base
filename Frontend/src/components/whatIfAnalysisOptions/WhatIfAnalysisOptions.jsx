@@ -5,12 +5,13 @@ import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
 import { getUpdateAssetData } from '../../services/api';
 import { toast } from 'react-toastify';
 import { wiaOptions } from '../../utils/configurations/wiaOptions';
+import { LoaderFullPage } from '../loader/loader';
 
 export const WhatIfAnalysisOptions = (
-  { selectedOption, 
+  { selectedOption,
     setSelectedOption,
     setIsModalVisible,
-    setEbitdaModalOpen, 
+    setEbitdaModalOpen,
     setIsupdateAssetModalOpen,
     setUpdateAssetTableData,
     baseFile,
@@ -21,11 +22,11 @@ export const WhatIfAnalysisOptions = (
   }) => {
 
   const handleDropdownChange = (value) => {
-    setSaveBtn(false)
+    setSaveBtn(false);
     setWhatIfAnalysisId(null);
     if(value == 1)
     {
-        setIsModalVisible(true)
+        setIsModalVisible(true);
     }
     else if(value == 2)
     {
@@ -33,24 +34,23 @@ export const WhatIfAnalysisOptions = (
     }
     else if(value == 3)
     {
-      getUpdateAssetSheetData()
+      getUpdateAssetSheetData();
       // setUpdateAssetTableData(updateAssetData)
     }
   }
-  
+
   const getUpdateAssetSheetData = async() => {
-    
-    const defaultsheetName = 'PL BB Build';
+    const defaultsheetName = fundType === 'PCOF' ? 'PL BB Build' : 'Loan List';
     const basefileid = baseFile.id;
     try{
       const res = await getUpdateAssetData(basefileid, defaultsheetName);
-      setUpdateAssetTableData(res.data);
-      setIsupdateAssetModalOpen(true)
+      setUpdateAssetTableData(res.data.result);
+      setIsupdateAssetModalOpen(true);
     }
     catch(err)
     {
-      toast.error("something went wrong")
-      console.error(err)
+      toast.error("something went wrong");
+      console.error(err);
     }
 
   }
@@ -58,12 +58,12 @@ export const WhatIfAnalysisOptions = (
 
   return (
     <>
-   
-  <div style={{ textAlign: "center", flex: "1", margin: '0rem 1rem', paddingRight: "2rem" }}>
+
+  <div style={{ flex: "1" }}>
     <Select
-      className={ButtonStyles.filledBtn}
-      defaultValue="What if Analysis"
-      style={{ width: 140, borderRadius: '8px', backgroundColor: 'red' }}
+      // className={ButtonStyles.filledBtn}
+      defaultValue="-- What if Analysis --"
+      style={{ width: 170, borderRadius: '8px', backgroundColor: 'red', border: '1px solid #6D6E6F' }}
       onChange={handleDropdownChange}
       value={selectedOption}
       onSelect={(value) => setSelectedOption(value)}
@@ -72,14 +72,13 @@ export const WhatIfAnalysisOptions = (
   </div>
 
 
-      
+
         <div>
 
           {/* <AboutModal isAboutModalState={isAboutModalState} aboutModalState={aboutModalState}  /> */}
           {/* Preveiw */}
         </div>
-        
 
     </>
-  )
-}
+  );
+};

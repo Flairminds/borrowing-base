@@ -65,7 +65,7 @@ export const AssetSelectionPage = ({
         setFilters(prevFilters => ({ ...prevFilters, [key]: value }));
     };
 
-    const filteredData = assetSelectionData.assetSelectionList?.data.filter(row => {
+    const filteredData = assetSelectionData.assetSelectionList?.data?.filter(row => {
         return Object.keys(filters).every(key => {
             return filters[key] ? row[key] === filters[key] : true;
         });
@@ -95,8 +95,8 @@ export const AssetSelectionPage = ({
             };
             const tableDataResponse = await uploadInitialFile(fileData);
             if (tableDataResponse.status === 200) {
-                setTablesData(tableDataResponse?.data);
-                setConstDate(tableDataResponse.data.closing_date);
+                setTablesData(tableDataResponse?.data.result);
+                setConstDate(tableDataResponse.data.result.closing_date);
                 navigate('/');
                 toast.success("Results Generated");
             }
@@ -121,9 +121,9 @@ export const AssetSelectionPage = ({
             </div>
 
             <div className={Styles.filtersContainer}>
-                {assetSelectionData.assetSelectionList?.columns.map((col, index) => (
+                {assetSelectionData.assetSelectionList?.columns?.map((col, index) => (
                     <div key={index} className={Styles.filterItem}>
-                        <label style={{ color: "rgb(144, 144, 144)" }}>{col.label}</label>
+                        <label className={Styles.filterItemLbl} title={col.label}>{col.label}</label>
                         <Select
                             defaultValue=""
                             style={{ width: '100%' }}
@@ -137,7 +137,7 @@ export const AssetSelectionPage = ({
             </div>
 
             <div className={Styles.tableContainer}>
-                {filteredData.length > 0 ? (
+                {filteredData && filteredData.length > 0 ? (
                     <table className={Styles.table}>
                         <thead>
                             <tr className={Styles.headRow}>

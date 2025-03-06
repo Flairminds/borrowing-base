@@ -130,16 +130,16 @@ class PFLTBorrowingBase(PFLTCalculationInitiator):
             "Industry": [
                 {"data": industry} for industry in industry_group["Obligor Industry"]
             ],
-            "Unadjusted BB": [{"data": bb} for bb in industry_group["Borrowing Base"]],
-            "Unadjusted % of BB": [
+            "Borrowing Base": [{"data": bb} for bb in industry_group["Borrowing Base"]],
+            "% Borrowing Base": [
                 {"data": pct} for pct in industry_group["Unadjusted % of BB"]
             ],
-            "columns": [{"data": ["Industry", "Unadjusted BB", "Unadjusted % of BB"]}],
+            "columns": [{"data": ["Industry", "Borrowing Base", "% Borrowing Base"]}],
             "Total": {
                 "data": {
                     "Industry": "Total",
-                    "Unadjusted % of BB": "100.00%",
-                    "Unadjusted BB": f"${total_borrowing_base / 1e6:.2f}M",
+                    "% Borrowing Base": "100.00%",
+                    "Borrowing Base": f"${total_borrowing_base / 1e6:.2f}M",
                 }
             },
         }
@@ -191,6 +191,8 @@ class PFLTBorrowingBase(PFLTCalculationInitiator):
         )
 
         security_df = security_df.sort_values("Borrowing Base", ascending=False)
+        total_bb = security_df["Borrowing Base"].sum()
+        percent_bb_sum = security_df["% Borrowing Base"].sum()*100
         security_df = security_df.rename(
             columns={"Loan Type (Term / Delayed Draw / Revolver)": "Loan Type"}
         )
@@ -211,6 +213,13 @@ class PFLTBorrowingBase(PFLTCalculationInitiator):
                 for cell in security_df[column]
             ]
             for column in security_df.columns.tolist()
+        }
+        security_data["Total"] = {
+            "data": {
+                "Loan Type": "Total",
+                "% Borrowing Base": str(percent_bb_sum) +"%",
+                "Borrowing Base": f"${numerize.numerize(total_bb)}",
+            }
         }
         security_data["columns"] = [{"data": security_df.columns.tolist()}]
         return security_data

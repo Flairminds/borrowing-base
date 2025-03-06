@@ -9,7 +9,7 @@
     border: 1px solid #DCDEDE;
     border-radius: 8px;
     /* width: 100%; */
-    margin: 2rem 2rem 1rem 1rem;
+    margin: 1rem 1rem;
   }
   
   .table {
@@ -101,8 +101,8 @@
   {
     margin: 0.2rem;
     padding: 0.2rem 0.4rem;
-    border: 1px solid #0EB198;
-    border-radius: 6px;
+    /* border: 1px solid #0EB198; */
+    border-radius: 5px;
     font-weight: 400;
   }    
 
@@ -121,7 +121,8 @@
   
   .dropDownHeading
   {
-    margin: 0.2rem 1rem;
+    margin: 1rem;
     font-size: 1.1rem;
     font-weight: bold;
+    width: auto;
   }

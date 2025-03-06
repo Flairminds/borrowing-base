@@ -3,6 +3,7 @@ import json
 import pickle
 from flask import jsonify
 import pandas as pd
+import numpy as np
 from numerize import numerize
 
 from models import db, UserConfig, WhatIfAnalysis
@@ -13,7 +14,6 @@ from Exceptions.StdFileFormatException import StdFileFormatException
 
 
 pfltBBCalculator = PfltBBCalculator()
-
 
 class PfltDashboardService:
     def get_asset_list(self, base_data_file):
@@ -62,12 +62,12 @@ class PfltDashboardService:
         selected_columns_list = []
         for column in PFLT_assets_selection_columns:
             selected_columns_list.append(column)
-
         xl_df_map = pickle.loads(base_data_file.file_data)
         loan_list_df = xl_df_map["Loan List"]
 
         selected_column_loan_list_df = loan_list_df[selected_columns_list]
         selected_column_loan_list_df.fillna("")
+        selected_column_loan_list_df = selected_column_loan_list_df.replace({np.nan: None})
         asset_selection_table["columns"] = [
             {"label": column, "key": column.replace(" ", "_")}
             for column in selected_column_loan_list_df.columns
@@ -307,19 +307,12 @@ class PfltDashboardService:
         return jsonify(pflt_trnd_graph_response), 200
 
     def calculate_bb(self, base_data_file, selected_assets, user_id):
-        return (
-            jsonify(
-                pfltBBCalculator.get_bb_calculation(
-                    base_data_file, selected_assets, user_id
-                )
-            ),
-            200,
-        )
+        return (pfltBBCalculator.get_bb_calculation(base_data_file, selected_assets, user_id))
     
-    def pflt_validate_file(self, excel_file, fund_type):
+    def validate_standard_file_format(self, excel_file, std_file_format):
         try:
             error_map, xl_sheet_df_map = Standard_File_Formater.validate_file(
-                excel_file, fund_type
+                excel_file, std_file_format
             )
             error_map["Row Modifications"] = []
         except Exception as e:
