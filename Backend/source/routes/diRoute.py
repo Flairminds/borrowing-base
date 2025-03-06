@@ -87,3 +87,7 @@ def get_archived_files():
 @di_blueprint.route('/base_data_other_info', methods=["POST"])
 def base_data_other_info():
     return diController.base_data_other_info()
+
+@di_blueprint.route('/add_base_data', methods=["POST"])
+def add_base_data():
+    return diController.add_base_data()

@@ -406,6 +406,7 @@ class PfltBaseData(db.Model):
     satisfies_all_other_eligibility_criteria = db.Column(db.String)
     excess_concentration_amount = db.Column(db.String)
     loanx_id = db.Column(db.String)
+    is_manually_added = db.Column(db.Boolean, default=False)
 
 class BaseDataOtherInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -492,6 +493,7 @@ class PfltBaseDataHistory(db.Model):
     satisfies_all_other_eligibility_criteria = db.Column(db.String)
     excess_concentration_amount = db.Column(db.String)
     loanx_id = db.Column(db.String)
+    is_manually_added = db.Column(db.Boolean, default=False)
 
 class PcofBaseData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -547,6 +549,7 @@ class PcofBaseData(db.Model):
     borrowing_base_industry_concentration = db.Column(db.String)
     borrowing_base_comment = db.Column(db.String)
     is_eligible_issuer = db.Column(db.String)
+    is_manually_added = db.Column(db.Boolean, default=False)
 
 class PcofBaseDataHistory(db.Model):
     operation = db.Column(db.String)
@@ -605,7 +608,7 @@ class PcofBaseDataHistory(db.Model):
     borrowing_base_industry_concentration = db.Column(db.String)
     borrowing_base_comment = db.Column(db.String)
     is_eligible_issuer = db.Column(db.String)
-
+    is_manually_added = db.Column(db.Boolean, default=False)
 
 class LoanTypeMaster(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
