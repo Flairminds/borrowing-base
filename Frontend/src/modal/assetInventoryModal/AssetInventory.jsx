@@ -1,6 +1,6 @@
 import { Modal } from 'antd';
 import React, { useState } from 'react';
-import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
+import ButtonStyles from "../../components/uiComponents/Button/ButtonStyle.module.css";
 import { assetInventory } from "../../utils/asset";
 import styles from "./AssestInventory.module.css";
 

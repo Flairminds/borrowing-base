@@ -7,7 +7,7 @@ import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
 import PCOF_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pcof_other_info.xlsx';
 import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pflt_other_info.xlsx';
-import { CustomButton } from "../../components/custombutton/CustomButton";
+import { CustomButton } from "../../components/uiComponents/Button/CustomButton";
 import { generateBaseDataFile } from "../../services/api";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
 import { PFLTData, PCOFData, OTHER_INFO_OPTIONS, PFLT_COLUMNS_NAME, PCOF_COLUMNS_NAME } from "../../utils/constants/constants";

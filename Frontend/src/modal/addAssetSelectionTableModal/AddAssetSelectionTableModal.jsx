@@ -2,9 +2,9 @@ import { Modal } from 'antd';
 import { useEffect, useState } from 'preact/hooks';
 import React from 'react';
 import { AddAssetDynamicTable } from '../../components/addAssetDynamicTable/AddAssetDynamicTable';
-// import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
+// import ButtonStyles from "../../components/uiComponents/Button/ButtonStyle.module.css";
 // import {Whatif_Columns,Whatif_data} from "../../utils/Whatif_Data"
-import buttonStyle from '../../components/Buttons/ButtonStyle.module.css';
+import buttonStyle from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { generateAssetFormData, generateEmptyAssetFormData } from '../../utils/helperFunctions/addAssetFormData';
 import { CreateAssetModal } from '../createAssetModal/CreateAssetModal';
 

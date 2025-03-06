@@ -10,8 +10,8 @@ import DeleteIcon from '../../../assets/DeleteIcon.svg';
 import RightIcon from '../../../assets/RightIcon.svg';
 import DuplicateAssetIcon from '../../../assets/updateAssetIcons/DuplicateAssetIcon.svg';
 import MoreOptionsIcon from '../../../assets/updateAssetIcons/MoreOptionsIcon.svg';
-import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css';
-import { CustomButton } from '../../../components/custombutton/CustomButton';
+import ButtonStyles from '../../../components/uiComponents/Button/ButtonStyle.module.css';
+import { CustomButton } from '../../../components/uiComponents/Button/CustomButton';
 import { getUpdateAssetData, updateModifiedAssets, updateSheetValues } from '../../../services/api';
 import { updateAssetDefaultColumnsData, updateAssetModalData } from '../../../utils/constants/constants';
 import { fmtDisplayVal } from '../../../utils/helperFunctions/formatDisplayData';
@@ -20,6 +20,7 @@ import { AddAssetDetailsModal } from '../addAssetDetailsModal/AddAssetDetailsMod
 import { ExportAssetFileModal } from '../exportAssetFileModal/ExportAssetFileModal';
 import { ImportAssetFIleModal } from '../importAssetFIleModal/ImportAssetFIleModal';
 import Styles from './UpdateAssetDetailsModal.module.css';
+import { ModalComponents } from '../../../components/modalComponents';
 
 export const UpdateAssetDetailsModal = ({
 	isupdateAssetModalOpen,
@@ -312,11 +313,11 @@ export const UpdateAssetDetailsModal = ({
 	return (
 		<>
 			<Modal
-				title={<span style={{ color: '#909090', fontWeight: '500', fontSize: '14px', padding: '0 0 0 3%' }}>Update Asset Details</span>}
+				title={<ModalComponents.Title title={'Update Asset Details'} description={`Here, you have the ability to update the details of each and every asset with any value you choose and perform comprehensive 'what-if analysis' to evaluate various scenarios and potential outcomes based on those changes`} showDescription={true} />}
 				centered
 				open={isupdateAssetModalOpen}
 				onCancel={handleCancel}
-				width={'98%'}
+				width={'95%'}
 				footer={<>
 					<div key="footer-buttons" className="px-4">
 						<button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
@@ -330,10 +331,6 @@ export const UpdateAssetDetailsModal = ({
 			>
 				<>
 					<div>
-						{/* <div className={Styles.WIAnameInput}>Borrowing base may 24th-Copy</div> */}
-						<div className={Styles.WIAInformation}>
-							Here, you have the ability to update the details of each and every asset with any value you choose and perform comprehensive 'what-if analysis' to evaluate various scenarios and potential outcomes based on those changes.
-						</div>
 						<div className={Styles.modificationSwitchContainer}>
 							<Switch
 								className={Styles.modificationSwitch}

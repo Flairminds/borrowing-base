@@ -2,13 +2,13 @@ import { DatePicker, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { BackOption } from '../../components/BackOption/BackOption';
-import { CustomButton } from '../../components/custombutton/CustomButton';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { Loader } from '../../components/loader/loader';
 import { DynamicSwitchComponent } from '../../components/reusableComponents/dynamicSwichComponent/DynamicSwitchComponent';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { UploadExtractionFiles } from '../../modal/dataIngestionModals/uploadFilesModal/UploadExtractionFiles';
 import { exportBaseDataFile, getArchive, getBaseDataFilesList, getBaseFilePreviewData, getBlobFilesList, updateArchiveStatus } from '../../services/dataIngestionApi';
-import { fundOptionsArray } from '../../utils/constants/constants';
+import { fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import styles from './DataIngestionPage.module.css';
@@ -275,7 +275,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 		<>
 			<div className={styles.ingestionPageContainer}>
 				<div className={styles.ingestionPage}>
-					<BackOption onClick={() => navigate('/base-data-list')}
+					<BackOption onClick={() => navigate(PAGE_ROUTES.BASE_DATA_LIST.url)}
 						text={`<- Base Data`} />
 					<div className={styles.buttonsContainer}>
 						<div className={styles.backOptionContainer}>

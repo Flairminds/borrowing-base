@@ -2,10 +2,11 @@ import { Modal } from 'antd';
 import { useEffect, useState } from 'preact/hooks';
 import React from 'react';
 import { toast } from 'react-toastify';
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
+import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { assetSelectionList, setConfigurations } from '../../services/api';
 import { parametersForSelection } from '../../utils/parameterSelectionData';
 import Styles from './ColumnSelectionPopup.module.css';
+import { ModalComponents } from '../../components/modalComponents';
 
 export const ColumnSelectionPopup = ({setAssetSelectionData, assetSelectionData, baseFile, columnSelectionPopupOpen, setColumnSelectionPopupOpen, fundType}) => {
 
@@ -62,23 +63,14 @@ export const ColumnSelectionPopup = ({setAssetSelectionData, assetSelectionData,
 	return (
 		<>
 			<Modal
-				title={
-					<div style={{display: "flex", justifyContent: "space-between"}}>
-						<span style={{ color: '#909090', fontWeight: '600', fontSize: '18px', padding: '0 0 0 3%' }}>Select Parameters for Asset Selection</span>
-						<span style={{ color: '#909090', fontWeight: '500', fontSize: '14px', padding: '0rem 2rem' }}>*Select upto 4 Paramerts</span>
-					</div>
-				}
+				title={<ModalComponents.Title title={'Select Parameters for Asset Selection'} description={'*Select upto 4 Paramerts'} showDescription={true} />}
 				centered
 				open={columnSelectionPopupOpen}
 				onOk={setConfiguration}
 				onCancel={handleCancel}
 				width={'70%'}
 				footer={[
-					<div key="footer-buttons" className="px-4">
-						<button key="back" onClick={setConfiguration} style={{padding: '5px 10px'}} className={ButtonStyles.filledBtn}>
-							Set
-						</button>
-					</div>
+					<ModalComponents.Footer key="footer-buttons" showCancel={false} onClickSubmit={setConfiguration} submitText={'Set'} />
 				]}
 			>
 				<>

@@ -1,7 +1,7 @@
 import { Button, Modal } from 'antd';
 import React from 'react';
 import warningIcon from '../../assets/uploadFIle/warning.svg';
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
+import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import Styles from './OverWriteDataModal.module.css';
 
 export const OverWriteDataModal = ({duplicateFileModalOpen, handleoverWriteFIle, handleOverWriteModalClose}) => {

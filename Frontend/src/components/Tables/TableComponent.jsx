@@ -12,6 +12,7 @@ import { getConentrationData } from '../../services/api';
 import { countOccurrencesOfTest } from '../../utils/helperFunctions/CountOfTestStatus';
 import { sortData } from '../../utils/helperFunctions/sortTableData';
 import Styles from "./TableComponent.module.css";
+import { UIComponents } from '../uiComponents';
 
 const ConcentrationTestCount = ({imageSrc, testCountText, backgroundColor}) => {
 
@@ -224,10 +225,7 @@ export const TableComponent = ({ data, columns, showviewMore, heading, isConcent
 							{(len >= 8 && showviewMore !== false) && (
 								<tr className={Styles.tr}>
 									<td colSpan={columns.length}>
-										<button style={{ border: "none", backgroundColor: "transparent", color: "#3B7DDD", textDecoration: "underline", margin: '0.3rem 0.2rem' }}
-											onClick={ModalOpen}>
-											View other +{data[columns[0]].length - 6}
-										</button>
+										<UIComponents.Button onClick={ModalOpen} text={`View other +${data[columns[0]].length - 6}`} asText={true} />
 										<TableViewModal setOpenModal={setOpenModal} openModal={openModal} data={data} columns={columns} heading={heading} />
 									</td>
 								</tr>

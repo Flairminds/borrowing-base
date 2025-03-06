@@ -1,7 +1,7 @@
 import { Modal } from 'antd';
 import { useEffect, useState } from 'preact/hooks';
 import React from 'react';
-import buttonStyle from '../../components/Buttons/ButtonStyle.module.css';
+import buttonStyle from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { generateAssetData } from '../../utils/helperFunctions/addAssetFormData';
 import styles from './CreateAssetModal.module.css';
 

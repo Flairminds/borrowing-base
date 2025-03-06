@@ -1,7 +1,7 @@
 import {Input, Modal } from 'antd';
 import React from 'react';
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
-import { CustomButton } from '../../components/custombutton/CustomButton';
+import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 
 export const SaveAnalysisConfirmationModel = ({
 	descriptionModal,

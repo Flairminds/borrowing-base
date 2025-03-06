@@ -1,10 +1,11 @@
 import { Button, Modal, Popover } from 'antd';
 import React, { useState } from 'react';
 import { toast } from 'react-toastify';
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
+import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { EbitdaAnalysis } from '../../services/api';
 import { ParameterChange } from '../ParameterChange/ParameterChange';
 import style from './UpdateParameterModal.module.css';
+import { ModalComponents } from '../../components/modalComponents';
 
 export const UpdateParameterModal = ({
 	ebitdaModalOpen,
@@ -90,12 +91,12 @@ export const UpdateParameterModal = ({
 	return (
 		<>
 			<Modal
-				title={
-					<div style={{display: "flex", flexDirection: "column"}}>
-						<span style={{fontWeight: '700', fontSize: '18px', padding: '0 0 1.2% 4%'}}>Update Parameters</span>
-						<span style={{fontWeight: "400", fontSize: "14px", color: "#4B4B4B", padding: "0 0 1.2% 4%"}}>Here you can change EBITDA or Cash leverage of any investment and do what-if analysis.</span>
-						<span style={{fontWeight: "500", fontSize: "14px", color: "#A7A7A7", padding: "0 0 0 4%"}}>Choose the metrics</span>
-					</div>
+				title={<ModalComponents.Title title={'Update Parameters'} description={'Here you can change EBITDA or Cash leverage of any investment and perform what-if analysis'} showDescription={true} />
+					// <div style={{display: "flex", flexDirection: "column"}}>
+					// 	<span style={{fontWeight: '700', fontSize: '18px', padding: '0 0 1.2% 4%'}}>Update Parameters</span>
+					// 	<span style={{fontWeight: "400", fontSize: "14px", color: "#4B4B4B", padding: "0 0 1.2% 4%"}}>Here you can change EBITDA or Cash leverage of any investment and do what-if analysis.</span>
+					// 	<span style={{fontWeight: "500", fontSize: "14px", color: "#A7A7A7", padding: "0 0 0 4%"}}>Choose the metrics</span>
+					// </div>
 				}
 				centered
 				open={ebitdaModalOpen}
@@ -132,6 +133,7 @@ export const UpdateParameterModal = ({
 			>
 				<div className={style.updateParameterPopupContainer}>
 					<div>
+						<div style={{fontWeight: "500", fontSize: "14px"}}>Choose the metrics</div>
 						<div className={style.optionDiv}>
 							<label>
 								<input

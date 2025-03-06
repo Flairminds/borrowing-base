@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { FaRegEdit } from "react-icons/fa";
 import { useNavigate } from 'react-router';
 import { BackOption } from '../../components/BackOption/BackOption';
-import { CustomButton } from '../../components/custombutton/CustomButton';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { Loader } from '../../components/loader/loader';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { AllSecurityModal } from '../../modal/allSecurityModal/AllSecurityModal';
 import { HandleSecurityMappingModal } from '../../modal/securityMappingModals/handleSecurityMapping/HandleSecurityMappingModal';
 import { getUnmappedSecurityData } from '../../services/dataIngestionApi';
-import { COLUMN_GROUPS } from '../../utils/constants/constants';
+import { COLUMN_GROUPS, PAGE_ROUTES } from '../../utils/constants/constants';
 import { FilterMultiSelect } from '../../utils/helperFunctions/FilterMultiSelect';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from "./SecurityMappingPage.module.css";
@@ -115,7 +115,7 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 		<div>
 
 			<div className={styles.backOptionContainer}>
-				<BackOption onClick={() => navigate('/base-data-list')}
+				<BackOption onClick={() => navigate(PAGE_ROUTES.BASE_DATA_LIST.url)}
 					text={`<- Base Data`} />
 			</div>
 			<div className={styles.securityOverview}>

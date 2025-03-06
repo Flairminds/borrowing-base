@@ -1,7 +1,7 @@
 import { Button, Checkbox, DatePicker, Modal } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css';
+import ButtonStyles from '../../../components/uiComponents/Button/ButtonStyle.module.css';
 import { uploadNewFile } from '../../../services/dataIngestionApi';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import styles from './UploadExtractionFiles.module.css';

@@ -1,6 +1,6 @@
 import { Button, Modal } from 'antd';
 import React from 'react';
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
+import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { getListOfWhatIfAnalysis, lockHairCutTestData } from '../../services/api';
 import styles from './ConcentrationTestConfirmationModal.module.css';
 

@@ -1,11 +1,11 @@
 import { Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { CustomButton } from '../../components/custombutton/CustomButton';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { SourceFileModal } from '../../modal/sourceFileModal/SourceFileModal';
 import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dataIngestionApi';
-import { fundOptionsArray } from '../../utils/constants/constants';
+import { fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
 import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
@@ -27,7 +27,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 	const navigate = useNavigate();
 
 	const handleExtractNew = () => {
-		navigate('/ingestion-files-list');
+		navigate(PAGE_ROUTES.SOURCE_FILES.url);
 	};
 
 	const handleSecurityMapping = () => {
@@ -56,7 +56,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 				});
 			setPreviewPageId(row.id);
 			setPreviewFundType(row.fund);
-			navigate(`/base-data-preview/${row.id}`);
+			navigate(`/data-ingestion/base-data-preview/${row.id}`);
 		} catch (err) {
 			showToast("error", err.response.data.message);
 			setDataLoading(false);

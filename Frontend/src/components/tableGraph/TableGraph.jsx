@@ -8,6 +8,7 @@ import { useEffect } from 'preact/hooks';
 import { sortData } from '../../utils/helperFunctions/sortTableData';
 import { BarGraph } from '../barGraph/BarGraph';
 import { StackedBarGraph } from '../stackedBarGraph/StackedBarGraph';
+import { UIComponents } from '../uiComponents';
 
 
 export const TableGraph = ({title, tableData , tableColumns, chartsData,yAxis}) => {
@@ -105,10 +106,7 @@ export const TableGraph = ({title, tableData , tableColumns, chartsData,yAxis}) 
                     {(len > 9) && (
                         <tr>
                           <td colSpan={tableColumns.length} className={Styles.td}>
-                            <button style={{ border: "none", backgroundColor: "transparent", color: "#3B7DDD", textDecoration: "underline" }}
-                              onClick={ModalOpen}>
-                              View other +{tableData[tableColumns[0]].length - 6 }
-                            </button>
+                            <UIComponents.Button onClick={ModalOpen} text={`View other +${tableData[tableColumns[0]].length - 6 }`} asText={true} />
                             <TableViewModal openModal={openModal} setOpenModal={setOpenModal} data={tableData} columns={tableColumns} heading={''} />
                           </td>
                         </tr>

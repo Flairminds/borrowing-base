@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import backArrowIcon from "../../assets/assestSelection/back.svg";
 import filterIcon from "../../assets/NavbarIcons/filter.svg";
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
+import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { ColumnSelectionPopup } from '../../modal/columnSelectionPopup/ColumnSelectionPopup';
 import { uploadInitialFile } from '../../services/api';
 import Styles from './AssetSelectionPage.module.css';

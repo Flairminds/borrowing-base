@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import aboutIcon from "../../assets/NavbarIcons/aboutIcon.png";
 import search from "../../assets/NavbarIcons/SearchIcon.svg";
 import threeBoxIcon from "../../assets/NavbarIcons/threeSquares.svg";
-import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
+import ButtonStyles from "../../components/uiComponents/Button/ButtonStyle.module.css";
 import Styles from "../../components/Tables/TableComponent.module.css";
 import { getSelectedWIAAsstes, getWhatIfAnalysisData } from '../../services/api';
 import { WiaSimulationInfo } from '../WiaSimulationInfoModal/WiaSimulationInfo';

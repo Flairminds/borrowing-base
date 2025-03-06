@@ -2,7 +2,7 @@ import { Modal, Button } from 'antd';
 import parse from 'html-react-parser';
 import React from 'react';
 import waring from "../../assets/uploadFIle/warning.svg";
-import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
+import ButtonStyles from "../../components/uiComponents/Button/ButtonStyle.module.css";
 
 export const ErrorMessage = ({errorMessageModal, setErrorMessageModal, errorMessageData}) => {
 

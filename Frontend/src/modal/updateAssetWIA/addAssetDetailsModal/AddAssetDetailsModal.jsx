@@ -1,7 +1,7 @@
 import { Button, Modal } from 'antd';
 import { useState } from 'preact/hooks';
 import React from 'react';
-import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css';
+import ButtonStyles from '../../../components/uiComponents/Button/ButtonStyle.module.css';
 import { updateAssetDefaultColumnsData } from '../../../utils/constants/constants';
 import styles from './AddAssetDetailsModal.module.css';
 

@@ -1,9 +1,11 @@
 import { Button, Modal } from 'antd';
 import React from 'react';
 import { useDropzone } from 'react-dropzone';
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
+import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { AddAssetSelectionTableModal } from '../addAssetSelectionTableModal/AddAssetSelectionTableModal';
 import Styles from './AddAssetModal.module.css';
+import { ModalComponents } from '../../components/modalComponents';
+import { UIComponents } from '../../components/uiComponents';
 
 export const AddAssetModal = (
 	{
@@ -42,29 +44,22 @@ export const AddAssetModal = (
 	return (
 		<>
 			<Modal
-				title={<span style={{ color: '#909090', fontWeight: '500', fontSize: '14px', padding: '0 0 0 3%' }}>Import</span>}
+				title={<ModalComponents.Title title='Import File' />}
 				centered
 				open={isModalVisible}
 				onOk={handleOk}
 				onCancel={handleCancel}
 				width={'50%'}
 				footer={[
-					<div key="footer-buttons" className="px-4">
-						<button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
-							Cancel
-						</button>
-						<Button className={ButtonStyles.filledBtn} loading={loading} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={handleOk}>
-							Load
-						</Button>
-					</div>
+					<ModalComponents.Footer key={'footer-buttons'} onClickCancel={handleCancel} onClickSubmit={handleOk} submitText={'Load'} loading={loading} />
 				]}
 			>
 				<div className={Styles.container}>
 					<div>
-						<div>
+						{/* <div>
 							<p style={{ fontWeight: '500', fontSize: '20px', marginBottom: '-5px' }}>Upload File</p>
-						</div>
-						<br />
+						</div> */}
+						{/* <br /> */}
 						<div>
 							<div className={Styles.visible}>
 								<div {...getRootProps({ className: 'dropzone' })}>
@@ -105,7 +100,7 @@ export const AddAssetModal = (
 								>
 									Download Created Assets
 								</a>
-								<button className={ButtonStyles.filledBtn} onClick={() => isPreviewModal(true)}>Asset Selection</button>
+								<UIComponents.Button onClick={() => isPreviewModal(true)} isFilled={true} text={'Asset Selection'} />
 							</div>
 						) : null}
 						<AddAssetSelectionTableModal previewModal={previewModal} isPreviewModal={isPreviewModal} previewData={previewData} setPreviewData={setPreviewData} previewColumns={previewColumns} setAddAssetSelectedData={setAddAssetSelectedData} />

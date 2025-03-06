@@ -4,7 +4,7 @@ import React from 'react';
 import FailTestIcon from '../../assets/ConcentrationTest/FailTestIcon.svg';
 import PassTestIcon from '../../assets/ConcentrationTest/PassTestIcon.svg';
 import TotalTestIcon from '../../assets/ConcentrationTest/TotalTestIcon.svg';
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
+import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { TableComponent } from '../../components/Tables/TableComponent';
 import { getConentrationData, lockHairCutTestData } from '../../services/api';
 import { countOccurrencesOfTest } from '../../utils/helperFunctions/CountOfTestStatus';

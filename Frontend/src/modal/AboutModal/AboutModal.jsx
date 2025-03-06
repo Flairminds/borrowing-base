@@ -1,9 +1,11 @@
 import {Modal } from 'antd';
 import { useEffect, useState } from 'preact/hooks';
 import React from 'react';
-import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
+import ButtonStyles from "../../components/uiComponents/Button/ButtonStyle.module.css";
 import { intermediateMetricsTable } from '../../services/api';
 import { PreviewTable } from '../previewModal/PreviewTable';
+import { UIComponents } from '../../components/uiComponents';
+import { ModalComponents } from '../../components/modalComponents';
 
 export const AboutModal = ({isAboutModalState, aboutModalState, baseFile}) => {
 
@@ -35,11 +37,7 @@ export const AboutModal = ({isAboutModalState, aboutModalState, baseFile}) => {
 				onCancel={handleCancel}
 				width={'50%'}
 				footer={[
-					<div key="footer-buttons" className="px-4">
-						<button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
-							Cancel
-						</button>
-					</div>
+					<ModalComponents.Footer key={'footer-buttons'} onClickCancel={handleCancel} showSubmit={false} />
 				]}
 			>
 				<>

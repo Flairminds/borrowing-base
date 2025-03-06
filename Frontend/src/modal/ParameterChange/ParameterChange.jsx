@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import crossIcon from "../../assets/NavbarIcons/cross.svg";
 import tickIcon from "../../assets/NavbarIcons/tick.svg";
-import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
+import ButtonStyles from "../../components/uiComponents/Button/ButtonStyle.module.css";
 import { ebitdaColumns, leverageColumns } from "../../utils/Options";
 import stylesUload from "./ParameterChange.module.css";
 

@@ -10,6 +10,18 @@
  
 }
 
+.textBtn{
+    color:  #3B7DDD !important;
+    border:  none!important;
+    background-color: white !important;
+    /* border:  1px solid  #0EB198!important; */
+    border-radius: 6px !important;
+    /* padding: 8px 25px 8px 25px; */
+    margin: 0.1rem;
+    padding: 0;
+    text-align: left;
+}
+
 .filledBtn
 {
   color: white !important;

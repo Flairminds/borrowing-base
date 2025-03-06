@@ -1,7 +1,7 @@
 import { Select, Space } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { CustomButton } from '../../components/custombutton/CustomButton';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { AddAdditionalInformationModal } from '../../modal/addAdditionalInformationModal/AddAdditionalInformationModal';
 import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api';
@@ -12,6 +12,7 @@ import { fmtDisplayVal } from '../../utils/helperFunctions/formatDisplayData';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
+import { PAGE_ROUTES } from '../../utils/constants/constants';
 
 export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType}) => {
 	const navigate = useNavigate();
@@ -43,7 +44,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			// handleBaseDataPreview();
 			showToast('info', 'No report date selected. Redirecting...');
 			setTimeout(() => {
-				navigate('/base-data-list');
+				navigate(PAGE_ROUTES.BASE_DATA_LIST.url);
 			}, 1500);
 		}
 		baseFilePreviewData.baseData?.columns.forEach(c => {

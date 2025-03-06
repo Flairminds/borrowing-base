@@ -1,6 +1,6 @@
 import Modal from "antd/es/modal/Modal";
 import React, {useState } from "react";
-import { CustomButton } from "../../components/custombutton/CustomButton";
+import { CustomButton } from "../../components/uiComponents/Button/CustomButton";
 import {postAddSecurityMapping } from "../../services/dataIngestionApi";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./AddSecurityMapping.module.css";

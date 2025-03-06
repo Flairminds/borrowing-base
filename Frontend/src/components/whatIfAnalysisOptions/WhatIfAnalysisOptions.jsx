@@ -1,6 +1,5 @@
 import { Select } from 'antd'
 import React from 'react'
-import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
 // import { updateAssetData } from '../../utils/updateAssetData';
 import { getUpdateAssetData } from '../../services/api';
 import { toast } from 'react-toastify';

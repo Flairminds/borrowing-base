@@ -11,7 +11,7 @@
     "lint-errors": "eslint --quiet \"src/**/*.{js,jsx}\"",
     "lint-errors-chart": "eslint --format summary-chart \"src/**/*.{js,jsx}\"",
     "preview": "vite preview",
-    "lint-fix": "eslint --fix \"src/modal/**/*.{js,jsx}\""
+    "lint-fix": "eslint --fix \"src/components/**/*.{js,jsx}\""
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.5.0",
