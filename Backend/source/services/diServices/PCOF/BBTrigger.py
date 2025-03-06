@@ -291,7 +291,7 @@ def trigger_pcof_bb(bdi_id):
             'Borrowing Base Other Adjustment': [None],
             'Borrowing Base Industry Concentration': [None], 
             'Borrowing Base Comment': [None],
-            'Is Eligible Issuer': [None]
+            'Is Eligible Issuer': ['Yes']
         }
         
         cash_row_df = pd.DataFrame(cash_row_data)
@@ -353,6 +353,7 @@ def trigger_pcof_bb(bdi_id):
         }
         pickled_xl_df_map = pickle.dumps(xl_df_map)
 
+        
         included_excluded_assets = pcofDashboardService.pcof_included_excluded_assets(xl_df_map)
 
         dt_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")

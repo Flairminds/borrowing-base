@@ -26,6 +26,7 @@ def get_parameters(base_data_file, type):
     wia_loan_list_df = wia_loan_list_df[["Security Name", type_col, opposite_type_col]]
     wia_loan_list_df = wia_loan_list_df.rename(columns={type_col: type, opposite_type_col: opposite_type})
 
+    wia_loan_list_df[[type, opposite_type]] = wia_loan_list_df[[type, opposite_type]].fillna(0)
     response = {}
 
     columns = [{
