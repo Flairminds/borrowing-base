@@ -75,7 +75,6 @@ export const Navbar = () => {
 					<img src={NotificationIcon} alt="Notification icon" className='me-1' />
 					{/* <img  src={profile} className='me-3' /> */}
 					<Popover content={customizationContent} placement="bottomLeft" title="">
-						{/* <Button type="primary">Hover me</Button> */}
 						{/* <SettingOutlined style={{ fontSize: '25px'}} /> */}
 					</Popover>
 

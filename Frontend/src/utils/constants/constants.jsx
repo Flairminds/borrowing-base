@@ -38,10 +38,21 @@ export const fundOptionsArray = [
 	{ value: 2, label: 'PFLT' }
 ];
 
+export const PAGE_ROUTES = {
+	BASE_DATA_LIST: {
+		url: '/data-ingestion/base-data',
+		header: 'Extracted Base Data'
+	},
+	SOURCE_FILES: {
+		url: '/data-ingestion/ingestion-files-list',
+		header: 'Uploaded Source Files'
+	}
+};
+
 export const sidebarItemsArray = [
 	{ imgSrc: HomeIcon, imgAlt: "Home Icon", name: 'Home', route: '/' },
 	{ imgSrc: ThreeBarIcon, imgAlt: "ThreeBar Icon", name: 'Concentration Test Setup', route: '/fund-setup' },
-	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: '/base-data-list' },
+	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: PAGE_ROUTES.BASE_DATA_LIST.url },
 	{ imgSrc: settingIcon, imgAlt: "Config Icon", name: 'Configuration', route: '/configuration' }
 	// { imgSrc: DoneCheckIcon, imgAlt: "DoneCheck Icon" },
 	// { imgSrc: suitcasePortfolioIcon, imgAlt: "suitcasePortfolio Icon" },
@@ -430,7 +441,6 @@ export const cloWhatIfData = {
 		]}
 };
 
-
 export const COLUMN_GROUPS = {
 	unmapped: [
 		{ key: "cashfile_securities", label: "Security/Facility Name" },
@@ -444,7 +454,6 @@ export const COLUMN_GROUPS = {
 
 	]
 };
-
 
 export const PFLT_COLUMNS_NAME = {
 	"input": {

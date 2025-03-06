@@ -7,7 +7,7 @@ import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
 import PCOF_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pcof_other_info.xlsx';
 import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pflt_other_info.xlsx';
-import { CustomButton } from "../../components/custombutton/CustomButton";
+import { CustomButton } from "../../components/uiComponents/Button/CustomButton";
 import { generateBaseDataFile } from "../../services/api";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
 import { PFLTData, PCOFData, OTHER_INFO_OPTIONS, PFLT_COLUMNS_NAME, PCOF_COLUMNS_NAME } from "../../utils/constants/constants";
@@ -247,7 +247,7 @@ export const AddAdditionalInformationModal = (
 	const { getRootProps, getInputProps } = useDropzone({
 		accept: {
 			'text/csv': [],
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [],
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': []
 		},
 		multiple: false,
 		onDrop: (acceptedFiles) => {
@@ -407,7 +407,7 @@ export const AddAdditionalInformationModal = (
 					<>
 						{(typeof data === 'object' && data !== null)
 							? <a onClick={exportSample} style={{paddingRight: "1rem", color: "blue", textDecoration: "underline"}}>Export sample file template</a>
-							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{paddingRight: "1rem"}}>Export sample file template</a> 
+							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{paddingRight: "1rem"}}>Export sample file template</a>
 						}
 					</>
 				)}
@@ -489,7 +489,7 @@ export const AddAdditionalInformationModal = (
 																						width: "100%",
 																						padding: "4px",
 																						borderRadius: "8px",
-																						border: "1px solid rgba(201, 196, 196, 0.6)",
+																						border: "1px solid rgba(201, 196, 196, 0.6)"
 																					}}
 																				/>
 																			) : (
@@ -499,7 +499,7 @@ export const AddAdditionalInformationModal = (
 																						width: "100%",
 																						padding: "4px",
 																						borderRadius: "8px",
-																						border: "1px solid rgba(201, 196, 196, 0.6)",
+																						border: "1px solid rgba(201, 196, 196, 0.6)"
 																					}}
 																				/>
 																			)}

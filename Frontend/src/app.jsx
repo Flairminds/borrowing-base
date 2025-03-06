@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Route, Routes } from 'react-router';
+import { Route, Routes, Navigate } from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './app.css';
@@ -107,7 +107,8 @@ export function App() {
 							/>
 						}
 					/>
-					<Route path='/ingestion-files-list'
+					<Route path='data-ingestion' element={<Navigate to="base-data" replace />} />
+					<Route path='data-ingestion/ingestion-files-list'
 						element={
 							<DataIngestionPage
 								dataIngestionFileList={dataIngestionFileList}
@@ -119,7 +120,7 @@ export function App() {
 							/>
 						}
 					/>
-					<Route path='/base-data-list'
+					<Route path='data-ingestion/base-data'
 						element={
 							<BaseDataFileList
 								setBaseFilePreviewData={setBaseFilePreviewData}
@@ -128,7 +129,7 @@ export function App() {
 							/>
 						}
 					/>
-					<Route path='/base-data-preview/:infoId'
+					<Route path='data-ingestion/base-data-preview/:infoId'
 						element={
 							<BorrowingBasePreviewPage
 								baseFilePreviewData={baseFilePreviewData}

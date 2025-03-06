@@ -9,7 +9,7 @@ import cross from "../../assets/Portflio/cross.svg";
 import fileImg from "../../assets/Portflio/file.svg";
 import PCOFSampleFile from '../../assets/template File/10.31.2023_PCOF_IV_Borrowing_Base_Basedata 5.xlsx';
 import PFLTSampleFile from '../../assets/template File/PFLT 09.30.24 Borrowing Base Data.xlsx';
-import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
+import ButtonStyles from "../../components/uiComponents/Button/ButtonStyle.module.css";
 import { ErrorMessage } from '../../modal/errorMessageModal/ErrorMessage';
 import { OverWriteDataModal } from '../../modal/overWriteDataModal/OverWriteDataModal';
 import { uploadedFileList, validateInitialFile, assetSelectionList } from '../../services/api';
@@ -21,6 +21,8 @@ import { Calender } from '../calender/Calender';
 import { ProgressBar } from '../progressBar/ProgressBar';
 import stylesUload from './UploadFile.module.css';
 import Radio from 'antd/es/radio/radio';
+import { UIComponents } from '../uiComponents';
+import { ModalComponents } from '../modalComponents';
 
 
 export const UploadFile = ({
@@ -320,14 +322,7 @@ export const UploadFile = ({
 						onCancel={handleCancel}
 						width={'60%'}
 						footer={[
-							<div key="footer-buttons" className="px-4">
-								<button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
-									Cancel
-								</button>
-								<Button className={ButtonStyles.filledBtn} loading={loading} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={handleFileUpload}>
-									Load
-								</Button>
-							</div>
+							<ModalComponents.Footer key={'footer-buttons'} onClickCancel={handleCancel} onClickSubmit={handleFileUpload} loading={loading} submitText={'Load'} />
 						]}
 					>
 						<div style={{ marginBottom: '1rem' }}>
@@ -455,9 +450,7 @@ export const UploadFile = ({
 															<td className={stylesUload.td} key={colIndex}>{file[column.key]}</td>
 														))}
 														<td className={stylesUload.td}>
-															<button className={ButtonStyles.filledBtn} onClick={() => handleFileClick(file.base_data_file_id, file.file_name, file.user_id, file.closing_date, file.fund_type)}>
-																Use
-															</button>
+															<UIComponents.Button onClick={() => handleFileClick(file.base_data_file_id, file.file_name, file.user_id, file.closing_date, file.fund_type)} isFilled={true} text={'Use'} />
 														</td>
 													</tr>
 												))}

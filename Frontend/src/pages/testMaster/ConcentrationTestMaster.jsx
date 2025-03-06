@@ -1,13 +1,14 @@
 import { Select, Switch, Button } from 'antd';
 import React, { useState, useEffect } from 'react';
 import {toast} from 'react-toastify';
-import buttonStyles from '../../components/Buttons/ButtonStyle.module.css';
+import buttonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { StyledSelectConcTest } from '../../components/elements/styledSelectConcTest/StyledSelectConcTest';
 import { changeConcentrationTestMasterData, getConcentrationTestMasterData } from '../../services/api';
 import { defaultFund, ConctestMasterdropdownValues } from '../../utils/configurations/fundsDetails';
 import { convertToDropdownOptions, getConcTestChnages, styledDropdownOptions } from '../../utils/helperFunctions/concentrationMasterData';
 import styles from './ConcentrationTestMaster.module.css';
 import { FUND_BG_COLOR } from '../../utils/styles';
+import { UIComponents } from '../../components/uiComponents';
 
 export const ConcentrationTestMaster = () => {
 	const [tableData, setTableData] = useState([]);
@@ -213,7 +214,7 @@ export const ConcentrationTestMaster = () => {
 			</div>
 
 			<div className={styles.updateBtn}>
-				<Button onClick={submitChnages} loading={submitBtnLoading} className={buttonStyles.filledBtn}>{submitBtnLoading ? 'Updating' : 'Update'}</Button>
+				<UIComponents.Button onClick={submitChnages} loading={submitBtnLoading} text={submitBtnLoading ? 'Updating' : 'Update'} />
 			</div>
 
 		</>

@@ -1,7 +1,7 @@
 import { Select, Space } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { CustomButton } from '../../components/custombutton/CustomButton';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { AddAdditionalInformationModal } from '../../modal/addAdditionalInformationModal/AddAdditionalInformationModal';
 import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api';
@@ -12,6 +12,8 @@ import { fmtDisplayVal } from '../../utils/helperFunctions/formatDisplayData';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
+import { PAGE_ROUTES } from '../../utils/constants/constants';
+import { UIComponents } from '../../components/uiComponents';
 
 export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType}) => {
 	const navigate = useNavigate();
@@ -43,7 +45,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			// handleBaseDataPreview();
 			showToast('info', 'No report date selected. Redirecting...');
 			setTimeout(() => {
-				navigate('/base-data-list');
+				navigate(PAGE_ROUTES.BASE_DATA_LIST.url);
 			}, 1500);
 		}
 		baseFilePreviewData.baseData?.columns.forEach(c => {
@@ -212,8 +214,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						</div>
 					</div>
 					<div>
-						<button onClick={showModal} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }} title={'Add more securities data in the base data'}>Add Securities Data</button>
-						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Trigger Calculation</button>
+						<UIComponents.Button onClick={showModal} title={'Add more securities data in the base data'} isFilled={true} text='Add Securities Data' />
+						<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' />
 					</div>
 				</div>
 				<div>

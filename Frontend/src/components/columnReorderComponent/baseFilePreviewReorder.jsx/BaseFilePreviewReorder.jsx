@@ -4,7 +4,7 @@ import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { updateColumnsOrder } from '../../../services/dataIngestionApi';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
-import { CustomButton } from '../../custombutton/CustomButton';
+import { CustomButton } from '../../uiComponents/Button/CustomButton';
 import styles from './BaseFilePreviewReorder.module.css';
 
 const ItemType = "COLUMN";
