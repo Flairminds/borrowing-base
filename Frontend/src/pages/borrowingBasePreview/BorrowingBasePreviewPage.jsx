@@ -122,7 +122,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 					baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
 					cardData: result?.card_data && result.card_data[0],
 					otherInfo: result.other_info,
-					fundType: result?.fund_type
+					fundType: result?.fund_type,
+					infoId: result?.other_info?.extraction_info_id
 				});
 			setFilteredData(result?.base_data_table?.data);
 		} catch (err) {
