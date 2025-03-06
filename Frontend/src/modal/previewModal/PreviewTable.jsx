@@ -56,7 +56,7 @@ export const PreviewTable = ({whatIfAnalysisId, dataPreviewPopup, setDataPreview
             ))}
           </div>
 
-          {whatIfAnalysisType ==="base_data_file"&&(
+          {whatIfAnalysisType === "base_data_file" &&(
              
                  <div className={Styles.tableContainer}>
                  <table className={Styles.table}>

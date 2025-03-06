@@ -210,7 +210,7 @@ export const assetSelectionList = (base_file_id) => {
 };
 
 export const intermediateMetricsTable = (base_data_file_id, whatIfAnalysisId) => {
-	const response = axios.post(`${ApiURL}/get_intermediate_metrics`, {
+	const response = axios.post(`${ApiURL}/dashboard/get_intermediate_metrics`, {
 		"base_data_file_id": base_data_file_id,
 		"what_if_id": whatIfAnalysisId
 	}, {
@@ -255,7 +255,7 @@ export const drillDownData = (user_id, base_data_file_id, col_name, row_name, wh
 		"what_if_id": whatIfAnalysisId
 	};
 
-	const res = axios.post(`${ApiURL}/get_mathematical_formula`, payload);
+	const res = axios.post(`${ApiURL}/dashboard/get_mathematical_formula`, payload);
 	return res;
 };
 

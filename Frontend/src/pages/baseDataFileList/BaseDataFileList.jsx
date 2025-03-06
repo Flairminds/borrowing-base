@@ -127,7 +127,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 	};
 
 	const handleSourceFileClick = (fileDetails) => {
-		setPopupContent(fileDetails); // Pass only the clicked file's details
+		setPopupContent(fileDetails);
 		setIsPopupOpen(true);
 	};
 
