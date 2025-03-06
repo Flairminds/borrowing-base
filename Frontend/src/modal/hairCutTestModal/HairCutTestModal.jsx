@@ -7,6 +7,7 @@ import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.modul
 import { getConenctrationAnalysis } from '../../services/api';
 import { getLatestEntryOfModification } from '../../utils/helperFunctions/hairCutModifications';
 import Styles from './HairCutTestModal.module.css';
+import { ModalComponents } from '../../components/modalComponents';
 
 export const HairCutTestModal = (
 	{ isHairCutTestModalOpen,
@@ -132,16 +133,7 @@ export const HairCutTestModal = (
 				// onOk={handleOk}
 				onCancel={handleCancel}
 				width={'80%'}
-				footer={[
-					<div key="footer-buttons" className="px-4">
-						<button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
-							Cancel
-						</button>
-						<Button className={ButtonStyles.filledBtn} loading={loading} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={handleReview}>
-							Review
-						</Button>
-					</div>
-				]}
+				footer={[<ModalComponents.Footer key='footer-buttons' onClickCancel={handleCancel} onClickSubmit={handleReview} loading={loading} submitText='Review' />]}
 			>
 				<>
 					<div className={Styles.modificationSwitchContainer}>

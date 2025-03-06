@@ -1,6 +1,7 @@
 import { Button, Modal } from 'antd';
 import React from 'react';
 import warningIcon from '../../assets/uploadFIle/warning.svg';
+import { ModalComponents } from '../../components/modalComponents';
 import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import Styles from './OverWriteDataModal.module.css';
 
@@ -24,19 +25,7 @@ export const OverWriteDataModal = ({duplicateFileModalOpen, handleoverWriteFIle,
 			onOk={handleoverWriteFIle}
 			onCancel={handleOverWriteModalClose}
 			width={'50%'}
-			footer={[
-				<div key="footer-buttons" className="px-4">
-					<button key="back" onClick={handleOverWriteModalClose} className={ButtonStyles.outlinedBtn}>
-						No
-					</button>
-					<Button className={ButtonStyles.filledBtn}
-						key="submit" type="primary" style={{ backgroundColor: '#0EB198' }}
-						onClick={handleoverWriteFIle}
-					>
-						Yes
-					</Button>
-				</div>
-			]}
+			footer={[<ModalComponents.Footer key='footer-buttons' onClickCancel={handleOverWriteModalClose} onClickSubmit={handleoverWriteFIle} submitText='Yes' />]}
 			>
 				<div>
 				</div>

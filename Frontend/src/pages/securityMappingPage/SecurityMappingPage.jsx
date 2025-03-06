@@ -3,7 +3,7 @@ import { FaRegEdit } from "react-icons/fa";
 import { useNavigate } from 'react-router';
 import { BackOption } from '../../components/BackOption/BackOption';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
-import { Loader } from '../../components/loader/loader';
+import { UIComponents } from '../../components/uiComponents';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { AllSecurityModal } from '../../modal/allSecurityModal/AllSecurityModal';
 import { HandleSecurityMappingModal } from '../../modal/securityMappingModals/handleSecurityMapping/HandleSecurityMappingModal';
@@ -148,7 +148,7 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 					</div>
 
 				</div>
-				{dataLoading ? <div style={{textAlign: 'center'}}><Loader /></div> :
+				{dataLoading ? <div style={{textAlign: 'center'}}><UIComponents.Loader /></div> :
 					<DynamicTableComponents data={filteredData} columns={unmappedSecurities?.columns} initialAdditionalColumns={initialAdditionalColumns} additionalColumns={additionalColumns} />}
 			</div>
 			<HandleSecurityMappingModal isOpen={isMappingPopupOpen} setIsOpen={setIsMappingPopupOpen} selectedSecurities={selectedSecurities} getMappingData={getMappingData} />

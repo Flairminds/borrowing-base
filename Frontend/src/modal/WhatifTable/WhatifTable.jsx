@@ -8,6 +8,7 @@ import ButtonStyles from "../../components/uiComponents/Button/ButtonStyle.modul
 import Styles from "../../components/Tables/TableComponent.module.css";
 import { getSelectedWIAAsstes, getWhatIfAnalysisData } from '../../services/api';
 import { WiaSimulationInfo } from '../WiaSimulationInfoModal/WiaSimulationInfo';
+import { UIComponents } from '../../components/uiComponents';
 
 export const WhatifTable = ({simulationType, setSimulationType, data, columns, setTablesData, setTableModal, setWhatifAnalysisPerformed, selectedRow, setSelectedRow }) => {
 	const [selectedWIA, setSelectedWIA] = useState("");
@@ -142,7 +143,7 @@ export const WhatifTable = ({simulationType, setSimulationType, data, columns, s
 				<WiaSimulationInfo simulationType={simulationType} isWiaSimulationModal={isWiaSimulationModal} wiaSimulationModal={wiaSimulationModal} selectedWIA={selectedWIA} />
 			</div>
 			<div style={{display: "flex", justifyContent: "end", paddingRight: "1.2rem", paddingTop: "1rem"}}>
-				<button onClick={handleUseBtn} className={ButtonStyles.filledBtn}>Use</button>
+				<UIComponents.Button onClick={handleUseBtn} text='Use' />
 			</div>
 		</div>
 	);

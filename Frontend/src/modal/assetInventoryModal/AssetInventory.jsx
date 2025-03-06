@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import ButtonStyles from "../../components/uiComponents/Button/ButtonStyle.module.css";
 import { assetInventory } from "../../utils/asset";
 import styles from "./AssestInventory.module.css";
+import { ModalComponents } from '../../components/modalComponents';
 
 export const AssetInventory = ({ isAssetInventoryModal, setIsAssetInventoryModal }) => {
 	const [selectedSheet, setSelectedSheet] = useState('Included');
@@ -18,16 +19,11 @@ export const AssetInventory = ({ isAssetInventoryModal, setIsAssetInventoryModal
 	return (
 		<div>
 			<Modal
-				title={<span style={{ color: '#909090', fontWeight: '500', fontSize: '14px', padding: '0 0 0 3%' }}>Asset Inventory</span>}
+				title={<ModalComponents.Title title='Asset Inventory' />}
 				centered
 				visible={isAssetInventoryModal}
 				width={'70%'}
-				footer={[
-					<div key="footer-buttons" className="px-4">
-						<button key="cancel" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
-							Cancel
-						</button>
-					</div>
+				footer={[<ModalComponents.Footer key='footer-buttons' onClickCancel={handleCancel} showSubmit={false} />
 				]}
 			>
 				<div className={styles.tabsContainer}>

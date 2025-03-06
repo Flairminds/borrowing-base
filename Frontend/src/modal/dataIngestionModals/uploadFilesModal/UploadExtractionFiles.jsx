@@ -5,6 +5,7 @@ import ButtonStyles from '../../../components/uiComponents/Button/ButtonStyle.mo
 import { uploadNewFile } from '../../../services/dataIngestionApi';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import styles from './UploadExtractionFiles.module.css';
+import { ModalComponents } from '../../../components/modalComponents';
 
 export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopupOpen, blobFilesList }) => {
 
@@ -80,16 +81,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 				open={uploadFilesPopupOpen}
 				onCancel={handleCancel}
 				width={'70%'}
-				footer={
-					<div className='px-4'>
-						<button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
-							Cancel
-						</button>
-						<Button loading={loading} className={ButtonStyles.filledBtn} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={handleFileUpload}>
-							Load
-						</Button>
-					</div>
-				}
+				footer={<ModalComponents.Footer onClickCancel={handleCancel} onClickSubmit={handleFileUpload} loading={loading} submitText='Load' />}
 			>
 				<>
 					<div>

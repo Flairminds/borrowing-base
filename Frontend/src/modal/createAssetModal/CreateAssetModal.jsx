@@ -4,6 +4,7 @@ import React from 'react';
 import buttonStyle from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { generateAssetData } from '../../utils/helperFunctions/addAssetFormData';
 import styles from './CreateAssetModal.module.css';
+import { UIComponents } from '../../components/uiComponents';
 
 export const CreateAssetModal = ({createAssetModalOpen, setCreateAssetModalOpen, createAssetFormData, setCreateAssetFormData, modifyAssetsData, modificationData, showModifyButton, setShowModifyButton}) => {
 
@@ -95,8 +96,8 @@ export const CreateAssetModal = ({createAssetModalOpen, setCreateAssetModalOpen,
 				</div>
 
 				<div className={styles.submitBtn}>
-					<button className={buttonStyle.filledBtn} style={{margin: '0rem 1rem', padding: '0.3rem '}} onClick={() => handleCreateButton()}>Create Asset</button>
-					{showModifyButton && <button className={buttonStyle.filledBtn} style={{margin: '0rem 1rem', padding: '0.3rem '}} onClick={() => handleModifyButton()}>Modify Asset</button>}
+					<UIComponents.Button onClick={() => handleCreateButton()} text='Create Asset' isFilled={true} />
+					{showModifyButton && <UIComponents.Button onClick={() => handleModifyButton()} text='Modify Asset' isFilled={true} />}
 				</div>
 
 				{/* <div className={styles.submitBtn}>

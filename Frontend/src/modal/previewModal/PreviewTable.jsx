@@ -1,6 +1,6 @@
 import { Modal } from 'antd';
 import React, { useState } from 'react';
-
+import { UIComponents } from '../../components/uiComponents';
 import { drillDownData } from '../../services/api';
 import { DrillDownModal } from '../drillDownModal/DrillDownModal';
 import Styles from './PreviewTable.module.css';
@@ -181,9 +181,7 @@ export const PreviewTable = ({whatIfAnalysisId, dataPreviewPopup, setDataPreview
 															{row[col.key]?.previous_value}
 															{colIndex === 0 && (
 																<>
-																	<Button type="primary" size="small" className={Styles.actionButton}>
-																		New
-																	</Button>
+																	<UIComponents.Button size='small' text='New' />
 																</>
 															)}
 														</>

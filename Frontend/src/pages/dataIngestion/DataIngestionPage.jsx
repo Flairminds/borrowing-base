@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { BackOption } from '../../components/BackOption/BackOption';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
-import { Loader } from '../../components/loader/loader';
+import { UIComponents } from '../../components/uiComponents';
 import { DynamicSwitchComponent } from '../../components/reusableComponents/dynamicSwichComponent/DynamicSwitchComponent';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { UploadExtractionFiles } from '../../modal/dataIngestionModals/uploadFilesModal/UploadExtractionFiles';
@@ -317,7 +317,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 							</div>
 						</div> */}
 
-					{dataLoading ? <Loader /> :
+					{dataLoading ? <UIComponents.Loader /> :
 						<><div className={styles.tableContainer}>
 							{
 								archiveToggle ?

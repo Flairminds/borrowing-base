@@ -2,6 +2,7 @@ import {Input, Modal } from 'antd';
 import React from 'react';
 import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
+import { ModalComponents } from '../../components/modalComponents';
 
 export const SaveAnalysisConfirmationModel = ({
 	descriptionModal,
@@ -20,23 +21,10 @@ export const SaveAnalysisConfirmationModel = ({
 			// onOk={handleSaveEbita}
 			onCancel={handleCancel}
 			width={'50%'}
-			footer={[
-				<div key="footer-buttons" className="px-4">
-					<button key="back" onClick={() => {
-						isSetDescriptionModal(false);
-						setDescriptionInput('');
-					}} className={ButtonStyles.outlinedBtn}>
-						Cancel
-					</button>
-					<CustomButton
-						isFilled={true}
-						loading={whatIfanalysisLoader}
-						loadingText="Saving..."
-						text="Save"
-						onClick={SaveWhatIfAnalysis}
-					/>
-				</div>
-			]}
+			footer={[<ModalComponents.Footer key='footer-buttons' onClickCancel={() => {
+				isSetDescriptionModal(false);
+				setDescriptionInput('');
+			}} loading={whatIfanalysisLoader} submitText='Save' onClickSubmit={SaveWhatIfAnalysis} />]}
 		>
 			<>
 				<Input

@@ -2,6 +2,7 @@ import { Button, Modal } from 'antd';
 import React, { useState } from 'react';
 import { TableComponent } from '../../components/Tables/TableComponent';
 import stylesModalTable from "./TableViewModal.module.css";
+import { UIComponents } from '../../components/uiComponents';
 
 export const TableViewModal = ({setOpenModal, openModal, data, columns, heading}) => {
 	return (
@@ -22,8 +23,8 @@ export const TableViewModal = ({setOpenModal, openModal, data, columns, heading}
 			>
 				<div className={stylesModalTable.main}>
 					<div className={stylesModalTable.btnDiv}>
-						<button className={stylesModalTable.buttonsFilled}>Included</button>
-						{/* <button className={stylesModalTable.buttons}>Not included</button> */}
+						<UIComponents.Button isFilled={true} text='Included' />
+						{/* <UIComponents.Button text='Not included' /> */}
 					</div>
 					<div>
 						<TableComponent data={data} columns={columns} showviewMore={false} />

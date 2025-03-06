@@ -3,6 +3,7 @@ import parse from 'html-react-parser';
 import React from 'react';
 import waring from "../../assets/uploadFIle/warning.svg";
 import ButtonStyles from "../../components/uiComponents/Button/ButtonStyle.module.css";
+import { ModalComponents } from '../../components/modalComponents';
 
 export const ErrorMessage = ({errorMessageModal, setErrorMessageModal, errorMessageData}) => {
 
@@ -28,18 +29,7 @@ export const ErrorMessage = ({errorMessageModal, setErrorMessageModal, errorMess
 				// onOk={handleEbitaAnalysis}
 				onCancel={() => setErrorMessageModal(false)}
 				width={'50%'}
-				footer={[
-					<div key="footer-buttons" >
-						{/* <button key="back" onClick={()=>setEbitdaModalOpen(false)} className={ButtonStyles.outlinedBtn}>
-                    Cancel
-                </button> */}
-						<Button className={ButtonStyles.filledBtn}
-							key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={() => setErrorMessageModal(false)}
-						>
-							Got it
-						</Button>
-					</div>
-				]}
+				footer={[<ModalComponents.Footer key='footer-buttons' onClickSubmit={() => setErrorMessageModal(false)} submitText='Got It' showCancel={false} />]}
 			>
 				<div style={{margin: '1rem 1rem'}}>
 					{/* <Input

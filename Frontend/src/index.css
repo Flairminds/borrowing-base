@@ -1,3 +1,16 @@
+:root {
+	--primary-theme-color: #0EB198;
+	--primary-text-color: black;
+	--primary-btn-text-color: white;
+	--secondary-text-color: #2A2E34;
+	--invert-theme-color: white;
+	--invert-text-color: white;
+	--invert-btn-text-color: black;
+	--primary-link-color: #5196ff;
+	--error-text-color: red;
+	--border-radius: 5px;
+}
+
 /* :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

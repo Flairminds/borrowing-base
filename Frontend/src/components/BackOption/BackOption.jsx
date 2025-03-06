@@ -1,7 +1,6 @@
-import { Button } from "antd";
 import 'antd/dist/reset.css';
 import React from 'react';
-import styles from './backoption.module.css';
+import { UIComponents } from "../uiComponents";
 
 export const BackOption = ({
 	text = '<- Back',
@@ -11,15 +10,7 @@ export const BackOption = ({
 	customStyle = {},
 	btnDisabled = false
 }) => {
-  	return (
-		<div>
-			<Button onClick={onClick} loading={loading}
-				className={styles.filledBtn}
-				style={customStyle}
-				disabled={btnDisabled}
-			>
-				{loading ? loadingText : text}
-			</Button >
-		</div>
+	return (
+		<UIComponents.Button onClick={onClick} loading={loading} asLink={true} disabled={btnDisabled} text={loading ? loadingText : text} />
 	);
 };

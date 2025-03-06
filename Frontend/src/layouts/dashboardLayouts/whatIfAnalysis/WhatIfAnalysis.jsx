@@ -24,7 +24,6 @@ import { UpdateParameterModal } from '../../../modal/updateParameterModal/Update
 import { WhatIfAnalysisLib } from '../../../modal/whatIfAnalysisLibrary/WhatIfAnalysisLib';
 import { EbitdaAnalysis, addNewAsset, changeParameter, downLoadReportSheet, downloadExcelAssest, getListOfWhatIfAnalysis, getPreviewTable, intermediateMetricsTable, saveWhatIfAnalysis } from '../../../services/api';
 import Styles from './WhatIfAnalysis.module.css';
-// import { LoaderFullPage } from '../../../components/loader/loader';
 
 export const WhatIfAnalysis = ({
 	getTrendGraphData,

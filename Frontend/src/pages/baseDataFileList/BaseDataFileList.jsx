@@ -9,7 +9,7 @@ import { fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
 import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
-import { Loader, LoaderSmall } from '../../components/loader/loader';
+import { UIComponents } from '../../components/uiComponents';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import { Calender } from '../../components/calender/Calender';
 
@@ -223,7 +223,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 						<CustomButton isFilled={true} onClick={handleExtractNew} text="Extract New Base Data" />
 					</div>
 				</div>
-				{dataLoading ? <Loader /> :
+				{dataLoading ? <UIComponents.Loader /> :
 					<div className={styles.baseDataTableContainer}>
 						<DynamicTableComponents data={filteredData} columns={baseDataFilesList?.columns} additionalColumns={columnsToAdd} />
 					</div>}

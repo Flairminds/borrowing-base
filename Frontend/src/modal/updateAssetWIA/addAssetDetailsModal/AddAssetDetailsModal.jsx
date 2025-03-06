@@ -4,6 +4,7 @@ import React from 'react';
 import ButtonStyles from '../../../components/uiComponents/Button/ButtonStyle.module.css';
 import { updateAssetDefaultColumnsData } from '../../../utils/constants/constants';
 import styles from './AddAssetDetailsModal.module.css';
+import { ModalComponents } from '../../../components/modalComponents';
 
 export const AddAssetDetailsModal = (
 	{
@@ -39,16 +40,7 @@ export const AddAssetDetailsModal = (
 			style={{zIndex: 100}}
 			onCancel={handleCancel}
 			width={'75%'}
-			footer={<>
-				<div key="footer-buttons" className="px-4">
-					<button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
-						Cancel
-					</button>
-					<Button className={ButtonStyles.filledBtn} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={handleAddDeleteAssets}>
-						Yes
-					</Button>
-				</div>
-			</>}
+			footer={<ModalComponents.Footer key='footer-buttons' onClickCancel={handleCancel} onClickSubmit={handleAddDeleteAssets} submitText='Yes' />}
 		>
 			{addDeleteAssetData.type != 'delete' ?
 				<div className={styles.formContainer}>

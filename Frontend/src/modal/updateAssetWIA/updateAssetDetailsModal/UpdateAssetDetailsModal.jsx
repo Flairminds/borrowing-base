@@ -318,16 +318,7 @@ export const UpdateAssetDetailsModal = ({
 				open={isupdateAssetModalOpen}
 				onCancel={handleCancel}
 				width={'95%'}
-				footer={<>
-					<div key="footer-buttons" className="px-4">
-						<button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
-							Cancel
-						</button>
-						<Button className={isButtonDisabled ? ButtonStyles.DisbaledBtn : ButtonStyles.filledBtn} loading={loading} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={updateAssetApply} disabled={isButtonDisabled} >
-							Apply
-						</Button>
-					</div>
-				</>}
+				footer={<ModalComponents.Footer key='footer-buttons' onClickCancel={handleCancel} onClickSubmit={updateAssetApply} submitBtnDisabled={isButtonDisabled} loading={loading} submitText='Apply' />}
 			>
 				<>
 					<div>

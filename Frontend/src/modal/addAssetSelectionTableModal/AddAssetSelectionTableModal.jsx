@@ -7,6 +7,7 @@ import { AddAssetDynamicTable } from '../../components/addAssetDynamicTable/AddA
 import buttonStyle from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { generateAssetFormData, generateEmptyAssetFormData } from '../../utils/helperFunctions/addAssetFormData';
 import { CreateAssetModal } from '../createAssetModal/CreateAssetModal';
+import { UIComponents } from '../../components/uiComponents';
 
 export const AddAssetSelectionTableModal = ({previewModal, isPreviewModal, previewColumns, previewData, setPreviewData, setAddAssetSelectedData}) => {
 	const handleCancel = () => {
@@ -75,7 +76,7 @@ export const AddAssetSelectionTableModal = ({previewModal, isPreviewModal, previ
 				]}
 			>
 				<div style={{textAlign: 'end', padding: '1rem'}} >
-					<button className={buttonStyle.filledBtn} onClick={handleCreateAsset} > Create Asset </button>
+					<UIComponents.Button onClick={handleCreateAsset} text='Create Asset' />
 				</div>
 
 				<div style={{height: "70vh"}}>
@@ -83,7 +84,7 @@ export const AddAssetSelectionTableModal = ({previewModal, isPreviewModal, previ
 				</div>
 
 				<div style={{margin: '1rem', textAlign: 'end'}}>
-					<button className={buttonStyle.filledBtn} style={{padding: '0.3rem 0.7rem'}} onClick={handleSubmit}> Submit</button>
+					<UIComponents.Button onClick={handleSubmit} text='Submit' />
 				</div>
 
 				<CreateAssetModal

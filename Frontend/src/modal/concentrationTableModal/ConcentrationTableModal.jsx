@@ -10,6 +10,7 @@ import { getConentrationData, lockHairCutTestData } from '../../services/api';
 import { countOccurrencesOfTest } from '../../utils/helperFunctions/CountOfTestStatus';
 import { ConcentrationTestConfirmationModal } from '../concentrationTestConfirmationModal/ConcentrationTestConfirmationModal';
 import Styles from './ConcentrationTableModal.module.css';
+import { ModalComponents } from '../../components/modalComponents';
 
 const ConcentrationTestCount = ({imageSrc, testCountText, backgroundColor}) => {
 
@@ -86,16 +87,7 @@ export const ConcentrationTableModal = ({
 				open={concentrationTestModalOpen}
 				onCancel={handleCancel}
 				width={'70%'}
-				footer={[
-					<div key="footer-buttons" className="px-4">
-						<button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
-							Cancel
-						</button>
-						<Button className={ButtonStyles.filledBtn} key="submit" type="primary" classNames={Styles.lockbutton} onClick={() => setConfirmationModalOpen(true)}>
-							Lock
-						</Button>
-					</div>
-				]}
+				footer={[<ModalComponents.Footer key='footer-buttons' onClickCancel={handleCancel} onClickSubmit={() => setConfirmationModalOpen(true)} submitText={'Lock'} />]}
 			>
 				<div className={Styles.tableContainer}>
 					<table className={Styles.table}>

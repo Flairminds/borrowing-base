@@ -8,6 +8,7 @@ import { defaultFund, ConctestMasterdropdownValues } from '../../utils/configura
 import { convertToDropdownOptions, getConcTestChnages, styledDropdownOptions } from '../../utils/helperFunctions/concentrationMasterData';
 import styles from './ConcentrationTestMaster.module.css';
 import { FUND_BG_COLOR } from '../../utils/styles';
+import { UIComponents } from '../../components/uiComponents';
 
 export const ConcentrationTestMaster = () => {
 	const [tableData, setTableData] = useState([]);
@@ -213,7 +214,7 @@ export const ConcentrationTestMaster = () => {
 			</div>
 
 			<div className={styles.updateBtn}>
-				<Button onClick={submitChnages} loading={submitBtnLoading} className={buttonStyles.filledBtn}>{submitBtnLoading ? 'Updating' : 'Update'}</Button>
+				<UIComponents.Button onClick={submitChnages} loading={submitBtnLoading} text={submitBtnLoading ? 'Updating' : 'Update'} />
 			</div>
 
 		</>

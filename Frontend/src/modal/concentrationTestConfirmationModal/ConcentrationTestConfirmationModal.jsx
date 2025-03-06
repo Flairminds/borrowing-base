@@ -3,6 +3,7 @@ import React from 'react';
 import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { getListOfWhatIfAnalysis, lockHairCutTestData } from '../../services/api';
 import styles from './ConcentrationTestConfirmationModal.module.css';
+import { ModalComponents } from '../../components/modalComponents';
 
 export const ConcentrationTestConfirmationModal = ({
 	confirmationModalOpen, setConfirmationModalOpen, baseFile, hairCutArray, setTablesData,
@@ -38,22 +39,13 @@ export const ConcentrationTestConfirmationModal = ({
 		<>
 
 			<Modal
-				title={<span style={{fontWeight: '500', fontSize: '16px' }}>Confirm</span>}
+				title={<ModalComponents.Title title={'Confirm'} />}
 				centered
 				open={confirmationModalOpen}
 				// onOk={handleOk}
 				onCancel={handleCancel}
 				width={'70%'}
-				footer={[
-					<div key="footer-buttons" className="px-4">
-						<button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
-							No
-						</button>
-						<Button className={ButtonStyles.filledBtn} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={handleLock}>
-							Yes
-						</Button>
-					</div>
-				]}
+				footer={[<ModalComponents.Footer key='footer-buttons' onClickCancel={handleCancel} onClickSubmit={handleLock} submitText={'Yes'} />]}
 			>
 				<div className={styles.Popupcontainer}>
 

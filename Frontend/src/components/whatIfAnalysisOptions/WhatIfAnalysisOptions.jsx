@@ -4,7 +4,6 @@ import React from 'react'
 import { getUpdateAssetData } from '../../services/api';
 import { toast } from 'react-toastify';
 import { wiaOptions } from '../../utils/configurations/wiaOptions';
-import { LoaderFullPage } from '../loader/loader';
 
 export const WhatIfAnalysisOptions = (
   { selectedOption,
