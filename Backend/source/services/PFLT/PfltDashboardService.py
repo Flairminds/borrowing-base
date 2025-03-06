@@ -11,6 +11,7 @@ from source.services.PFLT.PfltBBCalculator import PfltBBCalculator
 
 from source.services import Standard_File_Formater
 from Exceptions.StdFileFormatException import StdFileFormatException
+from source.services.PFLT import IntermediateMetricsFormula
 
 
 pfltBBCalculator = PfltBBCalculator()
@@ -337,3 +338,69 @@ class PfltDashboardService:
         }
 
         return included_excluded_assets_map
+
+    def get_intermediate_metrics(self, base_data_file):
+        intermediate_metrics_col = ['Obligor Name', 'Security Name', 'Total Commitment (Issue Currency)', 'Outstanding Principal Balance (Issue Currency)', 'Lien Type (First Lien / Split First Lien / Split Lien / Second Lien / Tier 1 Split Lien / Tier 2 Split Lien)', 'Exchange Rate', 'Total Commitment (USD)', 'Outstanding Principal Balance (USD)']
+
+        intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
+
+        loan_list_df = intermediate_calculation["Loan List"]
+
+        intermediate_metrics_df = loan_list_df[intermediate_metrics_col]
+        intermediate_metrics_df = intermediate_metrics_df.rename(columns={'Security Name': 'Company', 'Lien Type (First Lien / Split First Lien / Split Lien / Second Lien / Tier 1 Split Lien / Tier 2 Split Lien)': 'Lien Type'}) 
+
+        intermediate_metrics_data = {
+            "columns": [],
+            "data": [],
+            "simulation_type": "base_data_file",
+        }
+
+        intermediate_metrics_data["columns"] = [
+            {"title": col, "key": col.replace(" ", "_")}
+            for col in intermediate_metrics_df.columns
+        ]
+
+        # Add data to the preview_table_data
+        intermediate_metrics_df = intermediate_metrics_df.fillna("")
+        for _, row in intermediate_metrics_df.iterrows():
+            row_data = {}
+            for col, value in row.items():
+                key = col.replace(" ", "_")
+                if isinstance(value, (int, float)):
+                    if col != "Adj. Advance Rate":
+                        row_data[key] = {
+                            "previous_value": "",
+                            "current_value": "$" + numerize.numerize(value, 2),
+                            "changed": False,
+                        }
+                    else:
+                        row_data[key] = {
+                            "previous_value": "",
+                            "current_value": "{:,.01f}%".format(value * 100),
+                            "changed": False,
+                        }
+                elif isinstance(value, datetime):
+                    row_data[key] = {
+                        "previous_value": "",
+                        "current_value": value.strftime("%Y-%m-%d"),
+                        "changed": False,
+                    }
+                else:
+                    row_data[key] = {
+                        "previous_value": "",
+                        "current_value": value,
+                        "changed": False,
+                    }
+            intermediate_metrics_data["data"].append(row_data)
+
+        return intermediate_metrics_data
+
+    def get_mathematical_formula(self, base_data_file, col_name, row_name):
+        intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
+
+        loan_list_df = intermediate_calculation["Loan List"]
+
+        response_dict = IntermediateMetricsFormula.formula_info(loan_list_df, row_name, col_name)
+
+        return {"error_status": False, "response_dict": response_dict}
+        

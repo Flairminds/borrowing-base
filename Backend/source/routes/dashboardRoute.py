@@ -44,3 +44,11 @@ def get_trend_graph():
 @dashboard_blueprint.route("/calculate_bb", methods=["POST"])
 def calculate_bb():
     return dashboardController.calculate_bb()
+
+@dashboard_blueprint.route("/get_intermediate_metrics", methods=["POST"])
+def get_intermediate_metrics():
+    return dashboardController.get_intermediate_metrics()
+
+@dashboard_blueprint.route("/get_mathematical_formula", methods=["POST"])
+def get_mathematical_formula():
+    return dashboardController.get_mathematical_formula()
