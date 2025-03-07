@@ -139,6 +139,10 @@ export const LoanTypeMapping = () => {
 					</div>
 				</div>
 
+				<div style={{display: "flex"}}>
+					<div className={styles.mappingHeading}>Loan Type Master</div>
+					<div className={styles.mappingHeading}>Mapped Loan Type</div>
+				</div>
 				<div className={styles.loanMasterMappingContainer}>
 					{loanTypeMappingData?.master_loan_types.map((loanType) => (
 						<div key={loanType} className={styles.loanMasterMapContainer}>
