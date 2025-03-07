@@ -40,6 +40,8 @@ const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey }) =
 	const [{ isOver }, drop] = useDrop(() => ({
 		accept: ItemType,
 		drop: async (draggedItem) => {
+			if (title == 'unmapped_loan_types') return;
+
 			try {
 				const mappingData = {
 					'master_loan_type': title.master_loan_type,
@@ -54,7 +56,6 @@ const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey }) =
 
 			setAllLists((prevLists) => {
 				const newLists = { ...prevLists };
-				console.info('--- map test', newLists, title, draggedItem);
 				newLists['unmapped_loan_types'] = newLists['unmapped_loan_types'].filter(
 					(item) => item.unmapped_loan_type !== draggedItem.name.unmapped_loan_type
 				);
