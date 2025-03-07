@@ -68,3 +68,9 @@
 	padding: 5px;
 	border-radius: 5px;
 }
+
+.emptyDiv {
+	text-align: center;
+	padding: 10px;
+	color: grey;
+}

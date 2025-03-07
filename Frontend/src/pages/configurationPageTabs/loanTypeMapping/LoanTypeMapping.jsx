@@ -8,7 +8,7 @@ import styles from './LoanTypeMapping.module.css';
 
 const ItemType = "ITEM";
 
-const DraggableItem = ({ item }) => {
+const DraggableItem = ({ item, itemAccessKey }) => {
 	const [{ isDragging }, drag] = useDrag(() => ({
 		type: ItemType,
 		item: { name: item },
@@ -31,19 +31,19 @@ const DraggableItem = ({ item }) => {
 				// maxHeight: "35px"
 			}}
 		>
-			{item}
+			{item && item[itemAccessKey]}
 		</div>
 	);
 };
 
-const DroppableList = ({ title, items, allLists, setAllLists }) => {
+const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey }) => {
 	const [{ isOver }, drop] = useDrop(() => ({
 		accept: ItemType,
 		drop: async (draggedItem) => {
 			try {
 				const mappingData = {
-					'master_loan_type': title,
-					'loan_type': draggedItem.name
+					'master_loan_type': title.master_loan_type,
+					'loan_type': draggedItem.name.unmapped_loan_type
 				};
 				const res = await updateLoanTypeMapping(mappingData);
 				console.info('---', res);
@@ -54,11 +54,18 @@ const DroppableList = ({ title, items, allLists, setAllLists }) => {
 
 			setAllLists((prevLists) => {
 				const newLists = { ...prevLists };
-				newLists['unmapped_loan_type_data'] = newLists['unmapped_loan_type_data'].filter(
-					(item) => item !== draggedItem.name
+				console.info('--- map test', newLists, title, draggedItem);
+				newLists['unmapped_loan_types'] = newLists['unmapped_loan_types'].filter(
+					(item) => item.unmapped_loan_type !== draggedItem.name.unmapped_loan_type
 				);
 
-				newLists.mapped_loan_type_data[title] = [...newLists.mapped_loan_type_data[title], draggedItem.name];
+				const item = {
+					'loan_type': draggedItem.name.unmapped_loan_type,
+					'master_loan_type': title.master_loan_type,
+					'master_loan_type_id': title.master_loan_type_id
+				};
+
+				newLists['mapped_loan_types'] = [...newLists['mapped_loan_types'], item];
 				return newLists;
 			});
 		},
@@ -70,12 +77,17 @@ const DroppableList = ({ title, items, allLists, setAllLists }) => {
 	return (
 		<div
 			ref={drop}
-			className={title == "unmapped_loan_type_data" ? styles.unmappedLoantypeList : styles.mappedTypesList}
+			className={title == "unmapped_loan_types" ? styles.unmappedLoantypeList : styles.mappedTypesList}
 		>
-			{/* <h4>{title}</h4> */}
-			{items?.map((item) => (
-				<DraggableItem key={item.name} item={item} />
-			))}
+			{items && items.length > 0 ? (
+				items.map((item) => (
+					<DraggableItem key={item[itemAccessKey]} itemAccessKey={itemAccessKey} item={item} />
+				))
+			) : (
+				<div className={styles.emptyDiv}>
+					Drop items here
+				</div>
+			)}
 		</div>
 	);
 };
@@ -92,7 +104,6 @@ export const LoanTypeMapping = () => {
 		try {
 			const res = await getLoanTypeMappingData();
 			setLoanTypeMappingData(res.data.result);
-			console.info(res, 'loan map 1');
 		} catch (err) {
 			console.error(err);
 			toast.error(err?.response?.data?.message);
@@ -119,8 +130,9 @@ export const LoanTypeMapping = () => {
 					<div style={{textAlign: 'left', margin: "10px 20px 0px 20px"}}><b>Unmapped Loan Types</b></div>
 					<div className={styles.unmappedLoantypeListContainer}>
 						<DroppableList
-							title={'unmapped_loan_type_data'}
-							items={loanTypeMappingData?.unmapped_loan_type_data}
+							title={'unmapped_loan_types'}
+							items={loanTypeMappingData?.unmapped_loan_types}
+							itemAccessKey={'unmapped_loan_type'}
 							allLists={loanTypeMappingData}
 							setAllLists={setLoanTypeMappingData}
 						/>
@@ -128,13 +140,14 @@ export const LoanTypeMapping = () => {
 				</div>
 
 				<div className={styles.loanMasterMappingContainer}>
-					{loanTypeMappingData?.mapped_loan_types.map((loanType) => (
+					{loanTypeMappingData?.master_loan_types.map((loanType) => (
 						<div key={loanType} className={styles.loanMasterMapContainer}>
-							<div className={styles.loanMasterTab}><div className={styles.loanMaster}>{loanType}</div></div>
+							<div className={styles.loanMasterTab}><div className={styles.loanMaster}>{loanType?.master_loan_type}</div></div>
 							<div className={`${styles.loanMasterTab} ${styles.loanMasterList}`}>
 								<DroppableList
 									title={loanType}
-									items={loanTypeMappingData?.mapped_loan_type_data && loanTypeMappingData.mapped_loan_type_data[loanType]}
+									items={loanTypeMappingData?.mapped_loan_types && loanTypeMappingData.mapped_loan_types?.filter(type => loanType.master_loan_type_id == type.master_loan_type_id)}
+									itemAccessKey={'loan_type'}
 									allLists={loanTypeMappingData}
 									setAllLists={setLoanTypeMappingData}
 								/>
