@@ -5,46 +5,51 @@ from models import db, LoanTypeMaster, LoanTypeMapping
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Util import create_lookup
 
-def get_loan_type_data():
+def get_unmapped_loan_types():
+
     engine = db.get_engine()
     with engine.connect() as connection:
         unmapped_loan_types = connection.execute(text('''
-            select distinct ssch."Issue Name" 
-            from sf_sheet_client_holdings ssch 
-            left join loan_type_master ltm on ssch."Issue Name" = ltm.loan_type 
-            where ltm.loan_type IS NULL
+            select 
+                ssch."Issue Name",
+                min(ssch.source_file_id)
+            from sf_sheet_client_holdings ssch
+            left join loan_type_mapping ltm on ssch."Issue Name" = ltm.loan_type
+            where ltm.master_loan_type_id is null
+            group by ssch."Issue Name"
         ''')).fetchall()
+    unmapped_loan_type_data = [{'unmapped_loan_type': unmapped_loan_type[0], 'source_file_id': unmapped_loan_type[1]} for unmapped_loan_type in unmapped_loan_types]
+    return ServiceResponse.success(data=unmapped_loan_type_data, message="Unmapped Loan Types")
 
+def get_mapped_loan_types():
+    engine = db.get_engine()
+    with engine.connect() as connection:
         mapped_loan_types = connection.execute(text('''
             select 
-                ltmapping.id as mapping_id, 
-                ltmapping.master_loan_type_id as master_loan_type_id, 
-                ltmaster.loan_type as master_loan_type, 
-                ltmapping.loan_type as mapped_loan_type 
-                from loan_type_mapping ltmapping 
-                join loan_type_master ltmaster on ltmapping.master_loan_type_id = ltmaster.id
+	            ltmapping.master_loan_type_id,
+	            ltmaster.loan_type as master_loan_type,
+	            ltmapping.loan_type
+            from loan_type_mapping ltmapping join loan_type_master ltmaster on ltmapping.master_loan_type_id = ltmaster.id
+        ''')).fetchall()
+
+    mapped_loan_type_data = [{
+        'master_loan_type_id': mapped_loan_type[0],
+        'master_loan_type': mapped_loan_type[1],
+        'loan_type': mapped_loan_type[2]
+    } for mapped_loan_type in mapped_loan_types]
+
+    return ServiceResponse.success(data=mapped_loan_type_data, message="Mapped Loan Types")
+
+def get_master_loan_types():
+    engine = db.get_engine()
+    with engine.connect() as connection:
+        master_loan_types = connection.execute(text('''
+            select ltmaster.id, ltmaster.loan_type from loan_type_master ltmaster
         ''')).fetchall()
     
-    unmapped_loan_types_list = list(itertools.chain(*unmapped_loan_types))
-
-    mapped_loan_type_details = {}
-    for mapped_loan_type_data in mapped_loan_types:
-        master_loan_type = mapped_loan_type_data[2]
-        mapped_loan_type = mapped_loan_type_data[3]
-
-        if master_loan_type not in mapped_loan_type_details:
-            mapped_loan_type_details[master_loan_type] = []
-
-        mapped_loan_type_details[master_loan_type].append(mapped_loan_type)
-
-    loan_types_data = {
-        'unmapped_loan_type_data': unmapped_loan_types_list,
-        'mapped_loan_type_data': mapped_loan_type_details,
-        'mapped_loan_types' : list(mapped_loan_type_details.keys())
-    }
-        
-    return ServiceResponse.success(data=loan_types_data, message="Unmapped Loan Types")
-
+    master_loan_type_data = [{'master_loan_type_id': master_loan_type[0], 'master_loan_type': master_loan_type[1]} for master_loan_type in master_loan_types]
+    
+    return ServiceResponse.success(data=master_loan_type_data, message="Master Loan Types")
 
 def map_loan_type(mappings):
     loan_type_mappings = []
