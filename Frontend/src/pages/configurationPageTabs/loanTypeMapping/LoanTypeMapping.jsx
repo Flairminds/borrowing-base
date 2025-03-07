@@ -85,7 +85,7 @@ const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey }) =
 				))
 			) : (
 				<div className={styles.emptyDiv}>
-					Drop items here
+					{title == "unmapped_loan_types" ? <> No data </> : <>Drop items here</>}
 				</div>
 			)}
 		</div>
