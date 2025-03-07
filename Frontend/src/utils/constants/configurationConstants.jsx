@@ -20,12 +20,13 @@ export const configurationTabs = [
 ];
 
 export const loanTypeConfig = {
-	cardsData: [
-		{
-			key: 'all_loan_types',
-			label: "All Loan Types"
-		}
-	]
+	cardsData: [{
+		key: 'all_loan_types',
+		label: "All Loan Types"
+	}, {
+		key: 'unmapped_loan_types',
+		label: "Unmapped Loan Types"
+	}]
 };
 
 
