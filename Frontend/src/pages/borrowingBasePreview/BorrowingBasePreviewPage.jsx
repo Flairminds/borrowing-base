@@ -1,7 +1,7 @@
 import { Select, Space } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
+import { useNavigate, useParams } from 'react-router';
+import { CustomButton } from '../../components/custombutton/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { AddAdditionalInformationModal } from '../../modal/addAdditionalInformationModal/AddAdditionalInformationModal';
 import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api';
@@ -15,7 +15,7 @@ import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
 import { PAGE_ROUTES } from '../../utils/constants/constants';
 import { UIComponents } from '../../components/uiComponents';
 
-export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType}) => {
+export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setTablesData, setPreviewPageId}) => {
 	const navigate = useNavigate();
 	// const { infoId } = useParams();
 	const [mapping, setMapping] = useState({});
@@ -29,6 +29,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [isOpenFileUpload, setIsOpenFileUpload] = useState(false);
 	const [addsecFiles, setAddsecFiles] = useState([]);
 
+	const {infoId} = useParams();
+
 	const showModal = () => {
 		setIsOpenFileUpload(true);
 	};
@@ -41,12 +43,16 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 
 	useEffect(() => {
 		let col = [];
+
 		if (!baseFilePreviewData.reportDate) {
-			// handleBaseDataPreview();
-			showToast('info', 'No report date selected. Redirecting...');
-			setTimeout(() => {
-				navigate(PAGE_ROUTES.BASE_DATA_LIST.url);
-			}, 1500);
+			if (!infoId) {
+				showToast('info', 'No report date selected. Redirecting...');
+				setTimeout(() => {
+					navigate('/base-data-list');
+				}, 1500);
+			} else {
+				handleBaseDataPreview(infoId);
+			}
 		}
 		baseFilePreviewData.baseData?.columns.forEach(c => {
 			let a = baseFilePreviewData?.baseDataMapping?.find(bd => bd.bd_column_name == c.label);
@@ -111,9 +117,10 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		}
 	};
 
-	const handleBaseDataPreview = async () => {
+	const handleBaseDataPreview = async (previewId = null) => {
 		try {
-			const previewDataResponse = await getBaseFilePreviewData(previewPageId);
+			const previewpageId = previewId ? previewId : previewPageId;
+			const previewDataResponse = await getBaseFilePreviewData(previewpageId);
 			const result = previewDataResponse.data?.result;
 			if (result)
 				setBaseFilePreviewData({
@@ -248,6 +255,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				setSelectedFiles={setSelectedFiles}
 				baseFilePreviewData= {baseFilePreviewData}
 				previewPageId= {previewPageId}
+				setTablesData= {setTablesData}
+
 			/>
 			<FileUploadModal
 				isOpenFileUpload={isOpenFileUpload}

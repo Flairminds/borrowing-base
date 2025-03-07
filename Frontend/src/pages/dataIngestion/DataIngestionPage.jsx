@@ -168,11 +168,12 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			const extractionStatusRes = await getBaseDataFilesList(extractData);
 			const extractionStatus = extractionStatusRes.data.result.data[0].extraction_status;
 			console.info(extractionStatus, 'status');
-			if (extractionStatus !== "In Progress") {
+			if (extractionStatus !== "In progress") {
 				console.info(extractionStatus, 'conditionn entered');
 				clearInterval(extractionInterval);
 			}
 			if (extractionStatus === "completed" ) {
+				navigate(`/base-data-preview/${extractData.id}`);
 				return true;
 			}
 		} catch (err) {
