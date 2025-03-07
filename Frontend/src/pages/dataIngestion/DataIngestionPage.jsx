@@ -173,7 +173,6 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 				clearInterval(extractionInterval);
 			}
 			if (extractionStatus === "completed" ) {
-				console.log("ExId:-", extractData.id)
 				navigate(`/base-data-preview/${extractData.id}`);
 				return true;
 			}
