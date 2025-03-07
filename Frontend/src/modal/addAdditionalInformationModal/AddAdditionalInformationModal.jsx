@@ -7,13 +7,14 @@ import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
 import PCOF_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pcof_other_info.xlsx';
 import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pflt_other_info.xlsx';
-import { CustomButton } from "../../components/uiComponents/Button/CustomButton";
-import { generateBaseDataFile } from "../../services/api";
+import { CustomButton } from "../../components/custombutton/CustomButton";
+import { generateBaseDataFile, getDateReport } from "../../services/api";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
 import { PFLTData, PCOFData, OTHER_INFO_OPTIONS, PFLT_COLUMNS_NAME, PCOF_COLUMNS_NAME } from "../../utils/constants/constants";
 import { fmtDisplayVal } from "../../utils/helperFunctions/formatDisplayData";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./AddAdditionalInformationModal.module.css";
+import { useNavigate } from 'react-router';
 
 const { TabPane } = Tabs;
 
@@ -33,7 +34,8 @@ export const AddAdditionalInformationModal = (
 		selectedFiles,
 		setSelectedFiles,
 		baseFilePreviewData,
-		previewPageId
+		previewPageId,
+		setTablesData
 	}
 ) => {
 	const [form] = Form.useForm();
@@ -41,6 +43,7 @@ export const AddAdditionalInformationModal = (
 	const [addType, setAddType] = useState("add");
 	const [uploadedData, setUploadedData] = useState({});
 	const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		const formData = {};
@@ -68,7 +71,7 @@ export const AddAdditionalInformationModal = (
 			formData["portfolio_leverageborrowingbase"] = uploadedData["Portfolio LeverageBorrowingBase"]?.length > 0 ? uploadedData["Portfolio LeverageBorrowingBase"]
 				: data?.other_data?.["portfolio_leverageborrowingbase"]?.length > 0 ? data.other_data["portfolio_leverageborrowingbase"] : null;
 
-			formData["concentration_limits"] = uploadedData["Concentration Limits"]?.length > 0	? uploadedData["Concentration Limits"]
+			formData["concentration_limits"] = uploadedData["Concentration Limits"]?.length > 0 ? uploadedData["Concentration Limits"]
 				: data?.other_data?.["concentration_limits"]?.length > 0 ? data.other_data["concentration_limits"] : null;
 
 			formData["first_lien_leverage_cut-off_point"] = uploadedData["first_lien_leverage_cut-off_point"] || data?.other_data?.["first_lien_leverage_cut-off_point"] || null;
@@ -114,6 +117,28 @@ export const AddAdditionalInformationModal = (
 				const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
 				const detail = response?.data;
 				showToast('success', detail?.message);
+				navigate('/');
+				// if (dateString) {
+				// 	try {
+				// 		const response = await getDateReport(dateString);
+				// 		if (response.status === 200) {
+				// 			setTablesData(response.data);
+				// 			// setBaseFile({ name: response.data.file_name, id: response.data.base_data_file_id });
+				// 			// setWhatifAnalysisPerformed(false);
+				// 			// setReportDate(dateString);
+				// 			// setFundType(response.data.fund_name);
+				// 			// getTrendGraphData(response.data.fund_name);
+				//
+				// 			showToast('info', `Data for ${dateString} imported`);
+				// 		}
+				// 	} catch (err) {
+				// 		if (err.response && err.response.status === 404) {
+				// 			showToast(err.response.data.message);
+				// 		} else {
+				// 			console.error(err);
+				// 		}
+				// 	}
+				// }
 			}
 			setTriggerBBCalculation(false);
 			return;
@@ -331,8 +356,8 @@ export const AddAdditionalInformationModal = (
 			sheetsData.map((sheet) => {
 				if (
 					sheet.sheetName.toLocaleLowerCase() === "availability borrower" ||
-                    sheet.sheetName.toLocaleLowerCase() === "other metrics" ||
-                    sheet.sheetName.toLocaleLowerCase() === "input"
+					sheet.sheetName.toLocaleLowerCase() === "other metrics" ||
+					sheet.sheetName.toLocaleLowerCase() === "input"
 				) {
 					const data = Object.fromEntries(sheet?.data?.slice(1).filter(row => row.length === 2));
 					const transformedData = Object.fromEntries(
@@ -399,15 +424,15 @@ export const AddAdditionalInformationModal = (
 	};
 
 	return (
-		<Modal open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"} style={{top: 10}}>
+		<Modal open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"} style={{ top: 10 }}>
 			<h3>Additional Information</h3>
-			<div style={{display: "flex", justifyContent: "space-between", margin: "1rem 0"}}>
+			<div style={{ display: "flex", justifyContent: "space-between", margin: "1rem 0" }}>
 				<Radio.Group options={OTHER_INFO_OPTIONS} value={addType} onChange={handleChange} />
 				{addType === "upload" && (
 					<>
 						{(typeof data === 'object' && data !== null)
-							? <a onClick={exportSample} style={{paddingRight: "1rem", color: "blue", textDecoration: "underline"}}>Export sample file template</a>
-							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{paddingRight: "1rem"}}>Export sample file template</a>
+							? <a onClick={exportSample} style={{ paddingRight: "1rem", color: "blue", textDecoration: "underline" }}>Export sample file template</a>
+							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{ paddingRight: "1rem" }}>Export sample file template</a>
 						}
 					</>
 				)}
@@ -418,7 +443,7 @@ export const AddAdditionalInformationModal = (
 				onFinish={handleSubmit}
 				autoComplete="off"
 				initialValues={initialFormData}
-				// initialValues={initalFormData || selectedData == "PCOF" ? pcofEmptyFormStructure : pfltEmptyFormStructure}
+			// initialValues={initalFormData || selectedData == "PCOF" ? pcofEmptyFormStructure : pfltEmptyFormStructure}
 			>
 				{useEffect(() => {
 					form.setFieldsValue(initialFormData);
@@ -510,7 +535,7 @@ export const AddAdditionalInformationModal = (
 														</div>
 
 														<Form.Item>
-															<Button style={{marginBottom: "1rem"}} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+															<Button style={{ marginBottom: "1rem" }} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
 																Add Details
 															</Button>
 														</Form.Item>
