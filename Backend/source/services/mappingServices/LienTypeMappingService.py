@@ -5,46 +5,52 @@ from models import db, LienTypeMaster, LienTypeMapping
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Util import create_lookup
 
-def get_lien_type_data():
+def get_unmapped_lien_types():
+
     engine = db.get_engine()
     with engine.connect() as connection:
         unmapped_lien_types = connection.execute(text('''
-            select 
-	            distinct  ssss."[SI] Credit Facility Lien Type"
-	        from sf_sheet_securities_stats ssss 
-	            left join lien_type_master ltm on ssss."[SI] Credit Facility Lien Type" = ltm.lien_type 
-            where ltm.lien_type is NULL
+            select
+                distinct ssss."[SI] Credit Facility Lien Type",
+                min(ssss.source_file_id)
+            from sf_sheet_securities_stats ssss
+            left join lien_type_mapping ltmapping on ssss."[SI] Credit Facility Lien Type" = ltmapping.lien_type
+            where ltmapping.lien_type is null
+            group by ssss."[SI] Credit Facility Lien Type"
         ''')).fetchall()
+    unmapped_lien_type_data = [{'unmapped_lien_type': unmapped_lien_type[0], 'source_file_id': unmapped_lien_type[1]} for unmapped_lien_type in unmapped_lien_types]
+    return ServiceResponse.success(data=unmapped_lien_type_data, message="Unmapped lien Types")
 
+def get_mapped_lien_types():
+    engine = db.get_engine()
+    with engine.connect() as connection:
         mapped_lien_types = connection.execute(text('''
             select 
-	            ltmapping.id as mapping_id, 
-	            ltmapping.master_lien_type_id as master_lien_type_id, 
-	            ltmaster.lien_type as master_lien_type, 
-	            ltmapping.lien_type as mapped_lien_type 
-            from lien_type_mapping ltmapping 
-            join lien_type_master ltmaster on ltmapping.master_lien_type_id = ltmaster.id
+	            ltmapping.master_lien_type_id,
+	            ltmaster.lien_type as master_lien_type,
+	            ltmapping.lien_type
+            from lien_type_mapping ltmapping join lien_type_master ltmaster on ltmapping.master_lien_type_id = ltmaster.id
+        ''')).fetchall()
+
+    mapped_lien_type_data = [{
+        'master_lien_type_id': mapped_lien_type[0],
+        'master_lien_type': mapped_lien_type[1],
+        'lien_type': mapped_lien_type[2]
+    } for mapped_lien_type in mapped_lien_types]
+
+    return ServiceResponse.success(data=mapped_lien_type_data, message="Mapped lien Types")
+
+def get_master_lien_types():
+    engine = db.get_engine()
+    with engine.connect() as connection:
+        master_lien_types = connection.execute(text('''
+            select ltmaster.id, ltmaster.lien_type from lien_type_master ltmaster
         ''')).fetchall()
     
-    unmapped_lien_types_list = list(itertools.chain(*unmapped_lien_types))
+    master_lien_type_data = [{'master_lien_type_id': master_lien_type[0], 'master_lien_type': master_lien_type[1]} for master_lien_type in master_lien_types]
+    
+    return ServiceResponse.success(data=master_lien_type_data, message="Master lien Types")
 
-    mapped_lien_type_details = {}
-    for mapped_lien_type_data in mapped_lien_types:
-        master_lien_type = mapped_lien_type_data[2]
-        mapped_lien_type = mapped_lien_type_data[3]
-
-        if master_lien_type not in mapped_lien_type_details:
-            mapped_lien_type_details[master_lien_type] = []
-
-        mapped_lien_type_details[master_lien_type].append(mapped_lien_type)
-
-    lien_types_data = {
-        'unmapped_lien_type_data': unmapped_lien_types_list,
-        'mapped_lien_type_data': mapped_lien_type_details,
-        'mapped_lien_types' : list(mapped_lien_type_details.keys())
-    }
-        
-    return ServiceResponse.success(data=lien_types_data, message="Unmapped Lien Types")
 
 def map_lien_type(mappings):
     lien_type_mappings = []
