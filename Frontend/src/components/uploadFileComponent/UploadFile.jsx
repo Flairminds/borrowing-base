@@ -53,7 +53,7 @@ export const UploadFile = ({
 	const [selectedOption, setSelectedOption] = useState(0);
 	const [displayFetchData, setDisplayFetchData] = useState([]);
 	const [searchTerm, setSearchTerm] = useState('');
-	const [selectedTab, setSelectedTab] = useState('upload');
+	const [selectedTab, setSelectedTab] = useState('existing');
 
 	const navigate = useNavigate();
 
@@ -99,7 +99,7 @@ export const UploadFile = ({
 						});
 						getTrendGraphData(fundType);
 						navigate('/asset-selection');
-						showToast('success', "File Loaded")
+						showToast('success', "File Loaded");
 					} catch (err) {
 						console.error(err);
 					}
@@ -165,12 +165,12 @@ export const UploadFile = ({
 
 		if (!date) {
 			// toast.error('Select Report date');
-			showToast('error', "Select Report date")
+			showToast('error', "Select Report date");
 			return;
 		}
 
 		if (!selectedOption) {
-			showToast('error', "Select Fund")
+			showToast('error', "Select Fund");
 			return;
 		}
 
@@ -327,8 +327,8 @@ export const UploadFile = ({
 					>
 						<div style={{ marginBottom: '1rem' }}>
 							<Radio.Group value={selectedTab} onChange={(e) => setSelectedTab(e.target.value)}>
-								<Radio value="upload">Upload File</Radio>
 								<Radio value="existing">List of Existing Files</Radio>
+								<Radio value="upload">Upload File</Radio>
 							</Radio.Group>
 						</div>
 
