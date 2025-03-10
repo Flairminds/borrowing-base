@@ -135,6 +135,7 @@ export function App() {
 								baseFilePreviewData={baseFilePreviewData}
 								setBaseFilePreviewData={setBaseFilePreviewData}
 								previewPageId={previewPageId}
+								setPreviewPageId={setPreviewPageId}
 								previewFundType={previewFundType}
 							/>
 						}
