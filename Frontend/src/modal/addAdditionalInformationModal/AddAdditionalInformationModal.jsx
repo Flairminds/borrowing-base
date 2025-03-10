@@ -7,7 +7,6 @@ import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
 import PCOF_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pcof_other_info.xlsx';
 import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pflt_other_info.xlsx';
-import { CustomButton } from "../../components/custombutton/CustomButton";
 import { generateBaseDataFile, getDateReport } from "../../services/api";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
 import { PFLTData, PCOFData, OTHER_INFO_OPTIONS, PFLT_COLUMNS_NAME, PCOF_COLUMNS_NAME } from "../../utils/constants/constants";
@@ -15,7 +14,7 @@ import { fmtDisplayVal } from "../../utils/helperFunctions/formatDisplayData";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./AddAdditionalInformationModal.module.css";
 import { useNavigate } from 'react-router';
-
+import { UIComponents } from "../../components/uiComponents";
 const { TabPane } = Tabs;
 
 const getHeaderFromColumnsInfo = (columnsInfo) => {
@@ -545,9 +544,9 @@ export const AddAdditionalInformationModal = (
 										)}
 
 										<div className={styles.buttonContainer}>
-											<CustomButton isFilled={true} text="Save" onClick={() => handleSubmit(false)} />
-											<CustomButton isFilled={true} onClick={() => handleSubmit(true)} text={triggerBBCalculation ? '...Calculating' : 'Save & Trigger'} />
-											<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
+											<UIComponents.Button isFilled={true} text="Save" onClick={() => handleSubmit(false)} />
+											<UIComponents.Button isFilled={true} onClick={() => handleSubmit(true)} text={triggerBBCalculation ? '...Calculating' : 'Save & Trigger'} />
+											<UIComponents.Button isFilled={false} text="Cancel" onClick={handleCancel} />
 										</div>
 									</>
 								</TabPane>
@@ -583,8 +582,8 @@ export const AddAdditionalInformationModal = (
 						</Form.Item>
 
 						<div className={styles.buttonContainer}>
-							<CustomButton isFilled={true} text="Extract" onClick={handleExtract} />
-							<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
+							<UIComponents.Button isFilled={true} text="Extract" onClick={handleExtract} />
+							<UIComponents.Button isFilled={false} text="Cancel" onClick={handleCancel} />
 						</div>
 					</>
 				)}
