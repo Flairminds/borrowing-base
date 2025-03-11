@@ -50,6 +50,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 					navigate('/base-data-list');
 				}, 1500);
 			} else {
+				setPreviewPageId(infoId);
 				handleBaseDataPreview(infoId);
 			}
 		}
