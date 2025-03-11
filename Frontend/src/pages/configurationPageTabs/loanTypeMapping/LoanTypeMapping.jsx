@@ -21,9 +21,9 @@ const DraggableItem = ({ item, itemAccessKey }) => {
 		<div
 			ref={drag}
 			style={{
-				padding: "3px 5px",
+				padding: "3px 7px",
 				margin: "4px",
-				backgroundColor: "lightblue",
+				backgroundColor: "#d3d3d3",
 				cursor: "grab",
 				opacity: isDragging ? 0.5 : 1,
 				minWidth: "175px",
@@ -118,12 +118,16 @@ export const LoanTypeMapping = () => {
 	return (
 		<div className={styles.loanTypePageContainer}>
 			<div className={styles.cardContainer}>
-				{loanTypeConfig.cardsData?.map((card) => (
-					<div key={card.key} className={styles.loanTypeCard}>
-						<div><b>{card.label}</b></div>
-						<div className={styles.cardTitle}>{loanTypeMappingData?.all_loan_type_count}</div>
+				{/* {loanTypeConfig.cardsData?.map((card) => ( */}
+					<div className={styles.loanTypeCard}>
+						<div><b>All Loan Types</b></div>
+						<div className={styles.cardTitle}>{loanTypeMappingData?.unmapped_loan_types.length + loanTypeMappingData?.mapped_loan_types.length}</div>
 					</div>
-				))}
+					<div className={styles.loanTypeCard}>
+						<div><b>Unmapped Loan Types</b></div>
+						<div className={styles.cardTitle}>{loanTypeMappingData?.unmapped_loan_types.length}</div>
+					</div>
+				{/* ))} */}
 			</div>
 
 			<DndProvider backend={HTML5Backend}>

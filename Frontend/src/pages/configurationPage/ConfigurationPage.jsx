@@ -10,7 +10,7 @@ export const ConfigurationPage = () => {
 	};
 
 	return (
-		<div>
+		<div style={{padding: '15px'}}>
 			<Tabs
 				type="card"
 				defaultActiveKey="2"

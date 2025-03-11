@@ -29,6 +29,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [filteredData, setFilteredData] = useState([]);
 	const [filterDate, setFilterDate] = useState(null);
 	const [reportDates, setReportDates] = useState([]);
+	const [extractionInProgress, setExtractionInProgress] = useState(false);
 
 	const navigate = useNavigate();
 	let extractionInterval;
@@ -147,6 +148,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const handleFileExtraction = async() => {
 		// setFileExtractionLoading(true);
 		try {
+			setExtractionInProgress(true);
 			const selectedFund = selectedFundType == 1 ? "PCOF" : "PFLT";
 			const extractionResponse = await exportBaseDataFile(selectedIds.current, selectedFund);
 			console.info(extractionResponse, 'rex');
@@ -154,9 +156,10 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			showToast("info", extractionResponse.data.message);
 			// getExtractionStatus(9);
 
-			extractionInterval = setInterval(() => getExtractionStatus(extractionData), 5000);
+			extractionInterval = setInterval(() => getExtractionStatus(extractionData), 3000);
 		} catch (err) {
 			console.error(err);
+			setExtractionInProgress(false);
 			showToast("error", err.response.data.message);
 		}
 
@@ -173,10 +176,12 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 				clearInterval(extractionInterval);
 			}
 			if (extractionStatus === "completed" ) {
-				navigate(`/base-data-preview/${extractData.id}`);
+				setExtractionInProgress(false);
+				navigate(`/data-ingestion/base-data-preview/${extractData.id}`);
 				return true;
 			}
 		} catch (err) {
+			setExtractionInProgress(false);
 			showToast('failure', err?.response?.data.message);
 		}
 
@@ -330,7 +335,9 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
 						<div className={styles.extractDataBtn}>
 							{!isbuttonDisable && (
-								<CustomButton
+								<UIComponents.Button
+									loading={extractionInProgress}
+									loadingText='Extracting...'
 									isFilled={true}
 									onClick={handleFileExtraction}
 									text='Extract Base Data'

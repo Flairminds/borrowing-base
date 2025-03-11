@@ -137,6 +137,7 @@ export function App() {
 								previewPageId={previewPageId}
 								setPreviewPageId={setPreviewPageId}
 								previewFundType={previewFundType}
+								setPreviewFundType={setPreviewFundType}
 							/>
 						}
 					/>

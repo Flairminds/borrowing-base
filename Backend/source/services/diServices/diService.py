@@ -449,7 +449,7 @@ def extract_base_data(file_ids, fund_type):
             "report_date": report_date.strftime("%Y-%m-%d"),
             "company_id": company_id
         }
-        return ServiceResponse.success(message="Base Data extraction might take few minutes", data=response_data)
+        return ServiceResponse.success(message="Base Data extraction in progress.", data=response_data)
     except Exception as e:
         Log.func_error(e)
         if base_data_info_id:
@@ -462,143 +462,148 @@ def extract_base_data(file_ids, fund_type):
 
 
 def get_base_data(info_id):
-    # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
-    
-    base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
-    base_data_mapping = db.session.query(
-        BaseDataMapping.bdm_id,
-        BaseDataMapping.bd_column_lookup,
-        BaseDataMapping.bd_column_name,
-        BaseDataMapping.bd_column_datatype,
-        BaseDataMapping.bd_column_unit,
-        BaseDataMapping.is_editable,
-        BaseDataMappingColumnInfo.sequence,
-        BaseDataMappingColumnInfo.is_selected
-    ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
-
-
-    card_data = []
-
-    engine = db.get_engine()
-    
-    if base_data_info.fund_type == 'PFLT':
-        base_data = PfltBaseData.query.join(PfltSecurityMapping, PfltSecurityMapping.master_comp_security_name == PfltBaseData.security_name).filter(PfltBaseData.base_data_info_id == info_id).order_by(PfltBaseData.id).all()
-        HistoryData = PfltBaseDataHistory
-        with engine.connect() as connection:
-            result = connection.execute(text('''
-                select count(distinct pbd.obligor_name) as no_of_obligors, 
-                        count(distinct pbd.security_name) as no_of_assets, 
-                        sum(pbd.total_commitment::float) as total_commitment, 
-                        sum(pbd.outstanding_principal::float) as total_outstanding_balance,
-                        (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
-                from pflt_base_data pbd
-                where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
-            final_result = result[0]
-        no_of_obligors, no_of_assets, total_commitment, total_outstanding_balance, unmapped_records = final_result
-        card_data = [{
-            "No of Obligors": no_of_obligors,
-            "No of Securities": no_of_assets,
-            "Total Commitment": numerize.numerize(total_commitment, 2),
-            "Total Outstanding Balance": numerize.numerize(total_outstanding_balance, 2),
-            "Unmapped Securities": unmapped_records,
-            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
-            "Fund Type": base_data_info.fund_type
-        }]
-    else:
-        base_data = PcofBaseData.query.filter_by(base_data_info_id = info_id).order_by(PcofBaseData.id).all()
-        HistoryData = PcofBaseDataHistory
-        with engine.connect() as connection:
-            result = connection.execute(text('''
-                select count(distinct pbd.issuer) as no_of_issuers, 
-                        count(distinct pbd.investment_name) as no_of_investments, 
-                        --sum(pbd.total_commitment::float) as total_commitment, 
-                        --sum(pbd.outstanding_principal::float) as total_outstanding_balance,
-                        (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
-                from pcof_base_data pbd
-                where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
-            final_result = result[0]
-        no_of_issuers, no_of_investments, unmapped_records = final_result
-        card_data = [{
-            "No of Issuers": no_of_issuers,
-            "No of Investments": no_of_investments,
-            "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
-            "Unmapped Securities": unmapped_records
-        }]
-
-    temp = []
-    # print(base_data[0])
-    for b in base_data:
-        t = b.__dict__
-        del t['_sa_instance_state']
-        old_data = HistoryData.query.filter_by(id = b.id).order_by(HistoryData.done_at.desc()).offset(1).limit(1).first()
-        t1 = None
-        if old_data:
-            t1 = old_data.__dict__
-        for key in t:
-            val = t[key]
-            old_value = val
-            if t1 and t1[key] != t[key]:
-                old_value = t1[key]
-            numerized_val = None
-            if isinstance(val, (int, float, complex)) and not isinstance(val, bool):
-                numerized_val = numerize.numerize(val, 2)
-                # t[key] = val
-            elif isinstance(val, str):
-                if val.replace(".", "").replace("-", "").isnumeric():
-                    try:
-                        numerized_val = numerize.numerize(float(val), 2)
-                    except Exception as e:
-                        print(e, val, type(val))
-                    # t[key] = val
-            t[key] = {
-                "meta_info": True,
-                "value": val,
-                "display_value": numerized_val if numerized_val else val,
-                "title": val,
-                "data_type": None,
-                "unit": None,
-                "old_value": old_value
-            }
-        # t['report_date'] = t['report_date'].strftime("%Y-%m-%d")
-        # t['created_at'] = t['created_at'].strftime("%Y-%m-%d")
-        temp.append(t)
-    # print(temp[0])
-    base_data_table = {
-        "columns": [{
-            "key": column.bd_column_lookup,
-            "label": column.bd_column_name,
-            "datatype": column.bd_column_datatype,
-            "unit": column.bd_column_unit,
-            "isEditable": column.is_editable,
-            "bdm_id": column.bdm_id,
-            "is_selected": column.is_selected
-        } for column in base_data_mapping],
-        "data": temp
-    }
-
-    # print(type(base_data_table))
-    
-    
-    # for index, row in base_data.iterrows():
-    #     row_data = {}
+    try:
+        # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
         
-    #     for col, value in row.items():
-    #         if value != value:
-    #             value = ""
-    #         if isinstance(value, (int, float)):
-    #                 row_data[col.replace(" ", "_")] = value
-    #         elif isinstance(value, datetime):
-    #             row_data[col.replace(" ", "_")] = value.strftime("%Y-%m-%d")
-    #         else:
-    #             row_data[col.replace(" ", "_")] = value
-    #     base_data_table["data"].append(row_data)
-    result = {
-        "base_data_table": base_data_table,
-        "report_date": base_data_info.report_date.strftime("%Y-%m-%d"),
-        "fund_type": base_data_info.fund_type,
-        "card_data": card_data
-    }
-    return ServiceResponse.success(data=result, message="Base Data")
+        base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
+        base_data_mapping = db.session.query(
+            BaseDataMapping.bdm_id,
+            BaseDataMapping.bd_column_lookup,
+            BaseDataMapping.bd_column_name,
+            BaseDataMapping.bd_column_datatype,
+            BaseDataMapping.bd_column_unit,
+            BaseDataMapping.is_editable,
+            BaseDataMappingColumnInfo.sequence,
+            BaseDataMappingColumnInfo.is_selected
+        ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
+
+
+        card_data = []
+
+        engine = db.get_engine()
+        
+        if base_data_info.fund_type == 'PFLT':
+            base_data = PfltBaseData.query.filter(PfltBaseData.base_data_info_id == info_id).order_by(PfltBaseData.id).all()
+            HistoryData = PfltBaseDataHistory
+            with engine.connect() as connection:
+                result = connection.execute(text('''
+                    select count(distinct pbd.obligor_name) as no_of_obligors, 
+                            count(distinct pbd.security_name) as no_of_assets, 
+                            sum(pbd.total_commitment::float) as total_commitment, 
+                            sum(pbd.outstanding_principal::float) as total_outstanding_balance,
+                            (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
+                    from pflt_base_data pbd
+                    where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
+                final_result = result[0]
+            no_of_obligors, no_of_assets, total_commitment, total_outstanding_balance, unmapped_records = final_result
+            card_data = [{
+                "No of Obligors": no_of_obligors,
+                "No of Securities": no_of_assets,
+                "Total Commitment": numerize.numerize(total_commitment, 2),
+                "Total Outstanding Balance": numerize.numerize(total_outstanding_balance, 2),
+                "Unmapped Securities": unmapped_records,
+                "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
+                "Fund Type": base_data_info.fund_type
+            }]
+        else:
+            base_data = PcofBaseData.query.filter_by(base_data_info_id = info_id).order_by(PcofBaseData.id).all()
+            HistoryData = PcofBaseDataHistory
+            with engine.connect() as connection:
+                result = connection.execute(text('''
+                    select count(distinct pbd.issuer) as no_of_issuers, 
+                            count(distinct pbd.investment_name) as no_of_investments, 
+                            --sum(pbd.total_commitment::float) as total_commitment, 
+                            --sum(pbd.outstanding_principal::float) as total_outstanding_balance,
+                            (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
+                    from pcof_base_data pbd
+                    where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
+                final_result = result[0]
+            no_of_issuers, no_of_investments, unmapped_records = final_result
+            card_data = [{
+                "No of Issuers": no_of_issuers,
+                "No of Investments": no_of_investments,
+                "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
+                "Unmapped Securities": unmapped_records
+            }]
+
+        temp = []
+        # print(base_data[0])
+        for b in base_data:
+            t = b.__dict__
+            del t['_sa_instance_state']
+            old_data = HistoryData.query.filter_by(id = b.id).order_by(HistoryData.done_at.desc()).offset(1).limit(1).first()
+            t1 = None
+            if old_data:
+                t1 = old_data.__dict__
+            for key in t:
+                val = t[key]
+                old_value = val
+                if t1 and t1[key] != t[key]:
+                    old_value = t1[key]
+                numerized_val = None
+                if isinstance(val, (int, float, complex)) and not isinstance(val, bool):
+                    numerized_val = numerize.numerize(val, 2)
+                    # t[key] = val
+                elif isinstance(val, str):
+                    if val.replace(".", "").replace("-", "").isnumeric():
+                        try:
+                            numerized_val = numerize.numerize(float(val), 2)
+                        except Exception as e:
+                            print(e, val, type(val))
+                        # t[key] = val
+                t[key] = {
+                    "meta_info": True,
+                    "value": val,
+                    "display_value": numerized_val if numerized_val else val,
+                    "title": val,
+                    "data_type": None,
+                    "unit": None,
+                    "old_value": old_value
+                }
+            # t['report_date'] = t['report_date'].strftime("%Y-%m-%d")
+            # t['created_at'] = t['created_at'].strftime("%Y-%m-%d")
+            temp.append(t)
+        # print(temp[0])
+        base_data_table = {
+            "columns": [{
+                "key": column.bd_column_lookup,
+                "label": column.bd_column_name,
+                "datatype": column.bd_column_datatype,
+                "unit": column.bd_column_unit,
+                "isEditable": column.is_editable,
+                "bdm_id": column.bdm_id,
+                "is_selected": column.is_selected
+            } for column in base_data_mapping],
+            "data": temp
+        }
+
+        # print(type(base_data_table))
+        
+        
+        # for index, row in base_data.iterrows():
+        #     row_data = {}
+            
+        #     for col, value in row.items():
+        #         if value != value:
+        #             value = ""
+        #         if isinstance(value, (int, float)):
+        #                 row_data[col.replace(" ", "_")] = value
+        #         elif isinstance(value, datetime):
+        #             row_data[col.replace(" ", "_")] = value.strftime("%Y-%m-%d")
+        #         else:
+        #             row_data[col.replace(" ", "_")] = value
+        #     base_data_table["data"].append(row_data)
+        result = {
+            "base_data_table": base_data_table,
+            "report_date": base_data_info.report_date.strftime("%Y-%m-%d"),
+            "fund_type": base_data_info.fund_type,
+            "card_data": card_data
+        }
+        return ServiceResponse.success(data=result, message="Base Data")
+    except Exception as e:
+        print(e)
+        print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+        return ServiceResponse.error(message="Internal server error")
 
 def change_bd_col_seq(updated_sequence):
     try:
@@ -1476,12 +1481,14 @@ def add_to_base_data_table(file, fund_type, base_data_info_id, company_id, repor
                 )
                 .all()
         )
-        
         column_mapping = {item.bd_column_name: item.bd_column_lookup for item in base_data_mapping}
+        df.columns = df.columns.str.strip()
         df.rename(columns=column_mapping, inplace=True)
         df.to_sql(base_data_name, con=engine, if_exists='append', index=False)
 
         return ServiceResponse.success(message="Data added succesfully.")
     
     except Exception as e:
+        print(e)
+        print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
         return ServiceResponse.error(message="Something went wrong.")

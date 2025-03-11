@@ -14,7 +14,7 @@ import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
 import { PAGE_ROUTES } from '../../utils/constants/constants';
 import { UIComponents } from '../../components/uiComponents';
 
-export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setTablesData, setPreviewPageId}) => {
+export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setPreviewFundType, setTablesData, setPreviewPageId}) => {
 	const navigate = useNavigate();
 	// const { infoId } = useParams();
 	const [mapping, setMapping] = useState({});
@@ -27,6 +27,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [selectedFiles, setSelectedFiles] = useState([]);
 	const [isOpenFileUpload, setIsOpenFileUpload] = useState(false);
 	const [addsecFiles, setAddsecFiles] = useState([]);
+	const [loading, setLoading] = useState(false);
 
 	const {infoId} = useParams();
 
@@ -119,6 +120,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 
 	const handleBaseDataPreview = async (previewId = null) => {
 		try {
+			setLoading(true);
 			const previewpageId = previewId ? previewId : previewPageId;
 			const previewDataResponse = await getBaseFilePreviewData(previewpageId);
 			const result = previewDataResponse.data?.result;
@@ -132,8 +134,11 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 					fundType: result?.fund_type,
 					infoId: result?.other_info?.extraction_info_id
 				});
+			setPreviewFundType(result?.fund_type);
 			setFilteredData(result?.base_data_table?.data);
+			setLoading(false);
 		} catch (err) {
+			setLoading(false);
 			showToast("error", err.response.data.message);
 		}
 	};
@@ -209,40 +214,41 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 
 	return (
 		<div className={styles.previewPage}>
-			<div className={styles.tableContainer}>
-				<div style={{ display: 'flex', justifyContent: 'space-between' }}>
-					<div>
-						<div className={styles.cardContainer}>
-							{baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
-								<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/security-mapping') : () => {}}>
-									<div>{cardTitle}</div>
-									<div className={styles.cardTitle}><b>{fmtDisplayVal(baseFilePreviewData?.cardData[cardTitle], 0)}</b></div>
-								</div>
-							))}
+			{loading ? <UIComponents.Loader /> :
+				<div className={styles.tableContainer}>
+					<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+						<div>
+							<div className={styles.cardContainer}>
+								{baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
+									<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/security-mapping') : () => {}}>
+										<div>{cardTitle}</div>
+										<div className={styles.cardTitle}><b>{fmtDisplayVal(baseFilePreviewData?.cardData[cardTitle], 0)}</b></div>
+									</div>
+								))}
+							</div>
+						</div>
+						<div>
+							<UIComponents.Button onClick={showModal} title={'Add more securities data in the base data'} isFilled={true} text='Add Securities Data' />
+							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' />
 						</div>
 					</div>
 					<div>
-						<UIComponents.Button onClick={showModal} title={'Add more securities data in the base data'} isFilled={true} text='Add Securities Data' />
-						<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' />
+						<DynamicTableComponents
+							data={filteredData}
+							columns={baseFilePreviewData?.baseData?.columns}
+							enableStickyColumns={true}
+							showSettings={true}
+							showCellDetailsModal={true}
+							enableColumnEditing={true}
+							onChangeSave={handleSaveEdit}
+							getCellDetailFunc={getCellDetail}
+							cellDetail={cellDetail}
+							refreshDataFunction={handleBaseDataPreview}
+							previewFundType={previewFundType}
+							filterSelections={filterSelections[baseFilePreviewData.fundType]}
+						/>
 					</div>
-				</div>
-				<div>
-					<DynamicTableComponents
-						data={filteredData}
-						columns={baseFilePreviewData?.baseData?.columns}
-						enableStickyColumns={true}
-						showSettings={true}
-						showCellDetailsModal={true}
-						enableColumnEditing={true}
-						onChangeSave={handleSaveEdit}
-						getCellDetailFunc={getCellDetail}
-						cellDetail={cellDetail}
-						refreshDataFunction={handleBaseDataPreview}
-						previewFundType={previewFundType}
-						filterSelections={filterSelections[baseFilePreviewData.fundType]}
-					/>
-				</div>
-			</div>
+				</div>}
 			<AddAdditionalInformationModal
 				isAddFieldModalOpen={isAddFieldModalOpen}
 				setIsAddFieldModalOpen={setIsAddFieldModalOpen}
