@@ -11,5 +11,7 @@ export const STATUS_BG_COLOR = {
 	'completed': 'green',
 	'Completed': 'green',
 	'in progress': 'blue',
-	'failed': 'red'
+	'In Progress': 'blue',
+	'failed': 'red',
+	'Failed': 'red'
 };

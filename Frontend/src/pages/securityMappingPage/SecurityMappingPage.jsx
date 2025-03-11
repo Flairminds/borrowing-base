@@ -23,6 +23,7 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [selectedSecurity, setSelectedSecurity] = useState(null);
 	const [filteredData, setFilteredData] = useState([]);
+	const [isAnyCheckboxChecked, setIsAnyCheckboxChecked] = useState(false);
 	// const [selectedSecurities, setSelectedSecurities] = useState([]);
 	const navigate = useNavigate();
 
@@ -66,6 +67,12 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 		}
 	}, [unmappedSecurities]);
 
+	useEffect(() => {
+		if (!isMappingPopupOpen) {
+			setIsAnyCheckboxChecked(securityViewType === "unmapped" && selectedSecurities.current.length > 0);
+		}
+	}, [isMappingPopupOpen, securityViewType]);
+
 
 	const handleMappingPopup = () => {
 		setIsMappingPopupOpen(true);
@@ -81,13 +88,12 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 	};
 
 	const hanldeCheckBoxClick = (security) => {
-		console.info(selectedSecurities.current, 'multiple mapping 2');
 		if (selectedSecurities.current.includes(security)) {
 			selectedSecurities.current = selectedSecurities.current.filter(sec => sec != security);
 		} else {
 			selectedSecurities.current = [...selectedSecurities.current, security];
 		}
-		console.info(selectedSecurities.current, 'multiple mapping 3');
+		setIsAnyCheckboxChecked(securityViewType == "unmapped" && selectedSecurities.current.length > 0 );
 	};
 
 	const additionalColumns = securityViewType == "all" ? [{
@@ -144,7 +150,7 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 							value={searchText}
 							onChange={handleSearch}
 						/> */}
-						{securityViewType == "unmapped" && <CustomButton text='Edit Mapping' isFilled={true} onClick={handleMappingPopup} /> }
+						{securityViewType == "unmapped" && <CustomButton text='Edit Mapping' isFilled={true} onClick={handleMappingPopup} btnDisabled={!isAnyCheckboxChecked} /> }
 					</div>
 
 				</div>

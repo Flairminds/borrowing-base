@@ -268,6 +268,7 @@ export const WhatIfAnalysis = ({
 			// if(response.status===200){
 			toast.success("Saved");
 			getWhatifAnalysisList();
+			setInputValueUntitled('');
 			setDescriptionInput('');
 			setSaveBtn(false);
 			setWhatIfanalysisLoader(false);
