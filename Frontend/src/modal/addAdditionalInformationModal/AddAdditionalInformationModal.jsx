@@ -15,6 +15,7 @@ import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./AddAdditionalInformationModal.module.css";
 import { useNavigate } from 'react-router';
 import { UIComponents } from "../../components/uiComponents";
+
 const { TabPane } = Tabs;
 
 export const AddAdditionalInformationModal = (

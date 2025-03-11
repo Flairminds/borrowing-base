@@ -19,7 +19,11 @@
 .unmappedLoanTypesContainer {
 	border: 1px solid rgb(213, 210, 210);
 	border-radius: 10px;
+	background-color: white;
 	margin: 15px 5px;
+	position: sticky;
+	top: 0;
+	padding: 10px;
 }
 
 .unmappedLoantypeList {
@@ -51,6 +55,7 @@
 .loanMasterMapContainer {
 	display: flex;
 	margin: 10px 0px;
+	border: 1px solid grey;
 }
 
 .loanMasterMapContainer {
@@ -70,8 +75,9 @@
 	padding: 5px;
 	border-radius: 5px;
 	align-self: flex-start;
-	font-weight: bold;
-	background-color: #e5e5e5;
+	/* font-weight: bold; */
+	color: white;
+	background-color: var(--primary-theme-color);
 }
 
 .loanMasterList {
