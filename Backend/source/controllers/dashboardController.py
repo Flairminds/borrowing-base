@@ -34,17 +34,17 @@ def handle_upload_fund_file():
                 status_code=409
             )
 
-        xl_sheet_df_map = None
+        xl_sheet_df_map = commonServices.get_xl_df_map(excel_file)
         included_excluded_assets_map = None
         
         if fund_type == "PCOF":
             std_file_format = PCOF_STANDARD_FILE_FORMAT
-            xl_sheet_df_map =  pcofDashboardService.validate_standard_file_format(excel_file, std_file_format)
+            xl_sheet_df_map =  pcofDashboardService.validate_standard_file_format(xl_sheet_df_map, std_file_format)
             included_excluded_assets_map = pcofDashboardService.pcof_included_excluded_assets(xl_sheet_df_map)
 
         if fund_type == "PFLT":
             std_file_format = PFLT_STANDARD_FILE_FORMAT
-            xl_sheet_df_map = pfltDashboardService.validate_standard_file_format(excel_file, std_file_format)
+            xl_sheet_df_map = pfltDashboardService.validate_standard_file_format(xl_sheet_df_map, std_file_format)
             included_excluded_assets_map = pfltDashboardService.pflt_included_excluded_assets(xl_sheet_df_map)
 
         if bool(int(over_write)) == False:
