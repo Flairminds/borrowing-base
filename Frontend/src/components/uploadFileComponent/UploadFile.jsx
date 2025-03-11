@@ -1,4 +1,5 @@
 import { Modal, Button, Select, Popover } from 'antd';
+import Radio from 'antd/es/radio/radio';
 import { useEffect } from 'preact/hooks';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
@@ -9,7 +10,6 @@ import cross from "../../assets/Portflio/cross.svg";
 import fileImg from "../../assets/Portflio/file.svg";
 import PCOFSampleFile from '../../assets/template File/10.31.2023_PCOF_IV_Borrowing_Base_Basedata 5.xlsx';
 import PFLTSampleFile from '../../assets/template File/PFLT 09.30.24 Borrowing Base Data.xlsx';
-import ButtonStyles from "../../components/uiComponents/Button/ButtonStyle.module.css";
 import { ErrorMessage } from '../../modal/errorMessageModal/ErrorMessage';
 import { OverWriteDataModal } from '../../modal/overWriteDataModal/OverWriteDataModal';
 import { uploadedFileList, validateInitialFile, assetSelectionList } from '../../services/api';
@@ -18,11 +18,10 @@ import { getFileListColumns } from "../../utils/get_fileList";
 import { fundOptionValueToFundName } from '../../utils/helperFunctions/borrowing_base_functions';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { Calender } from '../calender/Calender';
-import { ProgressBar } from '../progressBar/ProgressBar';
-import stylesUload from './UploadFile.module.css';
-import Radio from 'antd/es/radio/radio';
-import { UIComponents } from '../uiComponents';
 import { ModalComponents } from '../modalComponents';
+import { ProgressBar } from '../progressBar/ProgressBar';
+import { UIComponents } from '../uiComponents';
+import stylesUload from './UploadFile.module.css';
 
 
 export const UploadFile = ({
@@ -54,7 +53,7 @@ export const UploadFile = ({
 	const [displayFetchData, setDisplayFetchData] = useState([]);
 	const [searchTerm, setSearchTerm] = useState('');
 	const [selectedTab, setSelectedTab] = useState('existing');
-
+	const [filterDate, setFilterDate] = useState(null);
 	const navigate = useNavigate();
 
 	useEffect(() => {
@@ -282,6 +281,7 @@ export const UploadFile = ({
 	};
 
 
+
 	const handleDropdownChange = (value) => {
 		if (value === 0) {
 			setDisplayFetchData(fetchFileList);
@@ -293,18 +293,35 @@ export const UploadFile = ({
 		}
 	};
 
+	const handleDateFilterChange = (date, dateString) => {
+		setFilterDate(dateString);
+		if (dateString) {
+			const filteredData = fetchFileList.filter(file => file.closing_date === dateString);
+			setDisplayFetchData(filteredData);
+		} else {
+			setFilterDate(null);
+			setDisplayFetchData(fetchFileList);
+		}
+	};
+
+	useEffect(() => {
+		setFilterDate(null);
+		setSelectedOption(0);
+		setDisplayFetchData(fetchFileList);
+	}, [selectedTab]);
+
 	const handleSearch = (e) => {
 		setSearchTerm(e.target.value);
 		if (e.target.value == '') {
 			setDisplayFetchData(fetchFileList);
-		}
-		else {
+		} else {
 			const filteredData = fetchFileList.filter(file =>
 				file.file_name.toLowerCase().includes(e.target.value.toLowerCase())
 			);
 			setDisplayFetchData(filteredData);
 		}
 	};
+
 	return (
 		<div className={stylesUload.main}>
 			{isLoaderVisible ?
@@ -312,7 +329,7 @@ export const UploadFile = ({
 				:
 				<div className={stylesUload.modalDiv} >
 					<Modal
-						title={<span style={{ fontWeight: '500', fontSize: '20px'}}>Import File</span>}
+						title={<span style={{ fontWeight: '500', fontSize: '20px' }}>Import File</span>}
 						centered
 						style={{
 							top: 10
@@ -331,51 +348,48 @@ export const UploadFile = ({
 								<Radio value="upload">Upload File</Radio>
 							</Radio.Group>
 						</div>
-
+						<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+							<div style={{ padding: '0 5px 0 0' }}>
+								<Calender
+									key={selectedTab}
+									setReportDate={setReportDate}
+									setDate={setDate}
+									fileUpload={true}
+									setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
+									availableClosingDates={availableClosingDates}
+									onDateChange={selectedTab === 'existing' ? handleDateFilterChange : null}
+								/>
+							</div>
+							<div style={{ padding: '0 5px 0 0' }}>
+								<Select
+									defaultValue={fundOptionsArray[0].label}
+									style={{ width: 150, borderRadius: '8px', margin: "0.5rem 0rem" }}
+									onChange={handleDropdownChange}
+									value={selectedOption}
+									onSelect={(value) => {
+										setFundType(fundOptionValueToFundName(value)),
+										setSelectedOption(value);
+									}
+									}
+									options={fundOptionsArray}
+								/>
+							</div>
+						</div>
 						{selectedTab === "upload" && (
 							<div className={stylesUload.container}>
 								<div>
-									{/* <div className={stylesUload.uploadHeadingDiv} >
-                  <p className={stylesUload.uploadHeading} >Upload File</p>
-                </div> */}
-									<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-										<div style={{ padding: '0 5px 0 0' }}>
-											<Calender
-												setReportDate={setReportDate}
-												setDate={setDate}
-												fileUpload={true}
-												setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
-												availableClosingDates={availableClosingDates}
-											/>
-										</div>
-										<div style={{ padding: '0 5px 0 0' }}>
-											<Select
-												defaultValue={fundOptionsArray[0].label}
-												style={{ width: 150, borderRadius: '8px', margin: "0.5rem 0rem" }}
-												onChange={handleDropdownChange}
-												value={selectedOption}
-												onSelect={(value) => {
-													setFundType(fundOptionValueToFundName(value)),
-													setSelectedOption(value);
-												}
-												}
-												options={fundOptionsArray}
-											/>
-										</div>
-										<div style={{ marginLeft: 'auto', order: '2' }}>
-											{selectedOption != 0 && (
-												<Popover placement="bottomRight" open={guidePopupOpen} content={<>Refer to sample template file</>}>
-													<a
-														href={fundType === "PCOF" ? PCOFSampleFile : PFLTSampleFile}
-														rel="noreferrer"
-														download={fundType === "PCOF" ? 'PCOFBaseFile_template.xlsx' : 'PFLTBaseFile_template.xlsx'}
-													>
-														Download sample file template
-													</a>
-												</Popover>
-											)}
-										</div>
-
+									<div style={{ marginLeft: 'auto', order: '2' }}>
+										{selectedOption != 0 && (
+											<Popover placement="bottomRight" open={guidePopupOpen} content={<>Refer to sample template file</>}>
+												<a
+													href={fundType === "PCOF" ? PCOFSampleFile : PFLTSampleFile}
+													rel="noreferrer"
+													download={fundType === "PCOF" ? 'PCOFBaseFile_template.xlsx' : 'PFLTBaseFile_template.xlsx'}
+												>
+													Download sample file template
+												</a>
+											</Popover>
+										)}
 									</div>
 									<div>
 										<div className={stylesUload.visible}>
