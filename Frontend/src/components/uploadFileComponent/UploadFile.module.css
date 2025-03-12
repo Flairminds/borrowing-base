@@ -379,12 +379,10 @@ form {
 }
 
 
-
-
 .tableContainer {
   display: flex;
   flex-direction: column;
-  height: 30vh;
+  height: 45vh;
   overflow-y: auto;
   border: 1px solid #DCDEDE;
   border-radius: 8px;
