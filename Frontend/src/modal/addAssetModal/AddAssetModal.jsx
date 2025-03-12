@@ -1,11 +1,12 @@
 import { Button, Modal } from 'antd';
-import React from 'react';
+import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { AddAssetSelectionTableModal } from '../addAssetSelectionTableModal/AddAssetSelectionTableModal';
 import Styles from './AddAssetModal.module.css';
 import { ModalComponents } from '../../components/modalComponents';
 import { UIComponents } from '../../components/uiComponents';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 
 export const AddAssetModal = (
 	{
@@ -23,9 +24,11 @@ export const AddAssetModal = (
 		previewData,
 		setPreviewData,
 		previewColumns,
-		setAddAssetSelectedData
+		setAddAssetSelectedData,
+		isAddLoadBtnDisable
 	}
 ) => {
+	
 
 	const { getRootProps, getInputProps } = useDropzone({
 		accept: {
@@ -51,7 +54,7 @@ export const AddAssetModal = (
 				onCancel={handleCancel}
 				width={'50%'}
 				footer={[
-					<ModalComponents.Footer key={'footer-buttons'} onClickCancel={handleCancel} onClickSubmit={handleOk} submitText={'Load'} loading={loading} />
+					<ModalComponents.Footer key={'footer-buttons'} onClickCancel={handleCancel} onClickSubmit={handleOk} submitText={'Load'} loading={loading} submitBtnDisabled={isAddLoadBtnDisable}/>
 				]}
 			>
 				<div className={Styles.container}>
