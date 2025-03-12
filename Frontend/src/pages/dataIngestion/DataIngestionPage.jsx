@@ -180,6 +180,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 				navigate(`/data-ingestion/base-data-preview/${extractData.id}`);
 				return true;
 			}
+			setExtractionInProgress(false);
 		} catch (err) {
 			setExtractionInProgress(false);
 			showToast('failure', err?.response?.data.message);
