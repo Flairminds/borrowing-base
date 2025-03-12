@@ -251,6 +251,7 @@ class PFLTCalculationInitiator(SLC, PBC, PCTC):
             # self.Obligor_new_GX_new_HE()
         except Exception as e:
             print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+            raise Exception('Could not calculate')
 
 
 # file_path = pathlib.Path("PFLT Sub - Borrowing Base - 06.26.24 PF Truist Base.xlsx")

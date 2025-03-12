@@ -971,6 +971,10 @@ def trigger_bb_calculation(bdi_id):
         for index, row in df2.iterrows():
             rename_df_col[row['bd_column_lookup']] = row['bd_column_name']
         df.rename(columns=rename_df_col, inplace=True)
+
+        df["Spread incl. PIK and PIK'able"] = pd.to_numeric(df["Spread incl. PIK and PIK'able"], errors='coerce')
+        df["PIK / PIK'able For Floating Rate Loans"] = pd.to_numeric(df["PIK / PIK'able For Floating Rate Loans"], errors='coerce')
+
         # print(df.dtypes)
         # for c in df.columns:
             # print(c, df[c].dtype)
@@ -998,14 +1002,15 @@ def trigger_bb_calculation(bdi_id):
 
         inputs_sheet_data = [{
                 "INPUTS": "Determination Date",
-                "Values": base_data_other_info.determination_date
+                "Values": datetime.strptime(base_data_other_info.determination_date[:-5], "%Y-%m-%dT%H:%M:%S")
             }, {
                 "INPUTS": "Minimum Equity Amount Floor",
-                "Values": base_data_other_info.other_info_list["input"].get('minimum_equity_amount_floor')
+                "Values": float(base_data_other_info.other_info_list["input"].get('minimum_equity_amount_floor', 0))
             }
         ]
         inputs_df = pd.DataFrame(inputs_sheet_data)
-        
+        inputs_df.to_excel(writer, sheet_name="Inputs", index=False, header=True)
+        writer.save()
         xl_df_map['Inputs'] = inputs_df
 
         # book = load_workbook(file_name)
@@ -1021,8 +1026,13 @@ def trigger_bb_calculation(bdi_id):
             {
                 'Currency': input_data.get('currency'), 
                 'Exchange Rate': input_data.get('exchange_rates')
-            } for input_data in base_data_other_info.other_info_list.get('other_sheet')]
+            }
+            for input_data in base_data_other_info.other_info_list.get('other_sheet', [])
+            if input_data
+        ]
         exchange_rates_df = pd.DataFrame(exchange_rates_data)
+        exchange_rates_df.to_excel(writer, sheet_name="Exchange Rates", index=False, header=True)
+        writer.save()
         xl_df_map['Exchange Rates'] = exchange_rates_df
 
         # book = load_workbook(file_name)
@@ -1040,9 +1050,12 @@ def trigger_bb_calculation(bdi_id):
                 'Additional Expences 1': input_data.get('additional_expenses_1'),
                 'Additional Expences 2': input_data.get('additional_expenses_2'),
                 'Additional Expences 3': input_data.get('additional_expenses_3')
-            } for input_data in base_data_other_info.other_info_list.get('other_sheet')]
+            } for input_data in base_data_other_info.other_info_list.get('other_sheet')
+            if input_data
+        ]
         cash_balance_projection_df = pd.DataFrame(cash_balance_projection_data)
-
+        cash_balance_projection_df.to_excel(writer, sheet_name="Cash Balance Projections", index=False, header=True)
+        writer.save()
         # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Exchange Rates': [1.000000, 0.695230, 0.618820, 1.035400], 'Cash - Current & PreBorrowing': [21455041.84, 216583.15, 0, 0], 'Borrowing': ['0', '', '', ''], 'Additional Expences 1': [0, 0, 0, 0], 'Additional Expences 2': [0, 0, 0, 0], 'Additional Expences 3': [0, 0, 0, 0]}
         # data = pd.DataFrame.from_dict(data)
         xl_df_map['Cash Balance Projections'] = cash_balance_projection_df
@@ -1062,6 +1075,8 @@ def trigger_bb_calculation(bdi_id):
                 'Current Credit Facility Balance': input_data.get('current_credit_facility_balance')
             } for input_data in base_data_other_info.other_info_list.get('other_sheet')]
         credit_balance_projection_df = pd.DataFrame(credit_balance_projection_data)
+        credit_balance_projection_df.to_excel(writer, sheet_name="Credit Balance Projection", index=False, header=True)
+        writer.save()
         xl_df_map['Credit Balance Projection'] = credit_balance_projection_df
 
         # book = load_workbook(file_name)
@@ -1072,6 +1087,8 @@ def trigger_bb_calculation(bdi_id):
 
         data = {'Haircut': ['', 'SD/EBITDA', 'TD/EBITDA', 'UD/EBITDA'], '20% Conc. Limit': ['Tier 1 Obligor', 5, 7, 6], 'Unnamed: 2': ['Tier 2 Obligor', 4.25, 6, 5.25], 'Unnamed: 3': ['Tier 3 Obligor', 3.75, 5, 4.5], 'Level 1 - 10% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 5': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 6': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 2 - 20% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 8': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 9': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 3 - 35% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 11': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 12': ['Tier 3 Obligor', 4.25, 5.5, 5], 'Level 4 - Max Eligibility - 50% Haircut': ['Tier 1 Obligor', 5.5, 7.5, 6.5], 'Unnamed: 14': ['Tier 2 Obligor', 4.75, 6.5, 5.75], 'Unnamed: 15': ['Tier 3 Obligor', 4.25, 5.5, 5]}
         data = pd.DataFrame.from_dict(data)
+        data.to_excel(writer, sheet_name="Haircut", index=False, header=True)
+        writer.save()
         xl_df_map['Haircut'] = data
 
         # book = load_workbook(file_name)
@@ -1082,6 +1099,8 @@ def trigger_bb_calculation(bdi_id):
 
         # # data = {'Currency': ['USD', 'CAD', 'AUD', 'EUR'], 'Current Credit Facility Balance': ['442400000', '2000000', '0', '0']}
         # # data = pd.DataFrame.from_dict(data)
+        industry_list.to_excel(writer, sheet_name="Industry", index=False, header=True)
+        writer.save()
         xl_df_map['Industry'] = industry_list
 
         # book = load_workbook(file_name)
