@@ -620,6 +620,7 @@ class LoanTypeMaster(db.Model):
     loan_type = db.Column(db.String)
     loan_type_lookup = db.Column(db.String)
     description = db.Column(db.String)
+    fund_type = db.Column(db.String(255))
 
 class LoanTypeMapping(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -642,6 +643,7 @@ class LienTypeMaster(db.Model):
     lien_type = db.Column(db.String)
     lien_type_lookup = db.Column(db.String)
     description = db.Column(db.String)
+    fund_type = db.Column(db.String(255))
 
 class LienTypeMapping(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
