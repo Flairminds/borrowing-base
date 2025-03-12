@@ -286,7 +286,7 @@ def trigger_bb_calculation():
         service_response = diService.trigger_bb_calculation(bdi_id)
         if not service_response["success"]:
             return HTTPResponse.error(message=service_response.get("message"))
-        return HTTPResponse.success(message=service_response.get("message"), result=[])
+        return HTTPResponse.success(message=service_response.get("message"), result=service_response.get('data'))
     except Exception as e:
         # Log.func_error(e)
         print("here",e)

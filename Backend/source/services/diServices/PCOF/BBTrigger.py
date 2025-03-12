@@ -402,11 +402,12 @@ def trigger_pcof_bb(bdi_id):
         print(f'[PCOF]Generated Data {dt_string}')
         bb_response = pcofBBCalculator.get_bb_calculation(base_data_file=base_data_file, selected_assets=json.loads(included_excluded_assets), user_id=1)
 
+        bb_response["base_data_file_id"] = base_data_file.id
         wb2.close()
         writer.close()
         os.remove(file_name)
 
-        return ServiceResponse.success(message="Succesfully trigger PCOF borrowing base")
+        return ServiceResponse.success(message="Succesfully trigger PCOF borrowing base", data=bb_response)
 
 
     except Exception as e:

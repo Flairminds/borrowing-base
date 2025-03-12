@@ -164,9 +164,10 @@ def get_files_list():
 def get_bb_data_of_date():
     try:
         data = request.get_json()
-        selected_date = data["closing_date"]
-        user_id = data["user_id"]
-        return dashboardService.get_bb_data_of_date(selected_date, user_id)
+        selected_date = data.get("closing_date")
+        user_id = data.get("user_id")
+        base_data_file_id = data.get("base_data_file_id")
+        return dashboardService.get_bb_data_of_date(selected_date, user_id, base_data_file_id)
     except Exception as e:
         return {
             "error": str(e),
