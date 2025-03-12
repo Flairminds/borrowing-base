@@ -155,8 +155,8 @@ export const uploadAddMoreSecFile = (file, dataId, fundType, reportDate) => {
 	});
 };
 
-export const getLoanTypeMappingData = () => {
-	const mappingDataRes = axios.get(`${ApiURL}/mapping/loan_type`);
+export const getLoanTypeMappingData = (fundType) => {
+	const mappingDataRes = axios.get(`${ApiURL}/mapping/loan_type/${fundType}`);
 	return mappingDataRes;
 };
 
@@ -165,5 +165,16 @@ export const updateLoanTypeMapping = (loanMapData) => {
 		"mappings": [loanMapData]
 	};
 	const fileListResponse = axios.post(`${ApiURL}/mapping/map_loan_type`, payload);
+	return fileListResponse;
+};
+
+export const addLoanTypeMaster = (masterType, fundType) => {
+	const payload = {
+		"master_loan_type": masterType,
+		"fund_type": fundType,
+		"description": null
+	};
+
+	const fileListResponse = axios.post(`${ApiURL}/mapping/add_loan_type_master`, payload);
 	return fileListResponse;
 };

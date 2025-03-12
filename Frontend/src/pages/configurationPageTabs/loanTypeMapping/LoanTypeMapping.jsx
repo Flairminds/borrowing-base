@@ -1,10 +1,13 @@
+import { Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from 'react-toastify';
+import { UIComponents } from '../../../components/uiComponents';
 import { getLoanTypeMappingData, updateLoanTypeMapping } from '../../../services/dataIngestionApi';
-import { loanTypeConfig, loanTypeMappingStaticData } from '../../../utils/constants/configurationConstants';
+import { fundOptionsArray } from '../../../utils/constants/constants';
 import styles from './LoanTypeMapping.module.css';
+import { AddLoanTypeMasterModal } from '../../../modal/configurationPageModals/addLoanTypeMasterModal/AddLoanTypeMasterModal';
 
 const ItemType = "ITEM";
 
@@ -41,10 +44,11 @@ const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey }) =
 		accept: ItemType,
 		drop: async (draggedItem) => {
 			if (title == 'unmapped_loan_types') return;
+			console.info("master", title);
 
 			try {
 				const mappingData = {
-					'master_loan_type': title.master_loan_type,
+					'master_loan_type_id': title.master_loan_type_id,
 					'loan_type': draggedItem.name.unmapped_loan_type
 				};
 				const res = await updateLoanTypeMapping(mappingData);
@@ -96,14 +100,13 @@ const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey }) =
 export const LoanTypeMapping = () => {
 
 	const [loanTypeMappingData, setLoanTypeMappingData] = useState(null);
+	const [selectedFundType, setSelectedFundType] = useState("PFLT");
+	const [addMasterPopupOpen, setAddMasterPopupOpen] = useState(false);
 
-	useEffect(() => {
-		console.info(loanTypeMappingData, 'loan Map data');
-	}, [loanTypeMappingData]);
 
-	const getloanTypeMappingInfo = async() => {
+	const getloanTypeMappingInfo = async(fund) => {
 		try {
-			const res = await getLoanTypeMappingData();
+			const res = await getLoanTypeMappingData(fund);
 			setLoanTypeMappingData(res.data.result);
 		} catch (err) {
 			console.error(err);
@@ -111,23 +114,50 @@ export const LoanTypeMapping = () => {
 		}
 	};
 
+	const handleFundChange = (value) => {
+
+		let fundType = "";
+		if (value == 1) {
+			fundType = "PCOF";
+		} else if (value === 2) {
+			fundType = "PFLT";
+		}
+
+		setSelectedFundType(fundType);
+		getloanTypeMappingInfo(fundType);
+	};
+
+
 	useEffect(() => {
-		getloanTypeMappingInfo();
+		getloanTypeMappingInfo(selectedFundType);
 	}, []);
 
 	return (
 		<div className={styles.loanTypePageContainer}>
 			<div className={styles.cardContainer}>
 				{/* {loanTypeConfig.cardsData?.map((card) => ( */}
-					<div className={styles.loanTypeCard}>
-						<div><b>All Loan Types</b></div>
-						<div className={styles.cardTitle}>{loanTypeMappingData?.unmapped_loan_types.length + loanTypeMappingData?.mapped_loan_types.length}</div>
-					</div>
-					<div className={styles.loanTypeCard}>
-						<div><b>Unmapped Loan Types</b></div>
-						<div className={styles.cardTitle}>{loanTypeMappingData?.unmapped_loan_types.length}</div>
-					</div>
+				<div className={styles.loanTypeCard}>
+					<div><b>All Loan Types</b></div>
+					<div className={styles.cardTitle}>{loanTypeMappingData?.unmapped_loan_types.length + loanTypeMappingData?.mapped_loan_types.length}</div>
+				</div>
+				<div className={styles.loanTypeCard}>
+					<div><b>Unmapped Loan Types</b></div>
+					<div className={styles.cardTitle}>{loanTypeMappingData?.unmapped_loan_types.length}</div>
+				</div>
 				{/* ))} */}
+			</div>
+
+			<div className={styles.dropdownContainer}>
+				<Select
+					options={fundOptionsArray}
+					defaultValue={fundOptionsArray[0].label}
+					value={selectedFundType}
+					style={{ width: 150, borderRadius: '8px', margin: "0.5rem 0rem" }}
+					onChange={handleFundChange}
+				/>
+
+				<UIComponents.Button text='Add Master Type' isFilled={true} onClick={() => setAddMasterPopupOpen(true)} />
+
 			</div>
 
 			<DndProvider backend={HTML5Backend}>
@@ -166,6 +196,12 @@ export const LoanTypeMapping = () => {
 				</div>
 
 			</DndProvider>
+
+			<AddLoanTypeMasterModal
+				isOpen={addMasterPopupOpen}
+				setIsOpen={setAddMasterPopupOpen}
+				fundType={selectedFundType}
+			/>
 
 		</div>
 	);

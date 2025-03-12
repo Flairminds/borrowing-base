@@ -29,7 +29,3 @@ export const loanTypeConfig = {
 	}]
 };
 
-
-export const loanTypeMappingStaticData = {
-	'all_loan_types': 20
-};
