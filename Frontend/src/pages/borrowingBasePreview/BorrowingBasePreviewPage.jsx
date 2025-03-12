@@ -153,7 +153,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 
 		try {
 			await editBaseData(changes);
-			await handleBaseDataPreview();
+			// await handleBaseDataPreview();
 			updatedData[rowIndex][columnkey] = inputValue;
 			setBaseFilePreviewData({
 				...baseFilePreviewData,

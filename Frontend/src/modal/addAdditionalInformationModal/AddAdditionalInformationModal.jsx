@@ -268,11 +268,11 @@ export const AddAdditionalInformationModal = (
 				form.resetFields();
 				onClose();
 			}
-			await handleBaseDataPreview();
-
+			
 			if (isTriggerCalled && response["success"]) {
 				generateBaseData();
 			}
+			await handleBaseDataPreview();
 		} catch (error) {
 			const errorMessage = error.response?.message || "Error: Failed to submit form data";
 			console.error(error);
@@ -356,14 +356,14 @@ export const AddAdditionalInformationModal = (
 							return cell;
 						}
 						if (typeof cell === "number" && cell >= 0 && cell <= 1 && isPercentageCell(row, cell)) {
-							return `${(cell * 100).toFixed(2)}%`;
+							return `${(cell * 100)}`;
 						}
 						if (index !== 0 &&
 							typeof row[0] === 'string' &&
 							(row[0].toLowerCase().includes('threshold') || row[0].toLowerCase().includes('ltv')) &&
 							typeof row[1] === 'number'
 						) {
-							return `${(cell * 100).toFixed(2)}%`;
+							return `${(cell * 100)}`;
 						}
 
 						return cell;
@@ -420,7 +420,7 @@ export const AddAdditionalInformationModal = (
 				for (const key in obj) {
 					let formattedValue = fmtDateValue(obj[key]);
 					if ((key.includes("threshold") || key.includes("ltv")) && key !== "") {
-						formattedValue = `${(formattedValue * 100).toFixed(2)}%`;
+						formattedValue = `${formattedValue * 100}%`;
 					}
 					rows.push([key, formattedValue]);
 				}
@@ -432,11 +432,11 @@ export const AddAdditionalInformationModal = (
 						const value = item[col.col_name] || "";
 
 						if ((col.col_name.includes("threshold") || col.col_name.includes("ltv")) && value !== "") {
-							return `${(value * 100).toFixed(2)}%`;
+							return `${value}%`;
 						}
 
 						if (columnDetail?.unit === "percent" && value !== "") {
-							return `${(value * 100).toFixed(2)}%`;
+							return `${value}%`;
 						}
 
 						return fmtDateValue(value);
@@ -498,7 +498,7 @@ export const AddAdditionalInformationModal = (
 										{selectedData[sheet]?.Header?.map((header, ind) => (
 											<Form.Item
 												key={ind}
-												label={header.label}
+												label={header.label + (header.unit && header.unit == 'percent' ? ' (%)' : '')}
 												name={header.name}
 												rules={[{ required: true, message: `Please enter ${header.label.toLowerCase()}!` }]}
 												style={{ display: "inline-block", width: "20%", margin: "0 1rem 1rem 1rem" }}
