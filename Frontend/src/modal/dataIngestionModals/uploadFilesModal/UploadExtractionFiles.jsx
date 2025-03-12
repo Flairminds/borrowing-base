@@ -46,7 +46,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 
 
 		if (!reportDate || reportDate == "") {
-			showToast('warning', "Select report date");
+			showToast('warning', "Select Report Date");
 			return;
 		}
 		setLoading(true);
