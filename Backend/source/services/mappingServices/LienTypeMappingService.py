@@ -5,31 +5,32 @@ from models import db, LienTypeMaster, LienTypeMapping
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Util import create_lookup
 
-def get_unmapped_lien_types():
+def get_unmapped_lien_types(fund_name):
 
     engine = db.get_engine()
     with engine.connect() as connection:
-        unmapped_lien_types = connection.execute(text('''
+        unmapped_lien_types = connection.execute(text(f'''
             select
                 distinct ssss."[SI] Credit Facility Lien Type",
                 min(ssss.source_file_id)
-            from sf_sheet_securities_stats ssss
+            from loan_type_master ltmaster, 
+            sf_sheet_securities_stats ssss
             left join lien_type_mapping ltmapping on ssss."[SI] Credit Facility Lien Type" = ltmapping.lien_type
-            where ltmapping.lien_type is null
+            where ltmapping.lien_type is null and ltmaster.fund_type = '{fund_name}'
             group by ssss."[SI] Credit Facility Lien Type"
         ''')).fetchall()
     unmapped_lien_type_data = [{'unmapped_lien_type': unmapped_lien_type[0], 'source_file_id': unmapped_lien_type[1]} for unmapped_lien_type in unmapped_lien_types]
     return ServiceResponse.success(data=unmapped_lien_type_data, message="Unmapped lien Types")
 
-def get_mapped_lien_types():
+def get_mapped_lien_types(fund_name):
     engine = db.get_engine()
     with engine.connect() as connection:
-        mapped_lien_types = connection.execute(text('''
+        mapped_lien_types = connection.execute(text(f'''
             select 
 	            ltmapping.master_lien_type_id,
 	            ltmaster.lien_type as master_lien_type,
 	            ltmapping.lien_type
-            from lien_type_mapping ltmapping join lien_type_master ltmaster on ltmapping.master_lien_type_id = ltmaster.id
+            from lien_type_mapping ltmapping join lien_type_master ltmaster on ltmapping.master_lien_type_id = ltmaster.id where ltmaster.fund_type = '{fund_name}'
         ''')).fetchall()
 
     mapped_lien_type_data = [{
@@ -40,11 +41,11 @@ def get_mapped_lien_types():
 
     return ServiceResponse.success(data=mapped_lien_type_data, message="Mapped lien Types")
 
-def get_master_lien_types():
+def get_master_lien_types(fund_name):
     engine = db.get_engine()
     with engine.connect() as connection:
-        master_lien_types = connection.execute(text('''
-            select ltmaster.id, ltmaster.lien_type from lien_type_master ltmaster
+        master_lien_types = connection.execute(text(f'''
+            select ltmaster.id, ltmaster.lien_type from lien_type_master ltmaster where ltmaster.fund_type = '{fund_name}'
         ''')).fetchall()
     
     master_lien_type_data = [{'master_lien_type_id': master_lien_type[0], 'master_lien_type': master_lien_type[1]} for master_lien_type in master_lien_types]
@@ -72,3 +73,15 @@ def map_lien_type(mappings):
     db.session.commit()
     
     return ServiceResponse.success(message="Lien Type mapped successfully")
+
+def add_loan_type_master(fund_type, master_lien_type, discription):
+    company_id = 1
+    created_by = 1
+
+    lookup = create_lookup(master_lien_type)
+
+    loan_type_master = LienTypeMaster(company_id=company_id, created_by=created_by, loan_type=master_lien_type, loan_type_lookup=lookup, description=discription, fund_type=fund_type)
+    db.session.add(loan_type_master)
+    db.session.commit()
+ 
+    return ServiceResponse.success(message="Lien Type added successfully")
