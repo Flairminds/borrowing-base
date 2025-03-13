@@ -26,12 +26,14 @@ export const Dashboard = ({
 	fundType,
 	setFundType,
 	setAssetSelectionData,
-	getLandingPageData
+	getLandingPageData,
+	whatifAnalysisPerformed,
+	setWhatifAnalysisPerformed
 }) => {
 
 	const [trendGraphData, setTrendGraphData] = useState([]);
 	// const [assetSelectionData, setAssetSelectionData] = useState([]);
-	const [whatifAnalysisPerformed, setWhatifAnalysisPerformed] = useState(false);
+	
 	// const [selectedAssets, setSelectedAssets] = useState(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
 	const [whatIfAnalysisListData, setWhatIfAnalysisListData ] = useState([]);
 
@@ -40,7 +42,7 @@ export const Dashboard = ({
 		if (!tablesData) {
 			getLandingPageData();
 		}
-	}, []);
+	}, [fundType,tablesData]);
 
 
 	const getTrendGraphData = async(fund) => {

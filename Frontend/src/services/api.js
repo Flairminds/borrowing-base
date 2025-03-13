@@ -19,20 +19,20 @@ export const validateInitialFile = (files, closing_date, fund_type, over_write) 
 	});
 	return response;
 };
-export const getDateReport = async (closing_date) => {
-	// const formData = new FormData();
-	// formData.append("closing_date", closing_date);
-	// formData.append("user_id", 1);
-	const dataDate = {
-		closing_date: closing_date,
-		user_id: 1
-	};
+
+
+export const getDateReport = async (closing_date, base_data_file_id) => {
+	const dataDate = closing_date && !base_data_file_id
+		? { closing_date: closing_date, user_id: 1 }
+		: { base_data_file_id: base_data_file_id, user_id: 1 };
+
 	const response = await axios.post(`${ApiURL}/dashboard/get_bb_data_of_date`, dataDate, {
 		withCredentials: true
 	});
 
 	return response;
 };
+
 
 export const uploadInitialFile = (file_data) => {
 
@@ -127,14 +127,14 @@ export const addNewAsset = async (files, base_file, to_save, selected_Assets_dat
 };
 
 export const uploadedFileList = () => {
-	const res = axios.post(`${ApiURL}/dashboard/get_files_list`, {user_id: '1'});
+	const res = axios.post(`${ApiURL}/dashboard/get_files_list`, { user_id: '1' });
 	return res;
 };
 
 
 
 export const getListOfWhatIfAnalysis = (user_id) => {
-	const res = axios.post(`${ApiURL}/wia/wia_library`, {user_id: user_id});
+	const res = axios.post(`${ApiURL}/wia/wia_library`, { user_id: user_id });
 	return res;
 };
 
@@ -148,7 +148,7 @@ export const getSelectedWIAAsstes = (whatIfAnalysisId, whatIfAnalysisType) => {
 };
 
 export const getWhatIfAnalysisData = (what_if_analysis_id) => {
-	const res = axios.post(`${ApiURL}/select_what_if_analysis`, {what_if_analysis_id: what_if_analysis_id});
+	const res = axios.post(`${ApiURL}/select_what_if_analysis`, { what_if_analysis_id: what_if_analysis_id });
 	return res;
 
 };
@@ -164,7 +164,7 @@ export const lineChartData = (user_id, fund_type) => {
 };
 
 export const downloadExcelAssest = (previewData) => {
-	const res = axios.post(`${ApiURL}/download_excel_for_assets`, {assets_to_download: previewData}, {
+	const res = axios.post(`${ApiURL}/download_excel_for_assets`, { assets_to_download: previewData }, {
 		responseType: 'blob',
 		headers: {
 			"Content-Type": 'application/json'

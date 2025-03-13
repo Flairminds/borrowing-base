@@ -25,13 +25,12 @@ export const AddAdditionalInformationModal = (
 		onClose,
 		dataId,
 		data = {},
-		handleBaseDataPreview,
 		previewFundType,
 		selectedFiles,
 		setSelectedFiles,
 		baseFilePreviewData,
 		previewPageId,
-		setTablesData
+		getborrowingbasedata
 	}
 ) => {
 	const [form] = Form.useForm();
@@ -128,28 +127,9 @@ export const AddAdditionalInformationModal = (
 				const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
 				const detail = response?.data;
 				showToast('success', detail?.message);
+				const baseFileId = response.data.result.base_data_file_id;
+				await getborrowingbasedata(baseFileId);
 				navigate('/');
-				// if (dateString) {
-				// 	try {
-				// 		const response = await getDateReport(dateString);
-				// 		if (response.status === 200) {
-				// 			setTablesData(response.data);
-				// 			// setBaseFile({ name: response.data.file_name, id: response.data.base_data_file_id });
-				// 			// setWhatifAnalysisPerformed(false);
-				// 			// setReportDate(dateString);
-				// 			// setFundType(response.data.fund_name);
-				// 			// getTrendGraphData(response.data.fund_name);
-				//
-				// 			showToast('info', `Data for ${dateString} imported`);
-				// 		}
-				// 	} catch (err) {
-				// 		if (err.response && err.response.status === 404) {
-				// 			showToast(err.response.data.message);
-				// 		} else {
-				// 			console.error(err);
-				// 		}
-				// 	}
-				// }
 			}
 			setTriggerBBCalculation(false);
 			return;
@@ -268,11 +248,10 @@ export const AddAdditionalInformationModal = (
 				form.resetFields();
 				onClose();
 			}
-			
 			if (isTriggerCalled && response["success"]) {
 				generateBaseData();
 			}
-			await handleBaseDataPreview();
+
 		} catch (error) {
 			const errorMessage = error.response?.message || "Error: Failed to submit form data";
 			console.error(error);
