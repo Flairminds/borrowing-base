@@ -104,6 +104,7 @@ export function App() {
 								setIsAnalysisModalOpen={setIsAnalysisModalOpen}
 								setConstDate={setConstDate}
 								fundType={fundType}
+								setAvailableClosingDates={setAvailableClosingDates}
 							/>
 						}
 					/>

@@ -10,7 +10,7 @@ import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pflt_other
 import { generateBaseDataFile, getDateReport } from "../../services/api";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
 import { PFLTData, PCOFData, OTHER_INFO_OPTIONS, PFLT_COLUMNS_NAME, PCOF_COLUMNS_NAME } from "../../utils/constants/constants";
-import { fmtDateValue, fmtDisplayVal } from "../../utils/helperFunctions/formatDisplayData";
+import { fmtDateValue, fmtDisplayVal, formatColumnName } from "../../utils/helperFunctions/formatDisplayData";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./AddAdditionalInformationModal.module.css";
 import { useNavigate } from 'react-router';
@@ -422,7 +422,7 @@ export const AddAdditionalInformationModal = (
 					if ((key.includes("threshold") || key.includes("ltv")) && key !== "") {
 						formattedValue = `${formattedValue * 100}%`;
 					}
-					rows.push([key, formattedValue]);
+					rows.push([formatColumnName(key), formattedValue]);
 				}
 			} else {
 				obj.forEach((item) => {
@@ -446,7 +446,7 @@ export const AddAdditionalInformationModal = (
 			}
 
 			const sheet = XLSX.utils.aoa_to_sheet(rows);
-			const sheetNameForObject = sheetName.replace(/_/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+			const sheetNameForObject = formatColumnName(sheetName);
 			XLSX.utils.book_append_sheet(wb, sheet, sheetNameForObject);
 		};
 
