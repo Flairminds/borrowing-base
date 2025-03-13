@@ -1150,11 +1150,12 @@ def trigger_bb_calculation(bdi_id):
         del wb2
         os.remove(file_name)
         bb_response = pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
+        bb_response["base_data_file_id"] = base_data_file.id
         return ServiceResponse.success(message="Successfully processed. Visit the Borrowing Base module to check the data.", data=bb_response)
 
     except Exception as e:
         print(e)
-        return ServiceResponse.error(message="Something went wring while triggering calculation")
+        return ServiceResponse.error(message="Something went wrong while triggering calculation")
 
 def get_archived_file_list():
 
