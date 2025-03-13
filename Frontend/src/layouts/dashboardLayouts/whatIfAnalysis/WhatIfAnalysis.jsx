@@ -24,6 +24,8 @@ import { UpdateParameterModal } from '../../../modal/updateParameterModal/Update
 import { WhatIfAnalysisLib } from '../../../modal/whatIfAnalysisLibrary/WhatIfAnalysisLib';
 import { EbitdaAnalysis, addNewAsset, changeParameter, downLoadReportSheet, downloadExcelAssest, getListOfWhatIfAnalysis, getPreviewTable, intermediateMetricsTable, saveWhatIfAnalysis } from '../../../services/api';
 import Styles from './WhatIfAnalysis.module.css';
+import { ErrorMessage } from '../../../modal/errorMessageModal/ErrorMessage';
+import { showToast } from '../../../utils/helperFunctions/toastUtils';
 
 export const WhatIfAnalysis = ({
 	getTrendGraphData,
@@ -84,6 +86,8 @@ export const WhatIfAnalysis = ({
 	const [isAssetInventoryModal, setIsAssetInventoryModal] = useState(false);
 	const [isupdateAssetModalOpen, setIsupdateAssetModalOpen] = useState(false);
 	const [updateAssetTableData, setUpdateAssetTableData] = useState();
+	const [errorMessageModal, setErrorMessageModal] = useState(false);
+	const [errorMessageData, setErrorMessageData] = useState('');
 	const [selectedCellData, setSelectedCellData] = useState({
 		investment_name: '',
 		colName: ''
@@ -91,10 +95,13 @@ export const WhatIfAnalysis = ({
 	const [whatIfAnalysisId, setWhatIfAnalysisId] = useState(null);
 	const [whatIfAnalysisType, setWhatIfAnalysisType] = useState();
 	const [simulationType, setSimulationType] = useState();
+	const [isAddLoadBtnDisable, setIsAddLoadBtnDisable] = useState(true);
+
 	useEffect(() => {
 		if (selectedFiles.length > 0) {
 			getPreviewTableFunc();
 		}
+		setIsAddLoadBtnDisable(true);
 	}, [selectedFiles]);
 
 	const getMediateMetrics = async () => {
@@ -114,12 +121,15 @@ export const WhatIfAnalysis = ({
 			var stringRes = JSON.parse(response.data.replace(/\bNaN\b/g, "null"));
 			if (response.status === 200) {
 				// isPreviewModal(true)
+				setIsAddLoadBtnDisable(false);
 				setPreviewData(stringRes.sheet1.data);
 				setPreviewColumns(stringRes.sheet1.columns);
 				setAddAssetSelectedData(stringRes.sheet1.data);
 			}
 		} catch (err) {
 			console.error(err);
+			setErrorMessageData(err.response.data.result);
+			setErrorMessageModal(true);
 		}
 	};
 
@@ -162,7 +172,7 @@ export const WhatIfAnalysis = ({
 			document.body.appendChild(a);
 			a.click();
 			window.URL.revokeObjectURL(url);
-			document.body.removeChild(a); 
+			document.body.removeChild(a);
 		} catch (err) {
 			console.error(err);
 		}
@@ -209,6 +219,7 @@ export const WhatIfAnalysis = ({
 			}
 		} catch (err) {
 			console.error(err);
+			showToast('error', err.response?.data?.message || 'Failed to Load File.');
 			setSelectedFiles([]);
 		}
 		setIsModalVisible(false);
@@ -414,6 +425,7 @@ export const WhatIfAnalysis = ({
 			<AddAssetModal
 				isModalVisible={isModalVisible}
 				handleOk={handleOk}
+				isAddLoadBtnDisable={isAddLoadBtnDisable}
 				handleCancel={handleCancel}
 				loading={loading}
 				selectedFiles={selectedFiles}
@@ -498,6 +510,7 @@ export const WhatIfAnalysis = ({
 				SaveWhatIfAnalysis={saveWhatIfAnalysisFunc}
 				descriptionInput={descriptionInput}
 			/>
+			<ErrorMessage errorMessageModal={errorMessageModal} setErrorMessageModal={setErrorMessageModal} errorMessageData={errorMessageData} />
 		</>
 	);
 };
