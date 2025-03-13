@@ -68,7 +68,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 		'label': '',
 		'render': (value, row) => <div onClick={() => handleBaseDataPreview(row)}
 			style={{color: '#0EB198', cursor: 'pointer'}}>
-			{row.extraction_status === "completed" ? 'Preview Base Data' : (row.extraction_status === "failed" ? 'Errors' : '')}
+			{row.extraction_status.toLowerCase() === "completed" ? 'Preview Base Data' : (row.extraction_status.toLowerCase() === "failed" ? 'Errors' : '')}
 		</div>
 	}];
 
@@ -103,8 +103,10 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 					...col,
 					render: (value, row) => (
 						<div>
-							<span style={{display: 'inline-block', backgroundColor: STATUS_BG_COLOR[row.extraction_status], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
-								{row.extraction_status}
+							<span style={{display: 'inline-block', backgroundColor: STATUS_BG_COLOR[row.extraction_status.toLowerCase()], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
+								{row.extraction_status.split(" ")
+									.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+									.join(" ")}
 							</span>
 						</div>
 					)

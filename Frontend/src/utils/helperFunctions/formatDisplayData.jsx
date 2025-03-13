@@ -35,3 +35,7 @@ export const fmtDateValue = (value) => {
 
 	return temp;
 };
+
+export const formatColumnName = (name) => {
+	return name.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+};

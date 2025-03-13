@@ -19,7 +19,8 @@ export const AssetSelectionPage = ({
     setSelectedAssets,
     setIsAnalysisModalOpen,
     setConstDate,
-    fundType
+    fundType,
+    setAvailableClosingDates
 }) => {
     const [loading, setLoading] = useState(false);
     const [isSelectAll, setIsSelectAll] = useState(true);
@@ -98,6 +99,7 @@ export const AssetSelectionPage = ({
             if (tableDataResponse.status === 200) {
                 setTablesData(tableDataResponse?.data.result);
                 setConstDate(tableDataResponse.data.result.closing_date);
+                setAvailableClosingDates(tableDataResponse.data.result.closing_dates);
                 navigate('/');
                 toast.success("Results Generated");
             }

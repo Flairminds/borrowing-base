@@ -181,7 +181,7 @@ export const ConcentrationTestMaster = () => {
 													</>
 													:
 													column.key == "show_on_dashboard" ?
-														<Switch style={{zIndex: 1}} value={row[column.key]} onChange={(cheked) => onVisibilityChange(cheked, row.test_id)} />
+														<Switch style={{zIndex: 1}} value={row[column.key]} onChange={(cheked) => onVisibilityChange(cheked, row.test_id)} disabled={row.limit_percentage === "" && true}/>
 														:
 														<>{row[column.key]}</>
 											}

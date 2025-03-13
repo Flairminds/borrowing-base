@@ -102,7 +102,11 @@ export const TableGraph = ({title, tableData, tableColumns, chartsData, yAxis}) 
 						<tr>
 							{tableColumns?.map((ed, i) => (
 								<td key={i} className={Styles.totalRow}>
-									{tableData && tableData[ed] ? tableData?.Total?.data[ed] : null}
+									{tableData && tableData[ed] 
+										? ed === "% Borrowing Base"
+											? `${parseFloat(tableData?.Total?.data[ed].replace('%', '')).toFixed(2)}%`
+											: tableData?.Total?.data[ed]
+										: null}
 								</td>
 							)
 							)}
