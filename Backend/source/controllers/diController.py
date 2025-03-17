@@ -286,7 +286,7 @@ def trigger_bb_calculation():
         service_response = diService.trigger_bb_calculation(bdi_id)
         if not service_response["success"]:
             return HTTPResponse.error(message=service_response.get("message"))
-        return HTTPResponse.success(message=service_response.get("message"), result=[])
+        return HTTPResponse.success(message=service_response.get("message"), result=service_response.get('data'))
     except Exception as e:
         # Log.func_error(e)
         print("here",e)
@@ -334,6 +334,29 @@ def base_data_other_info():
             )
         else:
             return HTTPResponse.error(message="extraction_info_id is missing")
+
+        if(service_response["success"]):
+            return HTTPResponse.success(message=service_response.get("message"))
+
+        return HTTPResponse.error(message=service_response.get('message'), status_code=500)
+    except Exception as e:
+        Log.func_error(e=e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+def add_base_data():
+    try:
+ 
+        file = flask.request.files.get('file')
+        fund_type = flask.request.form.get("fund_type")
+        base_data_info_id = flask.request.form.get("base_data_info_id")
+        report_date = flask.request.form.get("report_date")
+        company_id = 1 #Need to change later
+
+        validate_response = diService.validate_add_securities(file, fund_type, base_data_info_id, company_id, report_date)
+        if not validate_response["success"]:
+            return HTTPResponse.error(message=validate_response.get('message'))
+
+        service_response = diService.add_to_base_data_table(file, fund_type, base_data_info_id,company_id, report_date)
 
         if(service_response["success"]):
             return HTTPResponse.success(message=service_response.get("message"))

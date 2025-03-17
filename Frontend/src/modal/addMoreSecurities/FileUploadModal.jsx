@@ -3,7 +3,7 @@ import React from 'react';
 import { useDropzone } from 'react-dropzone';
 import PCOFAddSecSampleFile from '../../assets/template File/PCOF Add Base Data.xlsx';
 import PFLTAddSecSampleFile from '../../assets/template File/PFLT Add Base Data.xlsx';
-import { CustomButton } from '../../components/custombutton/CustomButton';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { uploadAddMoreSecFile } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from "./FileUploadModal.module.css";

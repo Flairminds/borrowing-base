@@ -1,11 +1,9 @@
 import { Select } from 'antd'
 import React from 'react'
-import ButtonStyles from "../../components/Buttons/ButtonStyle.module.css";
 // import { updateAssetData } from '../../utils/updateAssetData';
 import { getUpdateAssetData } from '../../services/api';
 import { toast } from 'react-toastify';
 import { wiaOptions } from '../../utils/configurations/wiaOptions';
-import { LoaderFullPage } from '../loader/loader';
 
 export const WhatIfAnalysisOptions = (
   { selectedOption,
@@ -63,7 +61,7 @@ export const WhatIfAnalysisOptions = (
     <Select
       // className={ButtonStyles.filledBtn}
       defaultValue="-- What if Analysis --"
-      style={{ width: 170, borderRadius: '8px', backgroundColor: 'red', border: '1px solid #6D6E6F' }}
+      style={{ width: 180, borderRadius: '8px', border: '1px solid #6D6E6F' }}
       onChange={handleDropdownChange}
       value={selectedOption}
       onSelect={(value) => setSelectedOption(value)}

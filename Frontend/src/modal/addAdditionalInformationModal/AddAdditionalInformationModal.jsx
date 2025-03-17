@@ -7,19 +7,16 @@ import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
 import PCOF_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pcof_other_info.xlsx';
 import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pflt_other_info.xlsx';
-import { CustomButton } from "../../components/custombutton/CustomButton";
-import { generateBaseDataFile } from "../../services/api";
+import { generateBaseDataFile, getDateReport } from "../../services/api";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
 import { PFLTData, PCOFData, OTHER_INFO_OPTIONS, PFLT_COLUMNS_NAME, PCOF_COLUMNS_NAME } from "../../utils/constants/constants";
-import { fmtDisplayVal } from "../../utils/helperFunctions/formatDisplayData";
+import { fmtDateValue, fmtDisplayVal, formatColumnName } from "../../utils/helperFunctions/formatDisplayData";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./AddAdditionalInformationModal.module.css";
+import { useNavigate } from 'react-router';
+import { UIComponents } from "../../components/uiComponents";
 
 const { TabPane } = Tabs;
-
-const getHeaderFromColumnsInfo = (columnsInfo) => {
-	return columnsInfo.map(col => col.display_name);
-};
 
 export const AddAdditionalInformationModal = (
 	{
@@ -28,12 +25,12 @@ export const AddAdditionalInformationModal = (
 		onClose,
 		dataId,
 		data = {},
-		handleBaseDataPreview,
 		previewFundType,
 		selectedFiles,
 		setSelectedFiles,
 		baseFilePreviewData,
-		previewPageId
+		previewPageId,
+		getborrowingbasedata
 	}
 ) => {
 	const [form] = Form.useForm();
@@ -41,6 +38,9 @@ export const AddAdditionalInformationModal = (
 	const [addType, setAddType] = useState("add");
 	const [uploadedData, setUploadedData] = useState({});
 	const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
+	const navigate = useNavigate();
+
+	const selectedData = previewFundType === "PCOF" ? PCOFData : PFLTData;
 
 	useEffect(() => {
 		const formData = {};
@@ -57,19 +57,32 @@ export const AddAdditionalInformationModal = (
 				: data?.other_data?.["principle_obligations"]?.length > 0 ? data.other_data["principle_obligations"] : null;
 
 			formData["advance_rates"] = uploadedData["Advance Rates"]?.length > 0 ? uploadedData["Advance Rates"]
-				: data?.other_data?.["advance_rates"]?.length > 0 ? data.other_data["advance_rates"] : null;
+				: data?.other_data?.["advance_rates"]?.length > 0 ? data.other_data["advance_rates"].map(item => ({
+					...item,
+					advance_rate: item.advance_rate ? `${(item.advance_rate * 100).toFixed(2)}%` : null
+				})) : null;
 
 			formData["subscription_bb"] = uploadedData["Subscription BB"]?.length > 0 ? uploadedData["Subscription BB"]
 				: data?.other_data?.["subscription_bb"]?.length > 0 ? data.other_data["subscription_bb"] : null;
 
 			formData["pricing"] = uploadedData["Pricing"]?.length > 0 ? uploadedData["Pricing"]
-				: data?.other_data?.["pricing"]?.length > 0 ? data.other_data["pricing"] : null;
+				: data?.other_data?.["pricing"]?.length > 0 ? data.other_data["pricing"].map(item => ({
+					...item,
+					percent: item.percent ? `${(item.percent * 100).toFixed(2)}%` : null
+				})) : null;
 
 			formData["portfolio_leverageborrowingbase"] = uploadedData["Portfolio LeverageBorrowingBase"]?.length > 0 ? uploadedData["Portfolio LeverageBorrowingBase"]
-				: data?.other_data?.["portfolio_leverageborrowingbase"]?.length > 0 ? data.other_data["portfolio_leverageborrowingbase"] : null;
+				: data?.other_data?.["portfolio_leverageborrowingbase"]?.length > 0 ? data.other_data["portfolio_leverageborrowingbase"].map(item => ({
+					...item,
+					unquoted: item.unquoted ? `${(item.unquoted * 100).toFixed(2)}%` : null,
+					quoted: item.quoted ? `${(item.quoted * 100).toFixed(2)}%` : null
+				})) : null;
 
-			formData["concentration_limits"] = uploadedData["Concentration Limits"]?.length > 0	? uploadedData["Concentration Limits"]
-				: data?.other_data?.["concentration_limits"]?.length > 0 ? data.other_data["concentration_limits"] : null;
+			formData["concentration_limits"] = uploadedData["Concentration Limits"]?.length > 0 ? uploadedData["Concentration Limits"]
+				: data?.other_data?.["concentration_limits"]?.length > 0 ? data.other_data["concentration_limits"].map(item => ({
+					...item,
+					concentration_limit: item.concentration_limit ? `${(item.concentration_limit * 100).toFixed(2)}%` : null
+				})) : null;
 
 			formData["first_lien_leverage_cut-off_point"] = uploadedData["first_lien_leverage_cut-off_point"] || data?.other_data?.["first_lien_leverage_cut-off_point"] || null;
 			formData["warehouse_first_lien_leverage_cut-off"] = uploadedData["warehouse_first_lien_leverage_cut-off"] || data?.other_data?.["warehouse_first_lien_leverage_cut-off"] || null;
@@ -114,6 +127,9 @@ export const AddAdditionalInformationModal = (
 				const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
 				const detail = response?.data;
 				showToast('success', detail?.message);
+				const baseFileId = response.data.result.base_data_file_id;
+				await getborrowingbasedata(baseFileId);
+				navigate('/');
 			}
 			setTriggerBBCalculation(false);
 			return;
@@ -144,17 +160,19 @@ export const AddAdditionalInformationModal = (
 					"other_metrics": {
 						"first_lien_leverage_cut-off_point": values["first_lien_leverage_cut-off_point"],
 						"last_out_attachment_point": values["last_out_attachment_point"],
-						"concentration_test_threshold_1": values["concentration_test_threshold_1"],
-						"concentration_test_threshold_2": values["concentration_test_threshold_2"],
-						"ltv": values["ltv"],
-						"threshold_1_advance_rate": values["threshold_1_advance_rate"],
-						"threshold_2_advance_rate": values["threshold_2_advance_rate"],
+						"ltv": parseFloat((parseFloat(values["ltv"].replace("%", "")) / 100)),
+						"threshold_1_advance_rate": parseFloat((parseFloat(values["threshold_1_advance_rate"].replace("%", "")) / 100)),
+						"threshold_2_advance_rate": parseFloat((parseFloat(values["threshold_2_advance_rate"].replace("%", "")) / 100)),
+						"concentration_test_threshold_1": parseFloat((parseFloat(values["concentration_test_threshold_1"].replace("%", "")) / 100)),
+						"concentration_test_threshold_2": parseFloat((parseFloat(values["concentration_test_threshold_2"].replace("%", "")) / 100)),
 						"total_leverage": values["total_leverage"],
 						"trailing_12-month_ebitda": values["trailing_12-month_ebitda"],
 						"trailing_24-month_ebitda": values["trailing_24-month_ebitda"],
 						"warehouse_first_lien_leverage_cut-off": values["warehouse_first_lien_leverage_cut-off"]
 					}
 				};
+				console.log("values", values);
+				
 				Object.keys(values).forEach((key) => {
 					if (PCOFData[key]) {
 						(PCOFData[key].Column || PCOFData[key].Header)?.forEach((item) => {
@@ -165,7 +183,7 @@ export const AddAdditionalInformationModal = (
 											if (element === item.name) {
 												if (ele[element] !== "n/a" && `${ele[element]}`.includes("%")) {
 													ele[element] = parseFloat(
-														(parseFloat(ele[element].replace("%", "")) / 100).toFixed(2)
+														(parseFloat(ele[element].replace("%", "")) / 100)
 													);
 												}
 											}
@@ -200,7 +218,7 @@ export const AddAdditionalInformationModal = (
 											if (element === item.name) {
 												if (ele[element] !== "n/a" && `${ele[element]}`.includes("%")) {
 													ele[element] = parseFloat(
-														(parseFloat(ele[element].replace("%", "")) / 100).toFixed(2)
+														(parseFloat(ele[element].replace("%", "")) / 100)
 													);
 												}
 											}
@@ -230,11 +248,10 @@ export const AddAdditionalInformationModal = (
 				form.resetFields();
 				onClose();
 			}
-			await handleBaseDataPreview();
-
 			if (isTriggerCalled && response["success"]) {
 				generateBaseData();
 			}
+
 		} catch (error) {
 			const errorMessage = error.response?.message || "Error: Failed to submit form data";
 			console.error(error);
@@ -242,12 +259,10 @@ export const AddAdditionalInformationModal = (
 		}
 	};
 
-	const selectedData = previewFundType === "PCOF" ? PCOFData : PFLTData;
-
 	const { getRootProps, getInputProps } = useDropzone({
 		accept: {
 			'text/csv': [],
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': [],
+			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': []
 		},
 		multiple: false,
 		onDrop: (acceptedFiles) => {
@@ -271,7 +286,7 @@ export const AddAdditionalInformationModal = (
 	};
 
 	const handleExtract = () => {
-		if (selectedData.length < 0) {
+		if (selectedData.length === 0) {
 			showToast("error", "No data found to extract");
 			return;
 		}
@@ -294,6 +309,7 @@ export const AddAdditionalInformationModal = (
 						const header = rawData[0][columnIndex];
 						if (header && (header.toLowerCase().includes("percentage") ||
 							header.toLowerCase().includes("percent") ||
+							header.toLowerCase().includes("unquoted") ||
 							header.toLowerCase().includes("advance rate")
 						)) {
 							isPercentageColumn = true;
@@ -311,7 +327,7 @@ export const AddAdditionalInformationModal = (
 				};
 
 				const formattedData = rawData.map((row) =>
-					row.map((cell) => {
+					row.map((cell, index) => {
 						if (cell instanceof Date) {
 							return dayjs(cell).format("YYYY-MM-DD");
 						}
@@ -319,8 +335,16 @@ export const AddAdditionalInformationModal = (
 							return cell;
 						}
 						if (typeof cell === "number" && cell >= 0 && cell <= 1 && isPercentageCell(row, cell)) {
-							return `${(cell * 100).toFixed(1)}%`;
+							return `${(cell * 100)}`;
 						}
+						if (index !== 0 &&
+							typeof row[0] === 'string' &&
+							(row[0].toLowerCase().includes('threshold') || row[0].toLowerCase().includes('ltv')) &&
+							typeof row[1] === 'number'
+						) {
+							return `${(cell * 100)}`;
+						}
+
 						return cell;
 					})
 				);
@@ -328,11 +352,11 @@ export const AddAdditionalInformationModal = (
 			});
 
 			let uploadedDataValues = {};
-			sheetsData.map((sheet) => {
+			sheetsData.forEach((sheet) => {
 				if (
 					sheet.sheetName.toLocaleLowerCase() === "availability borrower" ||
-                    sheet.sheetName.toLocaleLowerCase() === "other metrics" ||
-                    sheet.sheetName.toLocaleLowerCase() === "input"
+					sheet.sheetName.toLocaleLowerCase() === "other metrics" ||
+					sheet.sheetName.toLocaleLowerCase() === "input"
 				) {
 					const data = Object.fromEntries(sheet?.data?.slice(1).filter(row => row.length === 2));
 					const transformedData = Object.fromEntries(
@@ -358,56 +382,74 @@ export const AddAdditionalInformationModal = (
 
 		const processData = (obj, sheetName) => {
 			const rows = [];
+			const columnSequence = data?.other_data?.column_info[sheetName]?.columns_info;
 
-			const columnsInfo = data?.other_data?.column_info[sheetName]?.columns_info;
-			if (columnsInfo) {
-				const headerRow = getHeaderFromColumnsInfo(columnsInfo);
+			const columnDetails = previewFundType === "PCOF" ? PCOFData[sheetName]?.Column || PCOFData[sheetName]?.Header :
+				previewFundType === "PFLT" ? PFLTData[sheetName]?.Column || PFLTData[sheetName]?.Header : null;
+
+			if (columnSequence && columnDetails) {
+				const headerRow = columnSequence.map((col) => {
+					const columnDetail = columnDetails.find((detail) => detail.name === col.col_name);
+					return columnDetail ? columnDetail.label : col.col_name;
+				});
 				rows.push(headerRow);
 			}
 
 			if (sheetName === "input" || sheetName === "availability_borrower" || sheetName === "other_metrics") {
 				for (const key in obj) {
-					const formattedValue = fmtDisplayVal(obj[key]);
-					rows.push([key, formattedValue]);
+					let formattedValue = fmtDateValue(obj[key]);
+					if ((key.includes("threshold") || key.includes("ltv")) && key !== "") {
+						formattedValue = `${formattedValue * 100}%`;
+					}
+					rows.push([formatColumnName(key), formattedValue]);
 				}
 			} else {
 				obj.forEach((item) => {
-					const row = columnsInfo.map(col => {
+					const row = columnSequence.map((col) => {
+
+						const columnDetail = columnDetails.find((detail) => detail.name === col.col_name);
 						const value = item[col.col_name] || "";
-						return fmtDisplayVal(value);
+
+						if ((col.col_name.includes("threshold") || col.col_name.includes("ltv")) && value !== "") {
+							return `${value}%`;
+						}
+
+						if (columnDetail?.unit === "percent" && value !== "") {
+							return `${value}%`;
+						}
+
+						return fmtDateValue(value);
 					});
 					rows.push(row);
 				});
 			}
 
 			const sheet = XLSX.utils.aoa_to_sheet(rows);
-			const sheetNameForObject = sheetName.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
-
+			const sheetNameForObject = formatColumnName(sheetName);
 			XLSX.utils.book_append_sheet(wb, sheet, sheetNameForObject);
 		};
 
 		Object.entries(data.other_data || {}).forEach(([key]) => {
-			if (Array.isArray(data.other_data[key]) || typeof data.other_data[key] === 'object' && data.other_data[key] !== null) {
-				if (key !== 'column_info') processData(data.other_data[key], key);
+			if (Array.isArray(data.other_data[key]) || (typeof data.other_data[key] === "object" && data.other_data[key] !== null)) {
+				if (key !== "column_info") processData(data.other_data[key], key);
 			}
 		});
 
-		const xlsxArray = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-		const xlsxBlob = new Blob([xlsxArray], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-		saveAs(xlsxBlob, 'financial_data.xlsx');
+		const xlsxArray = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+		const xlsxBlob = new Blob([xlsxArray], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+		saveAs(xlsxBlob, "sample_template.xlsx");
 	};
 
 	return (
-		<Modal open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"} style={{top: 10}}>
+		<Modal open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"} style={{ top: 10 }}>
 			<h3>Additional Information</h3>
-			<div style={{display: "flex", justifyContent: "space-between", margin: "1rem 0"}}>
+			<div style={{ display: "flex", justifyContent: "space-between", margin: "1rem 0" }}>
 				<Radio.Group options={OTHER_INFO_OPTIONS} value={addType} onChange={handleChange} />
 				{addType === "upload" && (
 					<>
 						{(typeof data === 'object' && data !== null)
-							? <a onClick={exportSample} style={{paddingRight: "1rem", color: "blue", textDecoration: "underline"}}>Export sample file template</a>
-							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{paddingRight: "1rem"}}>Export sample file template</a> 
+							? <a onClick={exportSample} style={{ paddingRight: "1rem", color: "blue", textDecoration: "underline" }}>Export sample file template</a>
+							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{ paddingRight: "1rem" }}>Export sample file template</a>
 						}
 					</>
 				)}
@@ -418,7 +460,7 @@ export const AddAdditionalInformationModal = (
 				onFinish={handleSubmit}
 				autoComplete="off"
 				initialValues={initialFormData}
-				// initialValues={initalFormData || selectedData == "PCOF" ? pcofEmptyFormStructure : pfltEmptyFormStructure}
+			// initialValues={initalFormData || selectedData == "PCOF" ? pcofEmptyFormStructure : pfltEmptyFormStructure}
 			>
 				{useEffect(() => {
 					form.setFieldsValue(initialFormData);
@@ -435,7 +477,7 @@ export const AddAdditionalInformationModal = (
 										{selectedData[sheet]?.Header?.map((header, ind) => (
 											<Form.Item
 												key={ind}
-												label={header.label}
+												label={header.label + (header.unit && header.unit == 'percent' ? ' (%)' : '')}
 												name={header.name}
 												rules={[{ required: true, message: `Please enter ${header.label.toLowerCase()}!` }]}
 												style={{ display: "inline-block", width: "20%", margin: "0 1rem 1rem 1rem" }}
@@ -489,7 +531,7 @@ export const AddAdditionalInformationModal = (
 																						width: "100%",
 																						padding: "4px",
 																						borderRadius: "8px",
-																						border: "1px solid rgba(201, 196, 196, 0.6)",
+																						border: "1px solid rgba(201, 196, 196, 0.6)"
 																					}}
 																				/>
 																			) : (
@@ -499,7 +541,7 @@ export const AddAdditionalInformationModal = (
 																						width: "100%",
 																						padding: "4px",
 																						borderRadius: "8px",
-																						border: "1px solid rgba(201, 196, 196, 0.6)",
+																						border: "1px solid rgba(201, 196, 196, 0.6)"
 																					}}
 																				/>
 																			)}
@@ -510,7 +552,7 @@ export const AddAdditionalInformationModal = (
 														</div>
 
 														<Form.Item>
-															<Button style={{marginBottom: "1rem"}} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+															<Button style={{ marginBottom: "1rem" }} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
 																Add Details
 															</Button>
 														</Form.Item>
@@ -520,9 +562,9 @@ export const AddAdditionalInformationModal = (
 										)}
 
 										<div className={styles.buttonContainer}>
-											<CustomButton isFilled={true} text="Save" onClick={() => handleSubmit(false)} />
-											<CustomButton isFilled={true} onClick={() => handleSubmit(true)} text={triggerBBCalculation ? '...Calculating' : 'Save & Trigger'} />
-											<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
+											<UIComponents.Button isFilled={true} text="Save" onClick={() => handleSubmit(false)} />
+											<UIComponents.Button isFilled={true} onClick={() => handleSubmit(true)} text={triggerBBCalculation ? '...Calculating' : 'Save & Trigger'} />
+											<UIComponents.Button isFilled={false} text="Cancel" onClick={handleCancel} />
 										</div>
 									</>
 								</TabPane>
@@ -558,8 +600,8 @@ export const AddAdditionalInformationModal = (
 						</Form.Item>
 
 						<div className={styles.buttonContainer}>
-							<CustomButton isFilled={true} text="Extract" onClick={handleExtract} />
-							<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
+							<UIComponents.Button isFilled={true} text="Extract" onClick={handleExtract} />
+							<UIComponents.Button isFilled={false} text="Cancel" onClick={handleCancel} />
 						</div>
 					</>
 				)}

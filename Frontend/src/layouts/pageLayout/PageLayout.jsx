@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router';
-import { Navbar } from '../../components/navbar/Navbar';
-import { Sidebar } from '../../components/sidebar/Sidebar';
+import { Navbar } from '../navbar/Navbar';
+import { Sidebar } from '../sidebar/Sidebar';
 
 export const PageLayout = () => {
 	return (

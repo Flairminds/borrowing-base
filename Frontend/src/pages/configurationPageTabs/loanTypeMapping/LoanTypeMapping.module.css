@@ -1,0 +1,108 @@
+.loanTypePageContainer {
+	text-align: center;
+}
+
+.mappingTitle {
+	display: flex;
+	justify-content: space-between;
+	padding-right: 10px;
+}
+
+.cardContainer {
+	display: flex;
+}
+
+.loanTypeCard {
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	padding: 10px;
+	margin: 0 5px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	transition: box-shadow 0.3s ease;
+	cursor: pointer;
+}
+
+.dropdownContainer {
+	margin: 5px 0px;
+	text-align: start;
+}
+
+.unmappedLoanTypesContainer {
+	border: 1px solid rgb(213, 210, 210);
+	border-radius: 10px;
+	background-color: white;
+	margin: 15px 5px;
+	position: sticky;
+	top: 0;
+	padding: 10px;
+}
+
+.unmappedLoantypeList {
+	padding: 10px;
+	display: flex;
+	height: 20vh;
+	flex-wrap: wrap;
+	overflow-y: auto;
+}
+
+.mappedTypesList {
+	display: flex;
+	padding: 10px;
+	flex-wrap: wrap;
+}
+
+.mappingHeading {
+	width: 49%;
+	text-align: center;
+	font-size: 18px;
+	font-weight: bold;
+	/* background-color: aqua; */
+}
+
+.loanMasterMappingContainer {
+	margin: 15px 10px;
+	text-align: center;
+}
+
+.loanMasterMapContainer {
+	display: flex;
+	margin: 10px 0px;
+	border: 1px solid #c3c2c2;
+	padding: 10px;
+	border-radius: 10px;
+}
+
+.loanMasterMapContainer {
+	display: flex;
+}
+
+.loanMasterTab {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	width: 49%;
+	/* height: 100%; */
+}
+
+.loanMaster {
+	border: 1px solid rgb(213, 210, 210);
+	width: 80%;
+	padding: 5px;
+	border-radius: 5px;
+	/* align-self: flex-start; */
+	/* font-weight: bold; */
+	color: white;
+	background-color: var(--primary-theme-color);
+}
+
+.loanMasterList {
+	border: 1px solid rgb(213, 210, 210);
+	padding: 5px;
+	border-radius: 5px;
+}
+
+.emptyDiv {
+	text-align: center;
+	padding: 10px;
+	color: grey;
+}

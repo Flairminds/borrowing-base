@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router';
 import { BackOption } from '../../components/BackOption/BackOption';
-import { CustomButton } from "../../components/custombutton/CustomButton";
+import { CustomButton } from "../../components/uiComponents/Button/CustomButton";
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { AddSecurityMapping } from "../../modal/addSecurityMapping/AddSecurityMapping";
 import { getSecurityMappingData, editPfltSecMapping } from "../../services/dataIngestionApi";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./SecurityMapping.module.css";
+import { PAGE_ROUTES } from "../../utils/constants/constants";
 
 export const SecurityMapping = () => {
 	const navigate = useNavigate();
@@ -97,7 +98,7 @@ export const SecurityMapping = () => {
 					<div className={styles.mappingContainer}>
 						<div className={styles.navContainer}>
 							<div className={styles.backOptionContainer}>
-								<BackOption onClick={() => navigate('/base-data-list')}
+								<BackOption onClick={() => navigate(PAGE_ROUTES.BASE_DATA_LIST.url)}
 									text={`<- Base Data`} />
 							</div>
 							<div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', minWidth: '300px' }}>

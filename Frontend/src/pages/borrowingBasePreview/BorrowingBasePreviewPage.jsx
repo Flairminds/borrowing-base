@@ -1,7 +1,6 @@
 import { Select, Space } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router';
-import { CustomButton } from '../../components/custombutton/CustomButton';
+import { useNavigate, useParams } from 'react-router';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { AddAdditionalInformationModal } from '../../modal/addAdditionalInformationModal/AddAdditionalInformationModal';
 import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api';
@@ -12,8 +11,10 @@ import { fmtDisplayVal } from '../../utils/helperFunctions/formatDisplayData';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
+import { PAGE_ROUTES } from '../../utils/constants/constants';
+import { UIComponents } from '../../components/uiComponents';
 
-export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType}) => {
+export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setPreviewFundType, setTablesData, setPreviewPageId, getborrowingbasedata}) => {
 	const navigate = useNavigate();
 	// const { infoId } = useParams();
 	const [mapping, setMapping] = useState({});
@@ -26,6 +27,9 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [selectedFiles, setSelectedFiles] = useState([]);
 	const [isOpenFileUpload, setIsOpenFileUpload] = useState(false);
 	const [addsecFiles, setAddsecFiles] = useState([]);
+	const [loading, setLoading] = useState(false);
+
+	const {infoId} = useParams();
 
 	const showModal = () => {
 		setIsOpenFileUpload(true);
@@ -39,12 +43,17 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 
 	useEffect(() => {
 		let col = [];
+
 		if (!baseFilePreviewData.reportDate) {
-			// handleBaseDataPreview();
-			showToast('info', 'No report date selected. Redirecting...');
-			setTimeout(() => {
-				navigate('/base-data-list');
-			}, 1500);
+			if (!infoId) {
+				showToast('info', 'No report date selected. Redirecting...');
+				setTimeout(() => {
+					navigate('/base-data-list');
+				}, 1500);
+			} else {
+				setPreviewPageId(infoId);
+				handleBaseDataPreview(infoId);
+			}
 		}
 		baseFilePreviewData.baseData?.columns.forEach(c => {
 			let a = baseFilePreviewData?.baseDataMapping?.find(bd => bd.bd_column_name == c.label);
@@ -109,9 +118,11 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		}
 	};
 
-	const handleBaseDataPreview = async () => {
+	const handleBaseDataPreview = async (previewId = null) => {
 		try {
-			const previewDataResponse = await getBaseFilePreviewData(previewPageId);
+			setLoading(true);
+			const previewpageId = previewId ? previewId : previewPageId;
+			const previewDataResponse = await getBaseFilePreviewData(previewpageId);
 			const result = previewDataResponse.data?.result;
 			if (result)
 				setBaseFilePreviewData({
@@ -120,10 +131,14 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 					baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
 					cardData: result?.card_data && result.card_data[0],
 					otherInfo: result.other_info,
-					fundType: result?.fund_type
+					fundType: result?.fund_type,
+					infoId: result?.other_info?.extraction_info_id
 				});
+			setPreviewFundType(result?.fund_type);
 			setFilteredData(result?.base_data_table?.data);
+			setLoading(false);
 		} catch (err) {
+			setLoading(false);
 			showToast("error", err.response.data.message);
 		}
 	};
@@ -138,7 +153,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 
 		try {
 			await editBaseData(changes);
-			await handleBaseDataPreview();
+			// await handleBaseDataPreview();
 			updatedData[rowIndex][columnkey] = inputValue;
 			setBaseFilePreviewData({
 				...baseFilePreviewData,
@@ -199,52 +214,54 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 
 	return (
 		<div className={styles.previewPage}>
-			<div className={styles.tableContainer}>
-				<div style={{ display: 'flex', justifyContent: 'space-between' }}>
-					<div>
-						<div className={styles.cardContainer}>
-							{baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
-								<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/security-mapping') : () => {}}>
-									<div>{cardTitle}</div>
-									<div className={styles.cardTitle}><b>{fmtDisplayVal(baseFilePreviewData?.cardData[cardTitle], 0)}</b></div>
-								</div>
-							))}
+			{loading ? <UIComponents.Loader /> :
+				<div className={styles.tableContainer}>
+					<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+						<div>
+							<div className={styles.cardContainer}>
+								{baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
+									<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/security-mapping') : () => {}}>
+										<div>{cardTitle}</div>
+										<div className={styles.cardTitle}><b>{fmtDisplayVal(baseFilePreviewData?.cardData[cardTitle], 0)}</b></div>
+									</div>
+								))}
+							</div>
+						</div>
+						<div>
+							<UIComponents.Button onClick={showModal} title={'Add more securities data in the base data'} isFilled={true} text='Add Securities Data' />
+							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' />
 						</div>
 					</div>
 					<div>
-						<button onClick={showModal} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }} title={'Add more securities data in the base data'}>Add Securities Data</button>
-						<button onClick={() => setIsAddFieldModalOpen(true)} style={{ outline: 'none', backgroundColor: '#0EB198', color: 'white', padding: '5px 10px', borderRadius: '5px', border: '0px ', margin: '0 10px' }}>Trigger Calculation</button>
+						<DynamicTableComponents
+							data={filteredData}
+							columns={baseFilePreviewData?.baseData?.columns}
+							enableStickyColumns={true}
+							showSettings={true}
+							showCellDetailsModal={true}
+							enableColumnEditing={true}
+							onChangeSave={handleSaveEdit}
+							getCellDetailFunc={getCellDetail}
+							cellDetail={cellDetail}
+							refreshDataFunction={handleBaseDataPreview}
+							previewFundType={previewFundType}
+							filterSelections={filterSelections[baseFilePreviewData.fundType]}
+						/>
 					</div>
-				</div>
-				<div>
-					<DynamicTableComponents
-						data={filteredData}
-						columns={baseFilePreviewData?.baseData?.columns}
-						enableStickyColumns={true}
-						showSettings={true}
-						showCellDetailsModal={true}
-						enableColumnEditing={true}
-						onChangeSave={handleSaveEdit}
-						getCellDetailFunc={getCellDetail}
-						cellDetail={cellDetail}
-						refreshDataFunction={handleBaseDataPreview}
-						previewFundType={previewFundType}
-						filterSelections={filterSelections[baseFilePreviewData.fundType]}
-					/>
-				</div>
-			</div>
+				</div>}
 			<AddAdditionalInformationModal
 				isAddFieldModalOpen={isAddFieldModalOpen}
 				setIsAddFieldModalOpen={setIsAddFieldModalOpen}
 				onClose={() => setIsAddFieldModalOpen(false)}
 				dataId={baseFilePreviewData.infoId}
 				data={baseFilePreviewData.otherInfo}
-				handleBaseDataPreview={handleBaseDataPreview}
 				previewFundType={previewFundType}
 				selectedFiles={selectedFiles}
 				setSelectedFiles={setSelectedFiles}
 				baseFilePreviewData= {baseFilePreviewData}
 				previewPageId= {previewPageId}
+				setTablesData= {setTablesData}
+				getborrowingbasedata= {getborrowingbasedata}
 			/>
 			<FileUploadModal
 				isOpenFileUpload={isOpenFileUpload}

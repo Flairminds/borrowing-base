@@ -1,16 +1,17 @@
-import { Button, Modal, Popover, Tooltip,Switch } from 'antd';
+import {MoreOutlined} from '@ant-design/icons';
+import { Button, Modal, Popover, Tooltip, Switch } from 'antd';
 import { saveAs } from "file-saver";
 import { useEffect, useRef, useState } from 'preact/hooks';
-import React from 'react'
+import React from 'react';
 import * as XLSX from "xlsx";
 import AddIcon from '../../../assets/AddIcon.svg';
 import CrossIcon from '../../../assets/CrossIcon.svg';
 import DeleteIcon from '../../../assets/DeleteIcon.svg';
 import RightIcon from '../../../assets/RightIcon.svg';
-import DuplicateAssetIcon from '../../../assets/updateAssetIcons/DuplicateAssetIcon.svg'
-import MoreOptionsIcon from '../../../assets/updateAssetIcons/MoreOptionsIcon.svg'
-import ButtonStyles from '../../../components/Buttons/ButtonStyle.module.css';
-import { CustomButton } from '../../../components/custombutton/CustomButton';
+import DuplicateAssetIcon from '../../../assets/updateAssetIcons/DuplicateAssetIcon.svg';
+import MoreOptionsIcon from '../../../assets/updateAssetIcons/MoreOptionsIcon.svg';
+import ButtonStyles from '../../../components/uiComponents/Button/ButtonStyle.module.css';
+import { CustomButton } from '../../../components/uiComponents/Button/CustomButton';
 import { getUpdateAssetData, updateModifiedAssets, updateSheetValues } from '../../../services/api';
 import { updateAssetDefaultColumnsData, updateAssetModalData } from '../../../utils/constants/constants';
 import { fmtDisplayVal } from '../../../utils/helperFunctions/formatDisplayData';
@@ -19,7 +20,7 @@ import { AddAssetDetailsModal } from '../addAssetDetailsModal/AddAssetDetailsMod
 import { ExportAssetFileModal } from '../exportAssetFileModal/ExportAssetFileModal';
 import { ImportAssetFIleModal } from '../importAssetFIleModal/ImportAssetFIleModal';
 import Styles from './UpdateAssetDetailsModal.module.css';
-import {MoreOutlined} from '@ant-design/icons';
+import { ModalComponents } from '../../../components/modalComponents';
 
 export const UpdateAssetDetailsModal = ({
 	isupdateAssetModalOpen,
@@ -76,11 +77,11 @@ export const UpdateAssetDetailsModal = ({
 		setSelectedOption(0);
 		setAppliedChanges([]);
 		setLoading(false);
-		setSelectedSheetNumber(updateAssetModalData(fundType))
+		setSelectedSheetNumber(updateAssetModalData(fundType));
 	};
 
 	const handleInputFocus = (investment_name, colName) => {
-		setSelectedCellData({investment_name : investment_name,colName:colName});
+		setSelectedCellData({investment_name: investment_name, colName: colName});
 		setUpdateAssetInputText('');
 	};
 
@@ -96,11 +97,11 @@ export const UpdateAssetDetailsModal = ({
 			row_name: investment_name,
 			column_name: colName,
 			updated_value: updateAssetInputText,
-			prev_value:currValue
+			prev_value: currValue
 		};
 		setAppliedChanges([...appliedChanges, currentChanges]);
 		setSelectedCellData({
-			investment_name : '',
+			investment_name: '',
 			colName: ''
 		});
 		setUpdateAssetInputText('');
@@ -109,7 +110,7 @@ export const UpdateAssetDetailsModal = ({
 	const handleCancelChange = () => {
 		setUpdateAssetInputText('');
 		setSelectedCellData({
-			investment_name : '',
+			investment_name: '',
 			colName: ''
 		});
 	};
@@ -117,9 +118,9 @@ export const UpdateAssetDetailsModal = ({
 	const handleSheetChange = async(sheetName) => {
 
 		let totalChangesOnSheet = {
-			updated_assets:[],
-			rows_to_add:[],
-			rows_to_delete:[]
+			updated_assets: [],
+			rows_to_add: [],
+			rows_to_delete: []
 		};
 		if (updateAssetTableData?.changes) {
 			totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes, ...appliedChanges];
@@ -150,8 +151,8 @@ export const UpdateAssetDetailsModal = ({
 			deletedAssets: []
 		});
 		totalChangesOnSheet = {
-			updated_assets:[],
-			rows_to_add:[]
+			updated_assets: [],
+			rows_to_add: []
 		};
 
 		try {
@@ -171,12 +172,12 @@ export const UpdateAssetDetailsModal = ({
 		console.log(updateAssetTableData);
 		setLoading(true);
 		let currentAnalysisId = undefined;
-		let totalChangesOnSheet = {
-			updated_assets:{}
+		const totalChangesOnSheet = {
+			updated_assets: {}
 		};
 
 		if (updateAssetTableData?.changes) {
-			totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes , ...appliedChanges];
+			totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes, ...appliedChanges];
 		} else {
 			totalChangesOnSheet.updated_assets = [...appliedChanges];
 		}
@@ -238,7 +239,7 @@ export const UpdateAssetDetailsModal = ({
 			setAppliedChanges([...appliedChanges, ...resultData.duplicatechangesArray]);
 			setAaddedDeletedAssets({
 				...addedDeletedAssets,
-				addedAssets: [...addedDeletedAssets.addedAssets, {row_identifier:enteredInputData, row_index:effectiveIndex}]
+				addedAssets: [...addedDeletedAssets.addedAssets, {row_identifier: enteredInputData, row_index: effectiveIndex}]
 			});
 			setUpdateAssetTableData(resultData.updatedTableData);
 			setEnteredInputData('');
@@ -248,7 +249,7 @@ export const UpdateAssetDetailsModal = ({
 			setUpdateAssetTableData(resultData);
 			setAaddedDeletedAssets({
 				...addedDeletedAssets,
-				addedAssets: [...addedDeletedAssets.addedAssets, {row_identifier:enteredInputData, row_index:effectiveIndex}]
+				addedAssets: [...addedDeletedAssets.addedAssets, {row_identifier: enteredInputData, row_index: effectiveIndex}]
 			});
 			setEnteredInputData('');
 			setAddAssetDetailsModalOpen(false);
@@ -257,7 +258,7 @@ export const UpdateAssetDetailsModal = ({
 			setUpdateAssetTableData(resultData.updatedData);
 			setAaddedDeletedAssets({
 				...addedDeletedAssets,
-				deletedAssets: [...addedDeletedAssets.deletedAssets, {row_identifier:resultData.rowName}]
+				deletedAssets: [...addedDeletedAssets.deletedAssets, {row_identifier: resultData.rowName}]
 			});
 			setAddAssetDetailsModalOpen(false);
 		}
@@ -312,28 +313,15 @@ export const UpdateAssetDetailsModal = ({
 	return (
 		<>
 			<Modal
-				title={<span style={{ color: '#909090', fontWeight: '500', fontSize: '14px', padding: '0 0 0 3%' }}>Update Asset Details</span>}
+				title={<ModalComponents.Title title={'Update Asset Details'} description={`Here, you have the ability to update the details of each and every asset with any value you choose and perform comprehensive 'what-if analysis' to evaluate various scenarios and potential outcomes based on those changes`} showDescription={true} />}
 				centered
 				open={isupdateAssetModalOpen}
 				onCancel={handleCancel}
-				width={'98%'}
-				footer={<>
-					<div key="footer-buttons" className="px-4">
-						<button key="back" onClick={handleCancel} className={ButtonStyles.outlinedBtn}>
-							Cancel
-						</button>
-						<Button className={isButtonDisabled ? ButtonStyles.DisbaledBtn : ButtonStyles.filledBtn} loading={loading} key="submit" type="primary" style={{ backgroundColor: '#0EB198' }} onClick={updateAssetApply} disabled={isButtonDisabled} >
-							Apply
-						</Button>
-					</div>
-				</>}
+				width={'95%'}
+				footer={<ModalComponents.Footer key='footer-buttons' onClickCancel={handleCancel} onClickSubmit={updateAssetApply} submitBtnDisabled={isButtonDisabled} loading={loading} submitText='Apply' />}
 			>
 				<>
 					<div>
-						{/* <div className={Styles.WIAnameInput}>Borrowing base may 24th-Copy</div> */}
-						<div className={Styles.WIAInformation}>
-							Here, you have the ability to update the details of each and every asset with any value you choose and perform comprehensive 'what-if analysis' to evaluate various scenarios and potential outcomes based on those changes.
-						</div>
 						<div className={Styles.modificationSwitchContainer}>
 							<Switch
 								className={Styles.modificationSwitch}
@@ -395,10 +383,10 @@ export const UpdateAssetDetailsModal = ({
 													<>
 														<img
 															style={{zIndex: 200}} src={RightIcon} alt="Right Icon"
-															onClick={(e) => handleCommitChange(e,row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.key, col.label, row[col.key])}
+															onClick={(e) => handleCommitChange(e, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.key, col.label, row[col.key])}
 														/>
 														<img
-															src={CrossIcon} alt="Cross Icon" 
+															src={CrossIcon} alt="Cross Icon"
 															onClick={() => handleCancelChange()}
 														/>
 													</>
