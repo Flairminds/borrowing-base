@@ -124,7 +124,7 @@ def get_blob_list(fund_type):
             "label": "Report Date",
         }, {
             "key": "uploaded_at", 
-            "label": "Uploaded at",
+            "label": "Uploaded Date",
         }, {
             "key": "uploaded_by", 
             "label": "Uploaded by",

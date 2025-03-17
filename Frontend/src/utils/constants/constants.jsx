@@ -181,6 +181,11 @@ export const PCOFData = {
 				name: "spot_rate",
 				label: "Spot Rate",
 				type: "text"
+			},
+			{
+				name: "dollar_equivalent",
+				label: "Dollar Equivalent",
+				type: "text"
 			}
 		]
 	},
@@ -291,6 +296,11 @@ export const PCOFData = {
 	},
 	other_metrics: {
 		Header: [
+			{
+				name: "other_metrics",
+				label: "Other Metrics",
+				type: "text"
+			},
 			{
 				name: "first_lien_leverage_cut-off_point",
 				label: "First Lien Leverage Cut-Off Point",
