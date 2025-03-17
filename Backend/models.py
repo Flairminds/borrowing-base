@@ -632,6 +632,9 @@ class LoanTypeMapping(db.Model):
     master_loan_type_id = db.Column(db.Integer, db.ForeignKey("loan_type_master.id"), nullable=True)
     loan_type = db.Column(db.String)
     loan_type_lookup = db.Column(db.String)
+    is_deleted = db.Column(db.Boolean, default=False)
+    deleted_by = db.Column(db.Integer)
+    deleted_at = db.Column(db.DateTime(timezone=True))
 
 class LienTypeMaster(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
