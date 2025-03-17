@@ -12,6 +12,7 @@ import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData
 import { UIComponents } from '../../components/uiComponents';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import { Calender } from '../../components/calender/Calender';
+import { Icons } from '../../components/icons';
 
 export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, setPreviewFundType }) => {
 	const [baseDataFilesList, setBaseDataFilesList] = useState({});
@@ -208,6 +209,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 				<div className={styles.headerContainer}>
 					<div className={styles.tableHeading}>
 						Extracted Base Data
+						<Icons.InfoIcon title="Viewing list of extracted base data" />
 					</div>
 					<div className={styles.buttonsContainer}>
 						<div style={{margin: 'auto'}}>
@@ -222,7 +224,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 							<Calender availableClosingDates={reportDates} onDateChange={filterByDate} fileUpload={true} />
 						</div>
 						<CustomButton isFilled={true} onClick={handleSecurityMapping} text="Security Mapping" />
-						<CustomButton isFilled={true} onClick={handleExtractNew} text="Extract New Base Data" />
+						<CustomButton isFilled={true} onClick={handleExtractNew} text="+ Extract New Base Data" title='Upload new files or select existing files to extract new base data' />
 					</div>
 				</div>
 				{dataLoading ? <UIComponents.Loader /> :

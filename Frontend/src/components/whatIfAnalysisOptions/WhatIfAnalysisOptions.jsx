@@ -61,7 +61,7 @@ export const WhatIfAnalysisOptions = (
     <Select
       // className={ButtonStyles.filledBtn}
       defaultValue="-- What if Analysis --"
-      style={{ width: 170, borderRadius: '8px', backgroundColor: 'red', border: '1px solid #6D6E6F' }}
+      style={{ width: 180, borderRadius: '8px', border: '1px solid #6D6E6F' }}
       onChange={handleDropdownChange}
       value={selectedOption}
       onSelect={(value) => setSelectedOption(value)}
