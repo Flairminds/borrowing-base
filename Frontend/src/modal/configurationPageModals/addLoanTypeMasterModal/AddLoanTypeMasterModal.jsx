@@ -19,6 +19,7 @@ export const AddLoanTypeMasterModal = ({isOpen, setIsOpen, fundType}) => {
 			const res = await addLoanTypeMaster(masterTypeInput, fundType);
 			console.info("res", res);
 			showToast('success', res.data.message);
+			handleCancel();
 		} catch (err) {
 			console.error(err);
 			showToast('error', err.response.data.message);

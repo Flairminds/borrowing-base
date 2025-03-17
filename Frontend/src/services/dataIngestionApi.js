@@ -178,3 +178,12 @@ export const addLoanTypeMaster = (masterType, fundType) => {
 	const fileListResponse = axios.post(`${ApiURL}/mapping/add_loan_type_master`, payload);
 	return fileListResponse;
 };
+
+export const deleteLoanTypeMapping = (mappingId) => {
+	const payload = {
+		"mapping_id": mappingId
+	};
+
+	const response = axios.post(`${ApiURL}/mapping/delete_loan_type_mapping`, payload);
+	return response;
+};

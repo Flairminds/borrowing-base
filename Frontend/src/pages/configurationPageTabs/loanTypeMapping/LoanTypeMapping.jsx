@@ -1,17 +1,19 @@
+import { CloseCircleOutlined } from '@ant-design/icons';
 import { Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from 'react-toastify';
 import { UIComponents } from '../../../components/uiComponents';
-import { getLoanTypeMappingData, updateLoanTypeMapping } from '../../../services/dataIngestionApi';
-import { fundOptionsArray } from '../../../utils/constants/constants';
-import styles from './LoanTypeMapping.module.css';
 import { AddLoanTypeMasterModal } from '../../../modal/configurationPageModals/addLoanTypeMasterModal/AddLoanTypeMasterModal';
+import { deleteLoanTypeMapping, getLoanTypeMappingData, updateLoanTypeMapping } from '../../../services/dataIngestionApi';
+import { fundOptionsArray } from '../../../utils/constants/constants';
+import { showToast } from '../../../utils/helperFunctions/toastUtils';
+import styles from './LoanTypeMapping.module.css';
 
 const ItemType = "ITEM";
 
-const DraggableItem = ({ item, itemAccessKey }) => {
+const DraggableItem = ({ item, itemAccessKey, title,getloanTypeMappingInfo,  selectedFundType }) => {
 	const [{ isDragging }, drag] = useDrag(() => ({
 		type: ItemType,
 		item: { name: item },
@@ -19,6 +21,16 @@ const DraggableItem = ({ item, itemAccessKey }) => {
 			isDragging: !!monitor.isDragging()
 		})
 	}));
+
+	const handleDeleteMapping = async (deleteItem) => {
+		try {
+			const res = await deleteLoanTypeMapping(deleteItem.mapping_id);
+			showToast('success', res.data.message);
+			getloanTypeMappingInfo(selectedFundType);
+		} catch (err) {
+			console.error(err);
+		}
+	};
 
 	return (
 		<div
@@ -35,44 +47,39 @@ const DraggableItem = ({ item, itemAccessKey }) => {
 			}}
 		>
 			{item && item[itemAccessKey]}
+			{title != 'unmapped_loan_types' && <CloseCircleOutlined style={{margin: "0px 10px"}} onClick={() => handleDeleteMapping(item)} />}
 		</div>
 	);
 };
 
-const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey }) => {
+const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey, getloanTypeMappingInfo, selectedFundType }) => {
 	const [{ isOver }, drop] = useDrop(() => ({
 		accept: ItemType,
 		drop: async (draggedItem) => {
 			if (title == 'unmapped_loan_types') return;
-			console.info("master", title);
+			console.info("master", title, items, '//', draggedItem);
 
-			try {
-				const mappingData = {
+			let mappingData = {};
+			if (draggedItem.name.mapping_id) {
+				mappingData = {
+					'master_loan_type_id': title.master_loan_type_id,
+					'mapping_id': draggedItem.name.mapping_id
+				};
+			} else {
+				mappingData = {
 					'master_loan_type_id': title.master_loan_type_id,
 					'loan_type': draggedItem.name.unmapped_loan_type
 				};
+			}
+
+			try {
 				const res = await updateLoanTypeMapping(mappingData);
-				console.info('---', res);
+				showToast('success', res.data.message);
+				getloanTypeMappingInfo(selectedFundType);
 			} catch (err) {
 				console.error(err);
 				toast.error(err?.response?.data?.message);
 			}
-
-			setAllLists((prevLists) => {
-				const newLists = { ...prevLists };
-				newLists['unmapped_loan_types'] = newLists['unmapped_loan_types'].filter(
-					(item) => item.unmapped_loan_type !== draggedItem.name.unmapped_loan_type
-				);
-
-				const item = {
-					'loan_type': draggedItem.name.unmapped_loan_type,
-					'master_loan_type': title.master_loan_type,
-					'master_loan_type_id': title.master_loan_type_id
-				};
-
-				newLists['mapped_loan_types'] = [...newLists['mapped_loan_types'], item];
-				return newLists;
-			});
 		},
 		collect: (monitor) => ({
 			isOver: !!monitor.isOver()
@@ -86,7 +93,7 @@ const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey }) =
 		>
 			{items && items.length > 0 ? (
 				items.map((item) => (
-					<DraggableItem key={item[itemAccessKey]} itemAccessKey={itemAccessKey} item={item} />
+					<DraggableItem key={item[itemAccessKey]} itemAccessKey={itemAccessKey} item={item} title={title} getloanTypeMappingInfo={getloanTypeMappingInfo} selectedFundType={selectedFundType} />
 				))
 			) : (
 				<div className={styles.emptyDiv}>
@@ -110,7 +117,7 @@ export const LoanTypeMapping = () => {
 			setLoanTypeMappingData(res.data.result);
 		} catch (err) {
 			console.error(err);
-			toast.error(err?.response?.data?.message);
+			showToast('error', err?.response?.data?.message);
 		}
 	};
 
@@ -134,31 +141,31 @@ export const LoanTypeMapping = () => {
 
 	return (
 		<div className={styles.loanTypePageContainer}>
-			<div className={styles.cardContainer}>
-				{/* {loanTypeConfig.cardsData?.map((card) => ( */}
-				<div className={styles.loanTypeCard}>
-					<div><b>All Loan Types</b></div>
-					<div className={styles.cardTitle}>{loanTypeMappingData?.unmapped_loan_types.length + loanTypeMappingData?.mapped_loan_types.length}</div>
+			<div className={styles.mappingTitle}>
+				<div className={styles.cardContainer}>
+					<div className={styles.loanTypeCard}>
+						<div><b>All Loan Types</b></div>
+						<div className={styles.cardTitle}>{loanTypeMappingData?.unmapped_loan_types.length + loanTypeMappingData?.mapped_loan_types.length}</div>
+					</div>
+					<div className={styles.loanTypeCard}>
+						<div><b>Unmapped Loan Types</b></div>
+						<div className={styles.cardTitle}>{loanTypeMappingData?.unmapped_loan_types.length}</div>
+					</div>
 				</div>
-				<div className={styles.loanTypeCard}>
-					<div><b>Unmapped Loan Types</b></div>
-					<div className={styles.cardTitle}>{loanTypeMappingData?.unmapped_loan_types.length}</div>
+				<div className={styles.dropdownContainer}>
+					<Select
+						options={fundOptionsArray}
+						defaultValue={fundOptionsArray[0].label}
+						value={selectedFundType}
+						style={{ width: 150, borderRadius: '8px', margin: "0.5rem 0rem" }}
+						onChange={handleFundChange}
+					/>
+
+					<UIComponents.Button text='Add Master Type' isFilled={true} onClick={() => setAddMasterPopupOpen(true)} />
+
 				</div>
-				{/* ))} */}
 			</div>
 
-			<div className={styles.dropdownContainer}>
-				<Select
-					options={fundOptionsArray}
-					defaultValue={fundOptionsArray[0].label}
-					value={selectedFundType}
-					style={{ width: 150, borderRadius: '8px', margin: "0.5rem 0rem" }}
-					onChange={handleFundChange}
-				/>
-
-				<UIComponents.Button text='Add Master Type' isFilled={true} onClick={() => setAddMasterPopupOpen(true)} />
-
-			</div>
 
 			<DndProvider backend={HTML5Backend}>
 				<div className={styles.unmappedLoanTypesContainer}>
@@ -189,6 +196,8 @@ export const LoanTypeMapping = () => {
 									itemAccessKey={'loan_type'}
 									allLists={loanTypeMappingData}
 									setAllLists={setLoanTypeMappingData}
+									getloanTypeMappingInfo={getloanTypeMappingInfo}
+									selectedFundType={selectedFundType}
 								/>
 							</div>
 						</div>
