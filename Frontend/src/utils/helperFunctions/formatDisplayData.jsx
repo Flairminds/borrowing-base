@@ -39,3 +39,14 @@ export const fmtDateValue = (value) => {
 export const formatColumnName = (name) => {
 	return name.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 };
+
+export const formatPercentage = (value, toFixed) => {
+	if (typeof value === 'string' && value.endsWith('%')) {
+		value = parseFloat(value.replace('%', ''));
+	}
+
+	const factor = Math.pow(10, toFixed);
+	value = Math.floor(value * factor) / factor;
+
+	return `${value.toFixed(toFixed)}%`;
+};
