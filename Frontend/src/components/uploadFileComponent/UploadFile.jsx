@@ -342,7 +342,7 @@ export const UploadFile = ({
 							<ModalComponents.Footer key={'footer-buttons'} onClickCancel={handleCancel} onClickSubmit={handleFileUpload} loading={loading} submitText={'Load'} />
 						]}
 					>
-						<div style={{ marginBottom: '1rem' }}>
+						<div>
 							<Radio.Group value={selectedTab} onChange={(e) => setSelectedTab(e.target.value)}>
 								<Radio value="existing">List of Existing Files</Radio>
 								<Radio value="upload">Upload File</Radio>
@@ -439,9 +439,9 @@ export const UploadFile = ({
 
 						{selectedTab === "existing" && (
 							<div className={stylesUload.existingFileDiv}>
-								<div className={stylesUload.headingFiles} >
+								{/* <div className={stylesUload.headingFiles} >
 									List of Existing Files
-								</div>
+								</div> */}
 								<div className={stylesUload.inputSearch}>
 									<img src={search}></img>
 									<input type="text" placeholder="Search by file name" value={searchTerm} onChange={handleSearch} className={stylesUload.searchinputTag} />
@@ -472,7 +472,7 @@ export const UploadFile = ({
 										</table>
 									</div>
 								) : (
-									<div>No Data Available</div>
+									<div>No file available. Please upload a new file.</div>
 								)}
 							</div>
 						)}

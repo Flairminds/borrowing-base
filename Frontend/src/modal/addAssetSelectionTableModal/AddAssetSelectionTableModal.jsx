@@ -84,7 +84,7 @@ export const AddAssetSelectionTableModal = ({previewModal, isPreviewModal, previ
 				</div>
 
 				<div style={{margin: '1rem', textAlign: 'end'}}>
-					<UIComponents.Button onClick={handleSubmit} text='Submit' />
+					<UIComponents.Button onClick={handleSubmit} isFilled={true} text='Submit' />
 				</div>
 
 				<CreateAssetModal
