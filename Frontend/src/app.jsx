@@ -11,10 +11,11 @@ import { Dashboard } from './pages/dashboard/Dashboard';
 import { DataIngestionPage } from './pages/dataIngestion/DataIngestionPage';
 import { SecurityMapping } from './pages/securityMapping/SecurityMapping';
 import { ConcentrationTestMaster } from './pages/testMaster/ConcentrationTestMaster';
-import { landingPageData } from './services/api';
+import { getDateReport, landingPageData } from './services/api';
 import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
 import { SecurityMappingPage } from './pages/securityMappingPage/SecurityMappingPage';
 import { ConfigurationPage } from './pages/configurationPage/ConfigurationPage';
+import { showToast } from './utils/helperFunctions/toastUtils';
 
 
 
@@ -36,6 +37,7 @@ export function App() {
 	const [baseFilePreviewData, setBaseFilePreviewData] = useState([]);
 	const [previewPageId, setPreviewPageId] = useState(-1);
 	const [previewFundType, setPreviewFundType] = useState("");
+	const [whatifAnalysisPerformed, setWhatifAnalysisPerformed] = useState(false);
 
 	// const [selectedIds, setSelectedIds] = useState([]);
 	const selectedIds = useRef([]);
@@ -59,6 +61,26 @@ export function App() {
 			console.error(err);
 		}
 	};
+
+	const getborrowingbasedata = async (base_data_file_id) => {
+		try {
+			const response = await getDateReport(null, base_data_file_id);
+			if (response.status === 200) {
+				setTablesData(response.data);
+				setBaseFile({ name: response.data.file_name, id: response.data.base_data_file_id });
+				setWhatifAnalysisPerformed(false);
+				setReportDate(response.data.closing_date);
+				setFundType(response.data.fund_name);
+			}
+		} catch (err) {
+			if (err.response && err.response.status === 404) {
+				console.error(err);
+			} else {
+				console.error(err);
+			}
+		}
+	};
+
 
 	useEffect(() => {
 		setSelectedAssets(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
@@ -87,6 +109,8 @@ export function App() {
 								setFundType={setFundType}
 								setAssetSelectionData={setAssetSelectionData}
 								getLandingPageData={getLandingPageData}
+								setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
+								whatifAnalysisPerformed= {whatifAnalysisPerformed}
 							/>
 						}
 					/>
@@ -138,6 +162,7 @@ export function App() {
 								setPreviewPageId={setPreviewPageId}
 								previewFundType={previewFundType}
 								setPreviewFundType={setPreviewFundType}
+								getborrowingbasedata ={getborrowingbasedata}
 							/>
 						}
 					/>

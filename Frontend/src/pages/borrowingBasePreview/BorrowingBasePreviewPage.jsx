@@ -14,7 +14,7 @@ import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
 import { PAGE_ROUTES } from '../../utils/constants/constants';
 import { UIComponents } from '../../components/uiComponents';
 
-export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setPreviewFundType, setTablesData, setPreviewPageId}) => {
+export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setPreviewFundType, setTablesData, setPreviewPageId, getborrowingbasedata}) => {
 	const navigate = useNavigate();
 	// const { infoId } = useParams();
 	const [mapping, setMapping] = useState({});
@@ -255,14 +255,13 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				onClose={() => setIsAddFieldModalOpen(false)}
 				dataId={baseFilePreviewData.infoId}
 				data={baseFilePreviewData.otherInfo}
-				handleBaseDataPreview={handleBaseDataPreview}
 				previewFundType={previewFundType}
 				selectedFiles={selectedFiles}
 				setSelectedFiles={setSelectedFiles}
 				baseFilePreviewData= {baseFilePreviewData}
 				previewPageId= {previewPageId}
 				setTablesData= {setTablesData}
-
+				getborrowingbasedata= {getborrowingbasedata}
 			/>
 			<FileUploadModal
 				isOpenFileUpload={isOpenFileUpload}
