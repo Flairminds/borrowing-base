@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import upDownArrow from "../../assets/sortArrows/up-and-down-arrow.svg";
 import upArrowIcon from "../../assets/sortArrows/up.svg";
 import { TableViewModal } from '../../modal/TableView/TableViewModal';
+import { formatPercentage } from '../../utils/helperFunctions/formatDisplayData';
 import { sortData } from '../../utils/helperFunctions/sortTableData';
 import { Graphs } from '../graphs';
 import { UIComponents } from '../uiComponents';
@@ -102,9 +103,9 @@ export const TableGraph = ({title, tableData, tableColumns, chartsData, yAxis}) 
 						<tr>
 							{tableColumns?.map((ed, i) => (
 								<td key={i} className={Styles.totalRow}>
-									{tableData && tableData[ed] 
+									{tableData && tableData[ed]
 										? ed === "% Borrowing Base"
-											? `${parseFloat(tableData?.Total?.data[ed].replace('%', '')).toFixed(2)}%`
+											? formatPercentage(tableData?.Total?.data[ed], 2)
 											: tableData?.Total?.data[ed]
 										: null}
 								</td>
