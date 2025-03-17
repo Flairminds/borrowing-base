@@ -2,6 +2,12 @@
 	text-align: center;
 }
 
+.mappingTitle {
+	display: flex;
+	justify-content: space-between;
+	padding-right: 10px;
+}
+
 .cardContainer {
 	display: flex;
 }
@@ -14,6 +20,11 @@
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	transition: box-shadow 0.3s ease;
 	cursor: pointer;
+}
+
+.dropdownContainer {
+	margin: 5px 0px;
+	text-align: start;
 }
 
 .unmappedLoanTypesContainer {
@@ -55,7 +66,9 @@
 .loanMasterMapContainer {
 	display: flex;
 	margin: 10px 0px;
-	border: 1px solid grey;
+	border: 1px solid #c3c2c2;
+	padding: 10px;
+	border-radius: 10px;
 }
 
 .loanMasterMapContainer {
@@ -74,7 +87,7 @@
 	width: 80%;
 	padding: 5px;
 	border-radius: 5px;
-	align-self: flex-start;
+	/* align-self: flex-start; */
 	/* font-weight: bold; */
 	color: white;
 	background-color: var(--primary-theme-color);
