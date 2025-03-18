@@ -210,6 +210,8 @@ export const LoanTypeMapping = () => {
 				isOpen={addMasterPopupOpen}
 				setIsOpen={setAddMasterPopupOpen}
 				fundType={selectedFundType}
+				getloanTypeMappingInfo={getloanTypeMappingInfo}
+				selectedFundType={selectedFundType}
 			/>
 
 		</div>
