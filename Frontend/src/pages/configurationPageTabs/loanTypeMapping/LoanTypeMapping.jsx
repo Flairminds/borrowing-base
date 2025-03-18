@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from 'react-toastify';
+import { Icons } from '../../../components/icons';
 import { UIComponents } from '../../../components/uiComponents';
 import { AddLoanTypeMasterModal } from '../../../modal/configurationPageModals/addLoanTypeMasterModal/AddLoanTypeMasterModal';
 import { deleteLoanTypeMapping, getLoanTypeMappingData, updateLoanTypeMapping } from '../../../services/dataIngestionApi';
@@ -13,7 +14,7 @@ import styles from './LoanTypeMapping.module.css';
 
 const ItemType = "ITEM";
 
-const DraggableItem = ({ item, itemAccessKey, title,getloanTypeMappingInfo,  selectedFundType }) => {
+const DraggableItem = ({ item, itemAccessKey, title, getloanTypeMappingInfo, selectedFundType }) => {
 	const [{ isDragging }, drag] = useDrag(() => ({
 		type: ItemType,
 		item: { name: item },
@@ -41,13 +42,13 @@ const DraggableItem = ({ item, itemAccessKey, title,getloanTypeMappingInfo,  sel
 				backgroundColor: "#d3d3d3",
 				cursor: "grab",
 				opacity: isDragging ? 0.5 : 1,
-				minWidth: "175px",
+				// minWidth: "175px",
 				borderRadius: '5px'
 				// maxHeight: "35px"
 			}}
 		>
-			{item && item[itemAccessKey]}
-			{title != 'unmapped_loan_types' && <CloseCircleOutlined style={{margin: "0px 10px"}} onClick={() => handleDeleteMapping(item)} />}
+			<span title={"Drag around and drop for editing the mapping"}>{item && item[itemAccessKey]}</span>
+			{title != 'unmapped_loan_types' && <CloseCircleOutlined style={{margin: "0px 10px"}} onClick={() => handleDeleteMapping(item)} title={"Click to delete this mapping"} />}
 		</div>
 	);
 };
@@ -161,7 +162,7 @@ export const LoanTypeMapping = () => {
 						onChange={handleFundChange}
 					/>
 
-					<UIComponents.Button text='Add Master Type' isFilled={true} onClick={() => setAddMasterPopupOpen(true)} />
+					<UIComponents.Button text='Add Master Loan Type' isFilled={true} onClick={() => setAddMasterPopupOpen(true)} />
 
 				</div>
 			</div>
@@ -169,7 +170,7 @@ export const LoanTypeMapping = () => {
 
 			<DndProvider backend={HTML5Backend}>
 				<div className={styles.unmappedLoanTypesContainer}>
-					<div style={{textAlign: 'left', margin: "10px 20px 0px 20px"}}><b>Unmapped Loan Types</b></div>
+					<div style={{textAlign: 'left', margin: "5px"}}><b>Unmapped Loan Types</b><Icons.InfoIcon title={'The list of loan types from the source files which are not mapped to the standardised master loan types.' + '\nDrag and drop items in respective master loan types for mapping.'} /></div>
 					<div className={styles.unmappedLoantypeListContainer}>
 						<DroppableList
 							title={'unmapped_loan_types'}
@@ -181,15 +182,15 @@ export const LoanTypeMapping = () => {
 					</div>
 				</div>
 
-				<div style={{display: "flex"}}>
-					<div className={styles.mappingHeading}>Loan Type Master</div>
-					<div className={styles.mappingHeading}>Mapped Loan Type</div>
+				<div style={{display: "flex", marginTop: '15px'}}>
+					<div className={styles.mappingHeading} style={{width: '25%'}}>Loan Type Master</div>
+					<div className={styles.mappingHeading} style={{width: '75%'}}>Mapped Loan Type</div>
 				</div>
 				<div className={styles.loanMasterMappingContainer}>
 					{loanTypeMappingData?.master_loan_types.map((loanType) => (
 						<div key={loanType} className={styles.loanMasterMapContainer}>
-							<div className={styles.loanMasterTab}><div className={styles.loanMaster}>{loanType?.master_loan_type}</div></div>
-							<div className={`${styles.loanMasterTab} ${styles.loanMasterList}`}>
+							<div className={styles.loanMasterTab} style={{width: '25%'}}><div className={styles.loanMaster}>{loanType?.master_loan_type}</div></div>
+							<div className={`${styles.loanMasterTab} ${styles.loanMasterList}`} style={{width: '75%'}}>
 								<DroppableList
 									title={loanType}
 									items={loanTypeMappingData?.mapped_loan_types && loanTypeMappingData.mapped_loan_types?.filter(type => loanType.master_loan_type_id == type.master_loan_type_id)}

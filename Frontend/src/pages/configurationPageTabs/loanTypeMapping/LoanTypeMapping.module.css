@@ -23,53 +23,51 @@
 }
 
 .dropdownContainer {
-	margin: 5px 0px;
+	/* margin: 5px 0px; */
 	text-align: start;
 }
 
 .unmappedLoanTypesContainer {
 	border: 1px solid rgb(213, 210, 210);
-	border-radius: 10px;
+	border-radius: 5px;
 	background-color: white;
-	margin: 15px 5px;
+	margin: 10px 0;
 	position: sticky;
 	top: 0;
 	padding: 10px;
 }
 
 .unmappedLoantypeList {
-	padding: 10px;
+	padding: 5px;
 	display: flex;
-	height: 20vh;
+	/* height: 20vh; */
 	flex-wrap: wrap;
 	overflow-y: auto;
 }
 
 .mappedTypesList {
 	display: flex;
-	padding: 10px;
+	padding: 5px;
 	flex-wrap: wrap;
 }
 
 .mappingHeading {
-	width: 49%;
 	text-align: center;
 	font-size: 18px;
 	font-weight: bold;
-	/* background-color: aqua; */
 }
 
 .loanMasterMappingContainer {
-	margin: 15px 10px;
-	text-align: center;
+	/* margin: 15px 10px; */
+	/* text-align: center; */
 }
 
 .loanMasterMapContainer {
 	display: flex;
-	margin: 10px 0px;
+	margin: 20px 0px;
 	border: 1px solid #c3c2c2;
 	padding: 10px;
-	border-radius: 10px;
+	border-radius: 5px;
 }
 
 .loanMasterMapContainer {
@@ -80,7 +78,6 @@
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	width: 49%;
 	/* height: 100%; */
 }
 
