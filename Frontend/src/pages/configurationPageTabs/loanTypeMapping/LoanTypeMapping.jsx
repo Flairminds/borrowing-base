@@ -42,7 +42,7 @@ const DraggableItem = ({ item, itemAccessKey, title, getloanTypeMappingInfo, sel
 				backgroundColor: "#d3d3d3",
 				cursor: "grab",
 				opacity: isDragging ? 0.5 : 1,
-				minWidth: "175px",
+				// minWidth: "175px",
 				borderRadius: '5px'
 				// maxHeight: "35px"
 			}}

@@ -4,6 +4,7 @@ import { UIComponents } from '../../components/uiComponents';
 import { drillDownData } from '../../services/api';
 import { DrillDownModal } from '../drillDownModal/DrillDownModal';
 import Styles from './PreviewTable.module.css';
+import { ModalComponents } from '../../components/modalComponents';
 
 export const PreviewTable = ({whatIfAnalysisId, dataPreviewPopup, setDataPreviewPopup, baseFile, previewTableData, whatIfAnalysisType }) => {
 
@@ -33,7 +34,7 @@ export const PreviewTable = ({whatIfAnalysisId, dataPreviewPopup, setDataPreview
 	return (
 		<>
 			<Modal
-				title={<span style={{ color: '#909090', fontWeight: '500', fontSize: '14px', padding: '0 0 0 3%' }}>Data Preview</span>}
+				title={<ModalComponents.Title title='Intermediate Metrics' showDescription={true} description='Click on any cell to view the intermediate calculations and drill-down' />}
 				centered
 				open={dataPreviewPopup}
 				onCancel={handleCancel}
@@ -41,9 +42,6 @@ export const PreviewTable = ({whatIfAnalysisId, dataPreviewPopup, setDataPreview
 				footer={null}
 			>
 				<>
-					<div className={Styles.messageContainer}>
-						* Click on any cell to validate the intermediate calculation.
-					</div>
 					<div className={Styles.tabsContainer}>
 						{previewSheets.map((sheet, index) => (
 							<div
@@ -63,7 +61,6 @@ export const PreviewTable = ({whatIfAnalysisId, dataPreviewPopup, setDataPreview
 								<thead>
 									<tr className={Styles.headRow}>
 										{previewTableData?.columns?.map((col, index) => (
-
 											<th key={index} className={Styles.th}>
 												{col.title}
 											</th>

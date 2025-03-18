@@ -5,6 +5,7 @@ import React from 'react';
 import { toast } from 'react-toastify';
 import { drillDownData } from '../../services/api';
 import style from './DrillDownModal.module.css';
+import { ModalComponents } from '../../components/modalComponents';
 
 export const DrillDownModal = (
 	{
@@ -62,7 +63,7 @@ export const DrillDownModal = (
 	return (
 		<>
 			<Modal
-				title={<span style={{ color: '#909090', fontWeight: '500', fontSize: '14px', padding: '0 0 0 3%' }}>Formula</span>}
+				title={<ModalComponents.Title title={drillDownString} showDescription={true} description='*Click on underlined formula (if available) to drill-down' />}
 				centered
 				open={drillDownPopupOpen}
 				// onOk={handleOk}
@@ -74,27 +75,25 @@ export const DrillDownModal = (
 				]}
 			>
 				<>
-					<div className={style.drillDowmInfo}>{drillDownString}</div>
 					<div className={style.popUpContainer}>
 						<div className={style.infoDiv}>
 							<div className={style.titleDiv}>
-								<span className={style.titlelable}>
-									Parameter :
-								</span>
-								{drillDownPopupData?.col_name}
-							</div>
-						</div>
-
-						<div className={style.infoDiv}>
-							<div className={style.titleDiv}>
-								<span className={style.titlelable}>
-									Company :
-								</span>
-								{drillDownPopupData?.row_name}
+								<div>
+									<span className={style.titlelable}>
+										Parameter:
+									</span>
+									{drillDownPopupData?.col_name}
+								</div>
+								<div>
+									<span className={style.titlelable}>
+										Company:
+									</span>
+									{drillDownPopupData?.row_name}
+								</div>
 							</div>
 						</div>
 						<div className={`${style.infoDiv} ${style.formulaDiv}`}>
-							<div style={{overflowX: 'auto', whiteSpace: 'nowrap', padding: '0.5rem'}}>
+							<div style={{overflowX: 'auto', whiteSpace: 'nowrap'}}>
 								{parse(drillDownPopupData?.formula_variable_string ? drillDownPopupData?.formula_variable_string : "<> </>" )}
 							</div>
 						</div>

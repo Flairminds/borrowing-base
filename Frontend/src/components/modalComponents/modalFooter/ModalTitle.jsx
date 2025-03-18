@@ -4,7 +4,7 @@ export const ModalTitle = ({ title = 'Title', description = 'description', showD
 	return (
 		<div>
 			<h4>{title}</h4>
-			{showDescription && <p style={{ color: '#909090'}}>{description}</p>}
+			{showDescription && <p style={{ color: '#909090', margin: '0'}}>{description}</p>}
 		</div>
 	);
 };
