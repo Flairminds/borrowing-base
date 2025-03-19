@@ -4,3 +4,4 @@ flask_session
 __pycache__
 /Backend/.env
 /Backend/.pre-commit-config.yaml
+dist
