@@ -6,7 +6,7 @@ import { addLoanTypeMaster } from '../../../services/dataIngestionApi';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import styles from './AddLoanTypeMasterModal.module.css';
 
-export const AddLoanTypeMasterModal = ({isOpen, setIsOpen, fundType, getloanTypeMappingInfo, selectedFundType}) => {
+export const AddLoanTypeMasterModal = ({isOpen, setIsOpen, fundType, getloanTypeMappingInfo, selectedFundType, activeMappingType}) => {
 
 	const [masterTypeInput, setMasterTypeInput] = useState("");
 
@@ -17,7 +17,7 @@ export const AddLoanTypeMasterModal = ({isOpen, setIsOpen, fundType, getloanType
 
 	const handleAddMaster = async() => {
 		try {
-			const res = await addLoanTypeMaster(masterTypeInput, fundType);
+			const res = await addLoanTypeMaster(masterTypeInput, fundType, activeMappingType);
 			console.info("res", res);
 			showToast('success', res.data.message);
 			getloanTypeMappingInfo(selectedFundType);

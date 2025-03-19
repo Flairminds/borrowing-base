@@ -155,35 +155,35 @@ export const uploadAddMoreSecFile = (file, dataId, fundType, reportDate) => {
 	});
 };
 
-export const getLoanTypeMappingData = (fundType) => {
-	const mappingDataRes = axios.get(`${ApiURL}/mapping/loan_type/${fundType}`);
+export const getLoanTypeMappingData = (fundType, mappingType) => {
+	const mappingDataRes = axios.get(`${ApiURL}/mapping/${mappingType}_type/${fundType}`);
 	return mappingDataRes;
 };
 
-export const updateLoanTypeMapping = (loanMapData) => {
+export const updateLoanTypeMapping = (loanMapData, mappingType) => {
 	const payload = {
 		"mappings": [loanMapData]
 	};
-	const fileListResponse = axios.post(`${ApiURL}/mapping/map_loan_type`, payload);
+	const fileListResponse = axios.post(`${ApiURL}/mapping/map_${mappingType}_type`, payload);
 	return fileListResponse;
 };
 
-export const addLoanTypeMaster = (masterType, fundType) => {
+export const addLoanTypeMaster = (masterType, fundType, mappingType) => {
 	const payload = {
-		"master_loan_type": masterType,
+		[`master_${mappingType}_type`]: masterType,
 		"fund_type": fundType,
 		"description": null
 	};
 
-	const fileListResponse = axios.post(`${ApiURL}/mapping/add_loan_type_master`, payload);
+	const fileListResponse = axios.post(`${ApiURL}/mapping/add_${mappingType}_type_master`, payload);
 	return fileListResponse;
 };
 
-export const deleteLoanTypeMapping = (mappingId) => {
+export const deleteLoanTypeMapping = (mappingId, mappingType) => {
 	const payload = {
 		"mapping_id": mappingId
 	};
 
-	const response = axios.post(`${ApiURL}/mapping/delete_loan_type_mapping`, payload);
+	const response = axios.post(`${ApiURL}/mapping/delete_${mappingType}_type_mapping`, payload);
 	return response;
 };
