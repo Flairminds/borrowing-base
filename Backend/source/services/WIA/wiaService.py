@@ -5,7 +5,7 @@ import pandas as pd
 import pickle
 import numpy as np
 
-from models import WhatIfAnalysis,  ModifiedBaseDataFile, BaseDataFile, db, ColumnMetadataMaster, SheetMetadataMaster, Fund
+from models import WhatIfAnalysis,  ModifiedBaseDataFile, BaseDataFile, db, ColumnMetadataMaster, SheetMetadataMaster, Fund, ModifiedBaseDataFile
 from source.utility.ServiceResponse import ServiceResponse
 
 from constants.error_constants import ErrorConstants
@@ -534,3 +534,14 @@ def validate_selected_assets(selected_assets, fund_type):
                 errors.append(f"Missing or empty value for {column} in asset at index {index}")
     
     return errors
+
+def select_what_if_analysis(what_if_analysis_id, what_if_analysis_type):
+    if what_if_analysis_type == 'Update asset':
+        what_if_analysis = ModifiedBaseDataFile.query.filter_by(id=what_if_analysis_id).first()
+    else:
+        what_if_analysis = WhatIfAnalysis.query.filter_by(id=what_if_analysis_id).first()
+    if what_if_analysis is None:
+        return {"error": True, "message": "What-if analysis not found"}
+    pickled_response = what_if_analysis.response
+    # what_if_analysis_response = pickle.loads(pickled_response)
+    return {"error": False, "what_if_analysis": pickled_response}
