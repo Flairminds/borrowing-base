@@ -31,3 +31,7 @@ def map_lien_type():
 @mapping_setup_blueprint.route("/add_lien_type_master", methods=["POST"])
 def add_lien_type_master():
     return mappingController.add_lien_type_master()
+
+@mapping_setup_blueprint.route("/delete_lien_type_mapping", methods=["POST"])
+def delete_lien_type_mapping():
+    return mappingController.delete_lien_type_mapping()

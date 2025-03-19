@@ -127,3 +127,17 @@ def delete_loan_type_mapping():
     except Exception as e:
         Log.func_error(e)
         return HTTPResponse.error(message="Internal server error", error_code=500)
+    
+def delete_lien_type_mapping():
+    try:
+        req_body = flask.request.get_json()
+        mapping_id = req_body.get("mapping_id")
+        
+        service_response = LienTypeMappingService.delete_mapping(mapping_id)
+        if service_response["success"] is False:
+            return HTTPResponse.error(message=service_response["message"], status_code=service_response["status_code"])
+        
+        return HTTPResponse.success(message=service_response["message"], result=service_response.get('data'))
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal server error", error_code=500)
