@@ -21,7 +21,7 @@ export const WhatifTable = ({simulationType, setSimulationType, data, columns, s
 	const handleUseBtn = async () => {
 		if (selectedRow) {
 			try {
-				const response = await getWhatIfAnalysisData(selectedRow.what_if_analysis_id);
+				const response = await getWhatIfAnalysisData(selectedRow.what_if_analysis_id, selectedRow.simulation_type);
 				if (response.status === 200) {
 					toast.success(`${selectedRow.name} imported Successfully`);
 					setWhatifAnalysisPerformed(true);
