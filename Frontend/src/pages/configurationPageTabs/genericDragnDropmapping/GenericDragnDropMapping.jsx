@@ -49,7 +49,7 @@ const DraggableItem = ({ item, itemAccessKey, title, getEntryMappingInfo, select
 			}}
 		>
 			<span title={"Drag around and drop for editing the mapping"}>{item && item[itemAccessKey]}</span>
-			{title != `unmapped_${activeMappingType}_types` && <CloseCircleOutlined style={{margin: "0px 10px"}} onClick={() => handleDeleteMapping(item)} title={"Click to delete this mapping"} />}
+			{activeMappingType && title != `unmapped_${activeMappingType}_types` && <CloseCircleOutlined style={{margin: "0px 10px"}} onClick={() => handleDeleteMapping(item)} title={"Click to delete this mapping"} />}
 		</div>
 	);
 };

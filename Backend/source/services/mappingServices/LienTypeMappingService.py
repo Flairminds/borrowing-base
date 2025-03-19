@@ -105,7 +105,7 @@ def map_lien_type(mappings):
         db.session.add_all(lien_type_mappings)
     db.session.commit()
     
-    return ServiceResponse.success(message="Loan Type mapped successfully")
+    return ServiceResponse.success(message="Lien Type mapped successfully")
 
     #     lien_type_master = LienTypeMaster.query.filter_by(lien_type = master_lien_type).first()
 
@@ -145,4 +145,4 @@ def delete_mapping(mapping_id):
         return ServiceResponse.success(message="Lien Type deleted successfully")
     except Exception as e:
         print(str(e))
-        return ServiceResponse.error(message="Something went wrong while deleting Loan Type mapping")
+        return ServiceResponse.error(message="Something went wrong while deleting Lien Type mapping")
