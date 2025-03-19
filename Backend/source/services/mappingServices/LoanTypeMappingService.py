@@ -11,14 +11,14 @@ def get_unmapped_loan_types(fund_name):
     engine = db.get_engine()
     with engine.connect() as connection:
         unmapped_loan_types = connection.execute(text(f'''
-            select 
-                ssch."Issue Name",
-                min(ssch.source_file_id)
-            from loan_type_master ltmaster,
-            sf_sheet_client_holdings ssch
-            left join loan_type_mapping ltm on ssch."Issue Name" = ltm.loan_type
-            where ltmaster.fund_type = '{fund_name}' and (ltm.master_loan_type_id is null or ltm.is_deleted = true)
+            select ssch."Issue Name", MIN(ssch.source_file_id) AS source_file_id
+            from sf_sheet_client_holdings ssch
+            left join loan_type_mapping ltm ON ssch."Issue Name" = ltm.loan_type and is_deleted = false
+            left join loan_type_master ltm2 on ltm2.id = ltm.master_loan_type_id and ltm2.fund_type = '{fund_name}'
+            join source_files sf on sf.id = ssch.source_file_id and '{fund_name}' in (select unnest(fund_types) from source_files sf2 where sf.id = ssch.source_file_id)
+            where (ltm2.fund_type is null or ltm.master_loan_type_id IS NULL OR ltm.is_deleted = TRUE)
             group by ssch."Issue Name"
+            order by ssch."Issue Name"
         ''')).fetchall()
     unmapped_loan_type_data = [{'unmapped_loan_type': unmapped_loan_type[0], 'source_file_id': unmapped_loan_type[1]} for unmapped_loan_type in unmapped_loan_types]
     return ServiceResponse.success(data=unmapped_loan_type_data, message="Unmapped Loan Types")

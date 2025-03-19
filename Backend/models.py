@@ -658,3 +658,6 @@ class LienTypeMapping(db.Model):
     master_lien_type_id = db.Column(db.Integer, db.ForeignKey("lien_type_master.id"), nullable=True)
     lien_type = db.Column(db.String)
     lien_type_lookup = db.Column(db.String)
+    is_deleted = db.Column(db.Boolean, default=False)
+    deleted_by = db.Column(db.Integer)
+    deleted_at = db.Column(db.DateTime(timezone=True))

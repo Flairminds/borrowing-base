@@ -209,7 +209,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 				<div className={styles.headerContainer}>
 					<div className={styles.tableHeading}>
 						Extracted Base Data
-						<Icons.InfoIcon title="Viewing list of extracted base data" />
+						<Icons.InfoIcon title={'Viewing list of extracted base data. You can preview the base data from here.'} />
 					</div>
 					<div className={styles.buttonsContainer}>
 						<div style={{margin: 'auto'}}>

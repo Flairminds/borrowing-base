@@ -147,8 +147,8 @@ export const getSelectedWIAAsstes = (whatIfAnalysisId, whatIfAnalysisType) => {
 	return res;
 };
 
-export const getWhatIfAnalysisData = (what_if_analysis_id) => {
-	const res = axios.post(`${ApiURL}/select_what_if_analysis`, { what_if_analysis_id: what_if_analysis_id });
+export const getWhatIfAnalysisData = (what_if_analysis_id, simulation_type) => {
+	const res = axios.post(`${ApiURL}/wia/select_what_if_analysis`, { what_if_analysis_id: what_if_analysis_id, simulation_type: simulation_type });
 	return res;
 
 };

@@ -1,0 +1,144 @@
+B
+C
+I
+J
+K
+L
+M
+P
+S
+U
+V - Done - Onkar 
+W
+AN
+AP
+AQ
+AX
+BZ
+CA
+CC
+CD 
+CE
+CF 
+CG - Done - Onkar
+CH 
+CI
+CJ - Done - Onkar 
+CK - ABhinav - name changed to `Defaulted Collateral Loan` - Done
+CL - Done - Onkar
+CM - Onkar 
+CN - U
+CO - U
+CP
+CQ - U
+CR - Onkar
+CS - Done
+CT - U
+CU - ABhinav
+CV
+CW
+CX 
+CY - U
+CZ - Onkar
+DA
+DB
+DC - U
+DD - U
+DE - U
+DF - A Done
+DG - U
+DH - A - Hold for now dependency on FV, GS, HJ, U VI
+DI - O
+DJ - U
+DL
+DM
+DN
+DO
+DP
+DQ
+DR
+DS
+DT
+DU
+DV
+DW
+DX
+DY
+DZ
+EA
+EB
+EC
+ED
+EE
+EF
+EG
+EH
+EI
+EJ
+EK
+EL
+EM
+EN
+EO
+EP
+EQ
+ER
+ES
+ET
+EU
+EV
+EW
+EX
+EY
+EZ
+FA
+FB
+FC
+FD
+FE
+FF
+FG
+FH
+FJ
+FK
+FL
+FM
+FN
+FO
+FP
+FQ
+FR
+FS
+FT
+FU
+FV
+FW
+FX
+FZ
+GA
+GB
+GC
+GD
+GE
+GF
+GG
+GH
+GJ
+GK
+GL
+GM
+GN
+GO
+GP
+GQ
+GS
+GU
+GW
+GX
+GZ
+HA
+HN
+
+
+to be calculated
+HO
