@@ -13,7 +13,7 @@ def get_unmapped_loan_types(fund_name):
         unmapped_loan_types = connection.execute(text(f'''
             select ssch."Issue Name", MIN(ssch.source_file_id) AS source_file_id
             from sf_sheet_client_holdings ssch
-            left join loan_type_mapping ltm ON ssch."Issue Name" = ltm.loan_type
+            left join loan_type_mapping ltm ON ssch."Issue Name" = ltm.loan_type and is_deleted = false
             left join loan_type_master ltm2 on ltm2.id = ltm.master_loan_type_id and ltm2.fund_type = '{fund_name}'
             join source_files sf on sf.id = ssch.source_file_id and '{fund_name}' in (select unnest(fund_types) from source_files sf2 where sf.id = ssch.source_file_id)
             where (ltm2.fund_type is null or ltm.master_loan_type_id IS NULL OR ltm.is_deleted = TRUE)
