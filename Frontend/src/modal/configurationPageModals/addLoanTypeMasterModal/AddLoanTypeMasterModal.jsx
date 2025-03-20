@@ -30,7 +30,7 @@ export const AddLoanTypeMasterModal = ({isOpen, setIsOpen, fundType, getEntryMap
 
 	return (
 		<Modal open={isOpen} onCancel={handleCancel} footer={null} width={"50%"}>
-			<ModalComponents.Title title="Add Loan Type Master" />
+			<ModalComponents.Title title={`Add ${activeMappingType} Type Master`} />
 
 			<div className={styles.inputContainer}>
 				<DynamicInputComponent inputValue={masterTypeInput} onInputChange={(e) => setMasterTypeInput(e.target.value)} />
