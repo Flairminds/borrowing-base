@@ -32,7 +32,8 @@ def get_mapped_lien_types(fund_name):
 	            ltmaster.lien_type as master_lien_type,
 	            ltmapping.lien_type,
                 ltmapping.id as mapping_id
-            from lien_type_mapping ltmapping join lien_type_master ltmaster on ltmapping.master_lien_type_id = ltmaster.id where ltmaster.fund_type = '{fund_name}'
+            from lien_type_mapping ltmapping join lien_type_master ltmaster on ltmapping.master_lien_type_id = ltmaster.id
+            where ltmaster.fund_type = '{fund_name}' and (ltmapping.is_deleted = false or ltmapping.is_deleted is null)
         ''')).fetchall()
 
     mapped_lien_type_data = [{
@@ -104,7 +105,7 @@ def map_lien_type(mappings):
         db.session.add_all(lien_type_mappings)
     db.session.commit()
     
-    return ServiceResponse.success(message="Loan Type mapped successfully")
+    return ServiceResponse.success(message="Lien Type mapped successfully")
 
     #     lien_type_master = LienTypeMaster.query.filter_by(lien_type = master_lien_type).first()
 
@@ -127,8 +128,8 @@ def add_lien_type_master(fund_type, master_lien_type, discription):
 
     lookup = create_lookup(master_lien_type)
 
-    loan_type_master = LienTypeMapping(company_id=company_id, created_by=created_by, loan_type=master_lien_type, loan_type_lookup=lookup, description=discription, fund_type=fund_type)
-    db.session.add(loan_type_master)
+    lien_type_master = LienTypeMaster(company_id=company_id, created_by=created_by, lien_type=master_lien_type, lien_type_lookup=lookup, description=discription, fund_type=fund_type)
+    db.session.add(lien_type_master)
     db.session.commit()
  
     return ServiceResponse.success(message="Lien Type added successfully")
@@ -144,4 +145,4 @@ def delete_mapping(mapping_id):
         return ServiceResponse.success(message="Lien Type deleted successfully")
     except Exception as e:
         print(str(e))
-        return ServiceResponse.error(message="Something went wrong while deleting Loan Type mapping")
+        return ServiceResponse.error(message="Something went wrong while deleting Lien Type mapping")
