@@ -15,6 +15,7 @@ import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./AddAdditionalInformationModal.module.css";
 import { useNavigate } from 'react-router';
 import { UIComponents } from "../../components/uiComponents";
+import { ModalComponents } from "../../components/modalComponents";
 
 const { TabPane } = Tabs;
 
@@ -435,8 +436,9 @@ export const AddAdditionalInformationModal = (
 	};
 
 	return (
-		<Modal open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"} style={{ top: 10 }}>
-			<h3>Additional Information</h3>
+		<Modal
+			title={<ModalComponents.Title title='Additional Information' showDescription={true} description="Add more informations about the base data for borrowing base calculation" />}
+			open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"} style={{ top: 10 }}>
 			<div style={{ display: "flex", justifyContent: "space-between", margin: "1rem 0" }}>
 				<Radio.Group options={OTHER_INFO_OPTIONS} value={addType} onChange={handleChange} />
 				{addType === "upload" && (
