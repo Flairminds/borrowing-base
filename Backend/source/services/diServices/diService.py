@@ -499,8 +499,8 @@ def get_base_data(info_id):
             card_data = [{
                 "No of Obligors": no_of_obligors,
                 "No of Securities": no_of_assets,
-                "Total Commitment": numerize.numerize(total_commitment, 2),
-                "Total Outstanding Balance": numerize.numerize(total_outstanding_balance, 2),
+                "Total Commitment": numerize.numerize(total_commitment, 2) if total_commitment is not None else 0,
+                "Total Outstanding Balance": numerize.numerize(total_outstanding_balance, 2)  if total_outstanding_balance is not None else 0,
                 "Unmapped Securities": unmapped_records,
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
                 "Fund Type": base_data_info.fund_type
@@ -601,9 +601,7 @@ def get_base_data(info_id):
         }
         return ServiceResponse.success(data=result, message="Base Data")
     except Exception as e:
-        print(e)
-        print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
-        return ServiceResponse.error(message="Internal server error")
+        raise Exception(e)
 
 def change_bd_col_seq(updated_sequence):
     try:

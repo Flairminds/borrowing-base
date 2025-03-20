@@ -1,4 +1,8 @@
 function isDateValid(dateStr) {
+	const startsWithAlphabet = /^[a-zA-Z]/.test(dateStr);
+	if (startsWithAlphabet) {
+		return false;
+	}
 	return !isNaN(new Date(dateStr));
 }
 

@@ -1,3 +1,4 @@
+import traceback
 class Log:
 
     @staticmethod
@@ -10,9 +11,13 @@ class Log:
 
     @staticmethod
     def func_error(e):
-        print({
-            "error": True,
-            "error_msg": str(e)[:150],
-            "error_type": str(type(e).__name__),
-            "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
-        })
+        print("Error: True")
+        # print(e)
+        traceback.print_exc()
+        # print("bell", traceback.print_stack(), "bell2")
+        # print({
+        #     "error": True,
+        #     "error_msg": str(e)[:150],
+        #     "error_type": str(type(e).__name__),
+        #     "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
+        # })
