@@ -13,7 +13,7 @@ def get_unmapped_lien_types(fund_name):
         unmapped_lien_types = connection.execute(text(f'''
             select ssss."[SI] Credit Facility Lien Type", MIN(ssss.source_file_id) AS source_file_id
             from sf_sheet_securities_stats ssss
-            left join lien_type_mapping ltm ON ssss."[SI] Credit Facility Lien Type" = ltm.lien_type
+            left join lien_type_mapping ltm ON ssss."[SI] Credit Facility Lien Type" = ltm.lien_type and is_deleted = false
             left join lien_type_master ltm2 on ltm2.id = ltm.master_lien_type_id and ltm2.fund_type = '{fund_name}'
             join source_files sf on sf.id = ssss.source_file_id and '{fund_name}' in (select unnest(fund_types) from source_files sf2 where sf.id = ssss.source_file_id)
             where (ltm2.fund_type is null or ltm.master_lien_type_id IS NULL OR ltm.is_deleted = TRUE) and ssss."[SI] Credit Facility Lien Type" is not NULL
