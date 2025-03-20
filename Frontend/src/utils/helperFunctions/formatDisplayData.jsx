@@ -1,8 +1,12 @@
 function isDateValid(dateStr) {
 	const startsWithAlphabet = /^[a-zA-Z]/.test(dateStr);
 	if (startsWithAlphabet) {
-		const startsWithDay = dateStr.startsWith("Mon") || dateStr.startsWith("Tue") || dateStr.startsWith("Wed") || dateStr.startsWith("Thu") || dateStr.startsWith("Fri") || dateStr.startsWith("Sat") || dateStr.startsWith("Sun");
-		if (!startsWithDay) {
+		try {
+			const startsWithDay = dateStr.startsWith("Mon") || dateStr.startsWith("Tue") || dateStr.startsWith("Wed") || dateStr.startsWith("Thu") || dateStr.startsWith("Fri") || dateStr.startsWith("Sat") || dateStr.startsWith("Sun");
+			if (!startsWithDay) {
+				return false;
+			}
+		} catch (error) {
 			return false;
 		}
 	}
