@@ -34,6 +34,8 @@ class BaseDataFile(db.Model):
         "ModifiedBaseDataFile", back_populates="base_data_file"
     )
 
+    extracted_base_data_info_id = db.Column(db.Integer)
+
 
 class WhatIfAnalysis(db.Model):
     id = db.Column(
@@ -406,6 +408,7 @@ class PfltBaseData(db.Model):
     satisfies_all_other_eligibility_criteria = db.Column(db.String)
     excess_concentration_amount = db.Column(db.String)
     loanx_id = db.Column(db.String)
+    is_manually_added = db.Column(db.Boolean, default=False)
 
 class BaseDataOtherInfo(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -492,6 +495,7 @@ class PfltBaseDataHistory(db.Model):
     satisfies_all_other_eligibility_criteria = db.Column(db.String)
     excess_concentration_amount = db.Column(db.String)
     loanx_id = db.Column(db.String)
+    is_manually_added = db.Column(db.Boolean, default=False)
 
 class PcofBaseData(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -547,6 +551,7 @@ class PcofBaseData(db.Model):
     borrowing_base_industry_concentration = db.Column(db.String)
     borrowing_base_comment = db.Column(db.String)
     is_eligible_issuer = db.Column(db.String)
+    is_manually_added = db.Column(db.Boolean, default=False)
 
 class PcofBaseDataHistory(db.Model):
     operation = db.Column(db.String)
@@ -605,7 +610,7 @@ class PcofBaseDataHistory(db.Model):
     borrowing_base_industry_concentration = db.Column(db.String)
     borrowing_base_comment = db.Column(db.String)
     is_eligible_issuer = db.Column(db.String)
-
+    is_manually_added = db.Column(db.Boolean, default=False)
 
 class LoanTypeMaster(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -617,6 +622,7 @@ class LoanTypeMaster(db.Model):
     loan_type = db.Column(db.String)
     loan_type_lookup = db.Column(db.String)
     description = db.Column(db.String)
+    fund_type = db.Column(db.String(255))
 
 class LoanTypeMapping(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -628,6 +634,9 @@ class LoanTypeMapping(db.Model):
     master_loan_type_id = db.Column(db.Integer, db.ForeignKey("loan_type_master.id"), nullable=True)
     loan_type = db.Column(db.String)
     loan_type_lookup = db.Column(db.String)
+    is_deleted = db.Column(db.Boolean, default=False)
+    deleted_by = db.Column(db.Integer)
+    deleted_at = db.Column(db.DateTime(timezone=True))
 
 class LienTypeMaster(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -639,6 +648,7 @@ class LienTypeMaster(db.Model):
     lien_type = db.Column(db.String)
     lien_type_lookup = db.Column(db.String)
     description = db.Column(db.String)
+    fund_type = db.Column(db.String(255))
 
 class LienTypeMapping(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -650,3 +660,6 @@ class LienTypeMapping(db.Model):
     master_lien_type_id = db.Column(db.Integer, db.ForeignKey("lien_type_master.id"), nullable=True)
     lien_type = db.Column(db.String)
     lien_type_lookup = db.Column(db.String)
+    is_deleted = db.Column(db.Boolean, default=False)
+    deleted_by = db.Column(db.Integer)
+    deleted_at = db.Column(db.DateTime(timezone=True))

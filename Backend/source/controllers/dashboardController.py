@@ -164,9 +164,10 @@ def get_files_list():
 def get_bb_data_of_date():
     try:
         data = request.get_json()
-        selected_date = data["closing_date"]
-        user_id = data["user_id"]
-        return dashboardService.get_bb_data_of_date(selected_date, user_id)
+        selected_date = data.get("closing_date")
+        user_id = data.get("user_id")
+        base_data_file_id = data.get("base_data_file_id")
+        return dashboardService.get_bb_data_of_date(selected_date, user_id, base_data_file_id)
     except Exception as e:
         return {
             "error": str(e),
@@ -232,3 +233,39 @@ def calculate_bb():
         return HTTPResponse.success(result=response)
     except Exception as e:
         return HTTPResponse.error(message="Internal Server Error")
+
+def get_intermediate_metrics():
+    try:
+        request_body = request.get_json()
+        base_data_file_id = request_body.get("base_data_file_id")
+        
+        base_data_file = commonServices.get_base_data_file(base_data_file_id=base_data_file_id)
+
+        if base_data_file.fund_type == "PCOF":
+            service_response = pcofDashboardService.get_intermediate_metrics(base_data_file)
+        else:
+            service_response = pfltDashboardService.get_intermediate_metrics(base_data_file)
+
+        return service_response
+    except Exception as e:
+        return HTTPResponse.error(message="Internal Server Error")
+
+def get_mathematical_formula():
+    try:
+        request_body = request.get_json()
+        user_id = request_body.get("user_id")
+        base_data_file_id = request_body["base_data_file_id"]
+        col_name = request_body["col_name"]
+        row_name = request_body["row_name"]
+        
+        base_data_file = commonServices.get_base_data_file(base_data_file_id=base_data_file_id)
+
+        if base_data_file.fund_type == "PCOF":
+            service_response = pcofDashboardService.get_mathematical_formula(base_data_file, col_name, row_name)
+        else:
+            service_response = pfltDashboardService.get_mathematical_formula(base_data_file, col_name, row_name)
+
+        return service_response
+    except Exception as e:
+        return HTTPResponse.error(message="Internal Server Error")
+    

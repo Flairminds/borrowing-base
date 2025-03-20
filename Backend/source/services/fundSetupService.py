@@ -80,7 +80,7 @@ def update_limit(test_changes):
         for test in test_changes:
             test_id = test["test_id"]
             fund_id = test["fund_id"]
-            limit_percentage = test.get("limit_percentage")
+            limit_percentage = 0 if test.get("limit_percentage") == "" else test.get("limit_percentage")
             show_on_dashboard = test.get("show_on_dashboard")
             
             if limit_percentage is not None or show_on_dashboard is not None:

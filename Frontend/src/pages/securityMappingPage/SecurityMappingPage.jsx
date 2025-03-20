@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { FaRegEdit } from "react-icons/fa";
 import { useNavigate } from 'react-router';
 import { BackOption } from '../../components/BackOption/BackOption';
-import { CustomButton } from '../../components/custombutton/CustomButton';
-import { Loader } from '../../components/loader/loader';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
+import { UIComponents } from '../../components/uiComponents';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { AllSecurityModal } from '../../modal/allSecurityModal/AllSecurityModal';
 import { HandleSecurityMappingModal } from '../../modal/securityMappingModals/handleSecurityMapping/HandleSecurityMappingModal';
 import { getUnmappedSecurityData } from '../../services/dataIngestionApi';
-import { COLUMN_GROUPS } from '../../utils/constants/constants';
+import { COLUMN_GROUPS, PAGE_ROUTES } from '../../utils/constants/constants';
 import { FilterMultiSelect } from '../../utils/helperFunctions/FilterMultiSelect';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from "./SecurityMappingPage.module.css";
@@ -23,6 +23,7 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [selectedSecurity, setSelectedSecurity] = useState(null);
 	const [filteredData, setFilteredData] = useState([]);
+	const [isAnyCheckboxChecked, setIsAnyCheckboxChecked] = useState(false);
 	// const [selectedSecurities, setSelectedSecurities] = useState([]);
 	const navigate = useNavigate();
 
@@ -66,6 +67,12 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 		}
 	}, [unmappedSecurities]);
 
+	useEffect(() => {
+		if (!isMappingPopupOpen) {
+			setIsAnyCheckboxChecked(securityViewType === "unmapped" && selectedSecurities.current.length > 0);
+		}
+	}, [isMappingPopupOpen, securityViewType]);
+
 
 	const handleMappingPopup = () => {
 		setIsMappingPopupOpen(true);
@@ -81,13 +88,12 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 	};
 
 	const hanldeCheckBoxClick = (security) => {
-		console.info(selectedSecurities.current, 'multiple mapping 2');
 		if (selectedSecurities.current.includes(security)) {
 			selectedSecurities.current = selectedSecurities.current.filter(sec => sec != security);
 		} else {
 			selectedSecurities.current = [...selectedSecurities.current, security];
 		}
-		console.info(selectedSecurities.current, 'multiple mapping 3');
+		setIsAnyCheckboxChecked(securityViewType == "unmapped" && selectedSecurities.current.length > 0 );
 	};
 
 	const additionalColumns = securityViewType == "all" ? [{
@@ -115,7 +121,7 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 		<div>
 
 			<div className={styles.backOptionContainer}>
-				<BackOption onClick={() => navigate('/base-data-list')}
+				<BackOption onClick={() => navigate(PAGE_ROUTES.BASE_DATA_LIST.url)}
 					text={`<- Base Data`} />
 			</div>
 			<div className={styles.securityOverview}>
@@ -144,11 +150,11 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 							value={searchText}
 							onChange={handleSearch}
 						/> */}
-						{securityViewType == "unmapped" && <CustomButton text='Edit Mapping' isFilled={true} onClick={handleMappingPopup} /> }
+						{securityViewType == "unmapped" && <CustomButton text='Edit Mapping' isFilled={true} onClick={handleMappingPopup} btnDisabled={!isAnyCheckboxChecked} /> }
 					</div>
 
 				</div>
-				{dataLoading ? <div style={{textAlign: 'center'}}><Loader /></div> :
+				{dataLoading ? <div style={{textAlign: 'center'}}><UIComponents.Loader /></div> :
 					<DynamicTableComponents data={filteredData} columns={unmappedSecurities?.columns} initialAdditionalColumns={initialAdditionalColumns} additionalColumns={additionalColumns} />}
 			</div>
 			<HandleSecurityMappingModal isOpen={isMappingPopupOpen} setIsOpen={setIsMappingPopupOpen} selectedSecurities={selectedSecurities} getMappingData={getMappingData} />

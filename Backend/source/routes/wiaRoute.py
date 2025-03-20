@@ -44,3 +44,8 @@ def update_values_in_sheet():
 @wia_blueprint.route("/calculate_bb_modified_sheets", methods=["POST"])
 def calculate_bb_modified_sheets():
     return wiaControllers.calculate_bb_modified_sheets() 
+
+
+@wia_blueprint.route("/select_what_if_analysis", methods=["POST"])
+def select_what_if_analysis():
+    return wiaControllers.select_what_if_analysis()

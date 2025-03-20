@@ -3,6 +3,7 @@ import DoneCheckIcon from '../../assets/sideBarIcons/DoneCheckIcon.svg';
 import GroupUserIcon from '../../assets/sideBarIcons/GroupUserIcon.svg';
 import HomeIcon from '../../assets/sideBarIcons/HomeIcon.svg';
 import projectDocumentsIcon from '../../assets/sideBarIcons/projectDocumentsIcon.svg';
+import settingIcon from '../../assets/sideBarIcons/settingIcon.svg';
 import suitcasePortfolioIcon from '../../assets/sideBarIcons/suitcasePortfolioIcon.svg';
 import ThreeBarIcon from '../../assets/sideBarIcons/ThreeBarIcon.svg';
 
@@ -37,10 +38,22 @@ export const fundOptionsArray = [
 	{ value: 2, label: 'PFLT' }
 ];
 
+export const PAGE_ROUTES = {
+	BASE_DATA_LIST: {
+		url: '/data-ingestion/base-data',
+		header: 'Extracted Base Data'
+	},
+	SOURCE_FILES: {
+		url: '/data-ingestion/ingestion-files-list',
+		header: 'Uploaded Source Files'
+	}
+};
+
 export const sidebarItemsArray = [
 	{ imgSrc: HomeIcon, imgAlt: "Home Icon", name: 'Home', route: '/' },
 	{ imgSrc: ThreeBarIcon, imgAlt: "ThreeBar Icon", name: 'Concentration Test Setup', route: '/fund-setup' },
-	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: '/base-data-list' },
+	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: PAGE_ROUTES.BASE_DATA_LIST.url },
+	{ imgSrc: settingIcon, imgAlt: "Config Icon", name: 'Configuration', route: '/configuration' }
 	// { imgSrc: DoneCheckIcon, imgAlt: "DoneCheck Icon" },
 	// { imgSrc: suitcasePortfolioIcon, imgAlt: "suitcasePortfolio Icon" },
 	// { imgSrc: GroupUserIcon, imgAlt: "GroupUser Icon" },
@@ -58,7 +71,7 @@ export const PFLTData = {
 			},
 			{
 				name: "minimum_equity_amount_floor",
-				label: "Minimum Equity Amount Floor",
+				label: "Minimum Equity Amount Floor ($)",
 				type: "text"
 			}
 		],
@@ -167,6 +180,11 @@ export const PCOFData = {
 			{
 				name: "spot_rate",
 				label: "Spot Rate",
+				type: "text"
+			},
+			{
+				name: "dollar_equivalent",
+				label: "Dollar Equivalent",
 				type: "text"
 			}
 		]
@@ -428,7 +446,6 @@ export const cloWhatIfData = {
 		]}
 };
 
-
 export const COLUMN_GROUPS = {
 	unmapped: [
 		{ key: "cashfile_securities", label: "Security/Facility Name" },
@@ -442,7 +459,6 @@ export const COLUMN_GROUPS = {
 
 	]
 };
-
 
 export const PFLT_COLUMNS_NAME = {
 	"input": {
@@ -659,7 +675,7 @@ export const PCOF_COLUMNS_NAME = {
 			{
 				"col_name": "values",
 				"sequence": 2,
-				"display_name": "values"
+				"display_name": "Values"
 			}
 		]
 	}

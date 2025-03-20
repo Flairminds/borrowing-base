@@ -1,17 +1,20 @@
 import { SettingOutlined, DragOutlined, CloseOutlined, FilterOutlined, EditOutlined } from '@ant-design/icons';
 import { Popover, Switch, Select } from 'antd';
+import dayjs from "dayjs";
 import React, { useEffect, useState } from 'react';
 import { TbReorder } from "react-icons/tb";
 import CrossIcon from '../../../assets/CrossIcon.svg';
 import RightIcon from '../../../assets/RightIcon.svg';
+import upDownArrow from "../../../assets/sortArrows/up-and-down-arrow.svg";
+import upArrowIcon from "../../../assets/sortArrows/up.svg";
 import { CellDetailsModal } from '../../../modal/showCellDetailsModal/CellDetailsModal';
 import { updateSeletedColumns } from '../../../services/dataIngestionApi';
 import { fmtDisplayVal } from '../../../utils/helperFunctions/formatDisplayData';
+import { filterData } from '../../../utils/helperFunctions/HeaderColumnFilter';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePreviewReorder.jsx/BaseFilePreviewReorder';
 import { DynamicInputComponent } from '../dynamicInputsComponent/DynamicInputComponent';
 import tableStyles from './DynamicTableComponents.module.css';
-
 
 export const DynamicTableComponents = ({
 	data,
@@ -23,11 +26,12 @@ export const DynamicTableComponents = ({
 	enableStickyColumns = false,
 	enableColumnEditing = false,
 	onChangeSave,
-	getCellDetailFunc = () => {},
+	getCellDetailFunc = () => { },
 	cellDetail = null,
 	refreshDataFunction,
 	previewFundType,
-	filterSelections
+	filterSelections,
+	visibleSortHeader = false
 }) => {
 
 	const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
@@ -40,9 +44,17 @@ export const DynamicTableComponents = ({
 	const [modalVisible, setModalVisible] = useState(false);
 	// const [cellDetails, setCellDetails] = useState({ rowIndex: -1, column: '' });
 	const [editingCell, setEditingCell] = useState(null);
-	const [inputValue, setInputValue] = useState("");
+	const [inputValue, setInputValue] = useState({
+		value: "",
+		displayValue: ""
+	});
 	const [isInUpdateMode, setIsInUpdateMode] = useState(false);
+	const [selectedSort, setSelectedSort] = useState({ name: null, type: null });
+	const [displayData, setDisplayData] = useState([]);
 
+	useEffect(() => {
+		setDisplayData(data);
+	}, [data]);
 
 	useEffect(() => {
 		if (columns && columns?.length > 0) {
@@ -113,23 +125,47 @@ export const DynamicTableComponents = ({
 		}
 	};
 
-	const handleCellEdit = (rowIndex, columnkey, cellValue) => {
+	const handleCellEdit = (rowIndex, columnkey, cellValue, dataType) => {
 		setEditingCell({ rowIndex, columnkey });
-		setInputValue(cellValue);
+		if (dataType === "date" && cellValue) {
+			setInputValue({
+				value: dayjs(cellValue),
+				displayValue: cellValue
+			});
+		} else {
+			setInputValue({
+				value: cellValue,
+				displayValue: cellValue
+			});
+		}
+		// setInputValue(cellValue);
 	};
 
 	const handleInputChange = (e) => {
-		setInputValue(e.target.value);
+		setInputValue({
+			value: e.target.value,
+			displayValue: e.target.value
+		});
+	};
+
+	const handleDateChange = (date, dateString) => {
+		setInputValue({
+			value: date,
+			displayValue: dateString
+		});
 	};
 
 	const handleSaveEdit = async () => {
 
 		const { rowIndex, columnkey } = editingCell;
-		const saveStatus = await onChangeSave(rowIndex, columnkey, inputValue);
+		const saveStatus = await onChangeSave(rowIndex, columnkey, inputValue.displayValue);
 
 		if (saveStatus.success) {
 			setEditingCell(null);
-			setInputValue("");
+			setInputValue({
+				value: null,
+				displayValue: ""
+			});
 			showToast("success", "Data updated successfully");
 		} else {
 			showToast("error", saveStatus.msg);
@@ -139,7 +175,10 @@ export const DynamicTableComponents = ({
 	const handleCancelEdit = (e) => {
 		e.stopPropagation();
 		setEditingCell(null);
-		setInputValue("");
+		setInputValue({
+			value: null,
+			displayValue: ""
+		});
 	};
 
 	const handleToggleChange = (e) => {
@@ -148,103 +187,133 @@ export const DynamicTableComponents = ({
 		setIsInUpdateMode(temp);
 		if (!temp) {
 			setEditingCell(null);
-			setInputValue("");
+			setInputValue({
+				value: null,
+				displayValue: ""
+			});
 		}
 	};
 
+	const handleSortArrowClick = (columnName) => {
+		if (selectedSort.name === columnName) {
+			if (selectedSort.type === 'asc') {
+				const newSortType = 'desc';
+				setSelectedSort({ name: columnName, type: newSortType });
+				setDisplayData(filterData([...data], columnName, newSortType));
+			} else if (selectedSort.type === 'desc') {
+				setSelectedSort({ name: columnName, type: 'nosort' });
+				setDisplayData([...data]);
+			} else {
+				const newSortType = 'asc';
+				setSelectedSort({ name: columnName, type: newSortType });
+				setDisplayData(filterData([...data], columnName, newSortType));
+			}
+		} else {
+			const newSortType = 'asc';
+			setSelectedSort({ name: columnName, type: newSortType });
+			setDisplayData(filterData([...data], columnName, newSortType));
+		}
+	};
 
 	return (
 		<div>
-			<div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 				<div>
-					{data?.length} record(s)
+					{displayData?.length} record(s)
 				</div>
 				{showSettings &&
-				<div>
-					<div style={{cursor: 'pointer', position: 'relative'}}>
-						{(showCellDetailsModal && enableColumnEditing) &&
-						<>
-							<div style={{display: 'inline-block', margin: '5px 15px'}}>
-								<FilterOutlined size={30} onClick={(e) => handleOpenFilter(e)} className={`${tableStyles.tableIcons} ${showFilterDiv ? tableStyles.tableIconsActive : ''}`} title='Filter data'/>
-								<SettingOutlined size={30} onClick={(e) => handleOpenSettings(e)} className={`${tableStyles.tableIcons} ${showSettingsDiv ? tableStyles.tableIconsActive : ''}`} title='Select/Unselect columns'/>
-								<Popover trigger={'click'} placement="bottomRight" className={`${tableStyles.tableIcons}`} title={"Reorder Columns"} content={<BaseFilePreviewReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
-									<TbReorder size={30} title='Reorder columns'/>
-									{/* <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} /> */}
-								</Popover>
-								<EditOutlined size={30} className={`${tableStyles.tableIcons} ${isInUpdateMode ? tableStyles.tableIconsActive : ''}`} onClick={(e) => handleToggleChange(e)} title='Edit Mode'/>
-							</div>
-							{/* <div style={{display: 'inline-block', fontSize: 'small'}}>
+					<div>
+						<div style={{ cursor: 'pointer', position: 'relative' }}>
+							{(showCellDetailsModal && enableColumnEditing) &&
+								<>
+									<div style={{ display: 'inline-block', margin: '5px 15px' }}>
+										<FilterOutlined size={30} onClick={(e) => handleOpenFilter(e)} className={`${tableStyles.tableIcons} ${showFilterDiv ? tableStyles.tableIconsActive : ''}`} title='Filter data' />
+										<SettingOutlined size={30} onClick={(e) => handleOpenSettings(e)} className={`${tableStyles.tableIcons} ${showSettingsDiv ? tableStyles.tableIconsActive : ''}`} title='Select/Unselect columns' />
+										<Popover trigger={'click'} placement="bottomRight" className={`${tableStyles.tableIcons}`} title={"Reorder Columns"} content={<BaseFilePreviewReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
+											<TbReorder size={30} title='Reorder columns' />
+											{/* <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} /> */}
+										</Popover>
+										<EditOutlined size={30} className={`${tableStyles.tableIcons} ${isInUpdateMode ? tableStyles.tableIconsActive : ''}`} onClick={(e) => handleToggleChange(e)} title='Edit Mode' />
+									</div>
+									{/* <div style={{display: 'inline-block', fontSize: 'small'}}>
 								<span style={{margin: '7px'}}>View Only</span>
 								<Switch size='small' style={{backgroundColor: '#0EB198' }} onChange={handleToggleChange} />
 								<span style={{margin: '7px'}}>Edit Mode</span>
 							</div> */}
-						</>
-						}
-					</div>
-					{showSettingsDiv &&
-					<div style={{position: 'absolute', display: 'flex', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
-						<div className={tableStyles.crossIcon}><CloseOutlined onClick={handleOpenSettings} /></div>
-						{breaks?.map((b, i) => {
-							if (i !== 0) {
-								return (
-									<div className={tableStyles.columnSelectionContainer} key={i}>
-										{columnSelectionList?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
-											return <>
-												<div key={index} className={tableStyles.columnContainer} style={{fontSize: 'small'}}>
-													<input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)}/>
-													<label htmlFor={col.key}>{col.label}</label>
-												</div>
-											</>;
-										}
-										)}
-									</div>);
+								</>
 							}
-						})}
-					</div>}
-					{showFilterDiv &&
-					filterSelections && filterSelections.length > 0 &&
-					<div style={{position: 'absolute', display: 'flex', justifyContent: 'space-between', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', minWidth: '50%', padding: '10px', border: '1px solid #DCDEDE', borderRadius: '6px'}}>
-						<div className={tableStyles.crossIcon}><CloseOutlined onClick={handleOpenFilter} /></div>
-						<div style={{width: '90%'}}>
-							{filterSelections.map((f, i) => {
-								return (
-									<div key={i}>
-										<Select
-											mode="multiple"
-											allowClear
-											style={{flex: 1, minWidth: '90%', margin: '5px 0'}}
-											placeholder={f.placeholder}
-											onChange={f.onChange}
-											value={f.value}
-											options={f.options}
-										/>
-									</div>
-								);
-							})}
 						</div>
+						{showSettingsDiv &&
+							<div style={{ position: 'absolute', display: 'flex', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px' }}>
+								<div className={tableStyles.crossIcon}><CloseOutlined onClick={handleOpenSettings} /></div>
+								{breaks?.map((b, i) => {
+									if (i !== 0) {
+										return (
+											<div className={tableStyles.columnSelectionContainer} key={i}>
+												{columnSelectionList?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
+													return <>
+														<div key={index} className={tableStyles.columnContainer} style={{ fontSize: 'small' }}>
+															<input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)} />
+															<label htmlFor={col.key}>{col.label}</label>
+														</div>
+													</>;
+												}
+												)}
+											</div>);
+									}
+								})}
+							</div>}
+						{showFilterDiv &&
+							filterSelections && filterSelections.length > 0 &&
+							<div style={{ position: 'absolute', display: 'flex', justifyContent: 'space-between', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', minWidth: '40%', padding: '10px', border: '1px solid #DCDEDE', borderRadius: '5px' }}>
+								<div className={tableStyles.crossIcon}><CloseOutlined onClick={handleOpenFilter} /></div>
+								<div style={{ width: '90%' }}>
+									{filterSelections.map((f, i) => {
+										return (
+											<div key={i}>
+												<Select
+													mode="multiple"
+													allowClear
+													style={{ flex: 1, minWidth: '90%', margin: '5px 0' }}
+													placeholder={f.placeholder}
+													onChange={f.onChange}
+													value={f.value}
+													options={f.options}
+												/>
+											</div>
+										);
+									})}
+								</div>
+							</div>}
 					</div>}
-				</div>}
 			</div>
-			<div style={{overflow: 'auto', maxHeight: '75vh'}}>
-				<table className={tableStyles.table} style={{tableLayout: enableStickyColumns ? 'fixed' : 'auto'}}>
+			<div style={{ overflow: 'auto', maxHeight: '75vh' }}>
+				<table className={tableStyles.table} style={{ tableLayout: enableStickyColumns ? 'fixed' : 'auto' }}>
 					<thead>
 						<tr className={tableStyles.headRow}>
 							{updatedColumnsData?.map((col, index) => {
 								if (selectedColumns.includes(col.label)) {
 									return (
-										<>
-											<th key={index} className={enableStickyColumns && index < 3 ? tableStyles.stickyColTh : tableStyles.th} title={col.label}>
-												{col.label}
-											</th>
-										</>
+										<th key={index} className={enableStickyColumns && index < 3 ? tableStyles.stickyColTh : tableStyles.th} title={col.label}>
+											{col.label}
+											{visibleSortHeader && col.label !== '' && col.key !== '' && (
+												selectedSort.name === col.key && selectedSort.type === 'asc' ? (
+													<img onClick={() => handleSortArrowClick(col.key)} style={{ paddingLeft: '5px', paddingBottom: '2px', margin: '0px 5px' }} src={upArrowIcon} alt="up" />
+												) : selectedSort.name === col.key && selectedSort.type === 'desc' ? (
+													<img onClick={() => handleSortArrowClick(col.key)} style={{ paddingLeft: '5px', paddingBottom: '2px', transform: 'rotate(180deg)', margin: '0px 5px' }} src={upArrowIcon} alt="down" />
+												) : (
+													<img onClick={() => handleSortArrowClick(col.key)} style={{ paddingLeft: '5px', paddingBottom: '2px', height: '13px', width: '14px' }} src={upDownArrow} alt="sort" />
+												)
+											)}
+										</th>
 									);
 								}
 							})}
 						</tr>
 					</thead>
 					<tbody>
-						{data?.length > 0 ?
-							data?.map((row, rowIndex) => (
+						{displayData?.length > 0 ?
+							displayData?.map((row, rowIndex) => (
 								<tr key={rowIndex} className={tableStyles.tr} onClick={() => setActiveRowIndex(rowIndex)}>
 									{updatedColumnsData?.map((col, colIndex) => {
 										if (selectedColumns.includes(col.label)) {
@@ -266,14 +335,15 @@ export const DynamicTableComponents = ({
 												cellOldValue = row[col.key]['old_value'];
 											}
 											const isValueEmpty = isEditable && !cellDisplayValue;
+											const InputChnageFun = col.datatype == 'date' ? handleDateChange : handleInputChange;
 											return (
 												<td key={col.key} className={enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
-													style={{backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white', color: cellActualValue != cellOldValue ? 'red' : 'auto'}}
-													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + fmtDisplayVal(cellActualValue) + '\nPrevious: ' + fmtDisplayVal(cellOldValue) : fmtDisplayVal(cellTitleValue)}`}>
+													style={{ backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white', color: cellActualValue != cellOldValue ? 'red' : 'auto' }}
+													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue, col.datatype) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + fmtDisplayVal(cellActualValue) + '\nPrevious: ' + fmtDisplayVal(cellOldValue) : fmtDisplayVal(cellTitleValue)}`}>
 													{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 														(
 															<div className={tableStyles.editIconsContainer}>
-																<DynamicInputComponent inputValue={inputValue} inputType={col.datatype} onInputChange={handleInputChange} autoFocusInput={true} />
+																<DynamicInputComponent inputValue={inputValue?.value} inputType={col.datatype} onInputChange={InputChnageFun} autoFocusInput={true} />
 																<img
 																	src={RightIcon}
 																	alt="Save"
@@ -298,7 +368,7 @@ export const DynamicTableComponents = ({
 								</tr>
 							))
 							: <tr>
-								<td colSpan={updatedColumnsData?.length} className={tableStyles.td} style={{textAlign: 'center'}}>No Data</td>
+								<td colSpan={updatedColumnsData?.length} className={tableStyles.td} style={{ textAlign: 'center' }}>No Data</td>
 							</tr>}
 					</tbody>
 				</table>
