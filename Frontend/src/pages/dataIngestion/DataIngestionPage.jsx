@@ -175,7 +175,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 				console.info(extractionStatus, 'conditionn entered');
 				clearInterval(extractionInterval);
 			}
-			if (extractionStatus === "completed" ) {
+			if (extractionStatus === "Completed" ) {
 				setExtractionInProgress(false);
 				navigate(`/data-ingestion/base-data-preview/${extractData.id}`);
 				return true;
@@ -282,28 +282,30 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 		<>
 			<div className={styles.ingestionPageContainer}>
 				<div className={styles.ingestionPage}>
-					<BackOption onClick={() => navigate(PAGE_ROUTES.BASE_DATA_LIST.url)}
-						text={`<- Base Data`} />
-					<div className={styles.buttonsContainer}>
-						<div className={styles.backOptionContainer}>
-							<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+					<div className={styles.topBar}>
+						<BackOption onClick={() => navigate(PAGE_ROUTES.BASE_DATA_LIST.url)}
+							text={`<- Base Data`} />
+						<div className={styles.buttonsContainer}>
+							<div className={styles.backOptionContainer}>
+								<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+								</div>
 							</div>
-						</div>
-						<div className={styles.uploadFileBtnContainer}>
-							{/* <div style={{ textAlign: 'left' }}> */}
-							{!archiveToggle ? <><Select
-								defaultValue={selectedFundType}
-								style={{ width: 140, borderRadius: '8px', margin: '0rem 0.5rem' }}
-								options={fundOptionsArray}
-								onChange={handleDropdownChange}
-							/>
-							<div>
-								<Calender availableClosingDates={reportDates} onDateChange={filterByDate} fileUpload={true} />
-							</div></> : <></>}
-							{/* </div> */}
-							<DynamicSwitchComponent switchOnText="Archives" switchOffText="Source Files" switchOnChange={toggleArchiveFiles} />
-							<CustomButton isFilled={true} onClick={updateFilesArchiveStatus} text={archiveToggle ? 'Unarchive' : 'Add to Archives'} />
-							<CustomButton isFilled={true} onClick={() => setUploadFilesPopupOpen(true)} text='+ Upload Files' />
+							<div className={styles.uploadFileBtnContainer}>
+								{/* <div style={{ textAlign: 'left' }}> */}
+								{!archiveToggle ? <><Select
+									defaultValue={selectedFundType}
+									style={{ width: 140, borderRadius: '8px', margin: '0rem 0.5rem' }}
+									options={fundOptionsArray}
+									onChange={handleDropdownChange}
+								/>
+								<div>
+									<Calender availableClosingDates={reportDates} onDateChange={filterByDate} fileUpload={true} />
+								</div></> : <></>}
+								{/* </div> */}
+								<DynamicSwitchComponent switchOnText="Archives" switchOffText="Source Files" switchOnChange={toggleArchiveFiles} />
+								<CustomButton isFilled={true} onClick={updateFilesArchiveStatus} text={archiveToggle ? 'Unarchive' : 'Add to Archives'} />
+								<CustomButton isFilled={true} onClick={() => setUploadFilesPopupOpen(true)} text='+ Upload Files' />
+							</div>
 						</div>
 					</div>
 

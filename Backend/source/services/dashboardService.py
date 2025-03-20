@@ -105,6 +105,7 @@ def get_files_list(user_id):
             "base_data_file_id": file.id,
             "closing_date": file.closing_date.strftime("%Y-%m-%d"),
             "fund_type": file.fund_type,
+            "extracted_base_data_info_id": file.extracted_base_data_info_id
         }
         for file in base_data_files
     ]

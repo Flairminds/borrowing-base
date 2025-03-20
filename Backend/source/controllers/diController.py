@@ -288,8 +288,7 @@ def trigger_bb_calculation():
             return HTTPResponse.error(message=service_response.get("message"))
         return HTTPResponse.success(message=service_response.get("message"), result=service_response.get('data'))
     except Exception as e:
-        # Log.func_error(e)
-        print("here",e)
+        Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
     
 def update_archived_files():

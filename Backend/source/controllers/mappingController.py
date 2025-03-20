@@ -105,7 +105,7 @@ def add_lien_type_master():
         fund_type = req_body.get("fund_type")
         discription = req_body.get("description")
         
-        service_response = LienTypeMappingService.add_loan_type_master(fund_type, master_lien_type, discription)
+        service_response = LienTypeMappingService.add_lien_type_master(fund_type, master_lien_type, discription)
         if service_response["success"] is False:
             return HTTPResponse.error(message=service_response["message"], status_code=service_response["status_code"])
         

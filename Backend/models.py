@@ -34,6 +34,8 @@ class BaseDataFile(db.Model):
         "ModifiedBaseDataFile", back_populates="base_data_file"
     )
 
+    extracted_base_data_info_id = db.Column(db.Integer)
+
 
 class WhatIfAnalysis(db.Model):
     id = db.Column(

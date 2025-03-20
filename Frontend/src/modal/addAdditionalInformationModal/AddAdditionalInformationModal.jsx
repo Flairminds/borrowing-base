@@ -59,7 +59,7 @@ export const AddAdditionalInformationModal = (
 			formData["advance_rates"] = uploadedData["Advance Rates"]?.length > 0 ? uploadedData["Advance Rates"]
 				: data?.other_data?.["advance_rates"]?.length > 0 ? data.other_data["advance_rates"].map(item => ({
 					...item,
-					advance_rate: item.advance_rate ? `${(item.advance_rate * 100).toFixed(2)}%` : null
+					advance_rate: item.advance_rate ? `${(item.advance_rate * 100)}%` : null
 				})) : null;
 
 			formData["subscription_bb"] = uploadedData["Subscription BB"]?.length > 0 ? uploadedData["Subscription BB"]
@@ -68,20 +68,20 @@ export const AddAdditionalInformationModal = (
 			formData["pricing"] = uploadedData["Pricing"]?.length > 0 ? uploadedData["Pricing"]
 				: data?.other_data?.["pricing"]?.length > 0 ? data.other_data["pricing"].map(item => ({
 					...item,
-					percent: item.percent ? `${(item.percent * 100).toFixed(2)}%` : null
+					percent: item.percent ? `${(item.percent * 100)}%` : null
 				})) : null;
 
 			formData["portfolio_leverageborrowingbase"] = uploadedData["Portfolio LeverageBorrowingBase"]?.length > 0 ? uploadedData["Portfolio LeverageBorrowingBase"]
 				: data?.other_data?.["portfolio_leverageborrowingbase"]?.length > 0 ? data.other_data["portfolio_leverageborrowingbase"].map(item => ({
 					...item,
-					unquoted: item.unquoted ? `${(item.unquoted * 100).toFixed(2)}%` : null,
-					quoted: item.quoted ? `${(item.quoted * 100).toFixed(2)}%` : null
+					unquoted: item.unquoted ? `${(item.unquoted * 100)}%` : null,
+					quoted: item.quoted ? `${(item.quoted * 100)}%` : null
 				})) : null;
 
 			formData["concentration_limits"] = uploadedData["Concentration Limits"]?.length > 0 ? uploadedData["Concentration Limits"]
 				: data?.other_data?.["concentration_limits"]?.length > 0 ? data.other_data["concentration_limits"].map(item => ({
 					...item,
-					concentration_limit: item.concentration_limit ? `${(item.concentration_limit * 100).toFixed(2)}%` : null
+					concentration_limit: item.concentration_limit ? `${(item.concentration_limit * 100)}%` : null
 				})) : null;
 
 			formData["first_lien_leverage_cut-off_point"] = uploadedData["first_lien_leverage_cut-off_point"] || data?.other_data?.["first_lien_leverage_cut-off_point"] || null;
@@ -171,8 +171,6 @@ export const AddAdditionalInformationModal = (
 						"warehouse_first_lien_leverage_cut-off": values["warehouse_first_lien_leverage_cut-off"]
 					}
 				};
-				console.log("values", values);
-				
 				Object.keys(values).forEach((key) => {
 					if (PCOFData[key]) {
 						(PCOFData[key].Column || PCOFData[key].Header)?.forEach((item) => {
@@ -390,7 +388,7 @@ export const AddAdditionalInformationModal = (
 			if (columnSequence && columnDetails) {
 				const headerRow = columnSequence.map((col) => {
 					const columnDetail = columnDetails.find((detail) => detail.name === col.col_name);
-					return columnDetail ? columnDetail.label : col.col_name;
+					return columnDetail ? columnDetail.label : col.display_name;
 				});
 				rows.push(headerRow);
 			}
@@ -410,12 +408,8 @@ export const AddAdditionalInformationModal = (
 						const columnDetail = columnDetails.find((detail) => detail.name === col.col_name);
 						const value = item[col.col_name] || "";
 
-						if ((col.col_name.includes("threshold") || col.col_name.includes("ltv")) && value !== "") {
-							return `${value}%`;
-						}
-
 						if (columnDetail?.unit === "percent" && value !== "") {
-							return `${value}%`;
+							return `${value * 100}%`;
 						}
 
 						return fmtDateValue(value);
@@ -480,7 +474,7 @@ export const AddAdditionalInformationModal = (
 												label={header.label + (header.unit && header.unit == 'percent' ? ' (%)' : '')}
 												name={header.name}
 												rules={[{ required: true, message: `Please enter ${header.label.toLowerCase()}!` }]}
-												style={{ display: "inline-block", width: "20%", margin: "0 1rem 1rem 1rem" }}
+												style={{ display: "inline-block", width: "25%", margin: "0 1rem 1rem 1rem" }}
 											>
 												{header.type === "datePicker" ? (
 													<DatePicker style={{ width: "100%" }} />

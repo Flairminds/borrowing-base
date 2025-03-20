@@ -71,7 +71,7 @@ export const PFLTData = {
 			},
 			{
 				name: "minimum_equity_amount_floor",
-				label: "Minimum Equity Amount Floor",
+				label: "Minimum Equity Amount Floor ($)",
 				type: "text"
 			}
 		],
@@ -296,11 +296,6 @@ export const PCOFData = {
 	},
 	other_metrics: {
 		Header: [
-			{
-				name: "other_metrics",
-				label: "Other Metrics",
-				type: "text"
-			},
 			{
 				name: "first_lien_leverage_cut-off_point",
 				label: "First Lien Leverage Cut-Off Point",
@@ -680,7 +675,7 @@ export const PCOF_COLUMNS_NAME = {
 			{
 				"col_name": "values",
 				"sequence": 2,
-				"display_name": "values"
+				"display_name": "Values"
 			}
 		]
 	}
