@@ -1,16 +1,16 @@
-import React from 'react'
+import React from 'react';
+import crossIcon from "../../assets/uploadFIle/cross.svg";
 import { TableComponent } from '../Tables/TableComponent';
-import crossIcon from "../../assets/uploadFIle/cross.svg"
-import Styles from './CardTable.module.css'
+import Styles from './CardTable.module.css';
 
 export const CardTable = ({title, overviewTableData, setActiveComponent}) => {
 	return (
 		<div className={Styles.cardContainer}>
 			<div className={Styles.cardHeader}>
-				<div className={Styles.heading} >{title}Hello</div>
+				<div className={Styles.heading} >{title}</div>
 				<img style={{cursor: 'pointer'}} onClick={() => setActiveComponent("")} src={crossIcon} />
 			</div>
-			<div style={{padding:"1%"}}>
+			<div style={{padding: "1%"}}>
 				<TableComponent
 					showObligationTotal={title == 'Obligors Net Capital' ? false : true}  
 					data={overviewTableData ? overviewTableData : null} 

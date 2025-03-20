@@ -1,4 +1,15 @@
 function isDateValid(dateStr) {
+	const startsWithAlphabet = /^[a-zA-Z]/.test(dateStr);
+	if (startsWithAlphabet) {
+		try {
+			const startsWithDay = dateStr.startsWith("Mon") || dateStr.startsWith("Tue") || dateStr.startsWith("Wed") || dateStr.startsWith("Thu") || dateStr.startsWith("Fri") || dateStr.startsWith("Sat") || dateStr.startsWith("Sun");
+			if (!startsWithDay) {
+				return false;
+			}
+		} catch (error) {
+			return false;
+		}
+	}
 	return !isNaN(new Date(dateStr));
 }
 
@@ -9,7 +20,12 @@ export const fmtDisplayVal = (value, decimals = 1) => {
 	if (typeof (value) === 'number' || !isNaN(value)) {
 		temp = parseFloat(value).toFixed(decimals).replace(/\d(?=(\d{3})+\.)/g, '$&,');
 	} else if (isDateValid(value)) {
-		temp = (new Date(value)).toLocaleDateString('en-US');
+		const dt = new Date(value);
+		const month = (dt.getMonth() + 1).toString().padStart(2, '0');
+		const day = dt.getDate().toString().padStart(2, '0');
+		const year = dt.getFullYear();
+		temp = `${month}-${day}-${year}`;
+		// temp = (new Date(value)).toLocaleDateString('en-US');
 	} else if (typeof value === 'string' && value.endsWith('%')) {
 		temp = parseFloat(value.replace('%', ''));
 		temp = `${temp.toFixed(decimals)}%`;

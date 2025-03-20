@@ -265,7 +265,7 @@ export const DynamicTableComponents = ({
 							</div>}
 						{showFilterDiv &&
 							filterSelections && filterSelections.length > 0 &&
-							<div style={{ position: 'absolute', display: 'flex', justifyContent: 'space-between', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', minWidth: '50%', padding: '10px', border: '1px solid #DCDEDE', borderRadius: '6px' }}>
+							<div style={{ position: 'absolute', display: 'flex', justifyContent: 'space-between', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', minWidth: '40%', padding: '10px', border: '1px solid #DCDEDE', borderRadius: '5px' }}>
 								<div className={tableStyles.crossIcon}><CloseOutlined onClick={handleOpenFilter} /></div>
 								<div style={{ width: '90%' }}>
 									{filterSelections.map((f, i) => {
