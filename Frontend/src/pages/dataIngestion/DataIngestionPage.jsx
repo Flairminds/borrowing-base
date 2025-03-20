@@ -175,7 +175,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 				console.info(extractionStatus, 'conditionn entered');
 				clearInterval(extractionInterval);
 			}
-			if (extractionStatus === "completed" ) {
+			if (extractionStatus === "Completed" ) {
 				setExtractionInProgress(false);
 				navigate(`/data-ingestion/base-data-preview/${extractData.id}`);
 				return true;
