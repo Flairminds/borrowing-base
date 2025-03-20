@@ -82,8 +82,8 @@ def trigger_pcof_bb(bdi_id):
         book = openpyxl.load_workbook(file_name)
         writer = pd.ExcelWriter(file_name, engine="openpyxl")
         writer.book = book
-        base_data_df.to_excel(writer, sheet_name="PL BB Build", index=False, header=True)
-        writer.save()
+        # base_data_df.to_excel(writer, sheet_name="PL BB Build", index=False, header=True)
+        # writer.save()
 
         base_data_other_info = BaseDataOtherInfo.query.filter_by(extraction_info_id=bdi_id).first()
 
@@ -98,8 +98,8 @@ def trigger_pcof_bb(bdi_id):
         # ]
         availability_borrower_data = [
             {"A": "Borrower:", "B": base_data_other_info.other_info_list.get('availability_borrower').get('borrower')},
-            {"A": "Date of determination:", "B": pd.to_datetime(base_data_other_info.other_info_list.get('availability_borrower').get('determination_date'))},
-            {"A": "Revolving Closing Date", "B": pd.to_datetime(base_data_other_info.other_info_list.get('availability_borrower').get('revolving_closing_date'))},
+            {"A": "Date of determination:", "B": datetime.datetime.strptime(base_data_other_info.other_info_list.get('availability_borrower').get('determination_date')[:-5], "%Y-%m-%dT%H:%M:%S")},
+            {"A": "Revolving Closing Date", "B": datetime.datetime.strptime(base_data_other_info.other_info_list.get('availability_borrower').get('revolving_closing_date')[:-5], "%Y-%m-%dT%H:%M:%S")},
             {"A": "Commitment Period (3 years from Final Closing Date, as defined in LPA)", "B": base_data_other_info.other_info_list.get('availability_borrower').get('commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)')},
             {"A": "(b) Facility Size", "B":  base_data_other_info.other_info_list.get('availability_borrower').get('(b)_facility_size')},
             {"A": "Loans (USD)", "B":  base_data_other_info.other_info_list.get('availability_borrower').get('loans_(usd)')},
@@ -291,7 +291,7 @@ def trigger_pcof_bb(bdi_id):
             'Borrowing Base Other Adjustment': [None],
             'Borrowing Base Industry Concentration': [None], 
             'Borrowing Base Comment': [None],
-            'Is Eligible Issuer': [None]
+            'Is Eligible Issuer': ['Yes']
         }
         
         cash_row_df = pd.DataFrame(cash_row_data)
@@ -324,6 +324,9 @@ def trigger_pcof_bb(bdi_id):
         df_PL_BB_Build["Rates Floating Cash Spread"] = pd.to_numeric(df_PL_BB_Build["Rates Floating Cash Spread"], errors='coerce')
         df_PL_BB_Build["Rates Floating Cash Spread"] = df_PL_BB_Build["Rates Floating Cash Spread"].fillna(0).astype(int)
 
+        df_PL_BB_Build['Investment Maturity'] = pd.to_datetime(df_PL_BB_Build['Investment Maturity'], errors='coerce')
+        
+        df_PL_BB_Build['Investment Closing Date'] = pd.to_datetime(df_PL_BB_Build['Investment Closing Date'], errors='coerce')
         
 
         # df_PL_BB_Build = calculation_for_build(
@@ -336,23 +339,52 @@ def trigger_pcof_bb(bdi_id):
         #     df_Obligors_Net_Capital
         # ) # For now, checking PL BB Build
 
-        xl_df_map = {
-            "PL BB Build": df_PL_BB_Build,
-            "Other Metrics": df_Inputs_Other_Metrics,
-            "Availability Borrower": df_Availability_Borrower,
-            "Portfolio LeverageBorrowingBase": df_Inputs_Portfolio_LeverageBorrowingBase,
-            "Obligors' Net Capital": df_Obligors_Net_Capital,
-            "PL BB Results": pl_bb_results,
-            "Subscription BB": df_subscription_bb,
-            "PL_BB_Results_Security": pl_bb_result_security_df,
-            "Inputs Industries": input_industries_df,
-            "Advance Rates": advance_rates_df,
-            "Concentration Limits": concentration_limits_df,
-            "Principle Obligations": principle_obligation_df,
-            "Pricing": pricing_df
-        }
+        df_PL_BB_Build.to_excel(writer, sheet_name="PL BB Build", index=False, header=True)
+        writer.save()
+        df_Inputs_Other_Metrics.to_excel(writer, sheet_name="Other Metrics", index=False, header=True)
+        writer.save()
+        df_Availability_Borrower.to_excel(writer, sheet_name="Availability Borrower", index=False, header=True)
+        writer.save()
+        df_Inputs_Portfolio_LeverageBorrowingBase.to_excel(writer, sheet_name="Portfolio LeverageBorrowingBase", index=False, header=True)
+        writer.save()
+        df_Obligors_Net_Capital.to_excel(writer, sheet_name="Obligors' Net Capital", index=False, header=True)
+        writer.save()
+        pl_bb_results.to_excel(writer, sheet_name="PL BB Results", index=False, header=True)
+        writer.save()
+        df_subscription_bb.to_excel(writer, sheet_name="Subscription BB", index=False, header=True)
+        writer.save()
+        pl_bb_result_security_df.to_excel(writer, sheet_name="PL_BB_Results_Security", index=False, header=True)
+        writer.save()
+        input_industries_df.to_excel(writer, sheet_name="Inputs Industries", index=False, header=True)
+        writer.save()
+        advance_rates_df.to_excel(writer, sheet_name="Advance Rates", index=False, header=True)
+        writer.save()
+        concentration_limits_df.to_excel(writer, sheet_name="Concentration Limits", index=False, header=True)
+        writer.save()
+        principle_obligation_df.to_excel(writer, sheet_name="Principle Obligations", index=False, header=True)
+        writer.save()
+        pricing_df.to_excel(writer, sheet_name="Pricing", index=False, header=True)
+        writer.save()
+
+        xl_df_map = pd.read_excel(file_name, sheet_name=["PL BB Build", "Other Metrics", "Availability Borrower", "Portfolio LeverageBorrowingBase", "Obligors' Net Capital", "PL BB Results", "Subscription BB", "PL_BB_Results_Security", "Inputs Industries", "Advance Rates", "Concentration Limits", "Principle Obligations", "Pricing"])
+        # xl_df_map = {
+        #     "PL BB Build": df_PL_BB_Build,
+        #     "Other Metrics": df_Inputs_Other_Metrics,
+        #     "Availability Borrower": df_Availability_Borrower,
+        #     "Portfolio LeverageBorrowingBase": df_Inputs_Portfolio_LeverageBorrowingBase,
+        #     "Obligors' Net Capital": df_Obligors_Net_Capital,
+        #     "PL BB Results": pl_bb_results,
+        #     "Subscription BB": df_subscription_bb,
+        #     "PL_BB_Results_Security": pl_bb_result_security_df,
+        #     "Inputs Industries": input_industries_df,
+        #     "Advance Rates": advance_rates_df,
+        #     "Concentration Limits": concentration_limits_df,
+        #     "Principle Obligations": principle_obligation_df,
+        #     "Pricing": pricing_df
+        # }
         pickled_xl_df_map = pickle.dumps(xl_df_map)
 
+        
         included_excluded_assets = pcofDashboardService.pcof_included_excluded_assets(xl_df_map)
 
         dt_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -363,18 +395,20 @@ def trigger_pcof_bb(bdi_id):
             fund_type='PCOF',
             file_name ='Generated Data '+dt_string,
             included_excluded_assets_map=included_excluded_assets,
-            closing_date=extracted_base_data_info.report_date
+            closing_date=extracted_base_data_info.report_date,
+            extracted_base_data_info_id = bdi_id
         )
         db.session.add(base_data_file)
         db.session.commit()
         print(f'[PCOF]Generated Data {dt_string}')
-        # bb_response = pcofBBCalculator.get_bb_calculation(base_data_file=base_data_file, selected_assets=json.loads(included_excluded_assets), user_id=1)
+        bb_response = pcofBBCalculator.get_bb_calculation(base_data_file=base_data_file, selected_assets=json.loads(included_excluded_assets), user_id=1)
 
+        bb_response["base_data_file_id"] = base_data_file.id
         wb2.close()
         writer.close()
         os.remove(file_name)
 
-        return ServiceResponse.success(message="Succesfully processed PL BB Build")
+        return ServiceResponse.success(message="Succesfully trigger PCOF borrowing base", data=bb_response)
 
 
     except Exception as e:

@@ -3,11 +3,12 @@ import React, { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import backArrowIcon from "../../assets/assestSelection/back.svg";
 import filterIcon from "../../assets/NavbarIcons/filter.svg";
-import ButtonStyles from '../../components/Buttons/ButtonStyle.module.css';
+import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { ColumnSelectionPopup } from '../../modal/columnSelectionPopup/ColumnSelectionPopup';
 import { uploadInitialFile } from '../../services/api';
 import Styles from './AssetSelectionPage.module.css';
 import { useNavigate } from 'react-router';
+import { UIComponents } from '../../components/uiComponents';
 
 export const AssetSelectionPage = ({
     assetSelectionData,
@@ -18,7 +19,8 @@ export const AssetSelectionPage = ({
     setSelectedAssets,
     setIsAnalysisModalOpen,
     setConstDate,
-    fundType
+    fundType,
+    setAvailableClosingDates
 }) => {
     const [loading, setLoading] = useState(false);
     const [isSelectAll, setIsSelectAll] = useState(true);
@@ -97,6 +99,7 @@ export const AssetSelectionPage = ({
             if (tableDataResponse.status === 200) {
                 setTablesData(tableDataResponse?.data.result);
                 setConstDate(tableDataResponse.data.result.closing_date);
+                setAvailableClosingDates(tableDataResponse.data.result.closing_dates);
                 navigate('/');
                 toast.success("Results Generated");
             }
@@ -185,19 +188,19 @@ export const AssetSelectionPage = ({
                 )}
             </div>
 
-            <ColumnSelectionPopup
-                setAssetSelectionData={setAssetSelectionData}
-                assetSelectionData={assetSelectionData}
-                setSelectedAssets={setSelectedAssets}
-                baseFile={baseFile}
-                columnSelectionPopupOpen={columnSelectionPopupOpen}
-                setColumnSelectionPopupOpen={setColumnSelectionPopupOpen}
-                fundType={fundType}
-            />
+			<ColumnSelectionPopup
+				setAssetSelectionData={setAssetSelectionData}
+				assetSelectionData={assetSelectionData}
+				setSelectedAssets={setSelectedAssets}
+				baseFile={baseFile}
+				columnSelectionPopupOpen={columnSelectionPopupOpen}
+				setColumnSelectionPopupOpen={setColumnSelectionPopupOpen}
+				fundType={fundType}
+			/>
 
-            <div style={{ textAlign: 'center', margin: '2rem 0rem' }}>
-                <Button onClick={CalculateResults} style={{ padding: '0.2rem 0.7rem' }} loading={loading} className={ButtonStyles.filledBtn}>View Results</Button>
-            </div>
-        </>
-    );
+			<div style={{ textAlign: 'center', margin: '2rem 0rem' }}>
+				<UIComponents.Button onClick={CalculateResults} loading={loading} text='View Results' isFilled={true} />
+			</div>
+		</>
+	);
 };

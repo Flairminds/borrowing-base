@@ -1,0 +1,30 @@
+.btn {
+	color: var(--primary-btn-text-color) !important;
+	border: 1px solid var(--primary-theme-color) !important;
+	background-color: var(--primary-theme-color) !important;
+	border-radius: 6px !important;
+	min-width: 75px;
+	margin:0.1rem 0.5rem;
+}
+
+.disabledBtn {
+	opacity: 0.6;
+}
+
+.outlinedBtn {
+	color:  #2A2E34 !important;
+	background-color: white !important;
+	border:  1px solid var(--primary-theme-color) !important;
+}
+
+.textBtn {
+    color:  #3B7DDD !important;
+    border:  none!important;
+    background-color: white !important;
+    /* border:  1px solid  #0EB198!important; */
+    border-radius: 6px !important;
+    /* padding: 8px 25px 8px 25px; */
+    margin: 0.1rem;
+    padding: 0;
+    text-align: left;
+}

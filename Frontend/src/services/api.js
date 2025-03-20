@@ -19,20 +19,20 @@ export const validateInitialFile = (files, closing_date, fund_type, over_write) 
 	});
 	return response;
 };
-export const getDateReport = async (closing_date) => {
-	// const formData = new FormData();
-	// formData.append("closing_date", closing_date);
-	// formData.append("user_id", 1);
-	const dataDate = {
-		closing_date: closing_date,
-		user_id: 1
-	};
+
+
+export const getDateReport = async (closing_date, base_data_file_id) => {
+	const dataDate = closing_date && !base_data_file_id
+		? { closing_date: closing_date, user_id: 1 }
+		: { base_data_file_id: base_data_file_id, user_id: 1 };
+
 	const response = await axios.post(`${ApiURL}/dashboard/get_bb_data_of_date`, dataDate, {
 		withCredentials: true
 	});
 
 	return response;
 };
+
 
 export const uploadInitialFile = (file_data) => {
 
@@ -127,14 +127,14 @@ export const addNewAsset = async (files, base_file, to_save, selected_Assets_dat
 };
 
 export const uploadedFileList = () => {
-	const res = axios.post(`${ApiURL}/dashboard/get_files_list`, {user_id: '1'});
+	const res = axios.post(`${ApiURL}/dashboard/get_files_list`, { user_id: '1' });
 	return res;
 };
 
 
 
 export const getListOfWhatIfAnalysis = (user_id) => {
-	const res = axios.post(`${ApiURL}/wia/wia_library`, {user_id: user_id});
+	const res = axios.post(`${ApiURL}/wia/wia_library`, { user_id: user_id });
 	return res;
 };
 
@@ -147,8 +147,8 @@ export const getSelectedWIAAsstes = (whatIfAnalysisId, whatIfAnalysisType) => {
 	return res;
 };
 
-export const getWhatIfAnalysisData = (what_if_analysis_id) => {
-	const res = axios.post(`${ApiURL}/select_what_if_analysis`, {what_if_analysis_id: what_if_analysis_id});
+export const getWhatIfAnalysisData = (what_if_analysis_id, simulation_type) => {
+	const res = axios.post(`${ApiURL}/wia/select_what_if_analysis`, { what_if_analysis_id: what_if_analysis_id, simulation_type: simulation_type });
 	return res;
 
 };
@@ -164,7 +164,7 @@ export const lineChartData = (user_id, fund_type) => {
 };
 
 export const downloadExcelAssest = (previewData) => {
-	const res = axios.post(`${ApiURL}/download_excel_for_assets`, {assets_to_download: previewData}, {
+	const res = axios.post(`${ApiURL}/download_excel_for_assets`, { assets_to_download: previewData }, {
 		responseType: 'blob',
 		headers: {
 			"Content-Type": 'application/json'
@@ -210,7 +210,7 @@ export const assetSelectionList = (base_file_id) => {
 };
 
 export const intermediateMetricsTable = (base_data_file_id, whatIfAnalysisId) => {
-	const response = axios.post(`${ApiURL}/get_intermediate_metrics`, {
+	const response = axios.post(`${ApiURL}/dashboard/get_intermediate_metrics`, {
 		"base_data_file_id": base_data_file_id,
 		"what_if_id": whatIfAnalysisId
 	}, {
@@ -255,7 +255,7 @@ export const drillDownData = (user_id, base_data_file_id, col_name, row_name, wh
 		"what_if_id": whatIfAnalysisId
 	};
 
-	const res = axios.post(`${ApiURL}/get_mathematical_formula`, payload);
+	const res = axios.post(`${ApiURL}/dashboard/get_mathematical_formula`, payload);
 	return res;
 };
 

@@ -2,13 +2,13 @@ import { DatePicker, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { BackOption } from '../../components/BackOption/BackOption';
-import { CustomButton } from '../../components/custombutton/CustomButton';
-import { Loader } from '../../components/loader/loader';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
+import { UIComponents } from '../../components/uiComponents';
 import { DynamicSwitchComponent } from '../../components/reusableComponents/dynamicSwichComponent/DynamicSwitchComponent';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { UploadExtractionFiles } from '../../modal/dataIngestionModals/uploadFilesModal/UploadExtractionFiles';
 import { exportBaseDataFile, getArchive, getBaseDataFilesList, getBaseFilePreviewData, getBlobFilesList, updateArchiveStatus } from '../../services/dataIngestionApi';
-import { fundOptionsArray } from '../../utils/constants/constants';
+import { fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import styles from './DataIngestionPage.module.css';
@@ -29,6 +29,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [filteredData, setFilteredData] = useState([]);
 	const [filterDate, setFilterDate] = useState(null);
 	const [reportDates, setReportDates] = useState([]);
+	const [extractionInProgress, setExtractionInProgress] = useState(false);
 
 	const navigate = useNavigate();
 	let extractionInterval;
@@ -147,6 +148,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const handleFileExtraction = async() => {
 		// setFileExtractionLoading(true);
 		try {
+			setExtractionInProgress(true);
 			const selectedFund = selectedFundType == 1 ? "PCOF" : "PFLT";
 			const extractionResponse = await exportBaseDataFile(selectedIds.current, selectedFund);
 			console.info(extractionResponse, 'rex');
@@ -154,9 +156,10 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			showToast("info", extractionResponse.data.message);
 			// getExtractionStatus(9);
 
-			extractionInterval = setInterval(() => getExtractionStatus(extractionData), 5000);
+			extractionInterval = setInterval(() => getExtractionStatus(extractionData), 3000);
 		} catch (err) {
 			console.error(err);
+			setExtractionInProgress(false);
 			showToast("error", err.response.data.message);
 		}
 
@@ -168,14 +171,18 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			const extractionStatusRes = await getBaseDataFilesList(extractData);
 			const extractionStatus = extractionStatusRes.data.result.data[0].extraction_status;
 			console.info(extractionStatus, 'status');
-			if (extractionStatus !== "In Progress") {
+			if (extractionStatus !== "In progress") {
 				console.info(extractionStatus, 'conditionn entered');
 				clearInterval(extractionInterval);
 			}
-			if (extractionStatus === "completed" ) {
+			if (extractionStatus === "Completed" ) {
+				setExtractionInProgress(false);
+				navigate(`/data-ingestion/base-data-preview/${extractData.id}`);
 				return true;
 			}
+			setExtractionInProgress(false);
 		} catch (err) {
+			setExtractionInProgress(false);
 			showToast('failure', err?.response?.data.message);
 		}
 
@@ -275,28 +282,30 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 		<>
 			<div className={styles.ingestionPageContainer}>
 				<div className={styles.ingestionPage}>
-					<BackOption onClick={() => navigate('/base-data-list')}
-						text={`<- Base Data`} />
-					<div className={styles.buttonsContainer}>
-						<div className={styles.backOptionContainer}>
-							<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+					<div className={styles.topBar}>
+						<BackOption onClick={() => navigate(PAGE_ROUTES.BASE_DATA_LIST.url)}
+							text={`<- Base Data`} />
+						<div className={styles.buttonsContainer}>
+							<div className={styles.backOptionContainer}>
+								<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+								</div>
 							</div>
-						</div>
-						<div className={styles.uploadFileBtnContainer}>
-							{/* <div style={{ textAlign: 'left' }}> */}
-							{!archiveToggle ? <><Select
-								defaultValue={selectedFundType}
-								style={{ width: 140, borderRadius: '8px', margin: '0rem 0.5rem' }}
-								options={fundOptionsArray}
-								onChange={handleDropdownChange}
-							/>
-							<div>
-								<Calender availableClosingDates={reportDates} onDateChange={filterByDate} fileUpload={true} />
-							</div></> : <></>}
-							{/* </div> */}
-							<DynamicSwitchComponent switchOnText="Archives" switchOffText="Source Files" switchOnChange={toggleArchiveFiles} />
-							<CustomButton isFilled={true} onClick={updateFilesArchiveStatus} text={archiveToggle ? 'Unarchive' : 'Add to Archives'} />
-							<CustomButton isFilled={true} onClick={() => setUploadFilesPopupOpen(true)} text='+ Upload Files' />
+							<div className={styles.uploadFileBtnContainer}>
+								{/* <div style={{ textAlign: 'left' }}> */}
+								{!archiveToggle ? <><Select
+									defaultValue={selectedFundType}
+									style={{ width: 140, borderRadius: '8px', margin: '0rem 0.5rem' }}
+									options={fundOptionsArray}
+									onChange={handleDropdownChange}
+								/>
+								<div>
+									<Calender availableClosingDates={reportDates} onDateChange={filterByDate} fileUpload={true} />
+								</div></> : <></>}
+								{/* </div> */}
+								<DynamicSwitchComponent switchOnText="Archives" switchOffText="Source Files" switchOnChange={toggleArchiveFiles} />
+								<CustomButton isFilled={true} onClick={updateFilesArchiveStatus} text={archiveToggle ? 'Unarchive' : 'Add to Archives'} />
+								<CustomButton isFilled={true} onClick={() => setUploadFilesPopupOpen(true)} text='+ Upload Files' />
+							</div>
 						</div>
 					</div>
 
@@ -317,7 +326,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 							</div>
 						</div> */}
 
-					{dataLoading ? <Loader /> :
+					{dataLoading ? <UIComponents.Loader /> :
 						<><div className={styles.tableContainer}>
 							{
 								archiveToggle ?
@@ -329,7 +338,9 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
 						<div className={styles.extractDataBtn}>
 							{!isbuttonDisable && (
-								<CustomButton
+								<UIComponents.Button
+									loading={extractionInProgress}
+									loadingText='Extracting...'
 									isFilled={true}
 									onClick={handleFileExtraction}
 									text='Extract Base Data'

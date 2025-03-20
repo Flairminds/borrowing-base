@@ -43,3 +43,7 @@
   background: #777777; 
   border-radius: 0.25rem;
 }
+
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+	color: #0EB198 !important;
+}

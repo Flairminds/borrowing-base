@@ -1,17 +1,18 @@
 import { Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
-import { CustomButton } from '../../components/custombutton/CustomButton';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { SourceFileModal } from '../../modal/sourceFileModal/SourceFileModal';
 import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dataIngestionApi';
-import { fundOptionsArray } from '../../utils/constants/constants';
+import { fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
 import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
-import { Loader, LoaderSmall } from '../../components/loader/loader';
+import { UIComponents } from '../../components/uiComponents';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import { Calender } from '../../components/calender/Calender';
+import { Icons } from '../../components/icons';
 
 export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, setPreviewFundType }) => {
 	const [baseDataFilesList, setBaseDataFilesList] = useState({});
@@ -27,7 +28,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 	const navigate = useNavigate();
 
 	const handleExtractNew = () => {
-		navigate('/ingestion-files-list');
+		navigate(PAGE_ROUTES.SOURCE_FILES.url);
 	};
 
 	const handleSecurityMapping = () => {
@@ -56,7 +57,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 				});
 			setPreviewPageId(row.id);
 			setPreviewFundType(row.fund);
-			navigate(`/base-data-preview/${row.id}`);
+			navigate(`/data-ingestion/base-data-preview/${row.id}`);
 		} catch (err) {
 			showToast("error", err.response.data.message);
 			setDataLoading(false);
@@ -68,7 +69,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 		'label': '',
 		'render': (value, row) => <div onClick={() => handleBaseDataPreview(row)}
 			style={{color: '#0EB198', cursor: 'pointer'}}>
-			{row.extraction_status === "completed" ? 'Preview Base Data' : (row.extraction_status === "failed" ? 'Errors' : '')}
+			{row.extraction_status.toLowerCase() === "completed" ? 'Preview Base Data' : (row.extraction_status.toLowerCase() === "failed" ? 'Errors' : '')}
 		</div>
 	}];
 
@@ -103,8 +104,10 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 					...col,
 					render: (value, row) => (
 						<div>
-							<span style={{display: 'inline-block', backgroundColor: STATUS_BG_COLOR[row.extraction_status], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
-								{row.extraction_status}
+							<span style={{display: 'inline-block', backgroundColor: STATUS_BG_COLOR[row.extraction_status.toLowerCase()], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
+								{row.extraction_status.split(" ")
+									.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+									.join(" ")}
 							</span>
 						</div>
 					)
@@ -127,7 +130,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 	};
 
 	const handleSourceFileClick = (fileDetails) => {
-		setPopupContent(fileDetails); // Pass only the clicked file's details
+		setPopupContent(fileDetails);
 		setIsPopupOpen(true);
 	};
 
@@ -206,6 +209,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 				<div className={styles.headerContainer}>
 					<div className={styles.tableHeading}>
 						Extracted Base Data
+						<Icons.InfoIcon title={'Viewing list of extracted base data. You can preview the base data from here.'} />
 					</div>
 					<div className={styles.buttonsContainer}>
 						<div style={{margin: 'auto'}}>
@@ -220,10 +224,10 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 							<Calender availableClosingDates={reportDates} onDateChange={filterByDate} fileUpload={true} />
 						</div>
 						<CustomButton isFilled={true} onClick={handleSecurityMapping} text="Security Mapping" />
-						<CustomButton isFilled={true} onClick={handleExtractNew} text="Extract New Base Data" />
+						<CustomButton isFilled={true} onClick={handleExtractNew} text="+ Extract New Base Data" title='Upload new files or select existing files to extract new base data' />
 					</div>
 				</div>
-				{dataLoading ? <Loader /> :
+				{dataLoading ? <UIComponents.Loader /> :
 					<div className={styles.baseDataTableContainer}>
 						<DynamicTableComponents data={filteredData} columns={baseDataFilesList?.columns} additionalColumns={columnsToAdd} />
 					</div>}

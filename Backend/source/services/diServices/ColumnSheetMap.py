@@ -59,7 +59,7 @@ def get_file_sheets(fund, file_type):
     return FUND_SHEETS.get(file_type)
 
 class ExtractionStatusMaster(Enum):
-    COMPLETED = 'completed'
-    FAILED = 'failed'
+    COMPLETED = 'Completed'
+    FAILED = 'Failed'
     PARTIALLY_COMPLETED = 'Partially Completed'
-    IN_PROGRESS = 'In progress'
+    IN_PROGRESS = 'In Progress'

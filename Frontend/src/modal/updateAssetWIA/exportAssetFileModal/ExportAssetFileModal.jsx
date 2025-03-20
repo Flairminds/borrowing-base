@@ -2,7 +2,8 @@ import { Modal } from 'antd';
 import { saveAs } from "file-saver";
 import React, { useEffect, useState } from 'react';
 import * as XLSX from "xlsx";
-import { CustomButton } from '../../../components/custombutton/CustomButton';
+import { ModalComponents } from '../../../components/modalComponents';
+import { CustomButton } from '../../../components/uiComponents/Button/CustomButton';
 import { cloWhatIfData } from '../../../utils/constants/constants';
 import styles from './ExportAssetFileModal.module.css';
 
@@ -51,10 +52,7 @@ export const ExportAssetFileModal = ({isOpen, setIsOpen, updateAssetTableData, s
 	}, [isOpen]);
 
 	return (
-		<Modal open={isOpen} onCancel={handleCancel} footer={null} width={"90%"}>
-			<div className={styles.popupTitle}>
-				Select columns for export
-			</div>
+		<Modal title={<ModalComponents.Title title='Select columns for export' />} open={isOpen} onCancel={handleCancel} footer={null} width={"90%"}>
 			<div className={styles.columnsDisplayContainer}>
 				{columnsData && columnsData.length > 0 && [...columnsData]?.sort((a, b) => a.label < b.label ? -1 : 1).map((column) => {
 					const isselected = selectedColumns?.filter(el => el.label == column.label).length > 0;

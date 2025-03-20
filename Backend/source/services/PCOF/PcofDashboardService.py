@@ -12,6 +12,7 @@ from source.services.PCOF.PcofBBCalculator import PcofBBCalculator
 from source.services import Standard_File_Formater
 from Exceptions.StdFileFormatException import StdFileFormatException
 from source.services.PCOF import utility as PCOFUtility
+from source.services.PCOF import IntermediateMetricsFormula
 
 pcofBBCalculator = PcofBBCalculator()
 
@@ -354,3 +355,63 @@ class PcofDashboardService:
             )
         )
         return included_excluded_assets_map
+
+    def get_intermediate_metrics(self, base_data_file):
+        intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
+        intermediate_metrics_output = intermediate_calculation["df_PL_BB_Output"]
+
+        intermediate_metrics_data = {
+            "columns": [],
+            "data": [],
+            "simulation_type": "base_data_file",
+        }
+
+        intermediate_metrics_data["columns"] = [
+            {"title": col, "key": col.replace(" ", "_")}
+            for col in intermediate_metrics_output.columns
+        ]
+
+        # Add data to the preview_table_data
+        intermediate_metrics_output = intermediate_metrics_output.fillna("")
+        for _, row in intermediate_metrics_output.iterrows():
+            row_data = {}
+            for col, value in row.items():
+                key = col.replace(" ", "_")
+                if isinstance(value, (int, float)):
+                    if col != "Adj. Advance Rate":
+                        row_data[key] = {
+                            "previous_value": "",
+                            "current_value": "$" + numerize.numerize(value, 2),
+                            "changed": False,
+                        }
+                    else:
+                        row_data[key] = {
+                            "previous_value": "",
+                            "current_value": "{:,.01f}%".format(value * 100),
+                            "changed": False,
+                        }
+                elif isinstance(value, datetime):
+                    row_data[key] = {
+                        "previous_value": "",
+                        "current_value": value.strftime("%Y-%m-%d"),
+                        "changed": False,
+                    }
+                else:
+                    row_data[key] = {
+                        "previous_value": "",
+                        "current_value": value,
+                        "changed": False,
+                    }
+            intermediate_metrics_data["data"].append(row_data)
+
+        return intermediate_metrics_data
+
+    def get_mathematical_formula(self, base_data_file, col_name, row_name):
+        intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
+
+        df_PL_BB_Build = intermediate_calculation["df_PL_BB_Build"]
+        df_PL_BB_Output = intermediate_calculation["df_PL_BB_Output"]
+
+        response_dict = IntermediateMetricsFormula.formula_info(df_PL_BB_Build, df_PL_BB_Output, row_name, col_name)
+
+        return {"error_status": False, "response_dict": response_dict}

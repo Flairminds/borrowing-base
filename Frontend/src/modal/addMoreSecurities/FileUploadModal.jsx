@@ -3,10 +3,11 @@ import React from 'react';
 import { useDropzone } from 'react-dropzone';
 import PCOFAddSecSampleFile from '../../assets/template File/PCOF Add Base Data.xlsx';
 import PFLTAddSecSampleFile from '../../assets/template File/PFLT Add Base Data.xlsx';
-import { CustomButton } from '../../components/custombutton/CustomButton';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { uploadAddMoreSecFile } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from "./FileUploadModal.module.css";
+import { ModalComponents } from '../../components/modalComponents';
 
 export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, setAddsecFiles, previewFundType, dataId, reportId, handleBaseDataPreview }) => {
 	const { getRootProps, getInputProps } = useDropzone({
@@ -48,11 +49,11 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 	return (
 		<Modal
-			title="Add Securities Data"
+			title={<ModalComponents.Title title='Add Securities Data' showDescription={true} description="Add more securities data which are not present in the extracted base data" />}
 			open={isOpenFileUpload}
 			onCancel={handleCancel}
 			footer={null}
-			width={600}
+			width={700}
 		>
 			<div className={styles.downloadContainer}>
 				<Popover placement="bottomRight" content={<>Refer to sample template file</>}>

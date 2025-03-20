@@ -267,3 +267,24 @@ def calculate_bb_modified_sheets():
 
     except Exception as e:
         return HTTPResponse.error(message = "Internal Server Error")
+
+
+def select_what_if_analysis():
+    try:
+        request_data = request.get_json()
+        what_if_analysis_id = request_data.get('what_if_analysis_id')
+        simulation_type = request_data.get('simulation_type')
+        what_if_analysis_res = wiaService.select_what_if_analysis(what_if_analysis_id, simulation_type)
+        return what_if_analysis_res
+    except Exception as e:
+        print(e)
+        return (
+            jsonify(
+                {
+                    "error": str(e),
+                    "error_type": str(type(e).__name__),
+                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
+                }
+            ),
+            500,
+        )

@@ -140,3 +140,6 @@ def validate_request_data(data):
     
     return ServiceResponse.success(data = modified_base_data_file)
 
+def get_xl_df_map(excel_file):
+    xl_df_map = pd.read_excel(excel_file, sheet_name=None)
+    return xl_df_map
