@@ -228,8 +228,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							</div>
 						</div>
 						<div>
-							<UIComponents.Button onClick={showModal} title={'Add more securities data in the base data'} isFilled={true} text='Add Securities Data' />
-							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' />
+							<UIComponents.Button onClick={showModal} isFilled={true} text='Add Securities Data' btnDisabled={previewFundType == 'PCOF' ? true : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : 'Add more securities data in the base data'} />
+							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' btnDisabled={previewFundType == 'PCOF' ? true : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : ''} />
 						</div>
 					</div>
 					<div>
@@ -253,7 +253,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				isAddFieldModalOpen={isAddFieldModalOpen}
 				setIsAddFieldModalOpen={setIsAddFieldModalOpen}
 				onClose={() => setIsAddFieldModalOpen(false)}
-				dataId={baseFilePreviewData.infoId}
+				dataId={baseFilePreviewData.infoId || infoId}
 				data={baseFilePreviewData.otherInfo}
 				previewFundType={previewFundType}
 				selectedFiles={selectedFiles}
