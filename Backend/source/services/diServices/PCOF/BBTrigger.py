@@ -395,7 +395,8 @@ def trigger_pcof_bb(bdi_id):
             fund_type='PCOF',
             file_name ='Generated Data '+dt_string,
             included_excluded_assets_map=included_excluded_assets,
-            closing_date=extracted_base_data_info.report_date
+            closing_date=extracted_base_data_info.report_date,
+            extracted_base_data_info_id = bdi_id
         )
         db.session.add(base_data_file)
         db.session.commit()

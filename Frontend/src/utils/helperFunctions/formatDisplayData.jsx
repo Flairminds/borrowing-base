@@ -10,6 +10,9 @@ export const fmtDisplayVal = (value, decimals = 1) => {
 		temp = parseFloat(value).toFixed(decimals).replace(/\d(?=(\d{3})+\.)/g, '$&,');
 	} else if (isDateValid(value)) {
 		temp = (new Date(value)).toLocaleDateString('en-US');
+	} else if (typeof value === 'string' && value.endsWith('%')) {
+		temp = parseFloat(value.replace('%', ''));
+		temp = `${temp.toFixed(decimals)}%`;
 	}
 	return temp;
 };
@@ -38,15 +41,4 @@ export const fmtDateValue = (value) => {
 
 export const formatColumnName = (name) => {
 	return name.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
-};
-
-export const formatPercentage = (value, toFixed) => {
-	if (typeof value === 'string' && value.endsWith('%')) {
-		value = parseFloat(value.replace('%', ''));
-	}
-
-	const factor = Math.pow(10, toFixed);
-	value = Math.floor(value * factor) / factor;
-
-	return `${value.toFixed(toFixed)}%`;
 };
