@@ -283,25 +283,28 @@ export const UploadFile = ({
 
 
 	const handleDropdownChange = (value) => {
-		if (value === 0) {
-			setDisplayFetchData(fetchFileList);
+		setSelectedOption(value); // Update the selected fundtype
+		const fundType = value === 1 ? "PCOF" : value === 2 ? "PFLT" : null;
+		const filteredData = fetchFileList.filter(file => {
+			const matchesFundType = !fundType || file.fund_type === fundType;
+			const matchesDate = !filterDate || file.closing_date === filterDate;
+			return matchesFundType && matchesDate; // Combine conditions dynamically
+		});
 
-		} else {
-			const fundType = value === 1 ? "PCOF" : "PFLT";
-			const filteredData = fetchFileList.filter(file => file.fund_type === fundType);
-			setDisplayFetchData(filteredData);
-		}
+		setDisplayFetchData(filteredData);
 	};
 
+	// Handler for date selection
 	const handleDateFilterChange = (date, dateString) => {
-		setFilterDate(dateString);
-		if (dateString) {
-			const filteredData = fetchFileList.filter(file => file.closing_date === dateString);
-			setDisplayFetchData(filteredData);
-		} else {
-			setFilterDate(null);
-			setDisplayFetchData(fetchFileList);
-		}
+		setFilterDate(dateString); // Update the selected date
+		const fundType = selectedOption === 1 ? "PCOF" : selectedOption === 2 ? "PFLT" : null;
+		const filteredData = fetchFileList.filter(file => {
+			const matchesDate = !dateString || file.closing_date === dateString;
+			const matchesFundType = !fundType || file.fund_type === fundType;
+			return matchesDate && matchesFundType; // Combine conditions dynamically
+		});
+
+		setDisplayFetchData(filteredData);
 	};
 
 	useEffect(() => {
