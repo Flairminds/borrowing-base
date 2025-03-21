@@ -77,7 +77,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			}
 		};
 		try {
-			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId, 'column_key': columnKey, 'data_id': baseFilePreviewData?.baseData?.data[rowIndex]['id']['value'] });
+			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId || infoId, 'column_key': columnKey, 'data_id': baseFilePreviewData?.baseData?.data[rowIndex]['id']['value'] });
 			const detail = response?.data?.result;
 			const mappingData = detail?.mapping_data;
 			const t = {
@@ -143,10 +143,10 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		}
 	};
 
-	const handleSaveEdit = async (rowIndex, columnkey, inputValue) => {
-		const updatedData = [...baseFilePreviewData?.baseData?.data];
+	const handleSaveEdit = async (rowIndex, columnkey, inputValue, id) => {
+		const updatedData = [...filteredData];
 		const changes = [{
-			id: updatedData[rowIndex].id['value'],
+			id: id,
 			[columnkey]: inputValue
 		}
 		];
@@ -155,19 +155,19 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			await editBaseData(changes);
 			// await handleBaseDataPreview();
 			updatedData[rowIndex][columnkey] = inputValue;
-			setBaseFilePreviewData({
-				...baseFilePreviewData,
-				'baseData': {
-					...baseFilePreviewData.baseData,
-					'data': updatedData
-				}
-			});
+			// setBaseFilePreviewData({
+			// 	...baseFilePreviewData,
+			// 	'baseData': {
+			// 		...baseFilePreviewData.baseData,
+			// 		'data': updatedData
+			// 	}
+			// });
 			setFilteredData(updatedData);
 			// setBaseFilePreviewData({...BorrowingBasePreviewPage.baseData, data: updatedData});
-			return { success: "failure", msg: "Update success" };
+			return { success: true, msg: "Update success" };
 		} catch (error) {
 			// showToast("error", error?.response?.data?.message || "Failed to update data");
-			return { success: "failure", msg: error?.response?.data?.message || "Failed to update data" };
+			return { success: false, msg: error?.response?.data?.message || "Failed to update data" };
 		}
 	};
 
@@ -228,8 +228,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							</div>
 						</div>
 						<div>
-							<UIComponents.Button onClick={showModal} isFilled={true} text='Add Securities Data' btnDisabled={previewFundType == 'PCOF' ? true : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : 'Add more securities data in the base data'} />
-							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' btnDisabled={previewFundType == 'PCOF' ? true : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : ''} />
+							<UIComponents.Button onClick={showModal} isFilled={true} text='Add Securities Data' btnDisabled={previewFundType == 'PCOF' ? false : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : 'Add more securities data in the base data'} />
+							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' btnDisabled={previewFundType == 'PCOF' ? false : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : ''} />
 						</div>
 					</div>
 					<div>
@@ -267,7 +267,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				isOpenFileUpload={isOpenFileUpload}
 				handleCancel={handleCancel}
 				handleBaseDataPreview={handleBaseDataPreview}
-				dataId={baseFilePreviewData.infoId}
+				dataId={baseFilePreviewData.infoId || infoId}
 				reportId={baseFilePreviewData.reportDate}
 				addsecFiles={addsecFiles}
 				setAddsecFiles={setAddsecFiles}
