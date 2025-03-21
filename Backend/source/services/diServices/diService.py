@@ -688,7 +688,7 @@ def edit_base_data(changes):
     if not changes:
         return ServiceResponse.error(message = "Please provide changes.", status_code = 400)
     for change in changes:
-        id = int(change.get("id"))
+        id = change.get("id")
         for key in change.keys():
             if key != "id":
                 value = change.get(key)

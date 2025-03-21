@@ -36,8 +36,7 @@ export const fmtDisplayVal = (value, decimals = 1) => {
 export const fmtDateValue = (value) => {
 	const temp = value;
 	if (!temp) return temp;
-
-	if (typeof temp === 'number') {
+	if (typeof temp === 'number' || !isNaN(value)) {
 		return value;
 	}
 

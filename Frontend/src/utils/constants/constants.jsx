@@ -88,12 +88,12 @@ export const PFLTData = {
 			},
 			{
 				name: "exchange_rates",
-				label: "Exchange Rate",
+				label: "Exchange Rates",
 				type: "text"
 			},
 			{
 				name: "current_credit_facility_balance",
-				label: "Credit Facility Balance",
+				label: "Current Credit Facility Balance",
 				type: "text"
 			},
 			{
@@ -247,13 +247,13 @@ export const PCOFData = {
 			},
 			{
 				name: "unquoted",
-				label: "Unquoted",
+				label: "Unquoted (%)",
 				type: "text",
 				unit: "percent"
 			},
 			{
 				name: "quoted",
-				label: "Quoted",
+				label: "Quoted (%)",
 				type: "text",
 				unit: "percent"
 			}
@@ -268,7 +268,7 @@ export const PCOFData = {
 			},
 			{
 				name: "advance_rate",
-				label: "Advance Rate",
+				label: "Advance Rate (%)",
 				type: "text",
 				unit: "percent"
 			}
@@ -288,7 +288,7 @@ export const PCOFData = {
 			},
 			{
 				name: "concentration_limit",
-				label: "Concentration Limit",
+				label: "Concentration Limit (%)",
 				type: "text",
 				unit: "percent"
 			}
