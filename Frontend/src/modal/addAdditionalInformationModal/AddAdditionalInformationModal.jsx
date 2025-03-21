@@ -54,35 +54,35 @@ export const AddAdditionalInformationModal = (
 			formData["loans_(cad)"] = uploadedData["loans_(cad)"] ? uploadedData["loans_(cad)"] : data?.other_data?.["loans_(cad)"] || null;
 			formData["loans_(usd)"] = uploadedData["loans_(usd)"] || data?.other_data?.["loans_(usd)"] || null;
 
-			formData["principle_obligations"] = uploadedData["Principle Obligations"]?.length > 0 ? uploadedData["Principle Obligations"]
+			formData["principle_obligations"] = uploadedData["principle_obligations"]?.length > 0 ? uploadedData["principle_obligations"]
 				: data?.other_data?.["principle_obligations"]?.length > 0 ? data.other_data["principle_obligations"] : null;
 
-			formData["advance_rates"] = uploadedData["Advance Rates"]?.length > 0 ? uploadedData["Advance Rates"]
+			formData["advance_rates"] = uploadedData["advance_rates"]?.length > 0 ? uploadedData["advance_rates"]
 				: data?.other_data?.["advance_rates"]?.length > 0 ? data.other_data["advance_rates"].map(item => ({
 					...item,
-					advance_rate: item.advance_rate ? `${(item.advance_rate * 100)}%` : null
+					advance_rate: item.advance_rate ? `${(item.advance_rate * 100)}` : null
 				})) : null;
 
-			formData["subscription_bb"] = uploadedData["Subscription BB"]?.length > 0 ? uploadedData["Subscription BB"]
+			formData["subscription_bb"] = uploadedData["subscription_bb"]?.length > 0 ? uploadedData["subscription_bb"]
 				: data?.other_data?.["subscription_bb"]?.length > 0 ? data.other_data["subscription_bb"] : null;
 
-			formData["pricing"] = uploadedData["Pricing"]?.length > 0 ? uploadedData["Pricing"]
+			formData["pricing"] = uploadedData["pricing"]?.length > 0 ? uploadedData["pricing"]
 				: data?.other_data?.["pricing"]?.length > 0 ? data.other_data["pricing"].map(item => ({
 					...item,
-					percent: item.percent ? `${(item.percent * 100)}%` : null
+					percent: item.percent ? `${(item.percent * 100)}` : null
 				})) : null;
 
-			formData["portfolio_leverageborrowingbase"] = uploadedData["Portfolio LeverageBorrowingBase"]?.length > 0 ? uploadedData["Portfolio LeverageBorrowingBase"]
+			formData["portfolio_leverageborrowingbase"] = uploadedData["portfolio_leverageborrowingbase"]?.length > 0 ? uploadedData["portfolio_leverageborrowingbase"]
 				: data?.other_data?.["portfolio_leverageborrowingbase"]?.length > 0 ? data.other_data["portfolio_leverageborrowingbase"].map(item => ({
 					...item,
-					unquoted: item.unquoted ? `${(item.unquoted * 100)}%` : null,
-					quoted: item.quoted ? `${(item.quoted * 100)}%` : null
+					unquoted: item.unquoted ? `${(item.unquoted * 100)}` : null,
+					quoted: item.quoted ? `${(item.quoted * 100)}` : null
 				})) : null;
 
-			formData["concentration_limits"] = uploadedData["Concentration Limits"]?.length > 0 ? uploadedData["Concentration Limits"]
+			formData["concentration_limits"] = uploadedData["concentration_limits"]?.length > 0 ? uploadedData["concentration_limits"]
 				: data?.other_data?.["concentration_limits"]?.length > 0 ? data.other_data["concentration_limits"].map(item => ({
 					...item,
-					concentration_limit: item.concentration_limit ? `${(item.concentration_limit * 100)}%` : null
+					concentration_limit: item.concentration_limit ? `${(item.concentration_limit * 100)}` : null
 				})) : null;
 
 			formData["first_lien_leverage_cut-off_point"] = uploadedData["first_lien_leverage_cut-off_point"] || data?.other_data?.["first_lien_leverage_cut-off_point"] || null;
@@ -184,6 +184,10 @@ export const AddAdditionalInformationModal = (
 													ele[element] = parseFloat(
 														(parseFloat(ele[element].replace("%", "")) / 100)
 													);
+												} else {
+													ele[element] = parseFloat(
+														(parseFloat(ele[element]) / 100)
+													);
 												}
 											}
 										});
@@ -233,7 +237,6 @@ export const AddAdditionalInformationModal = (
 					"column_info": PFLT_COLUMNS_NAME
 				};
 			}
-
 			const transformedData = {
 				"extraction_info_id": extractionInfoId,
 				"determination_date": values.determination_date || dayjs(values.determination_date.format("YYYY-MM-DD")),
@@ -275,13 +278,17 @@ export const AddAdditionalInformationModal = (
 
 	const mapDataToPrincipalObligations = (data) => {
 		const header = data[0];
-		return data.slice(1)?.map((row) => {
-			const record = {};
-			row.forEach((value, index) => {
-				record[header[index].toLowerCase().replace(/ /g, "_")] = value;
-			});
-			return record;
+		const temp = [];
+		data.slice(1)?.forEach((row) => {
+			if (row.length > 0) {
+				const record = {};
+				row.forEach((value, index) => {
+					record[header[index].toLowerCase().replace(/ /g, "_")] = value;
+				});
+				temp.push(record);
+			}
 		});
+		return temp;
 	};
 
 	const handleExtract = () => {
@@ -366,7 +373,7 @@ export const AddAdditionalInformationModal = (
 					);
 					uploadedDataValues = { ...uploadedDataValues, ...transformedData };
 				} else {
-					uploadedDataValues[sheet.sheetName] = mapDataToPrincipalObligations(sheet.data);
+					uploadedDataValues[sheet.sheetName.toLowerCase().replace(/\s+/g, '_')] = mapDataToPrincipalObligations(sheet.data);
 				}
 			});
 			setUploadedData((prevState) => ({ ...prevState, ...uploadedDataValues }));
@@ -405,7 +412,6 @@ export const AddAdditionalInformationModal = (
 			} else {
 				obj.forEach((item) => {
 					const row = columnSequence.map((col) => {
-
 						const columnDetail = columnDetails.find((detail) => detail.name === col.col_name);
 						const value = item[col.col_name] || "";
 
@@ -413,7 +419,7 @@ export const AddAdditionalInformationModal = (
 							return `${value * 100}%`;
 						}
 
-						return fmtDateValue(value);
+						return value;
 					});
 					rows.push(row);
 				});
@@ -423,7 +429,6 @@ export const AddAdditionalInformationModal = (
 			const sheetNameForObject = formatColumnName(sheetName);
 			XLSX.utils.book_append_sheet(wb, sheet, sheetNameForObject);
 		};
-
 		Object.entries(data.other_data || {}).forEach(([key]) => {
 			if (Array.isArray(data.other_data[key]) || (typeof data.other_data[key] === "object" && data.other_data[key] !== null)) {
 				if (key !== "column_info") processData(data.other_data[key], key);
@@ -443,7 +448,7 @@ export const AddAdditionalInformationModal = (
 				<Radio.Group options={OTHER_INFO_OPTIONS} value={addType} onChange={handleChange} />
 				{addType === "upload" && (
 					<>
-						{(typeof data === 'object' && data !== null)
+						{(typeof data === 'object' && data !== null && Object.keys(data).length > 0)
 							? <a onClick={exportSample} style={{ paddingRight: "1rem", color: "blue", textDecoration: "underline" }}>Export sample file template</a>
 							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{ paddingRight: "1rem" }}>Export sample file template</a>
 						}

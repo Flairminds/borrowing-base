@@ -228,8 +228,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							</div>
 						</div>
 						<div>
-							<UIComponents.Button onClick={showModal} isFilled={true} text='Add Securities Data' btnDisabled={previewFundType == 'PCOF' ? true : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : 'Add more securities data in the base data'} />
-							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' btnDisabled={previewFundType == 'PCOF' ? true : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : ''} />
+							<UIComponents.Button onClick={showModal} isFilled={true} text='Add Securities Data' btnDisabled={previewFundType == 'PCOF' ? false : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : 'Add more securities data in the base data'} />
+							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' btnDisabled={previewFundType == 'PCOF' ? false : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : ''} />
 						</div>
 					</div>
 					<div>
