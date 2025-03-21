@@ -12,10 +12,11 @@ import { fundOptionsArray } from '../../../utils/constants/constants';
 import { capitalizeFirstLetter } from '../../../utils/helperFunctions/commonHelperFunctions';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import styles from './GenericDragnDropMapping.module.css';
+import { SELECTED_TAG } from '../../../utils/styles';
 
 const ItemType = "ITEM";
 
-const DraggableItem = ({ item, itemAccessKey, title, getEntryMappingInfo, selectedFundType, activeMappingType }) => {
+const DraggableItem = ({ item, itemAccessKey, title, getEntryMappingInfo, selectedFundType, activeMappingType, selectedMappingItem }) => {
 	const [{ isDragging }, drag] = useDrag(() => ({
 		type: ItemType,
 		item: { name: item },
@@ -40,7 +41,10 @@ const DraggableItem = ({ item, itemAccessKey, title, getEntryMappingInfo, select
 			style={{
 				padding: "3px 7px",
 				margin: "4px",
-				backgroundColor: "#d3d3d3",
+				color: selectedMappingItem == item[itemAccessKey] ? SELECTED_TAG.TEXT_COLOR : 'black',
+				backgroundColor: selectedMappingItem == item[itemAccessKey] ? SELECTED_TAG.BACKGROUND_COLOR : "#d3d3d3",
+				// border: selectedMappingItem == item[itemAccessKey] ? '1px solid #0EB198' : null,
+				// fontWeight: selectedMappingItem == item[itemAccessKey] ? 700 : null,
 				cursor: "grab",
 				opacity: isDragging ? 0.5 : 1,
 				// minWidth: "175px",
@@ -48,13 +52,14 @@ const DraggableItem = ({ item, itemAccessKey, title, getEntryMappingInfo, select
 				// maxHeight: "35px"
 			}}
 		>
-			<span title={"Drag around and drop for editing the mapping"}>{item && item[itemAccessKey]}</span>
+			<span title={"Drag around and drop for editing the mapping"} >{item && item[itemAccessKey]}</span>
+			{console.info(selectedMappingItem == item[itemAccessKey] && item[itemAccessKey], 'search ---3')}
 			{activeMappingType && title != `unmapped_${activeMappingType}_types` && <CloseCircleOutlined style={{margin: "0px 10px"}} onClick={() => handleDeleteMapping(item)} title={"Click to delete this mapping"} />}
 		</div>
 	);
 };
 
-const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey, getEntryMappingInfo, selectedFundType, activeMappingType }) => {
+const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey, getEntryMappingInfo, selectedFundType, activeMappingType, selectedMappingItem }) => {
 	const [{ isOver }, drop] = useDrop(() => ({
 		accept: ItemType,
 		drop: async (draggedItem) => {
@@ -95,7 +100,7 @@ const DroppableList = ({ title, items, allLists, setAllLists, itemAccessKey, get
 		>
 			{items && items.length > 0 ? (
 				items.map((item) => (
-					<DraggableItem key={item[itemAccessKey]} itemAccessKey={itemAccessKey} item={item} title={title} getEntryMappingInfo={getEntryMappingInfo} selectedFundType={selectedFundType} activeMappingType={activeMappingType} />
+					<DraggableItem key={item[itemAccessKey]} itemAccessKey={itemAccessKey} item={item} title={title} getEntryMappingInfo={getEntryMappingInfo} selectedFundType={selectedFundType} activeMappingType={activeMappingType} selectedMappingItem={selectedMappingItem} />
 				))
 			) : (
 				<div className={styles.emptyDiv}>
@@ -111,13 +116,30 @@ export const GenericDragnDropMapping = ({activeMappingType}) => {
 	const [entryMappingData, setEntryMappingData] = useState(null);
 	const [selectedFundType, setSelectedFundType] = useState("PFLT");
 	const [addMasterPopupOpen, setAddMasterPopupOpen] = useState(false);
+	const [selectedMappingItem, setSelectedMappingItem] = useState("");
+	const [mappingDropdownData, setMappingDropdownData] = useState([]);
 
-	console.info('activeMappingType', activeMappingType);
+	// useEffect(() => {
+	// 	console.info('search ---2', selectedMappingItem);
+	// }, [selectedMappingItem]);
+
+	const getDropDownArray = (data, accessKey, listAccessKey) => {
+		return data.map(item => ({
+			label: item[accessKey],
+			value: item[accessKey],
+			listKey: listAccessKey
+		}));
+	};
 
 	const getEntryMappingInfo = async(fund) => {
 		try {
 			const res = await getLoanTypeMappingData(fund, activeMappingType);
 			setEntryMappingData(res.data.result);
+			const entryMappingResData = res.data.result;
+			const unmappedEntriesData = getDropDownArray(entryMappingResData[`unmapped_${activeMappingType}_types`], `unmapped_${activeMappingType}_type`, `unmapped_${activeMappingType}_types`);
+			const mappedEntriesData = getDropDownArray(entryMappingResData[`mapped_${activeMappingType}_types`], `${activeMappingType}_type`, `mapped_${activeMappingType}_types`);
+			const dropDownData = [...unmappedEntriesData, ...mappedEntriesData];
+			setMappingDropdownData(dropDownData);
 		} catch (err) {
 			console.error(err);
 			showToast('error', err?.response?.data?.message);
@@ -157,6 +179,15 @@ export const GenericDragnDropMapping = ({activeMappingType}) => {
 				</div>
 				<div className={styles.dropdownContainer}>
 					<Select
+						options={mappingDropdownData && mappingDropdownData}
+						placeholder={`Search ${activeMappingType} Type`}
+						value={selectedMappingItem != "" ? selectedMappingItem : null}
+						style={{ width: 300, borderRadius: '8px', margin: "0.5rem 0.3rem" }}
+						showSearch={true}
+						onChange={(value) => setSelectedMappingItem(value)}
+					/>
+
+					<Select
 						options={fundOptionsArray}
 						defaultValue={fundOptionsArray[0].label}
 						value={selectedFundType}
@@ -180,6 +211,7 @@ export const GenericDragnDropMapping = ({activeMappingType}) => {
 							itemAccessKey={`unmapped_${activeMappingType}_type`}
 							allLists={entryMappingData}
 							setAllLists={setEntryMappingData}
+							selectedMappingItem={selectedMappingItem}
 						/>
 					</div>
 				</div>
@@ -202,6 +234,7 @@ export const GenericDragnDropMapping = ({activeMappingType}) => {
 									getEntryMappingInfo={getEntryMappingInfo}
 									selectedFundType={selectedFundType}
 									activeMappingType={activeMappingType}
+									selectedMappingItem={selectedMappingItem}
 								/>
 							</div>
 						</div>
