@@ -62,6 +62,7 @@ def add_asset(base_data_file, selected_assets):
         note=note,
         is_saved=False,
         simulation_type="add_asset",
+        intermediate_calculation=calculated_xl_df_map
     )
 
     if not what_if_analysis_result["error"]:

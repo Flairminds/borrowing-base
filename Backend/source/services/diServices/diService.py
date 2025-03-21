@@ -330,7 +330,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                 )
         except Exception as e:
             Log.func_error(e)
-            extracted_base_data_info.status = "failed"
+            extracted_base_data_info.status = "Failed"
             extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
@@ -721,6 +721,9 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_t
     
     extraction_result = {
         "columns": [{
+            "id": "id",
+            "id": "id"
+        }, {
             "key": "report_date",
             "label": "Report Date"
         }, {

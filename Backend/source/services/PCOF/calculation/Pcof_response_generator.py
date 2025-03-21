@@ -121,6 +121,7 @@ def required_data(
         name_of_security,
     ) = data_for_graphs(df_security, df_segmentation_overview)
     pass_list = df_PL_BB_Results["Result"].tolist()
+    show_on_dashboard_list = df_PL_BB_Results["Show on dashboard"].tolist()
     return (
         industry,
         unadjusted_BB,
@@ -141,6 +142,7 @@ def required_data(
         BB_for_chart,
         name_of_security,
         pass_list,
+        show_on_dashboard_list
     )
 
 
@@ -165,6 +167,7 @@ def generating_data_in_required_format_for_result(
     BB_for_chart,
     name_of_security,
     pass_list,
+    show_on_dashboard_list
 ):
     # Extracting specific rows from df_Availability_Borrower for card data
     card_data = {
@@ -243,6 +246,7 @@ def generating_data_in_required_format_for_result(
             "Concentration Limit": concentration_limits,
             "Actual": actual_values,
             "Result": pass_list,
+            "Show on dashboard": show_on_dashboard_list
         }
     )
     concentraion_test_formatter = ConcentraionTestFormatter(concentration_Test_df)
@@ -346,6 +350,7 @@ def generate_response(
         BB_for_chart,
         name_of_security,
         pass_list,
+        show_on_dashboard_list
     ) = required_data(
         df_PL_BB_Results,
         df_security,
@@ -381,6 +386,7 @@ def generate_response(
         BB_for_chart,
         name_of_security,
         pass_list,
+        show_on_dashboard_list
     )
     return (
         card_data,
