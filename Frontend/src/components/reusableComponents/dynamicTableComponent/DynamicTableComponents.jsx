@@ -125,8 +125,8 @@ export const DynamicTableComponents = ({
 		}
 	};
 
-	const handleCellEdit = (rowIndex, columnkey, cellValue, dataType) => {
-		setEditingCell({ rowIndex, columnkey });
+	const handleCellEdit = (rowIndex, columnkey, cellValue, dataType, rowId) => {
+		setEditingCell({ rowIndex, columnkey, id: rowId.value });
 		if (dataType === "date" && cellValue) {
 			setInputValue({
 				value: dayjs(cellValue),
@@ -157,8 +157,8 @@ export const DynamicTableComponents = ({
 
 	const handleSaveEdit = async () => {
 
-		const { rowIndex, columnkey } = editingCell;
-		const saveStatus = await onChangeSave(rowIndex, columnkey, inputValue.displayValue);
+		const { rowIndex, columnkey, id } = editingCell;
+		const saveStatus = await onChangeSave(rowIndex, columnkey, inputValue.displayValue, id);
 
 		if (saveStatus.success) {
 			setEditingCell(null);
@@ -337,9 +337,8 @@ export const DynamicTableComponents = ({
 											const isValueEmpty = isEditable && !cellDisplayValue;
 											const InputChnageFun = col.datatype == 'date' ? handleDateChange : handleInputChange;
 											return (
-												<td key={col.key} className={enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td}
-													style={{ backgroundColor: activeRowIndex == rowIndex ? '#f2f2f2' : 'white', color: cellActualValue != cellOldValue ? 'red' : 'auto' }}
-													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue, col.datatype) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + fmtDisplayVal(cellActualValue) + '\nPrevious: ' + fmtDisplayVal(cellOldValue) : fmtDisplayVal(cellTitleValue)}`}>
+												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td } ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${cellActualValue != cellOldValue ? tableStyles.editedCell : ''}`}
+													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue, col.datatype, row.id) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + fmtDisplayVal(cellActualValue) + '\nPrevious: ' + fmtDisplayVal(cellOldValue) : fmtDisplayVal(cellTitleValue)}`}>
 													{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 														(
 															<div className={tableStyles.editIconsContainer}>
