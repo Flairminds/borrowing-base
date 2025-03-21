@@ -45,6 +45,7 @@ class UpdateAssetAnalyst():
 
             modified_base_data_file.response = response_data
             modified_base_data_file.intermediate_metrics_data = intermediate_metrics_data
+            modified_base_data_file.intermediate_calculation = pickle.dumps(calculated_xl_df_map)
 
             db.session.add(modified_base_data_file)
             db.session.commit()

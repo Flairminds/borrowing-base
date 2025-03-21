@@ -241,8 +241,11 @@ class PfltDashboardService:
         card_table["columns"] = [{"data": borrowing_base_sheet_df.columns.tolist()}]
         return card_table
 
-    def get_card_overview(self, base_data_file, card_name):
-        intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
+    def get_card_overview(self, base_data_file, card_name, what_if_analysis):
+        if what_if_analysis:
+            intermediate_calculation = pickle.loads(what_if_analysis.intermediate_calculation)
+        else:
+            intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
 
         borrowing_base_df = intermediate_calculation["Borrowing Base"]
         Credit_Balance_Projection_df = intermediate_calculation[

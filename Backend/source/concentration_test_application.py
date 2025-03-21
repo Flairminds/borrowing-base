@@ -202,7 +202,7 @@ class ConcentrationTestExecutor:
         return dataframe[column_name].tolist()
 
     def execute_Max_Industry_Concentration_percent_BB(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         test_required_col_df = (
             test_required_col_df.groupby("Industry")
@@ -221,6 +221,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [rounded_actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -229,7 +230,7 @@ class ConcentrationTestExecutor:
         return concentration_test_df
 
     def execute_Min_Eligible_Issuers(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         actual = test_required_col_df["Eligible Issuer"].max()
         if actual >= self.limit_percent:
@@ -241,6 +242,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -249,7 +251,7 @@ class ConcentrationTestExecutor:
         return concentration_test_df
 
     def execute_number_of_issuers(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         actual = test_required_col_df["Eligible Issuer"].max()
         if actual == self.limit_percent:
@@ -261,6 +263,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -269,7 +272,7 @@ class ConcentrationTestExecutor:
         return concentration_test_df
 
     def execute_Second_Lien_and_Split_Lien(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         total_borrowing_base = test_required_col_df.loc[
             test_required_col_df["Terms"]
@@ -290,6 +293,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -298,7 +302,7 @@ class ConcentrationTestExecutor:
         return concentration_test_df
 
     def execute_Second_Lien(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         total_borrowing_base = test_required_col_df.loc[
             test_required_col_df["Terms"]
@@ -316,6 +320,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -324,7 +329,7 @@ class ConcentrationTestExecutor:
         return concentration_test_df
 
     def execute_DIP_Collateral_Loans(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         total_borrowing_base = test_required_col_df.loc[
             test_required_col_df["Terms"]
@@ -344,6 +349,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -352,7 +358,7 @@ class ConcentrationTestExecutor:
         return concentration_test_df
 
     def execute_Max_LTV_Transactions(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         ltv_transaction_grouped_df = (
             test_required_col_df.groupby("LTV Transaction")
@@ -376,6 +382,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [rounded_actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -384,7 +391,7 @@ class ConcentrationTestExecutor:
         return concentration_test_df
 
     def execute_Max_Foreign_Eligible_Portfolio_Investments(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         approved_foreign_jurisdiction_df = (
             test_required_col_df.groupby("Approved Foreign Jurisdiction")
@@ -408,6 +415,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -416,7 +424,7 @@ class ConcentrationTestExecutor:
         return concentration_test_df
 
     def execute_Max_Warehouse_Assets(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         warehouse_assetn_df = (
             test_required_col_df.groupby("Warehouse Asset")
@@ -441,6 +449,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [rounded_actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -449,7 +458,7 @@ class ConcentrationTestExecutor:
         return concentration_test_df
 
     def Max_Contribution_to_BB_with_Maturity_greater_than_8_years(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         detemination_date = test_required_col_df.loc[
             test_required_col_df["Terms"] == "Date of determination:", "Values"
@@ -482,6 +491,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [rounded_actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -490,7 +500,7 @@ class ConcentrationTestExecutor:
         return concentration_test_df
 
     def Max_Industry_Concentration_Largest_Industry_percent_BB(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         test_required_col_df = (
             test_required_col_df.groupby("Industry")
@@ -517,6 +527,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [rounded_actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -525,7 +536,7 @@ class ConcentrationTestExecutor:
         return concentration_test_df
 
     def Max_Industry_Concentration_2nd_Largest_Industry_percent_BB(
-        self, test_name, test_required_col_df, concentration_test_df
+        self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard
     ):
         test_required_col_df = (
             test_required_col_df.groupby("Industry")
@@ -553,6 +564,7 @@ class ConcentrationTestExecutor:
             "Concentration Limit": [self.limit_percent],
             "Actual": [rounded_actual],
             "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat(
@@ -585,7 +597,7 @@ class ConcentrationTestExecutor:
         )
 
         for test in fund_tests:
-            if test.show_on_dashboard:
+            # if test.show_on_dashboard:
                 fund_column_names = self.get_standard_column_names(test.test_name)
 
                 test_data = {}
@@ -602,7 +614,7 @@ class ConcentrationTestExecutor:
                 )
 
                 concentration_test_df = self.test_library[test.test_name](
-                    test.test_name, test_required_col_df, concentration_test_df
+                    test.test_name, test_required_col_df, concentration_test_df, test.show_on_dashboard
                 )
 
         return concentration_test_df
@@ -623,6 +635,14 @@ class ConcentraionTestFormatter:
         concentration_limits = []
         actuals = []
         results = []
+
+        conc_test_df_copy = self.concentration_test_df.copy()
+        self.concentration_test_df = conc_test_df_copy
+
+        self.concentration_test_df = self.concentration_test_df[self.concentration_test_df["Show on dashboard"] == True] 
+
+        self.concentration_test_df = self.concentration_test_df[["Concentration Tests", "Concentration Limit", "Actual", "Result"]]
+        
 
         self.concentration_test_df[["Concentration Limit", "Actual"]] = self.concentration_test_df[["Concentration Limit", "Actual"]].fillna(0)
         for index, row in self.concentration_test_df.iterrows():

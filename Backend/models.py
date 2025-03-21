@@ -54,6 +54,7 @@ class WhatIfAnalysis(db.Model):
     note = db.Column(db.String)
     is_saved = db.Column(db.Boolean, default=False)
     simulation_type = db.Column(db.String, nullable=False)
+    intermediate_calculation = db.Column(db.PickleType)
 
     # many to one relationship with BaseDataFile
     base_data_file = db.relationship("BaseDataFile", back_populates="what_if_analyses")
@@ -110,6 +111,7 @@ class ModifiedBaseDataFile(db.Model):
     note = db.Column(db.String)
     simulation_type = db.Column(db.String, default="Update asset")
     is_saved = db.Column(db.Boolean, default=False)
+    intermediate_calculation = db.Column(db.PickleType)
 
     # Many to one relationship with BaseDataFile
     base_data_file = db.relationship(
@@ -146,6 +148,7 @@ class ConcentrationTest(db.Model):
     eligible_funds = db.Column(db.ARRAY(db.String))
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_at = db.Column(db.DateTime(timezone=True))
+    comparison_type = db.Column(db.String(25))
 
     # Many-to-many relationship
     funds = db.relationship(
