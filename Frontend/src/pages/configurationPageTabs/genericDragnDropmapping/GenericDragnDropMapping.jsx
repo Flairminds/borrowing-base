@@ -12,6 +12,7 @@ import { fundOptionsArray } from '../../../utils/constants/constants';
 import { capitalizeFirstLetter } from '../../../utils/helperFunctions/commonHelperFunctions';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import styles from './GenericDragnDropMapping.module.css';
+import { SELECTED_TAG } from '../../../utils/styles';
 
 const ItemType = "ITEM";
 
@@ -40,9 +41,10 @@ const DraggableItem = ({ item, itemAccessKey, title, getEntryMappingInfo, select
 			style={{
 				padding: "3px 7px",
 				margin: "4px",
-				backgroundColor: selectedMappingItem == item[itemAccessKey] ? '#f5f5f5' : "#d3d3d3",
-				border: selectedMappingItem == item[itemAccessKey] ? '1px solid #0EB198' : null,
-				fontWeight: selectedMappingItem == item[itemAccessKey] ? 700 : null,
+				color: selectedMappingItem == item[itemAccessKey] ? SELECTED_TAG.TEXT_COLOR : 'black',
+				backgroundColor: selectedMappingItem == item[itemAccessKey] ? SELECTED_TAG.BACKGROUND_COLOR : "#d3d3d3",
+				// border: selectedMappingItem == item[itemAccessKey] ? '1px solid #0EB198' : null,
+				// fontWeight: selectedMappingItem == item[itemAccessKey] ? 700 : null,
 				cursor: "grab",
 				opacity: isDragging ? 0.5 : 1,
 				// minWidth: "175px",
