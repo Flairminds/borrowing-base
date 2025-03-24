@@ -11,7 +11,7 @@ import { ConfigurationPage } from './pages/configurationPage/ConfigurationPage';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { DataIngestionPage } from './pages/dataIngestion/DataIngestionPage';
 import { SecurityMapping } from './pages/securityMapping/SecurityMapping';
-import { SecurityMappingPage } from './pages/securityMappingPage/SecurityMappingPage';
+// import { SecurityMappingPage } from './pages/securityMappingPage/SecurityMappingPage';
 import { ConcentrationTestMaster } from './pages/testMaster/ConcentrationTestMaster';
 import { getDateReport, landingPageData } from './services/api';
 import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
@@ -41,7 +41,6 @@ export function App() {
 
 	// const [selectedIds, setSelectedIds] = useState([]);
 	const selectedIds = useRef([]);
-	const selectedSecurities = useRef([]);
 
 	const getLandingPageData = async() => {
 		try {
@@ -167,7 +166,7 @@ export function App() {
 							/>
 						}
 					/>
-					<Route path='/security-mapping' element={<SecurityMappingPage selectedSecurities={selectedSecurities} />} />
+					{/* <Route path='/security-mapping' element={<SecurityMappingPage selectedSecurities={selectedSecurities} />} /> */}
 					<Route path='/configuration' element={<ConfigurationPage />} />
 
 					{/* <Route path='/securities-mapping' element={<SecurityMapping />} /> */}

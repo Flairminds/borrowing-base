@@ -1,13 +1,15 @@
 import { Tabs } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from "react-router-dom";
 import { GenericDragnDropMapping } from '../../layouts/configurationPageTabs/genericDragnDropmapping/GenericDragnDropMapping';
 import { uniqueMappingValues } from '../../utils/constants/configurationConstants';
 import styles from './ConfigurationPage.module.css';
+import { SecurityMappingPage } from '../../layouts/configurationPageTabs/securityMappingPage/SecurityMappingPage';
 
 export const ConfigurationPage = () => {
-	const [activeMappingType, setActiveMappingType] = useState(uniqueMappingValues["2"]);
+	const [activeMappingType, setActiveMappingType] = useState(uniqueMappingValues["1"]);
 	const [searchParams, setSearchParams] = useSearchParams();
+	const selectedSecurities = useRef([]);
 
 
 	const tabItems = [
@@ -15,7 +17,7 @@ export const ConfigurationPage = () => {
 			key: "1",
 			label: "Security Mapping",
 			lookup: 'security_mapping',
-			children: "Security Mapping UI"
+			children: <SecurityMappingPage selectedSecurities={selectedSecurities} />
 		},
 		{
 			key: "2",
@@ -40,14 +42,14 @@ export const ConfigurationPage = () => {
 	};
 
 	useEffect(() => {
-		setSearchParams({tab: 'loan_type_mapping'});
+		setSearchParams({tab: 'security_mapping'});
 	}, []);
 
 	return (
 		<div style={{padding: '15px'}}>
 			<Tabs
 				type="card"
-				defaultActiveKey="2"
+				defaultActiveKey="1"
 				items={tabItems}
 				onChange={onChange}
 				className={styles.configTabs}
