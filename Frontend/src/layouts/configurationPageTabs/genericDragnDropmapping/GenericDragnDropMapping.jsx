@@ -202,19 +202,20 @@ export const GenericDragnDropMapping = ({activeMappingType}) => {
 
 
 			<DndProvider backend={HTML5Backend}>
-				<div className={styles.unmappedLoanTypesContainer}>
-					<div style={{textAlign: 'left', margin: "5px"}}><b>Unmapped {capitalizeFirstLetter(activeMappingType)} Types</b><Icons.InfoIcon title={`The list of ${capitalizeFirstLetter(activeMappingType)} types from the source files which are not mapped to the standardised master ${capitalizeFirstLetter(activeMappingType)} types.' + '\nDrag and drop items in respective master ${capitalizeFirstLetter(activeMappingType)} types for mapping.`} /></div>
-					<div className={styles.unmappedLoantypeListContainer}>
-						<DroppableList
-							title={`unmapped_${activeMappingType}_types`}
-							items={entryMappingData && entryMappingData[`unmapped_${activeMappingType}_types`]}
-							itemAccessKey={`unmapped_${activeMappingType}_type`}
-							allLists={entryMappingData}
-							setAllLists={setEntryMappingData}
-							selectedMappingItem={selectedMappingItem}
-						/>
-					</div>
-				</div>
+				{entryMappingData && entryMappingData[`unmapped_${activeMappingType}_types`]?.length > 0 ?
+					<div className={styles.unmappedLoanTypesContainer}>
+						<div style={{textAlign: 'left', margin: "5px"}}><b>Unmapped {capitalizeFirstLetter(activeMappingType)} Types</b><Icons.InfoIcon title={`The list of ${capitalizeFirstLetter(activeMappingType)} types from the source files which are not mapped to the standardised master ${capitalizeFirstLetter(activeMappingType)} types.' + '\nDrag and drop items in respective master ${capitalizeFirstLetter(activeMappingType)} types for mapping.`} /></div>
+						<div className={styles.unmappedLoantypeListContainer}>
+							<DroppableList
+								title={`unmapped_${activeMappingType}_types`}
+								items={entryMappingData && entryMappingData[`unmapped_${activeMappingType}_types`]}
+								itemAccessKey={`unmapped_${activeMappingType}_type`}
+								allLists={entryMappingData}
+								setAllLists={setEntryMappingData}
+								selectedMappingItem={selectedMappingItem}
+							/>
+						</div>
+					</div> : <></>}
 
 				<div style={{display: "flex", marginTop: '15px'}}>
 					<div className={styles.mappingHeading} style={{width: '25%'}}>{capitalizeFirstLetter(activeMappingType)} Type Master</div>

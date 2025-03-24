@@ -408,7 +408,7 @@ def trigger_pcof_bb(bdi_id):
         writer.close()
         os.remove(file_name)
 
-        return ServiceResponse.success(message="Succesfully trigger PCOF borrowing base", data=bb_response)
+        return ServiceResponse.success(message="Successfully processed calculation.", data=bb_response)
 
 
     except Exception as e:
