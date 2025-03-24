@@ -109,4 +109,16 @@ def store_sheet_data(data_dict):
     except Exception as e:
         print(f"Failed to store sheet {sheet_name}")
         print(str(e))
-        return ServiceResponse.error() 
+        return ServiceResponse.error()
+    
+
+def check_data_type(value, data_type):
+    type_mapping = {
+        'string': str,
+        'float': float,
+        'integer': int,
+        # 'datetime': datetime
+    }
+    if value != value:
+        return True
+    return isinstance(value, type_mapping[data_type])

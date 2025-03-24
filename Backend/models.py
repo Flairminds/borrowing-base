@@ -175,6 +175,7 @@ class SourceFiles(db.Model):
     file_size = db.Column(db.Float, nullable=False)
     company_id = db.Column(db.Integer, nullable=False)
     fund_types = db.Column(db.ARRAY(db.String), nullable=True)
+    validation_info = db.Column(db.JSON, nullable=True)
     is_validated = db.Column(db.Boolean, default=False)
     is_extracted = db.Column(db.Boolean, default=False)
     extraction_status = db.Column(db.String(100))
@@ -187,7 +188,8 @@ class SourceFiles(db.Model):
 
 class SheetMetadataMaster(db.Model):
     smm_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    fund_id = db.Column(db.Integer, db.ForeignKey("fund.id"), nullable=False)
+    file_id = db.Column(db.Integer, db.ForeignKey("file_metadata_master.id"), nullable=False)
+    fund_id = db.Column(db.Integer, nullable=False)
     company_id = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(255), nullable=False)
     lookup = db.Column(db.String(127), nullable=False, unique=True)
@@ -230,6 +232,8 @@ class ColumnMetadataMaster(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_by = db.Column(db.Integer)
     modified_at = db.Column(db.DateTime(timezone=True))
+    column_categories = db.Column(db.String(100))
+    column_number = db.Column(db.String(100))
 
 class PfltHaircutConfig(db.Model):
     hc_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -666,3 +670,18 @@ class LienTypeMapping(db.Model):
     is_deleted = db.Column(db.Boolean, default=False)
     deleted_by = db.Column(db.Integer)
     deleted_at = db.Column(db.DateTime(timezone=True))
+
+class FileMetadataMaster(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    created_by = db.Column(db.Integer, nullable=True)
+    modified_by = db.Column(db.Integer, nullable=True)
+    modified_at = db.Column(db.DateTime(timezone=True))
+    fund_ids = db.Column(db.ARRAY(db.Integer))
+    name = db.Column(db.String)
+    lookup = db.Column(db.String)
+    type = db.Column(db.String)
+    description = db.Column(db.String)
+    is_input = db.Column(db.Boolean)
+    is_output = db.Column(db.Boolean)
