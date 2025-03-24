@@ -12,7 +12,11 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                 select 
                     distinct usbh."Security/Facility Name" as "investment_name",
                     usbh."Issuer/Borrower Name"  as "issuer",
-                    ss."[SI] Credit Facility Lien Type" as "investment_investment_type",
+                    case
+						when lien_master.lien_type is null then ss."[SI] Credit Facility Lien Type"
+						else lien_master.lien_type
+					end
+					as "investment_investment_type",
                     bs."[ACM] [COI/LC] PNNT Industry" as "investment_industry",
                     bs."[ACM] [COI/LC] Closing Date" as "investment_closing_date",
                     ss."[SI] Maturity" as "investment_maturity",
@@ -108,6 +112,8 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
                 left join sf_sheet_pcof_iii_borrrowing_base sspibb on ss."Security" = sspibb."Security Name" -- check this join
                 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
+                left join lien_type_mapping lien_mapping on lien_mapping.lien_type = ss."[SI] Credit Facility Lien Type" and (lien_mapping.is_deleted = false or lien_mapping.is_deleted is null)
+				left join lien_type_master lien_master on lien_master.id = lien_mapping.master_lien_type_id
                 left join sf_sheet_marketbook ssmb on lower(substring(ch."Issuer/Borrower Name" from 1 for 20)) = lower(substring(ssmb."Issuer" from 1 for 20)) and ssmb."Asset" like '%' || usbh."Issue Name" || '%'
                 where (usbh.source_file_id = :cash_file_id AND ch.source_file_id = :cash_file_id and (ssmb.source_file_id is null or ssmb.source_file_id = :market_book_file_id)) and
                 ((sm.id is not null AND ss.source_file_id = :master_comp_file_id AND bs.source_file_id = :master_comp_file_id) or sm.id is null)
@@ -137,7 +143,8 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."LTV",
                     ssmb."Committed",
                     ssmb."Book Value",
-                    ssmb."Market Value"
+                    ssmb."Market Value",
+                    lien_master.lien_type
                 order by usbh."Security/Facility Name"
             '''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}))
 
