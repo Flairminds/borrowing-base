@@ -22,6 +22,7 @@ import { ModalComponents } from '../modalComponents';
 import { ProgressBar } from '../progressBar/ProgressBar';
 import { UIComponents } from '../uiComponents';
 import stylesUload from './UploadFile.module.css';
+import { DynamicTableComponents } from '../reusableComponents/dynamicTableComponent/DynamicTableComponents';
 
 
 export const UploadFile = ({
@@ -280,28 +281,25 @@ export const UploadFile = ({
 		}
 	};
 
-
-
 	const handleDropdownChange = (value) => {
-		setSelectedOption(value); // Update the selected fundtype
+		setSelectedOption(value);
 		const fundType = value === 1 ? "PCOF" : value === 2 ? "PFLT" : null;
 		const filteredData = fetchFileList.filter(file => {
 			const matchesFundType = !fundType || file.fund_type === fundType;
 			const matchesDate = !filterDate || file.closing_date === filterDate;
-			return matchesFundType && matchesDate; // Combine conditions dynamically
+			return matchesFundType && matchesDate;
 		});
 
 		setDisplayFetchData(filteredData);
 	};
 
-	// Handler for date selection
 	const handleDateFilterChange = (date, dateString) => {
-		setFilterDate(dateString); // Update the selected date
+		setFilterDate(dateString);
 		const fundType = selectedOption === 1 ? "PCOF" : selectedOption === 2 ? "PFLT" : null;
 		const filteredData = fetchFileList.filter(file => {
 			const matchesDate = !dateString || file.closing_date === dateString;
 			const matchesFundType = !fundType || file.fund_type === fundType;
-			return matchesDate && matchesFundType; // Combine conditions dynamically
+			return matchesDate && matchesFundType;
 		});
 
 		setDisplayFetchData(filteredData);
@@ -442,38 +440,34 @@ export const UploadFile = ({
 
 						{selectedTab === "existing" && (
 							<div className={stylesUload.existingFileDiv}>
-								{/* <div className={stylesUload.headingFiles} >
-									List of Existing Files
-								</div> */}
 								<div className={stylesUload.inputSearch}>
-									<img src={search}></img>
-									<input type="text" placeholder="Search by file name" value={searchTerm} onChange={handleSearch} className={stylesUload.searchinputTag} />
+									<img src={search} alt="search" />
+									<input
+										type="text"
+										placeholder="Search by file name"
+										value={searchTerm}
+										onChange={handleSearch}
+										className={stylesUload.searchinputTag}
+									/>
 								</div>
 								{searchTerm === '' || displayFetchData.length > 0 ? (
-									<div className={stylesUload.tableContainer}>
-										<table className={stylesUload.table}>
-											<thead className={stylesUload.stickyHeader}>
-												<tr className={stylesUload.headRow}>
-													{getFileListColumns.map((column, index) => (
-														<th className={stylesUload.th} key={index}>{column.title}</th>
-													))}
-													<th className={stylesUload.th}></th>
-												</tr>
-											</thead>
-											<tbody>
-												{(displayFetchData).map((file, index) => (
-													<tr key={index}>
-														{getFileListColumns.map((column, colIndex) => (
-															<td className={stylesUload.td} key={colIndex}>{file[column.key]}</td>
-														))}
-														<td className={stylesUload.td}>
-															<UIComponents.Button onClick={() => handleFileClick(file.base_data_file_id, file.file_name, file.user_id, file.closing_date, file.fund_type)} isFilled={true} text={'Use'} />
-														</td>
-													</tr>
-												))}
-											</tbody>
-										</table>
-									</div>
+									<DynamicTableComponents
+										data={displayFetchData}
+										columns={getFileListColumns}
+										additionalColumns={[
+											{
+												label: "",
+												render: (value, file) => (
+													<UIComponents.Button
+														onClick={() => handleFileClick(file.base_data_file_id, file.file_name, file.user_id, file.closing_date, file.fund_type)}
+														isFilled={true}
+														text={'Use'}
+													/>
+												)
+											}
+										]}
+										visibleSortHeader={true}
+									/>
 								) : (
 									<div>No file available. Please upload a new file.</div>
 								)}
