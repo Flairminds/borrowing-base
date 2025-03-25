@@ -1,2 +1,2 @@
 INSERT INTO public.sheet_metadata_master (fund_id,company_id,name,lookup,aliases,data_format,description,"sequence",is_raw_data_input,is_base_data_input,is_output,is_intermediate,is_mandatory,is_required,created_by,created_at,modified_by,modified_at,file_id) VALUES
-	 (1,1,'borrower stat','borrower_lookup','{borrower,stat}','tabular','Sheet for borrower statistics',1,true,false,false,false,true,true,1,'2025-03-21 13:23:54.653312+05:30',NULL,NULL,1);
+	 (1,1,'borrower stat','borrower_lookup','{borrower,stat}','tabular','Sheet for borrower statistics',1,true,false,false,false,true,true,1,now(),NULL,NULL,1);
