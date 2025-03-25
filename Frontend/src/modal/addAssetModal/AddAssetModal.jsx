@@ -1,12 +1,14 @@
 import { Button, Modal } from 'antd';
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
-import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
-import { AddAssetSelectionTableModal } from '../addAssetSelectionTableModal/AddAssetSelectionTableModal';
-import Styles from './AddAssetModal.module.css';
 import { ModalComponents } from '../../components/modalComponents';
 import { UIComponents } from '../../components/uiComponents';
+import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
+import { PCOFAddAssetData } from '../../utils/constants/addAssetSampleData';
+import { exportToExcel } from '../../utils/helperFunctions/jsonToExcel';
+import { AddAssetSelectionTableModal } from '../addAssetSelectionTableModal/AddAssetSelectionTableModal';
+import Styles from './AddAssetModal.module.css';
 
 export const AddAssetModal = (
 	{
@@ -25,10 +27,11 @@ export const AddAssetModal = (
 		setPreviewData,
 		previewColumns,
 		setAddAssetSelectedData,
-		isAddLoadBtnDisable
+		isAddLoadBtnDisable,
+		fundType
 	}
 ) => {
-	
+
 
 	const { getRootProps, getInputProps } = useDropzone({
 		accept: {
@@ -43,6 +46,13 @@ export const AddAssetModal = (
 		}
 	});
 
+	const handleSampleFileDownload = () => {
+		if (fundType === 'PCOF') {
+			exportToExcel(PCOFAddAssetData, "PCOFAddAssetSampleFile.xlsx");
+		} else {
+			exportToExcel(PCOFAddAssetData, "PCOFAddAssetSampleFile.xlsx");
+		}
+	};
 
 	return (
 		<>
@@ -63,6 +73,12 @@ export const AddAssetModal = (
 							<p style={{ fontWeight: '500', fontSize: '20px', marginBottom: '-5px' }}>Upload File</p>
 						</div> */}
 						{/* <br /> */}
+						<div
+							onClick={handleSampleFileDownload}
+							style={{ color: "#3B7DDD", textDecoration: "underline", cursor: "pointer" }}
+						>
+							DownloadSimpleFile
+						</div>
 						<div>
 							<div className={Styles.visible}>
 								<div {...getRootProps({ className: 'dropzone' })}>
