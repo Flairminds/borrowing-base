@@ -32,7 +32,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 	};
 
 	const handleSecurityMapping = () => {
-		navigate('/security-mapping');
+		navigate('/configuration?tab=security_mapping');
 	};
 
 	const handleBaseDataPreview = async (row) => {
