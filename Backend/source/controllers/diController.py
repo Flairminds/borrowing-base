@@ -21,11 +21,11 @@ def upload_source_files():
         Log.func_success(message=service_response["message"])
 
         for source_file in service_response.get("data"):
-                print(source_file["source_file"].id)
+            print(source_file["source_file"].id)
 
-        threading.Thread(target=diService.extract_validate_store_update,
-            kwargs={"source_files_list" : service_response.get("data")}
-        ).start()
+            threading.Thread(target=diService.extract_validate_store_update,
+                kwargs={"source_file" : source_file}
+            ).start()
 
         return HTTPResponse.success(message=service_response["message"])
     except Exception as e:
