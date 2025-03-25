@@ -522,7 +522,8 @@ def get_base_data(info_id):
                 "No of Issuers": no_of_issuers,
                 "No of Investments": no_of_investments,
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
-                "Unmapped Securities": unmapped_records
+                "Unmapped Securities": unmapped_records,
+                "Fund Type": base_data_info.fund_type
             }]
 
         temp = []
@@ -1151,7 +1152,7 @@ def trigger_bb_calculation(bdi_id):
         os.remove(file_name)
         bb_response = pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
         bb_response["base_data_file_id"] = base_data_file.id
-        return ServiceResponse.success(message="Successfully processed. Visit the Borrowing Base module to check the data.", data=bb_response)
+        return ServiceResponse.success(message="Successfully processed calculation.", data=bb_response)
 
     except Exception as e:
         print(e)

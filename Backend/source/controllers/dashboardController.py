@@ -10,6 +10,7 @@ from source.services.PFLT.PfltDashboardService import PfltDashboardService
 from Exceptions.StdFileFormatException import StdFileFormatException
 from source.services.PCOF.standardFileFormat import std_file_format as PCOF_STANDARD_FILE_FORMAT
 from source.services.PFLT.PFLT_std_file_format import std_file_format as PFLT_STANDARD_FILE_FORMAT
+from source.utility.Log import Log
 
 pcofDashboardService = PcofDashboardService()
 pfltDashboardService = PfltDashboardService()
@@ -242,6 +243,7 @@ def calculate_bb():
 
         return HTTPResponse.success(result=response)
     except Exception as e:
+        Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error")
 
 def get_intermediate_metrics():

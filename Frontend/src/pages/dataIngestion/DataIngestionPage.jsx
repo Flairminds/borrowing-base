@@ -150,6 +150,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 		try {
 			setExtractionInProgress(true);
 			const selectedFund = selectedFundType == 1 ? "PCOF" : "PFLT";
+			setBaseFilePreviewData([]);
 			const extractionResponse = await exportBaseDataFile(selectedIds.current, selectedFund);
 			console.info(extractionResponse, 'rex');
 			const extractionData = extractionResponse?.data.result;
