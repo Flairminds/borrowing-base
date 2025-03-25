@@ -55,7 +55,11 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	case when pbb."Credit Improved Loan" = 0 then 'No' when pbb."Credit Improved Loan" = 1 then 'Yes' else null end as credit_improved_loan,
 	case when avg(usbh."Original Purchase Price"::float) is not null then avg(usbh."Original Purchase Price"::float) else null end as purchase_price,
 	pbb."Stretch Senior (Y/N)" as stretch_senior_loan,
-	ch."Issue Name" as loan_type,
+	case 
+		when loan_master.loan_type is null then ch."Issue Name"
+		else loan_master.loan_type
+	end
+	as loan_type,
 	ch."Deal Issue (Derived) Rating - Moody's" as current_moodys_rating,
 	ch."Deal Issue (Derived) Rating - S&P" as current_sp_rating,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as initial_fixed_charge_coverage_ratio,
@@ -72,7 +76,11 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	pbb."Current LTM EBITDA"::float * 1000000 as current_ttm_ebitda,
 	ch."As Of Date" as current_as_of_date,
 	usbh."Maturity Date" as maturity_date,
-	ss."[SI] Credit Facility Lien Type" as lien_type,
+	case
+		when lien_master.lien_type is null then ss."[SI] Credit Facility Lien Type"
+		else lien_master.lien_type
+	end
+	as lien_type,
 	case when pbb."Eligible Covie Lite (1L, Issue > $250mm, B3 / B-)" = 0 then 'No' when pbb."Eligible Covie Lite (1L, Issue > $250mm, B3 / B-)" = 1 then 'Yes' else null end as eligible_covenant_lite,
 	case when ss."[SI] Type of Rate" like 'Fixed Rate%' then 'Yes' else 'No' end as fixed_rate,
 	0 as coupon_incl_pik_pikable,
@@ -113,10 +121,14 @@ left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security
 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
 left join sf_sheet_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
+left join loan_type_mapping loan_mapping on loan_mapping.loan_type = ch."Issue Name" and (loan_mapping.is_deleted = false or loan_mapping.is_deleted is null)
+left join loan_type_master loan_master on loan_master.id = loan_mapping.master_loan_type_id
+left join lien_type_mapping lien_mapping on lien_mapping.lien_type = ss."[SI] Credit Facility Lien Type" and (lien_mapping.is_deleted = false or lien_mapping.is_deleted is null)
+left join lien_type_master lien_master on lien_master.id = lien_mapping.master_lien_type_id  
 where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AND (ssmb.source_file_id is null or ssmb.source_file_id = :market_book_file_id)) and
 ((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND (pbb.source_file_id = :master_comp_file_id or pbb.source_file_id is null) AND bs.source_file_id= :master_comp_file_id) or sm.id is null)
     group by usbh."Issuer/Borrower Name", usbh."Security/Facility Name", pbb."Defaulted Collateral Loan at Acquisition",
-	ss."Security", pbb."Credit Improved Loan", pbb."Stretch Senior (Y/N)", ch."Issue Name",
+	ss."Security", pbb."Credit Improved Loan", pbb."Stretch Senior (Y/N)", loan_master.loan_type, ch."Issue Name", 
 	ch."Deal Issue (Derived) Rating - Moody's", ch."Payment Period", ch."Deal Issue (Derived) Rating - S&P", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio",
 	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization", pbb."Senior Debt", pbb."LTM EBITDA", pbb."Total Debt",
 	pbb."Closing LTM EBITDA", pbb."Current LTM EBITDA", ch."As Of Date", usbh."Maturity Date", ss."[SI] Type of Rate", usbh."Market Value Indenture",
@@ -125,8 +137,9 @@ where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id A
 	pbb."Equity Security", pbb."Subject of an Offer or Called for Redemption", pbb."Margin Stock", pbb."Subject to Withholding Tax", pbb."Zero Coupon Obligation",
 	pbb."Covenant Lite", pbb."Structured Finance Obligation / finance lease", pbb."Material Non-Credit Related Risk", pbb."Primarily Secured by Real Estate",
 	pbb."Interest Only Security", pbb."Satisfies Other Criteria(1)", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio", bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA",
-	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon", ssmb."Market Value", ch."LoanX ID"
-order by security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}).fetchall())
+	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon", ssmb."Market Value", ch."LoanX ID",
+	lien_master.lien_type
+	order by security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}).fetchall())
             df = cash_file
             if df.empty:
                 raise Exception('Base data is empty')
