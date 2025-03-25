@@ -31,16 +31,14 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."[SI] Cash Spread to LIBOR" as "rates_floating_cash_spread",
                     ss."[SI] LIBOR Floor" as "rates_current_lobor_floor",
                     null as "rates_pik", -- Complete column is empty
-                --    ss."[SI] Type of Rate" as "rates_fixed_floating",
                     case
                         when ss."[SI] Type of Rate" like 'Fixed Rate%' then 'Fixed'
                         when ss."[SI] Type of Rate" like 'Floating Rate%' then 'Floating'
                     end
                         as "rates_fixed_floating",
                     case 
-                        when sspibb."Quoted / Unquoted" is null then 'No'
-                        when sspibb."Quoted / Unquoted" like '0' then 'No'
-                        when sspibb."Quoted / Unquoted" like '1' then 'Yes'
+                        when sspibb."Quoted / Unquoted" is null or sspibb."Quoted / Unquoted" = '0' or sspibb."Quoted / Unquoted" = 'No' then 'Unquoted'
+                        when sspibb."Quoted / Unquoted" = '1' or sspibb."Quoted / Unquoted" = 'Yes' then 'Quoted'
                         else sspibb."Quoted / Unquoted"
                     end as "classifications_quoted_unquoted", -- from PCOF III Borrrowing Base
                     case 
@@ -57,7 +55,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                         else sspibb."Approved Foreign Jurisdiction"
                     end as "classifications_approved_foreign_jurisdiction", -- from PCOF III Borrrowing Base
                     case
-                        when sspibb."LTV Transaction" is null then 'No'
+                        when sspibb."LTV Transaction" is null or sspibb."LTV Transaction" = '0'  then 'No'
                         else sspibb."LTV Transaction"
                     end as "classifications_ltv_transaction", -- from PCOF III Borrrowing Base
                     case
@@ -89,11 +87,10 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     null as "leverage_revolver_commitment", -- could not map -- considering null for now
                     ss."[PSM] TEV" as "leverage_total_enterprise_value",
                     ss."Total Gross Leverage" as "leverage_total_leverage",
-                --    case 
-                --        when ss."Pennant Gross Leverage" = 'NM' then null
-                --    end
-                --    as "leverage_pcof_iv_leverage",
-                    ss."Pennant Gross Leverage" as "leverage_pcof_iv_leverage",
+                    case
+                        when ss."Pennant Gross Leverage" is null or ss."Pennant Gross Leverage" = 'NM' then null
+                        else ss."Pennant Gross Leverage"
+                    end as "leverage_pcof_iv_leverage",
                     null as "leverage_attachment_point", -- could not map -- Complete column is empty
                     sspibb."TotalCapitalization" as "leverage_total_capitalization", -- from PCOF III Borrrowing Base
                     ss."LTV" as "leverage_ltv_thru_pcof_iv", -- was from PCOF IV, Now taking from security stats (BU)

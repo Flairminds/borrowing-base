@@ -1023,7 +1023,7 @@ def calculate_First_Second_Lien_Share(data, oth_metr):
             axis=1,
         )
     except Exception as e:
-        print(e)
+        raise Exception(e)
 
     return data
 
@@ -1033,11 +1033,10 @@ def calculate_First_Second_Lien_Share_helper(x, y, z, con):
         res = "N/A"
 
     else:
-        if x > 0 and y == "First Lien" and z > con:
-            res = (z - con) / z
+        if x > 0 and y == "First Lien" and float(z) > float(con):
+            res = (float(z) - float(con)) / float(z)
         else:
             res = 0
-
     return res
 
 
@@ -1503,8 +1502,8 @@ def calculate_First_Lien_Second_Lien_Share_helper(CJ, AE, BB, inputD120):
     if CJ == "N/A":
         return "N/A"
     else:
-        if CJ > 0 and AE == "First Lien" and BB > inputD120:
-            return (BB - inputD120) / BB
+        if CJ > 0 and AE == "First Lien" and float(BB) > float(inputD120):
+            return (float(BB) - float(inputD120)) / float(BB)
         else:
             return 0
 
@@ -1524,6 +1523,9 @@ def calculate_First_Lien_Second_Lien_Share(df_PL_BB_Build, inputD120):
 
 # CV  First Lien Adj. Advance Rate
 def calculate_First_Lien_Adj_Advance_Rate_helper(AE, CJ, CR, CT, CU, CY, CZ):
+    # print("CT * CU", CT, CU)
+    if (CU == 'n/a'):
+        return 'n/a'
     if AE == "Warehouse First Lien":
         return (CY * CZ) + ((1 - CY) * CR)
     else:
@@ -1591,7 +1593,7 @@ def calculate_Concentration_Issuer_percent_of_ONC(df_PL_BB_Build):
                     ]["Concentration % of ONC"].sum()
                 )
         except Exception as e:
-            print(str(e))
+            raise Exception(e)
     df_PL_BB_Build["Concentration Issuer % of ONC"] = result
     return df_PL_BB_Build
 
@@ -1747,6 +1749,8 @@ def calculate_Borrowing_Base_Adj_Contribution_helper(
     ONW_Adjustments_Concentration_BB_Adj_Contribution,
 ):
     try:
+        if First_Lien_Adj_Advance_Rate == 'n/a':
+            return None
         return (
             (
                 Concentration_Adj_Elig_Amount
@@ -1756,9 +1760,7 @@ def calculate_Borrowing_Base_Adj_Contribution_helper(
             * First_Lien_Adj_Advance_Rate
         ) + ONW_Adjustments_Concentration_BB_Adj_Contribution
     except Exception as e:
-
-        print(str(e))
-        return 0
+        raise Exception(e)
 
 
 def calculate_Borrowing_Base_Adj_Contribution(df_PL_BB_Build):
