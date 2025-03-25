@@ -446,6 +446,7 @@ export const WhatIfAnalysis = ({
 				setPreviewData={setPreviewData}
 				previewColumns={previewColumns}
 				setAddAssetSelectedData={setAddAssetSelectedData}
+				fundType={fundType}
 			/>
 			<UpdateParameterModal
 				ebitdaModalOpen={ebitdaModalOpen}
