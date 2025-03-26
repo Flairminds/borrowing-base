@@ -42,8 +42,8 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 
 	const getMappingData = async (securityType) => {
 		try {
-			setUnmappedSecurities({});
 			setDataLoading(true);
+			setUnmappedSecurities({});
 			const mappingRes = await getUnmappedSecurityData(securityType);
 			setUnmappedSecurities(mappingRes.data.result);
 			setDataLoading(false);
@@ -119,11 +119,6 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 
 	return (
 		<div>
-
-			<div className={styles.backOptionContainer}>
-				<BackOption onClick={() => navigate(PAGE_ROUTES.BASE_DATA_LIST.url)}
-					text={`<- Base Data`} />
-			</div>
 			<div className={styles.securityOverview}>
 				<div onClick={() => changeSecurityView("all")} className={securityViewType == "all" ? `${styles.securityOverviewCard} ${styles.background}` : `${styles.securityOverviewCard}`}>
 					<div><b>All Securities</b></div>

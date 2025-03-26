@@ -188,7 +188,7 @@ class SourceFiles(db.Model):
 
 class SheetMetadataMaster(db.Model):
     smm_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    file_id = db.Column(db.Integer, db.ForeignKey("file_metadata_master.id"), nullable=False)
+    file_id = db.Column(db.Integer, db.ForeignKey("file_metadata_master.id"))
     fund_id = db.Column(db.Integer, nullable=False)
     company_id = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(255), nullable=False)
