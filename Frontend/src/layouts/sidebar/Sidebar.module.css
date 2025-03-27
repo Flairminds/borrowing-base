@@ -2,6 +2,9 @@
     /* height: 100%; */
     background-color: #3A4850;
     min-height: 100vh;
+    position: sticky;
+    left: 0;
+    top: 0;
     cursor: pointer;
     color: white;
 }

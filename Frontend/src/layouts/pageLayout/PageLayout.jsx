@@ -6,10 +6,14 @@ import { Sidebar } from '../sidebar/Sidebar';
 export const PageLayout = () => {
 	return (
 		<div className='d-flex'>
-			<Sidebar />
-			<div className='w-100'>
+			<div style={{backgroundColor: 'red'}}>
+				<Sidebar />
+			</div>
+			<div style={{width: '100%'}}>
 				<Navbar />
-				<Outlet />
+				<div style={{padding: '10px 0 50px 0'}}>
+					<Outlet />
+				</div>
 			</div>
 		</div>
 	);

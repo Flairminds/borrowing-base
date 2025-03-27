@@ -330,7 +330,7 @@ export const UploadFile = ({
 				:
 				<div className={stylesUload.modalDiv} >
 					<Modal
-						title={<span style={{ fontWeight: '500', fontSize: '20px' }}>Import File</span>}
+						title={<ModalComponents.Title title='Import File' showDescription={true} description='Use an existing file or upload a new base data file for borrowing base calculation.' />}
 						centered
 						style={{
 							top: 10
@@ -345,11 +345,12 @@ export const UploadFile = ({
 					>
 						<div>
 							<Radio.Group value={selectedTab} onChange={(e) => setSelectedTab(e.target.value)}>
-								<Radio value="existing">List of Existing Files</Radio>
-								<Radio value="upload">Upload File</Radio>
+								<Radio value="existing">List of existing base data files</Radio>
+								<Radio value="upload">Upload a new base data file</Radio>
 							</Radio.Group>
 						</div>
 						<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+							{selectedTab === "existing" && <div style={{ padding: '0 10px 0 0' }}>Filter by</div>}
 							<div style={{ padding: '0 5px 0 0' }}>
 								<Calender
 									key={selectedTab}
