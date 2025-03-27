@@ -498,8 +498,8 @@ def get_base_data(info_id):
             card_data = [{
                 "No of Obligors": no_of_obligors,
                 "No of Securities": no_of_assets,
-                "Total Commitment": numerize.numerize(total_commitment, 2) if total_commitment is not None else 0,
-                "Total Outstanding Balance": numerize.numerize(total_outstanding_balance, 2)  if total_outstanding_balance is not None else 0,
+                "Total Commitment": '$' + numerize.numerize(total_commitment, 2) if total_commitment is not None else 0,
+                "Total Outstanding Balance": '$' + numerize.numerize(total_outstanding_balance, 2)  if total_outstanding_balance is not None else 0,
                 "Unmapped Securities": unmapped_records,
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
                 "Fund Type": base_data_info.fund_type

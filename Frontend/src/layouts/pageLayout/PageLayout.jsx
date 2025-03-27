@@ -11,7 +11,7 @@ export const PageLayout = () => {
 			</div>
 			<div style={{width: '100%'}}>
 				<Navbar />
-				<div style={{padding: '10px 0 50px 0'}}>
+				<div style={{padding: '5px 0 40px 0'}}>
 					<Outlet />
 				</div>
 			</div>
