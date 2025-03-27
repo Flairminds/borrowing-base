@@ -6,7 +6,7 @@ import pandas as pd
 from datetime import datetime
 import pytz
 # import azure.functions as func
-from sqlalchemy import text
+from sqlalchemy import text, join, select
 import threading
 import numpy as np
 from numerize import numerize
@@ -21,7 +21,7 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
@@ -29,7 +29,7 @@ from source.services.diServices.PCOF import BBTrigger as PCOF_BBTrigger
 from source.services.diServices import ColumnSheetMap
 from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
-from source.services.diServices.helper_functions import store_sheet_data
+from source.services.diServices.helper_functions import store_sheet_data, check_data_type
 
 pfltDashboardService = PfltDashboardService()
 
@@ -330,7 +330,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                 )
         except Exception as e:
             Log.func_error(e)
-            extracted_base_data_info.status = "failed"
+            extracted_base_data_info.status = "Failed"
             extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
@@ -395,22 +395,21 @@ def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_c
         Log.func_error(e)
         print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
 
-def extract_source_file(file_list):
+def extract_source_file(file_value):
     try:
-        for source_file in file_list:
-            print("inside", source_file["source_file"])
+        print("inside", file_value["source_file"])
         sheet_column_mapper = ColumnSheetMap.sheet_column_mapper
         args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset", "Issuer"]
         updated_column_df = {}
 
-        for file_value in file_list:
-            db_source_file = file_value.get("source_file")
-            print("db_source_file", db_source_file)
-            uploaded_file_bytes =  file_value.get("file")
-            uploaded_file_stream = BytesIO(uploaded_file_bytes)
-            uploaded_file = FileStorage(stream=uploaded_file_stream, filename="example.txt", content_type="text/plain")
+        # for file_value in file_list:
+        db_source_file = file_value.get("source_file")
+        print("db_source_file", db_source_file)
+        uploaded_file_bytes =  file_value.get("file")
+        uploaded_file_stream = BytesIO(uploaded_file_bytes)
+        uploaded_file = FileStorage(stream=uploaded_file_stream, filename="example.txt", content_type="text/plain")
 
-            sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_column_mapper, args)
+        sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_column_mapper, args)
         
         return ServiceResponse.success(data=updated_column_df)
     
@@ -499,8 +498,8 @@ def get_base_data(info_id):
             card_data = [{
                 "No of Obligors": no_of_obligors,
                 "No of Securities": no_of_assets,
-                "Total Commitment": numerize.numerize(total_commitment, 2) if total_commitment is not None else 0,
-                "Total Outstanding Balance": numerize.numerize(total_outstanding_balance, 2)  if total_outstanding_balance is not None else 0,
+                "Total Commitment": '$' + numerize.numerize(total_commitment, 2) if total_commitment is not None else 0,
+                "Total Outstanding Balance": '$' + numerize.numerize(total_outstanding_balance, 2)  if total_outstanding_balance is not None else 0,
                 "Unmapped Securities": unmapped_records,
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
                 "Fund Type": base_data_info.fund_type
@@ -523,7 +522,8 @@ def get_base_data(info_id):
                 "No of Issuers": no_of_issuers,
                 "No of Investments": no_of_investments,
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
-                "Unmapped Securities": unmapped_records
+                "Unmapped Securities": unmapped_records,
+                "Fund Type": base_data_info.fund_type
             }]
 
         temp = []
@@ -721,6 +721,9 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_t
     
     extraction_result = {
         "columns": [{
+            "id": "id",
+            "id": "id"
+        }, {
             "key": "report_date",
             "label": "Report Date"
         }, {
@@ -1149,7 +1152,7 @@ def trigger_bb_calculation(bdi_id):
         os.remove(file_name)
         bb_response = pfltDashboardService.calculate_bb(base_data_file, selected_assets, 1)
         bb_response["base_data_file_id"] = base_data_file.id
-        return ServiceResponse.success(message="Successfully processed. Visit the Borrowing Base module to check the data.", data=bb_response)
+        return ServiceResponse.success(message="Successfully processed calculation.", data=bb_response)
 
     except Exception as e:
         print(e)
@@ -1267,34 +1270,41 @@ def get_base_data_other_info(extraction_info_id, fund_type):
         Log.func_error(e)
         return ServiceResponse.error()
     
-def update_source_file_info(source_file_list, isValidated=False, isExtracted=False):
+def update_source_file_info(source_file, isValidated=False, isExtracted=False, validation_info=[]):
     try:
-        for source_file in source_file_list:
-            source_file_detail = source_file.get("source_file")
-            source_file_detail.is_validated = isValidated
-            source_file_detail.is_extracted = isExtracted
-            source_file_detail.extraction_status = "Completed" if isExtracted else "Failed"
-            db.session.add(source_file_detail)
-            db.session.commit()
+        # for source_file in source_file_list:
+        source_file_detail = source_file.get("source_file")
+        source_file_detail.is_validated = isValidated
+        source_file_detail.is_extracted = isExtracted
+        source_file_detail.validation_info = validation_info
+        source_file_detail.extraction_status = "Completed" if isExtracted else "Failed"
+        db.session.add(source_file_detail)
+        db.session.commit()
     except Exception as e:
         Log.func_error(e)
         print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
         
-def extract_validate_store_update(source_files_list):
+def extract_validate_store_update(source_file):
     try:
         from app import app
         with app.app_context():
-            for source_file in source_files_list:
-                print(source_file["source_file"].id)
-            extraction_response = extract_source_file(source_files_list)
+            # for source_file in source_files_list:
+            print(source_file["source_file"].id)
+            extraction_response = extract_source_file(source_file)
 
+            mismatched_data = []
+            for sheet in extraction_response.get("data"):
+                if sheet == "Borrower Stats":
+                    extracted_df = extraction_response.get("data").get(sheet)
+                    validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
+                        
             is_Extracted = False
-            if (extraction_response.get("success")):
+            if (not bool(len(mismatched_data))):
                 extracted_data = extraction_response.get("data")
                 store_response = store_sheet_data(data_dict=extracted_data)
                 is_Extracted = store_response.get("success")
 
-            update_source_file_info(source_files_list, isExtracted=is_Extracted)
+            update_source_file_info(source_file, isValidated= not bool(len(mismatched_data)), isExtracted=is_Extracted, validation_info=mismatched_data)
         print("Files extracted, validated, stored")
         return ServiceResponse.success()
 
@@ -1510,3 +1520,49 @@ def add_to_base_data_table(file, fund_type, base_data_info_id, company_id, repor
         print(e)
         print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
         return ServiceResponse.error(message="Something went wrong.")
+    
+def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
+    try:
+        
+        query = (
+            select(
+                ColumnMetadataMaster.column_name,
+                ColumnMetadataMaster.is_required,
+                ColumnMetadataMaster.data_type,
+                ColumnMetadataMaster.column_categories,
+            )
+            .select_from(
+                join(
+                    join(
+                        ColumnMetadataMaster,
+                        SheetMetadataMaster,
+                        ColumnMetadataMaster.sheet_id == SheetMetadataMaster.smm_id
+                    ),
+                    FileMetadataMaster,
+                    SheetMetadataMaster.file_id == FileMetadataMaster.id
+                )
+            )
+            .where(FileMetadataMaster.type == 'master_comp')
+        )
+
+        get_columns = db.session.execute(query).fetchall()
+        updated_column_values = [(f"{item[3]} {item[0]}", item[1], item[2]) for item in get_columns]
+
+        for column in sheet_df.columns:
+            matching_items = [item for item in updated_column_values if item[0] == column]
+            if matching_items:
+                expected_type = matching_items[0][2]
+                column_list = sheet_df[column].tolist()
+                for value in column_list:
+                    if not check_data_type(value, expected_type):
+                        mismatched_data.append({
+                            'sheet_name': sheet_name,
+                            'column_name': column,
+                            'value': value,
+                            'expected_type': expected_type,
+                            'actual_type': type(value).__name__
+                        })
+
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()

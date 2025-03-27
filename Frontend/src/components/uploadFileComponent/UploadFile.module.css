@@ -336,14 +336,14 @@ form {
 }
   
 .textBannerDataHeading {
-    font-family: 'Inter', sans-serif;
+    /* font-family: 'Inter', sans-serif; */
     font-weight: 600;
     font-size: 32px;
     line-height: 38.4px;
 }
 
 .textBannerData{
-    font-family: 'Inter', sans-serif;
+    /* font-family: 'Inter', sans-serif; */
     font-size: 14px;
     font-weight: 400;
     line-height: 20px;
@@ -473,8 +473,8 @@ form {
 .existingFileDiv{
   display: flex;
   flex-direction: column;
-  padding: 0.5rem 0;
-  /* align-items: center; */
+  max-height: 50vh;
+  overflow: hidden;
 }
 
 

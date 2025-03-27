@@ -5,6 +5,7 @@ from models import Fund, ConcentrationTest, FundConcentrationTest, db, BaseDataF
 from source.config import Config
 from datetime import datetime
 from source.utility.ServiceResponse import ServiceResponse
+from source.concentration_test_application import ConcentraionTestFormatter, ConcentrationTestExecutor
 
 
 def get_concentration_tests(fund_name):
@@ -130,6 +131,17 @@ def get_base_files(user_id, fund_id):
     except Exception as e:
         raise Exception(e)
 
+def is_pass(actual, limit, comparison_type):
+    if comparison_type == 'LessEqual':
+        return actual <= limit
+    if comparison_type == 'Greater':
+        return actual > limit
+    if comparison_type == 'GreaterEqual':
+        return actual >= limit
+    if comparison_type == 'Equal':
+        return actual == limit
+    return False
+
 
 def recalculate_bb(base_data_files, changed_records):
     try:
@@ -142,29 +154,43 @@ def recalculate_bb(base_data_files, changed_records):
                 ConcentrationTest.test_name,
                 ConcentrationTest.unit,
                 FundConcentrationTest.limit_percentage,
-                FundConcentrationTest.id
+                FundConcentrationTest.id,
+                ConcentrationTest.comparison_type,
+                FundConcentrationTest.show_on_dashboard
             ).join(FundConcentrationTest).filter(ConcentrationTest.id.in_(test_ids), FundConcentrationTest.fund_id == fund_id).all()
-        print(conc_tests)
         for file in base_data_files["data"]["files"]:
             try:
                 response_data = pickle.loads(file.response)
                 a = response_data["concentration_test_data"]
                 index = 0
+                concentration_tests = []
                 for d in a["Concentration Test"]:
                     for temp in conc_tests:
                         # print(temp[1])
                         if temp[1] == d["data"]:
                             limit = temp[3]
+                            show_on_dashboard = temp[6]
+                              
                             actual = a["Actual"][index]["data"]
                             if temp[2] == "percentage":
                                 a["Concentration Limit"][index]["data"] = str("%0.1f" % (temp[3] * 100)) + '%'
                                 actual = float(actual.replace('%', '')) / 100
                             else:
                                 a["Concentration Limit"][index]["data"] = temp[3]
-                            if limit < actual and 'min' not in temp[1].lower():
-                                a["Result"][index]["data"] = 'Fail'
-                            else:
+                            
+                            if is_pass(actual, limit, temp[5]):
                                 a["Result"][index]["data"] = 'Pass'
+                            else:
+                                a["Result"][index]["data"] = 'Fail'
+                            
+                            # if show_on_dashboard:
+                            #     concentration_tests.append({
+                            #         'Concentration Test': a['Concentration Test'][index],
+                            #         'Concentration Limit': a['Concentration Limit'][index],
+                            #         'Actual': a['Actual'][index],
+                            #         'Result': a['Result'][index],
+                            #         'columns': a['columns'][index],
+                            #     })
                     index += 1
                 response_data["concentration_test_data"] = a
                 pickled_response_data = pickle.dumps(response_data)

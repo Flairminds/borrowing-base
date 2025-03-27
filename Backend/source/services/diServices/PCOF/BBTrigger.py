@@ -12,6 +12,7 @@ from models import db, BaseDataFile, ExtractedBaseDataInfo, BaseDataOtherInfo
 from source.utility.ServiceResponse import ServiceResponse
 from source.services.PCOF.PcofBBCalculator import PcofBBCalculator
 from source.services.PCOF.PcofDashboardService import PcofDashboardService
+from source.utility.Log import Log
 
 pcofDashboardService = PcofDashboardService()
 pcofBBCalculator = PcofBBCalculator()
@@ -401,18 +402,18 @@ def trigger_pcof_bb(bdi_id):
         db.session.add(base_data_file)
         db.session.commit()
         print(f'[PCOF]Generated Data {dt_string}')
-        bb_response = pcofBBCalculator.get_bb_calculation(base_data_file=base_data_file, selected_assets=json.loads(included_excluded_assets), user_id=1)
+        bb_response = pcofBBCalculator.get_bb_calculation(base_data_file=base_data_file, selected_assets=json.loads(included_excluded_assets)['included_assets'], user_id=1)
 
         bb_response["base_data_file_id"] = base_data_file.id
         wb2.close()
         writer.close()
         os.remove(file_name)
 
-        return ServiceResponse.success(message="Succesfully trigger PCOF borrowing base", data=bb_response)
+        return ServiceResponse.success(message="Successfully processed calculation.", data=bb_response)
 
 
     except Exception as e:
-        print(str(e))
+        Log.func_error(e)
         return {
             "success": False,
             "message": "Something went wrong while executing borrowing base trigger for PCOF"

@@ -117,6 +117,7 @@ def update_parameters(base_data_file, type, asset_percent_list):
         note=note,
         is_saved=False,
         simulation_type="change_"+type,
+        intermediate_calculation=calculated_xl_df_map
     )
 
     if not what_if_analysis_result["error"]:

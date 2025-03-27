@@ -17,3 +17,11 @@ class ServiceResponse:
             "message": message,
             "status_code": status_code
         }
+    
+    @staticmethod
+    def info(success=True ,data = [], message = "",):
+        return {
+            "success": success,
+            "message": message,
+            "data": data
+        }

@@ -51,6 +51,7 @@ def save_what_if_analysis(
     response,
     note,
     simulation_type,
+    intermediate_calculation,
     is_saved=False,
 ):
     try:
@@ -63,6 +64,7 @@ def save_what_if_analysis(
             updated_data=pickle.dumps(updated_data),
             intermediate_metrics_data=pickle.dumps(intermediate_metrics_data),
             simulation_type=simulation_type,
+            intermediate_calculation=pickle.dumps(intermediate_calculation)
         )
 
         db.session.add(what_if_analysis)
@@ -538,10 +540,13 @@ def validate_selected_assets(selected_assets, fund_type):
 def select_what_if_analysis(what_if_analysis_id, what_if_analysis_type):
     if what_if_analysis_type == 'Update asset':
         what_if_analysis = ModifiedBaseDataFile.query.filter_by(id=what_if_analysis_id).first()
+        if what_if_analysis is None:
+            return {"error": True, "message": "What-if analysis not found"}
+        response = what_if_analysis.response
     else:
         what_if_analysis = WhatIfAnalysis.query.filter_by(id=what_if_analysis_id).first()
-    if what_if_analysis is None:
+        response = pickle.loads(what_if_analysis.response)
+    
+    if not response:
         return {"error": True, "message": "What-if analysis not found"}
-    pickled_response = what_if_analysis.response
-    # what_if_analysis_response = pickle.loads(pickled_response)
-    return {"error": False, "what_if_analysis": pickled_response}
+    return {"error": False, "what_if_analysis": response}

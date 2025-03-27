@@ -36,7 +36,7 @@ def get_parameters(base_data_file, type):
 
     columns = [{
         "key": column.replace(" ","_"),
-        "label": column
+        "label": "Ebitda ($MMs)" if column == "Ebitda" else column
     } for column in wia_df_PL_BB_Build.columns.tolist()]
 
     data = []
@@ -214,7 +214,8 @@ def update_parameters(base_data_file, type, asset_percent_list):
         response=response_data,
         note=note,
         is_saved=False,
-        simulation_type="change_" + type
+        simulation_type="change_" + type,
+        intermediate_calculation=calculated_xl_df_map
     )
 
     if not what_if_analysis_result["error"]:

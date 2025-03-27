@@ -22,6 +22,7 @@ import { ModalComponents } from '../modalComponents';
 import { ProgressBar } from '../progressBar/ProgressBar';
 import { UIComponents } from '../uiComponents';
 import stylesUload from './UploadFile.module.css';
+import { DynamicTableComponents } from '../reusableComponents/dynamicTableComponent/DynamicTableComponents';
 
 
 export const UploadFile = ({
@@ -280,28 +281,28 @@ export const UploadFile = ({
 		}
 	};
 
-
-
 	const handleDropdownChange = (value) => {
-		if (value === 0) {
-			setDisplayFetchData(fetchFileList);
+		setSelectedOption(value);
+		const fundType = value === 1 ? "PCOF" : value === 2 ? "PFLT" : null;
+		const filteredData = fetchFileList.filter(file => {
+			const matchesFundType = !fundType || file.fund_type === fundType;
+			const matchesDate = !filterDate || file.closing_date === filterDate;
+			return matchesFundType && matchesDate;
+		});
 
-		} else {
-			const fundType = value === 1 ? "PCOF" : "PFLT";
-			const filteredData = fetchFileList.filter(file => file.fund_type === fundType);
-			setDisplayFetchData(filteredData);
-		}
+		setDisplayFetchData(filteredData);
 	};
 
 	const handleDateFilterChange = (date, dateString) => {
 		setFilterDate(dateString);
-		if (dateString) {
-			const filteredData = fetchFileList.filter(file => file.closing_date === dateString);
-			setDisplayFetchData(filteredData);
-		} else {
-			setFilterDate(null);
-			setDisplayFetchData(fetchFileList);
-		}
+		const fundType = selectedOption === 1 ? "PCOF" : selectedOption === 2 ? "PFLT" : null;
+		const filteredData = fetchFileList.filter(file => {
+			const matchesDate = !dateString || file.closing_date === dateString;
+			const matchesFundType = !fundType || file.fund_type === fundType;
+			return matchesDate && matchesFundType;
+		});
+
+		setDisplayFetchData(filteredData);
 	};
 
 	useEffect(() => {
@@ -329,7 +330,7 @@ export const UploadFile = ({
 				:
 				<div className={stylesUload.modalDiv} >
 					<Modal
-						title={<span style={{ fontWeight: '500', fontSize: '20px' }}>Import File</span>}
+						title={<ModalComponents.Title title='Import File' showDescription={true} description='Use an existing file or upload a new base data file for borrowing base calculation.' />}
 						centered
 						style={{
 							top: 10
@@ -344,11 +345,12 @@ export const UploadFile = ({
 					>
 						<div>
 							<Radio.Group value={selectedTab} onChange={(e) => setSelectedTab(e.target.value)}>
-								<Radio value="existing">List of Existing Files</Radio>
-								<Radio value="upload">Upload File</Radio>
+								<Radio value="existing">List of existing base data files</Radio>
+								<Radio value="upload">Upload a new base data file</Radio>
 							</Radio.Group>
 						</div>
 						<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
+							{selectedTab === "existing" && <div style={{ padding: '0 10px 0 0' }}>Filter by</div>}
 							<div style={{ padding: '0 5px 0 0' }}>
 								<Calender
 									key={selectedTab}
@@ -439,38 +441,34 @@ export const UploadFile = ({
 
 						{selectedTab === "existing" && (
 							<div className={stylesUload.existingFileDiv}>
-								{/* <div className={stylesUload.headingFiles} >
-									List of Existing Files
-								</div> */}
 								<div className={stylesUload.inputSearch}>
-									<img src={search}></img>
-									<input type="text" placeholder="Search by file name" value={searchTerm} onChange={handleSearch} className={stylesUload.searchinputTag} />
+									<img src={search} alt="search" />
+									<input
+										type="text"
+										placeholder="Search by file name"
+										value={searchTerm}
+										onChange={handleSearch}
+										className={stylesUload.searchinputTag}
+									/>
 								</div>
 								{searchTerm === '' || displayFetchData.length > 0 ? (
-									<div className={stylesUload.tableContainer}>
-										<table className={stylesUload.table}>
-											<thead className={stylesUload.stickyHeader}>
-												<tr className={stylesUload.headRow}>
-													{getFileListColumns.map((column, index) => (
-														<th className={stylesUload.th} key={index}>{column.title}</th>
-													))}
-													<th className={stylesUload.th}></th>
-												</tr>
-											</thead>
-											<tbody>
-												{(displayFetchData).map((file, index) => (
-													<tr key={index}>
-														{getFileListColumns.map((column, colIndex) => (
-															<td className={stylesUload.td} key={colIndex}>{file[column.key]}</td>
-														))}
-														<td className={stylesUload.td}>
-															<UIComponents.Button onClick={() => handleFileClick(file.base_data_file_id, file.file_name, file.user_id, file.closing_date, file.fund_type)} isFilled={true} text={'Use'} />
-														</td>
-													</tr>
-												))}
-											</tbody>
-										</table>
-									</div>
+									<DynamicTableComponents
+										data={displayFetchData}
+										columns={getFileListColumns}
+										additionalColumns={[
+											{
+												label: "",
+												render: (value, file) => (
+													<UIComponents.Button
+														onClick={() => handleFileClick(file.base_data_file_id, file.file_name, file.user_id, file.closing_date, file.fund_type)}
+														isFilled={true}
+														text={'Use'}
+													/>
+												)
+											}
+										]}
+										visibleSortHeader={true}
+									/>
 								) : (
 									<div>No file available. Please upload a new file.</div>
 								)}
