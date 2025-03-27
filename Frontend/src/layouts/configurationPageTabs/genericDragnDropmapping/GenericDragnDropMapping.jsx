@@ -195,7 +195,7 @@ export const GenericDragnDropMapping = ({activeMappingType}) => {
 						onChange={handleFundChange}
 					/>
 
-					<UIComponents.Button text={`Add Master ${capitalizeFirstLetter(activeMappingType)} Type`} isFilled={true} onClick={() => setAddMasterPopupOpen(true)} />
+					<UIComponents.Button text={`+ Add Master ${capitalizeFirstLetter(activeMappingType)} Type`} isFilled={true} onClick={() => setAddMasterPopupOpen(true)} />
 
 				</div>
 			</div>
@@ -204,7 +204,7 @@ export const GenericDragnDropMapping = ({activeMappingType}) => {
 			<DndProvider backend={HTML5Backend}>
 				{entryMappingData && entryMappingData[`unmapped_${activeMappingType}_types`]?.length > 0 ?
 					<div className={styles.unmappedLoanTypesContainer}>
-						<div style={{textAlign: 'left', margin: "5px"}}><b>Unmapped {capitalizeFirstLetter(activeMappingType)} Types</b><Icons.InfoIcon title={`The list of ${capitalizeFirstLetter(activeMappingType)} types from the source files which are not mapped to the standardised master ${capitalizeFirstLetter(activeMappingType)} types.' + '\nDrag and drop items in respective master ${capitalizeFirstLetter(activeMappingType)} types for mapping.`} /></div>
+						<div style={{textAlign: 'left', margin: "5px"}}><b>Unmapped {capitalizeFirstLetter(activeMappingType)} Types</b><Icons.InfoIcon title={`The list of ${capitalizeFirstLetter(activeMappingType)} types from the source files which are not mapped to the standardised master ${capitalizeFirstLetter(activeMappingType)} types.\nDrag and drop items in respective master ${capitalizeFirstLetter(activeMappingType)} types for mapping.`} /></div>
 						<div className={styles.unmappedLoantypeListContainer}>
 							<DroppableList
 								title={`unmapped_${activeMappingType}_types`}
@@ -224,7 +224,7 @@ export const GenericDragnDropMapping = ({activeMappingType}) => {
 				<div className={styles.loanMasterMappingContainer}>
 					{entryMappingData && entryMappingData[`master_${activeMappingType}_types`]?.map((entryType) => (
 						<div key={entryType} className={styles.loanMasterMapContainer}>
-							<div className={styles.loanMasterTab} style={{width: '25%'}}><div className={styles.loanMaster}>{entryType && entryType[`master_${activeMappingType}_type`]}</div></div>
+							<div className={styles.loanMasterTab} style={{width: '25%'}}><div className={styles.loanMaster}>{entryType && entryType[`master_${activeMappingType}_type`]} ({entryMappingData && entryMappingData[`mapped_${activeMappingType}_types`]?.filter(type => entryType[`master_${activeMappingType}_type_id`] == type[`master_${activeMappingType}_type_id`]).length})</div></div>
 							<div className={`${styles.loanMasterTab} ${styles.loanMasterList}`} style={{width: '75%'}}>
 								<DroppableList
 									title={entryType}

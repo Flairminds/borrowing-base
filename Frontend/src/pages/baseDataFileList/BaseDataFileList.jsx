@@ -223,7 +223,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 						<div>
 							<Calender availableClosingDates={reportDates} onDateChange={filterByDate} fileUpload={true} />
 						</div>
-						<CustomButton isFilled={true} onClick={handleSecurityMapping} text="Security Mapping" />
+						{/* <CustomButton isFilled={true} onClick={handleSecurityMapping} text="Security Mapping" /> */}
 						<CustomButton isFilled={true} onClick={handleExtractNew} text="+ Extract New Base Data" title='Upload new files or select existing files to extract new base data' />
 					</div>
 				</div>

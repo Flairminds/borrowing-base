@@ -44,6 +44,35 @@
   border-radius: 0.25rem;
 }
 
+.ant-tabs .ant-tabs-ink-bar {
+  background-color: white;
+  display: none;
+}
+
+.ant-tabs .ant-tabs-tab {
+  padding: 0;
+  margin: 5px;
+  /* background-color: purple; */
+}
+
+.ant-tabs .ant-tabs-tab+.ant-tabs-tab {
+  padding: 0;
+  margin: 5px;
+  /* background-color: red; */
+}
+
+.ant-tabs-tab-btn {
+  padding: 7px 15px;
+  border-radius: 2px;
+}
+
+.ant-tabs-tab-btn:hover {
+  background-color: rgb(241, 241, 241);
+  color: black !important;
+}
+
 .ant-tabs-tab-active .ant-tabs-tab-btn {
-	color: #0EB198 !important;
+  /* font-weight: bold; */
+	color: black !important;
+  background-color: rgb(241, 241, 241);
 }
