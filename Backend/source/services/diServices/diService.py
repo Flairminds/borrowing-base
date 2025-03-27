@@ -66,8 +66,9 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
 
 
             # upload blob in container
-            blob_client.upload_blob(name=blob_name, data=file)
-            file_url = blob_client.url + '/' + blob_name
+            # blob_client.upload_blob(name=blob_name, data=file)
+            # file_url = blob_client.url + '/' + blob_name
+            file_url = '/'
             # add details of files in db
             source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, extraction_status='In Progress', uploaded_by=uploaded_by, file_type=file_type)
 
@@ -1289,23 +1290,48 @@ def extract_validate_store_update(source_file):
         from app import app
         with app.app_context():
             # for source_file in source_files_list:
-            print(source_file["source_file"].id)
+            src_file = source_file["source_file"]
+            print(src_file.id)
+            
+            file_name = src_file.file_name
+            extension = src_file.extension
+            file_full_name = file_name + extension
+
             extraction_response = extract_source_file(source_file)
+            file_type = src_file.file_type
+            engine = db.get_engine()
+        
+            with engine.connect() as connection:
+                sheets = connection.execute(text(f"""
+                    select smm."name"  from sheet_metadata_master smm 
+                    join file_metadata_master fmm on smm.file_id = fmm.id 
+                    where fmm."type" = '{file_type}'
+                """)).fetchall()
+
+            validation_status = None
 
             mismatched_data = []
-            for sheet in extraction_response.get("data"):
-                if sheet == "Borrower Stats":
+            for sheet_tuple in sheets:
+                sheet = sheet_tuple[0]
+                if sheet in extraction_response.get("data"):
                     extracted_df = extraction_response.get("data").get(sheet)
-                    validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
+                    validation_res = validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
+    
+                    validation_status = validation_res.get('success')
+                    if validation_status == False:
+                        break
+                else:
+                    mismatched_data.append({'sheet_name': sheet, 'is_sheet_available': False})
                         
             is_Extracted = False
-            if (not bool(len(mismatched_data))):
+            is_validated = (not bool(len(mismatched_data))) and validation_status 
+            if is_validated:
                 extracted_data = extraction_response.get("data")
                 store_response = store_sheet_data(data_dict=extracted_data)
                 is_Extracted = store_response.get("success")
 
-            update_source_file_info(source_file, isValidated= not bool(len(mismatched_data)), isExtracted=is_Extracted, validation_info=mismatched_data)
-        print("Files extracted, validated, stored")
+            update_source_file_info(source_file, isValidated= is_validated, isExtracted=is_Extracted, validation_info=mismatched_data)
+        print(f"{file_full_name} extracted, validated, stored")
         return ServiceResponse.success()
 
     except Exception as e:
@@ -1523,45 +1549,46 @@ def add_to_base_data_table(file, fund_type, base_data_info_id, company_id, repor
     
 def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
     try:
+        engine = db.get_engine()
         
-        query = (
-            select(
-                ColumnMetadataMaster.column_name,
-                ColumnMetadataMaster.is_required,
-                ColumnMetadataMaster.data_type,
-                ColumnMetadataMaster.column_categories,
-            )
-            .select_from(
-                join(
-                    join(
-                        ColumnMetadataMaster,
-                        SheetMetadataMaster,
-                        ColumnMetadataMaster.sheet_id == SheetMetadataMaster.smm_id
-                    ),
-                    FileMetadataMaster,
-                    SheetMetadataMaster.file_id == FileMetadataMaster.id
-                )
-            )
-            .where(FileMetadataMaster.type == 'master_comp')
-        )
+        with engine.connect() as connection:
+            columns_tuple = connection.execute(text(f"""
+                select cmm.column_name, cmm.is_required, cmm.data_type, cmm.column_categories
+                from column_metadata_master cmm 
+                join sheet_metadata_master smm on cmm.sheet_id = smm.smm_id 
+                where smm."name" = '{sheet_name}'
+            """)).fetchall()
+        
+        # columns = [column[0] for column in columns_tuple]
 
-        get_columns = db.session.execute(query).fetchall()
-        updated_column_values = [(f"{item[3]} {item[0]}", item[1], item[2]) for item in get_columns]
-
-        for column in sheet_df.columns:
-            matching_items = [item for item in updated_column_values if item[0] == column]
-            if matching_items:
-                expected_type = matching_items[0][2]
-                column_list = sheet_df[column].tolist()
-                for value in column_list:
+        for column_tuple in columns_tuple:
+            column = column_tuple[0]
+            expected_type = column_tuple[2]
+            column_categories = '' if column_tuple[3] == None else column_tuple[3]
+            full_column_name = column_categories + ' ' + column
+            if full_column_name not in sheet_df.columns:
+                mismatched_data.append(mismatched_data.append({
+                    'sheet_name': sheet_name,
+                    'column_name': column,
+                    'is_column_available': False
+                }))
+            else:
+                column_list = sheet_df[full_column_name].tolist()
+                for index in range(len(column_list)):
+                    value = column_list[index]
                     if not check_data_type(value, expected_type):
                         mismatched_data.append({
                             'sheet_name': sheet_name,
                             'column_name': column,
                             'value': value,
                             'expected_type': expected_type,
-                            'actual_type': type(value).__name__
+                            'actual_type': type(value).__name__,
+                            'is_sheet_available': True,
+                            'is_column_available': True,
+                            'index': index,
+                            'column_categories': column_categories
                         })
+        return ServiceResponse.success(data=mismatched_data)        
 
     except Exception as e:
         print(e)

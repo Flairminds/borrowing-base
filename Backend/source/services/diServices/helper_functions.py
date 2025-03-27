@@ -2,6 +2,7 @@ import pandas as pd
 from sqlalchemy import text
 from models import db
 from source.utility.ServiceResponse import ServiceResponse
+from datetime import datetime
 
 def truncate_and_rename_columns(df):
     """
@@ -117,8 +118,12 @@ def check_data_type(value, data_type):
         'string': str,
         'float': float,
         'integer': int,
-        # 'datetime': datetime
+        'datetime': datetime
     }
     if value != value:
         return True
-    return isinstance(value, type_mapping[data_type])
+    check = isinstance(value, type_mapping[data_type])
+    if data_type == 'float':
+        if isinstance(value, int):
+            check = True
+    return check
