@@ -66,7 +66,7 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	null as date_of_default,
 	ssmb."Market Value" as market_value,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as current_fixed_charge_coverage_ratio,
-	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA" as current_interest_coverage_ratio,
+	bs."[CM] [CLSO] EBITDA / Cash Interest" as current_interest_coverage_ratio,
 	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization" as initial_debt_to_capitalization_ratio,
 	bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA" as initial_senior_debt_ebitda,
 	bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA" as initial_total_debt_ebitda,
@@ -74,7 +74,7 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	pbb."Total Debt"::float / pbb."LTM EBITDA"::float as current_total_debt_ebitda,
 	pbb."Closing LTM EBITDA"::float * 1000000 as initial_ttm_ebitda,
 	pbb."Current LTM EBITDA"::float * 1000000 as current_ttm_ebitda,
-	ch."As Of Date" as current_as_of_date,
+	bs."[CM] [CS] Updated as of" as current_as_of_date,
 	usbh."Maturity Date" as maturity_date,
 	case
 		when lien_master.lien_type is null then ss."[SI] Credit Facility Lien Type"
@@ -138,7 +138,7 @@ where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id A
 	pbb."Covenant Lite", pbb."Structured Finance Obligation / finance lease", pbb."Material Non-Credit Related Risk", pbb."Primarily Secured by Real Estate",
 	pbb."Interest Only Security", pbb."Satisfies Other Criteria(1)", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio", bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA",
 	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon", ssmb."Market Value", ch."LoanX ID",
-	lien_master.lien_type
+	lien_master.lien_type, bs."[CM] [CLSO] EBITDA / Cash Interest", bs."[CM] [CS] Updated as of"
 	order by security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}).fetchall())
             df = cash_file
             if df.empty:
@@ -148,7 +148,6 @@ where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id A
             df["report_date"] = master_comp_file_details.report_date
             # df.to_csv('file1.csv')
             df.to_sql("pflt_base_data", con=engine, if_exists='append', index=False, method='multi')
-        
 
     except Exception as e:
         raise Exception(e)

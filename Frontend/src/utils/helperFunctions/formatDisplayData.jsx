@@ -1,5 +1,11 @@
 function isDateValid(dateStr) {
 	const startsWithAlphabet = /^[a-zA-Z]/.test(dateStr);
+	const isPercentage = /%{1}$/.test(dateStr);
+
+	if (isPercentage) {
+		return false;
+	}
+
 	if (startsWithAlphabet) {
 		try {
 			const startsWithDay = dateStr.startsWith("Mon") || dateStr.startsWith("Tue") || dateStr.startsWith("Wed") || dateStr.startsWith("Thu") || dateStr.startsWith("Fri") || dateStr.startsWith("Sat") || dateStr.startsWith("Sun");
@@ -13,7 +19,7 @@ function isDateValid(dateStr) {
 	return !isNaN(new Date(dateStr));
 }
 
-export const fmtDisplayVal = (value, decimals = 1) => {
+export const fmtDisplayVal = (value, decimals = 2) => {
 	let temp = value;
 	if (!temp) return temp;
 	// console.log("value is number", typeof(value), value, isNaN(value));
