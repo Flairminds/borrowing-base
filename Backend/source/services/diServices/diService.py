@@ -221,119 +221,117 @@ def extract(file_sheet_map, sheet_column_mapper, args):
     return updated_column_df
 
 def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, fund_type):
-    from app import app
-    with app.app_context():
-        try:
-            engine = db.get_engine()
-            # start_time = datetime.now()
-            # company_name = "Pennant"
-            fund_name = fund_type
-            # FOLDER_PATH = company_name + '/'
+    try:
+        engine = db.get_engine()
+        # start_time = datetime.now()
+        # company_name = "Pennant"
+        fund_name = fund_type
+        # FOLDER_PATH = company_name + '/'
+
+        # blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
+
+        start_time = datetime.now()
+
+        # company_id = None
+        # report_date = None
+        # new_source_file = False
+        cash_file_details = None
+        master_comp_file_details = None
+        market_book_file_details = None
+        # file_sheet_map = None
+
+        for file_id in file_ids:
+            file_details = SourceFiles.query.filter_by(id=file_id).first()
+            # company_id = file_details.company_id
+            # report_date = file_details.report_date
+            # file_name = file_details.file_name + file_details.extension
+            # file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + file_name).download_blob().readall())
+            file_type = file_details.file_type
+            if (file_type == 'cashfile'):
+                cash_file_details = file_details
+                # file_sheet_map = {
+                #     "cash": {
+                #         "file": file,
+                #         "source_file_obj": file_details,
+                #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type), 
+                #         "is_extracted": file_details.is_extracted
+                #     }
+                # }
+            elif file_type == 'master_comp':
+                master_comp_file_details = file_details
+                # file_sheet_map = {
+                #     "master_comp": {
+                #         "file": file,
+                #         "source_file_obj": file_details,
+                #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
+                #         "is_extracted": file_details.is_extracted
+                #     }
+                # }
+            elif file_type == 'market_book_file':
+                market_book_file_details = file_details
+                # file_sheet_map = {
+                #     "market_book_file": {
+                #         "file": file,
+                #         "source_file_obj": file_details,
+                #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
+                #         "is_extracted": file_details.is_extracted
+                #     }
+                # }
+            print(file_type)
+            # if file_details.is_extracted:
+            #     continue
+            # args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
+            # data_dict = extract(file_sheet_map, sheet_column_mapper, args)
+            # process_store_status = helper_functions.process_and_store_data(data_dict, file_id, fund_name, engine)
+            # file_details.is_extracted = True
+            # db.session.add(file_details)
+            # db.session.commit()
+            # new_source_file = True
         
-            # blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
+        
+        # update security mapping table
+        # helper_functions.update_security_mapping(engine)
 
-            start_time = datetime.now()
-
-            # company_id = None
-            # report_date = None
-            # new_source_file = False
-            cash_file_details = None
-            master_comp_file_details = None
-            market_book_file_details = None
-            # file_sheet_map = None
-
-            for file_id in file_ids:
-                file_details = SourceFiles.query.filter_by(id=file_id).first()
-                # company_id = file_details.company_id
-                # report_date = file_details.report_date
-                # file_name = file_details.file_name + file_details.extension
-                # file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + file_name).download_blob().readall())
-                file_type = file_details.file_type
-                if (file_type == 'cashfile'):
-                    cash_file_details = file_details
-                    # file_sheet_map = {
-                    #     "cash": {
-                    #         "file": file,
-                    #         "source_file_obj": file_details,
-                    #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type), 
-                    #         "is_extracted": file_details.is_extracted
-                    #     }
-                    # }
-                elif file_type == 'master_comp':
-                    master_comp_file_details = file_details
-                    # file_sheet_map = {
-                    #     "master_comp": {
-                    #         "file": file,
-                    #         "source_file_obj": file_details,
-                    #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
-                    #         "is_extracted": file_details.is_extracted
-                    #     }
-                    # }
-                elif file_type == 'market_book_file':
-                    market_book_file_details = file_details
-                    # file_sheet_map = {
-                    #     "market_book_file": {
-                    #         "file": file,
-                    #         "source_file_obj": file_details,
-                    #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
-                    #         "is_extracted": file_details.is_extracted
-                    #     }
-                    # }
-                print(file_type)
-                # if file_details.is_extracted:
-                #     continue
-                # args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
-                # data_dict = extract(file_sheet_map, sheet_column_mapper, args)
-                # process_store_status = helper_functions.process_and_store_data(data_dict, file_id, fund_name, engine)
-                # file_details.is_extracted = True
-                # db.session.add(file_details)
-                # db.session.commit()
-                # new_source_file = True
-            
-            
-            # update security mapping table
-            # helper_functions.update_security_mapping(engine)
-
-            # if new_source_file:
-            # if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
-            #     raise Exception('Proper files not selected.')
-            if fund_name == "PCOF":
-                if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
-                    raise Exception('Proper files not selected.')
-                service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details)
-                if service_response["success"]:   
-                    extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
-                else:
-                    raise Exception(service_response.get("message"))
-            else:
-                if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
-                    raise Exception('Proper files not selected.')
-                base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details)
+        # if new_source_file:
+        # if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
+        #     raise Exception('Proper files not selected.')
+        if fund_name == "PCOF":
+            if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
+                raise Exception('Proper files not selected.')
+            service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details)
+            if service_response["success"]:   
                 extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
-            # else:
-                # extracted_base_data_info.status = "repeated"
-            
-            db.session.add(extracted_base_data_info)
-            db.session.commit()
-            end_time = datetime.now()
-            time_difference = (end_time - start_time).total_seconds() * 10**3
-            print('successfully stored base data')
-            existing_record = BaseDataOtherInfo.query.filter_by(fund_type=fund_type).order_by(BaseDataOtherInfo.created_at.desc()).first()
-            if existing_record:
-                determination_date = existing_record.determination_date
-                other_data = existing_record.other_info_list
-                add_base_data_other_info(
-                    extracted_base_data_info.id,
-                    determination_date,
-                    fund_type, 
-                    other_data
-                )
-        except Exception as e:
-            Log.func_error(e)
-            extracted_base_data_info.status = "Failed"
-            extracted_base_data_info.failure_comments = str(e)
-            db.session.add(extracted_base_data_info)
-            db.session.commit()
+            else:
+                raise Exception(service_response.get("message"))
+        else:
+            if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
+                raise Exception('Proper files not selected.')
+            base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details)
+            extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
+        # else:
+            # extracted_base_data_info.status = "repeated"
+        
+        db.session.add(extracted_base_data_info)
+        db.session.commit()
+        end_time = datetime.now()
+        time_difference = (end_time - start_time).total_seconds() * 10**3
+        print('successfully stored base data')
+        existing_record = BaseDataOtherInfo.query.filter_by(fund_type=fund_type).order_by(BaseDataOtherInfo.created_at.desc()).first()
+        if existing_record:
+            determination_date = existing_record.determination_date
+            other_data = existing_record.other_info_list
+            add_base_data_other_info(
+                extracted_base_data_info.id,
+                determination_date,
+                fund_type, 
+                other_data
+            )
+    except Exception as e:
+        extracted_base_data_info.status = "Failed"
+        extracted_base_data_info.failure_comments = str(e)
+        db.session.add(extracted_base_data_info)
+        db.session.commit()
+        raise Exception(e)
 
 def get_sheet_data(blob_data, sheet_name, output_file_name, args):
     try:
@@ -434,12 +432,14 @@ def extract_base_data(file_ids, fund_type):
         db.session.refresh(extracted_base_data_info)
         base_data_info_id = extracted_base_data_info.id
 
-        threading.Thread(target=extract_and_store, kwargs={
-            'file_ids': file_ids,
-            'sheet_column_mapper': sheet_column_mapper,
-            'extracted_base_data_info': extracted_base_data_info,
-            'fund_type': fund_type}
-        ).start()
+        extract_and_store(file_ids=file_ids, sheet_column_mapper=sheet_column_mapper, extracted_base_data_info=extracted_base_data_info, fund_type=fund_type)
+
+        # threading.Thread(target=extract_and_store, kwargs={
+        #     'file_ids': file_ids,
+        #     'sheet_column_mapper': sheet_column_mapper,
+        #     'extracted_base_data_info': extracted_base_data_info,
+        #     'fund_type': fund_type}
+        # ).start()
 
         # extract_and_store(file_ids = file_ids, sheet_column_mapper = sheet_column_mapper, extracted_base_data_info = extracted_base_data_info)
 
@@ -448,16 +448,15 @@ def extract_base_data(file_ids, fund_type):
             "report_date": report_date.strftime("%Y-%m-%d"),
             "company_id": company_id
         }
-        return ServiceResponse.success(message="Base Data extraction in progress.", data=response_data)
+        return ServiceResponse.success(message="Base Data extracted. Redirecting...", data=response_data)
     except Exception as e:
-        Log.func_error(e)
         if base_data_info_id:
             extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(id = base_data_info_id).first()
             extracted_base_data_info.status = ExtractionStatusMaster.FAILED.value
             extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
-        return ServiceResponse.error(message='Extraction failed')
+        raise Exception(e)
 
 
 def get_base_data(info_id):

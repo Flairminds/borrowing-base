@@ -48,16 +48,16 @@ export const AddAssetModal = (
 
 	const handleSampleFileDownload = () => {
 		if (fundType === 'PCOF') {
-			exportToExcel(PCOFAddAssetData, "PCOFAddAssetSampleFile.xlsx");
+			exportToExcel(PCOFAddAssetData, "PCOF - Add Asset.xlsx");
 		} else {
-			exportToExcel(PCOFAddAssetData, "PCOFAddAssetSampleFile.xlsx");
+			exportToExcel(PCOFAddAssetData, "PFLT - Add Asset.xlsx");
 		}
 	};
 
 	return (
 		<>
 			<Modal
-				title={<ModalComponents.Title title='Import File' />}
+				title={<ModalComponents.Title title='What If Analysis - Add Asset' />}
 				centered
 				open={isModalVisible}
 				onOk={handleOk}
@@ -77,7 +77,7 @@ export const AddAssetModal = (
 							onClick={handleSampleFileDownload}
 							style={{ color: "#3B7DDD", textDecoration: "underline", cursor: "pointer" }}
 						>
-							DownloadSimpleFile
+							Download Sample File
 						</div>
 						<div>
 							<div className={Styles.visible}>
@@ -98,7 +98,7 @@ export const AddAssetModal = (
 											Browse
 										</span>
 									</div>
-									<p style={{ fontWeight: '400', color: 'rgb(109, 110, 111)' }}>Supported file format: CSV, XLSX</p>
+									<p style={{ fontWeight: '400', color: 'rgb(109, 110, 111)' }}>Supported file format: XLSX</p>
 								</div>
 							</div>
 							<br />
