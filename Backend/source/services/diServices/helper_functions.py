@@ -3,6 +3,7 @@ from sqlalchemy import text
 from models import db
 from source.utility.ServiceResponse import ServiceResponse
 from datetime import datetime
+from datetime import datetime
 
 def truncate_and_rename_columns(df):
     """

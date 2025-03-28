@@ -66,9 +66,8 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
 
 
             # upload blob in container
-            # blob_client.upload_blob(name=blob_name, data=file)
-            # file_url = blob_client.url + '/' + blob_name
-            file_url = '/'
+            blob_client.upload_blob(name=blob_name, data=file)
+            file_url = blob_client.url + '/' + blob_name
             # add details of files in db
             source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, extraction_status='In Progress', uploaded_by=uploaded_by, file_type=file_type)
 
@@ -1593,7 +1592,7 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
                             'index': index,
                             'column_categories': column_categories
                         })
-        return ServiceResponse.success(data=mismatched_data)        
+        return ServiceResponse.success(data=mismatched_data)       
 
     except Exception as e:
         print(e)
