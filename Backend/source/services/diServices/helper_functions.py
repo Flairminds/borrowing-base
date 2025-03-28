@@ -113,7 +113,7 @@ def store_sheet_data(data_dict):
         return ServiceResponse.error()
     
 
-def check_data_type(value, data_type):
+def check_data_type(value, data_type, exceptions):
     type_mapping = {
         'string': str,
         'float': float,
@@ -126,4 +126,6 @@ def check_data_type(value, data_type):
     if data_type == 'float':
         if isinstance(value, int):
             check = True
+    if value in exceptions:
+        return True
     return check

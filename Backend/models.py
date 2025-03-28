@@ -234,6 +234,7 @@ class ColumnMetadataMaster(db.Model):
     modified_at = db.Column(db.DateTime(timezone=True))
     column_categories = db.Column(db.String(100))
     column_number = db.Column(db.String(100))
+    exceptions = db.Column(db.JSON, nullable=True)
 
 class PfltHaircutConfig(db.Model):
     hc_id = db.Column(db.Integer, primary_key=True, autoincrement=True)

@@ -1553,7 +1553,7 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
         
         with engine.connect() as connection:
             columns_tuple = connection.execute(text(f"""
-                select cmm.column_name, cmm.is_required, cmm.data_type, cmm.column_categories
+                select cmm.column_name, cmm.is_required, cmm.data_type, cmm.column_categories, cmm.exceptions
                 from column_metadata_master cmm 
                 join sheet_metadata_master smm on cmm.sheet_id = smm.smm_id 
                 where smm."name" = '{sheet_name}'
@@ -1564,8 +1564,13 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
         for column_tuple in columns_tuple:
             column = column_tuple[0]
             expected_type = column_tuple[2]
-            column_categories = '' if column_tuple[3] == None else column_tuple[3]
-            full_column_name = column_categories + ' ' + column
+            exceptions = column_tuple[4]
+            if exceptions is None:
+                exceptions = []
+
+            column_categories = column_tuple[3]
+            full_column_name = column_categories + ' ' + column if column_categories is not None else column
+            # print(sheet_name+ ': ' + full_column_name)
             if full_column_name not in sheet_df.columns:
                 mismatched_data.append(mismatched_data.append({
                     'sheet_name': sheet_name,
@@ -1576,7 +1581,7 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
                 column_list = sheet_df[full_column_name].tolist()
                 for index in range(len(column_list)):
                     value = column_list[index]
-                    if not check_data_type(value, expected_type):
+                    if not check_data_type(value, expected_type, exceptions):
                         mismatched_data.append({
                             'sheet_name': sheet_name,
                             'column_name': column,
