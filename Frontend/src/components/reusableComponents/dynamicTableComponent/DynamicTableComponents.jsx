@@ -66,7 +66,7 @@ export const DynamicTableComponents = ({
 					default:
 						break;
 					}
-					row[col.key] = {
+					row[col.key] = row[col.key] && row[col.key]['meta_info'] ? {
 						...row[col.key],
 						isEditable: enableColumnEditing && col.isEditable,
 						cellDisplayValue: cellDV,
@@ -75,7 +75,7 @@ export const DynamicTableComponents = ({
 						cellOldValue: row[col.key] && row[col.key]['meta_info'] ? row[col.key]['old_value'] : row[col.key],
 						isValueEmpty: enableColumnEditing && col.isEditable && !cellDV,
 						InputChnageFun: col.datatype == 'date' ? handleDateChange : handleInputChange
-					};
+					} : row[col.key];
 				});
 				return row;
 			});
@@ -365,12 +365,12 @@ export const DynamicTableComponents = ({
 									{updatedColumnsData?.map((col, colIndex) => {
 										if (selectedColumns.includes(col.label)) {
 											return (
-												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key].isValueEmpty ? tableStyles.emptyValue : tableStyles.td } ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key].cellActualValue != row[col.key].cellOldValue ? tableStyles.editedCell : ''}`}
-													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key].cellActualValue) : row[col.key].isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key].cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key].cellActualValue, row)} title={`${row[col.key].cellActualValue != row[col.key].cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key].cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key].cellOldValue, 3) : fmtDisplayVal(row[col.key].cellTitleValue, 3)}`}>
+												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td } ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''}`}
+													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
 													{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 														(
 															<div className={tableStyles.editIconsContainer}>
-																<DynamicInputComponent inputValue={inputValue?.value} inputType={col.datatype} onInputChange={row[col.key].InputChnageFun} autoFocusInput={true} />
+																<DynamicInputComponent inputValue={inputValue?.value} inputType={col.datatype} onInputChange={row[col.key]?.InputChnageFun} autoFocusInput={true} />
 																<img
 																	src={RightIcon}
 																	alt="Save"
@@ -386,7 +386,7 @@ export const DynamicTableComponents = ({
 															</div>
 														)
 														:
-														col.render ? col.render(row[col.key].cellDisplayValue, row) : (row[col.key].cellDisplayValue ? fmtDisplayVal(row[col.key].cellDisplayValue) : '-')
+														col.render ? col.render(row[col.key]?.cellDisplayValue, row) : (row[col.key]?.cellDisplayValue ? fmtDisplayVal(row[col.key]?.cellDisplayValue) : typeof row[col.key] !== 'object' ? row[col.key] : '-')
 													}
 												</td>
 											);
