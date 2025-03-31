@@ -68,7 +68,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 		'key': 'file_preview',
 		'label': '',
 		'render': (value, row) => <div onClick={() => handleBaseDataPreview(row)}
-			style={{color: '#0EB198', cursor: 'pointer'}}>
+			style={{color: row.extraction_status.toLowerCase() === "completed" ? 'green' : 'red', cursor: 'pointer'}} title={row.extraction_status.toLowerCase() === "completed" ? 'Click to preview base data' : 'Click to view errors' } >
 			{row.extraction_status.toLowerCase() === "completed" ? 'Preview Base Data' : (row.extraction_status.toLowerCase() === "failed" ? 'Errors' : '')}
 		</div>
 	}];

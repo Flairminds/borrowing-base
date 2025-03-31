@@ -336,7 +336,7 @@ export const DynamicTableComponents = ({
 			</div>
 			<div style={{ overflow: 'auto', maxHeight: '75vh' }}>
 				<table className={tableStyles.table} style={{ tableLayout: enableStickyColumns ? 'fixed' : 'auto' }}>
-					<thead>
+					<thead className={tableStyles.headRowThead}>
 						<tr className={tableStyles.headRow}>
 							{updatedColumnsData?.map((col, index) => {
 								if (selectedColumns.includes(col.label)) {
