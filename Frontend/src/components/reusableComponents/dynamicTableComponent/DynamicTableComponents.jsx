@@ -265,6 +265,11 @@ export const DynamicTableComponents = ({
 							{(showCellDetailsModal && enableColumnEditing) &&
 								<>
 									<div style={{ display: 'inline-block', margin: '5px 15px' }}>
+										{isInUpdateMode && (
+											<div className={`${tableStyles.Showbox}`}>
+												Editable Columns
+											</div>
+										)}
 										<FilterOutlined size={30} onClick={(e) => handleOpenFilter(e)} className={`${tableStyles.tableIcons} ${showFilterDiv ? tableStyles.tableIconsActive : ''}`} title='Filter data' />
 										<SettingOutlined size={30} onClick={(e) => handleOpenSettings(e)} className={`${tableStyles.tableIcons} ${showSettingsDiv ? tableStyles.tableIconsActive : ''}`} title='Select/Unselect columns' />
 										<Popover trigger={'click'} placement="bottomRight" className={`${tableStyles.tableIcons}`} title={"Reorder Columns"} content={<BaseFilePreviewReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
@@ -300,7 +305,7 @@ export const DynamicTableComponents = ({
 														return <>
 															<div key={index} className={tableStyles.columnContainer} style={{ fontSize: 'small' }}>
 																<input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)} />
-																<label htmlFor={col.key}>{col.label}</label>
+																<label htmlFor={col.key} className={col.isEditable ? tableStyles.isEdited : ""} >{col.label} </label>
 															</div>
 														</>;
 													}
@@ -365,7 +370,7 @@ export const DynamicTableComponents = ({
 									{updatedColumnsData?.map((col, colIndex) => {
 										if (selectedColumns.includes(col.label)) {
 											return (
-												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td } ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''}`}
+												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td } ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''} ${isInUpdateMode && col.isEditable && tableStyles.isEdited}` }
 													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
 													{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 														(
