@@ -5,8 +5,8 @@ import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import * as XLSX from "xlsx";
-import PCOF_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pcof_other_info.xlsx';
-import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/Sample_pflt_other_info.xlsx';
+import PCOF_OTHER_INFO_SAMPLE from '../../assets/template File/PCOF - Other Info.xlsx';
+import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/PFLT - Other Info.xlsx';
 import { generateBaseDataFile, getDateReport } from "../../services/api";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
 import { PFLTData, PCOFData, OTHER_INFO_OPTIONS, PFLT_COLUMNS_NAME, PCOF_COLUMNS_NAME } from "../../utils/constants/constants";
@@ -26,6 +26,7 @@ export const AddAdditionalInformationModal = (
 		onClose,
 		dataId,
 		data = {},
+		setTriggerBBCalculation,
 		previewFundType,
 		selectedFiles,
 		setSelectedFiles,
@@ -38,7 +39,6 @@ export const AddAdditionalInformationModal = (
 	const [initialFormData, setInitialFormData] = useState(null);
 	const [addType, setAddType] = useState("add");
 	const [uploadedData, setUploadedData] = useState({});
-	const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
 	const navigate = useNavigate();
 
 	const selectedData = previewFundType === "PCOF" ? PCOFData : PFLTData;
@@ -437,7 +437,7 @@ export const AddAdditionalInformationModal = (
 
 		const xlsxArray = XLSX.write(wb, { bookType: "xlsx", type: "array" });
 		const xlsxBlob = new Blob([xlsxArray], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-		saveAs(xlsxBlob, "sample_template.xlsx");
+		saveAs(xlsxBlob, `${previewFundType} - Other Info - ${fmtDisplayVal(baseFilePreviewData.reportDate)}.xlsx`);
 	};
 
 	return (
@@ -449,8 +449,8 @@ export const AddAdditionalInformationModal = (
 				{addType === "upload" && (
 					<>
 						{(typeof data === 'object' && data !== null && Object.keys(data).length > 0)
-							? <a onClick={exportSample} style={{ paddingRight: "1rem", color: "blue", textDecoration: "underline" }}>Export sample file template</a>
-							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{ paddingRight: "1rem" }}>Export sample file template</a>
+							? <a onClick={exportSample} style={{ paddingRight: "1rem", color: "blue", textDecoration: "underline" }}>Download file template</a>
+							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{ paddingRight: "1rem" }}>Export file template</a>
 						}
 					</>
 				)}
@@ -564,7 +564,7 @@ export const AddAdditionalInformationModal = (
 
 										<div className={styles.buttonContainer}>
 											<UIComponents.Button isFilled={true} text="Save" onClick={() => handleSubmit(false)} />
-											<UIComponents.Button isFilled={true} onClick={() => handleSubmit(true)} text={triggerBBCalculation ? '...Calculating' : 'Save & Trigger'} />
+											<UIComponents.Button isFilled={true} onClick={() => handleSubmit(true)} text={'Save & Trigger'} />
 											<UIComponents.Button isFilled={false} text="Cancel" onClick={handleCancel} />
 										</div>
 									</>

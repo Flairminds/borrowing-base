@@ -243,8 +243,11 @@ class PcofDashboardService:
         ]
         return self.convert_to_card_table(df_Availability_Borrower, search_values)
 
-    def get_card_overview(self, base_data_file, card_name):
-        intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
+    def get_card_overview(self, base_data_file, card_name, what_if_analysis):
+        if what_if_analysis:
+            intermediate_calculation = pickle.loads(what_if_analysis.intermediate_calculation)
+        else:
+            intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
 
         df_Availability_Borrower = intermediate_calculation["df_Availability_Borrower"]
         df_principle_obligations = intermediate_calculation["df_principle_obligations"]
