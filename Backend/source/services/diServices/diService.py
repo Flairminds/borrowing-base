@@ -104,7 +104,8 @@ def get_blob_list(fund_type):
             SourceFiles.file_type,
             SourceFiles.report_date,
             SourceFiles.extraction_status,
-            Users.display_name
+            Users.display_name,
+            SourceFiles.validation_info
         ).join(Users, Users.user_id == SourceFiles.uploaded_by).filter(SourceFiles.is_deleted == False, SourceFiles.company_id == company_id, SourceFiles.is_archived == False)
     
     if fund_type:
@@ -145,6 +146,7 @@ def get_blob_list(fund_type):
             "source_file_type": source_file.file_type,
             "extraction_status": source_file.extraction_status,
             "uploaded_by": source_file.display_name,
+            "validation_info": source_file.validation_info
         })
     
     return ServiceResponse.success(data=list_table)
@@ -1558,6 +1560,7 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
             """)).fetchall()
         
         # columns = [column[0] for column in columns_tuple]
+        column_names = ['source_file_id']
 
         for column_tuple in columns_tuple:
             column = column_tuple[0]
