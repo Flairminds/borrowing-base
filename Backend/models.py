@@ -54,6 +54,7 @@ class WhatIfAnalysis(db.Model):
     note = db.Column(db.String)
     is_saved = db.Column(db.Boolean, default=False)
     simulation_type = db.Column(db.String, nullable=False)
+    intermediate_calculation = db.Column(db.PickleType)
 
     # many to one relationship with BaseDataFile
     base_data_file = db.relationship("BaseDataFile", back_populates="what_if_analyses")
@@ -110,6 +111,7 @@ class ModifiedBaseDataFile(db.Model):
     note = db.Column(db.String)
     simulation_type = db.Column(db.String, default="Update asset")
     is_saved = db.Column(db.Boolean, default=False)
+    intermediate_calculation = db.Column(db.PickleType)
 
     # Many to one relationship with BaseDataFile
     base_data_file = db.relationship(
@@ -146,6 +148,7 @@ class ConcentrationTest(db.Model):
     eligible_funds = db.Column(db.ARRAY(db.String))
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_at = db.Column(db.DateTime(timezone=True))
+    comparison_type = db.Column(db.String(25))
 
     # Many-to-many relationship
     funds = db.relationship(
@@ -172,6 +175,7 @@ class SourceFiles(db.Model):
     file_size = db.Column(db.Float, nullable=False)
     company_id = db.Column(db.Integer, nullable=False)
     fund_types = db.Column(db.ARRAY(db.String), nullable=True)
+    validation_info = db.Column(db.JSON, nullable=True)
     is_validated = db.Column(db.Boolean, default=False)
     is_extracted = db.Column(db.Boolean, default=False)
     extraction_status = db.Column(db.String(100))
@@ -184,7 +188,8 @@ class SourceFiles(db.Model):
 
 class SheetMetadataMaster(db.Model):
     smm_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    fund_id = db.Column(db.Integer, db.ForeignKey("fund.id"), nullable=False)
+    file_id = db.Column(db.Integer, db.ForeignKey("file_metadata_master.id"))
+    fund_id = db.Column(db.Integer, nullable=False)
     company_id = db.Column(db.Integer, nullable=False)
     name = db.Column(db.String(255), nullable=False)
     lookup = db.Column(db.String(127), nullable=False, unique=True)
@@ -227,6 +232,9 @@ class ColumnMetadataMaster(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_by = db.Column(db.Integer)
     modified_at = db.Column(db.DateTime(timezone=True))
+    column_categories = db.Column(db.String(100))
+    column_number = db.Column(db.String(100))
+    exceptions = db.Column(db.JSON, nullable=True)
 
 class PfltHaircutConfig(db.Model):
     hc_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -663,3 +671,18 @@ class LienTypeMapping(db.Model):
     is_deleted = db.Column(db.Boolean, default=False)
     deleted_by = db.Column(db.Integer)
     deleted_at = db.Column(db.DateTime(timezone=True))
+
+class FileMetadataMaster(db.Model):
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=True)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    created_by = db.Column(db.Integer, nullable=True)
+    modified_by = db.Column(db.Integer, nullable=True)
+    modified_at = db.Column(db.DateTime(timezone=True))
+    fund_ids = db.Column(db.ARRAY(db.Integer))
+    name = db.Column(db.String)
+    lookup = db.Column(db.String)
+    type = db.Column(db.String)
+    description = db.Column(db.String)
+    is_input = db.Column(db.Boolean)
+    is_output = db.Column(db.Boolean)

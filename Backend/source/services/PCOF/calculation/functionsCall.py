@@ -632,7 +632,7 @@ def intermediate_metrics(df_PL_BB_Build, df_PL_BB_Output):
                 axis=1,
             )
         except Exception as e:
-            print("Exception occured:", e)
+            raise Exception(e)
 
         return df_PL_BB_Output
 
@@ -706,85 +706,88 @@ def calculate_bb(
     df_principle_obligations,
     df_PL_BB_Output=pd.DataFrame(),
 ):
-    # cash_index = df_PL_BB_Build[df_PL_BB_Build['Investment Name']=='cash'].index[0]
-    # Function call for SubscriptionBB
-    df_PL_BB_Build = df_PL_BB_Build.copy()
-    df_Inputs_Other_Metrics = df_Inputs_Other_Metrics.copy()
-    df_Availability_Borrower = df_Availability_Borrower.copy()
-    df_PL_BB_Results = df_PL_BB_Results.copy()
-    df_subscriptionBB = df_subscriptionBB.copy()
-    df_security = df_security.copy()
-    df_industry = df_industry.copy()
-    df_Input_pricing = df_Input_pricing.copy()
-    df_Inputs_Portfolio_LeverageBorrowingBase = (
-        df_Inputs_Portfolio_LeverageBorrowingBase.copy()
-    )
-    df_Obligors_Net_Capital = df_Obligors_Net_Capital.copy()
-    df_Inputs_Advance_Rates = df_Inputs_Advance_Rates.copy()
-    df_Inputs_Concentration_limit = df_Inputs_Concentration_limit.copy()
-    df_principle_obligations = df_principle_obligations.copy()
+    try:
+        # cash_index = df_PL_BB_Build[df_PL_BB_Build['Investment Name']=='cash'].index[0]
+        # Function call for SubscriptionBB
+        df_PL_BB_Build = df_PL_BB_Build.copy()
+        df_Inputs_Other_Metrics = df_Inputs_Other_Metrics.copy()
+        df_Availability_Borrower = df_Availability_Borrower.copy()
+        df_PL_BB_Results = df_PL_BB_Results.copy()
+        df_subscriptionBB = df_subscriptionBB.copy()
+        df_security = df_security.copy()
+        df_industry = df_industry.copy()
+        df_Input_pricing = df_Input_pricing.copy()
+        df_Inputs_Portfolio_LeverageBorrowingBase = (
+            df_Inputs_Portfolio_LeverageBorrowingBase.copy()
+        )
+        df_Obligors_Net_Capital = df_Obligors_Net_Capital.copy()
+        df_Inputs_Advance_Rates = df_Inputs_Advance_Rates.copy()
+        df_Inputs_Concentration_limit = df_Inputs_Concentration_limit.copy()
+        df_principle_obligations = df_principle_obligations.copy()
 
-    df_subscriptionBB = calculation_for_subscription(
-        df_subscriptionBB, df_Inputs_Concentration_limit, df_Inputs_Advance_Rates
-    )
+        df_subscriptionBB = calculation_for_subscription(
+            df_subscriptionBB, df_Inputs_Concentration_limit, df_Inputs_Advance_Rates
+        )
 
-    # I69
-    total_capitalCalled = df_subscriptionBB["Capital Called"].sum()
-    # J69
+        # I69
+        total_capitalCalled = df_subscriptionBB["Capital Called"].sum()
+        # J69
 
-    total_uncalled_Capital = df_subscriptionBB["Uncalled Capital"].sum()
+        total_uncalled_Capital = df_subscriptionBB["Uncalled Capital"].sum()
 
-    df_PL_BB_Build = calculation_for_build(
-        df_PL_BB_Build,
-        df_Inputs_Other_Metrics,
-        df_Availability_Borrower,
-        total_capitalCalled,
-        df_Inputs_Portfolio_LeverageBorrowingBase,
-        total_uncalled_Capital,
-        df_Obligors_Net_Capital,
-    )
+        df_PL_BB_Build = calculation_for_build(
+            df_PL_BB_Build,
+            df_Inputs_Other_Metrics,
+            df_Availability_Borrower,
+            total_capitalCalled,
+            df_Inputs_Portfolio_LeverageBorrowingBase,
+            total_uncalled_Capital,
+            df_Obligors_Net_Capital,
+        )
 
-    # passing updated segemtation overview
+        # passing updated segemtation overview
 
-    # df_segmentation_overview = calculation_for_Segmentation_overview(df_industry,df_PL_BB_Build)
+        # df_segmentation_overview = calculation_for_Segmentation_overview(df_industry,df_PL_BB_Build)
 
-    df_PL_BB_Results, df_security, df_industry = calculation_results_function_Call(
-        df_PL_BB_Results,
-        df_PL_BB_Build,
-        df_Inputs_Other_Metrics,
-        df_security,
-        df_industry,
-        df_Availability_Borrower,
-    )
+        df_PL_BB_Results, df_security, df_industry = calculation_results_function_Call(
+            df_PL_BB_Results,
+            df_PL_BB_Build,
+            df_Inputs_Other_Metrics,
+            df_security,
+            df_industry,
+            df_Availability_Borrower,
+        )
 
-    df_Availability_Borrower = calculation_for_Availability(
-        df_Availability_Borrower,
-        df_subscriptionBB,
-        df_PL_BB_Results,
-        df_PL_BB_Build,
-        df_Input_pricing,
-    )
-    df_segmentation_overview = calculation_for_Segmentation_overview(
-        df_industry, df_PL_BB_Build
-    )
+        df_Availability_Borrower = calculation_for_Availability(
+            df_Availability_Borrower,
+            df_subscriptionBB,
+            df_PL_BB_Results,
+            df_PL_BB_Build,
+            df_Input_pricing,
+        )
+        df_segmentation_overview = calculation_for_Segmentation_overview(
+            df_industry, df_PL_BB_Build
+        )
 
-    df_PL_BB_Build = df_PL_BB_Build.fillna(0)
-    df_PL_BB_Output = intermediate_metrics(df_PL_BB_Build, df_PL_BB_Output)
+        df_PL_BB_Build = df_PL_BB_Build.fillna(0)
+        df_PL_BB_Output = intermediate_metrics(df_PL_BB_Build, df_PL_BB_Output)
 
-    return (
-        df_PL_BB_Build,
-        df_Inputs_Other_Metrics,
-        df_Availability_Borrower,
-        df_PL_BB_Results,
-        df_subscriptionBB,
-        df_security,
-        df_industry,
-        df_Input_pricing,
-        df_Inputs_Portfolio_LeverageBorrowingBase,
-        df_Obligors_Net_Capital,
-        df_Inputs_Advance_Rates,
-        df_Inputs_Concentration_limit,
-        df_principle_obligations,
-        df_segmentation_overview,
-        df_PL_BB_Output,
-    )
+        return (
+            df_PL_BB_Build,
+            df_Inputs_Other_Metrics,
+            df_Availability_Borrower,
+            df_PL_BB_Results,
+            df_subscriptionBB,
+            df_security,
+            df_industry,
+            df_Input_pricing,
+            df_Inputs_Portfolio_LeverageBorrowingBase,
+            df_Obligors_Net_Capital,
+            df_Inputs_Advance_Rates,
+            df_Inputs_Concentration_limit,
+            df_principle_obligations,
+            df_segmentation_overview,
+            df_PL_BB_Output,
+        )
+    except Exception as e:
+        raise Exception(e)

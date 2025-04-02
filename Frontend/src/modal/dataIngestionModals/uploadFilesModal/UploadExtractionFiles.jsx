@@ -76,7 +76,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 	return (
 		<>
 			<Modal
-				title={<span style={{ color: '#909090', fontWeight: '500', fontSize: '14px', padding: '0 0 0 3%' }}>Upload Files</span>}
+				title={<ModalComponents.Title title='Upload File(s)' showDescription={true} description='Upload source files for base data extraction' />}
 				centered
 				open={uploadFilesPopupOpen}
 				onCancel={handleCancel}

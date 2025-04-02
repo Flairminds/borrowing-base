@@ -13,6 +13,7 @@ import { fmtDisplayVal } from '../../../utils/helperFunctions/formatDisplayData'
 import { filterData } from '../../../utils/helperFunctions/HeaderColumnFilter';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePreviewReorder.jsx/BaseFilePreviewReorder';
+import { Icons } from '../../icons';
 import { DynamicInputComponent } from '../dynamicInputsComponent/DynamicInputComponent';
 import tableStyles from './DynamicTableComponents.module.css';
 
@@ -53,7 +54,33 @@ export const DynamicTableComponents = ({
 	const [displayData, setDisplayData] = useState([]);
 
 	useEffect(() => {
-		setDisplayData(data);
+		if (data) {
+			let temp = data;
+			temp = temp.map((row, i) => {
+				const tempCols = updatedColumnsData.map((col, j) => {
+					const cellAV = row[col.key] && row[col.key]['meta_info'] ? row[col.key]['value'] : row[col.key];
+					let cellDV = row[col.key] && row[col.key]['meta_info'] ? row[col.key]['display_value'] : row[col.key];
+					switch (col.unit) {
+					case 'percent': cellDV = `${(cellAV * 100).toFixed(2)}%`; break;
+					case 'date': cellDV = `${((new Date(cellAV)).toLocaleDateString("en-US"))}`; break;
+					default:
+						break;
+					}
+					row[col.key] = row[col.key] && row[col.key]['meta_info'] ? {
+						...row[col.key],
+						isEditable: enableColumnEditing && col.isEditable,
+						cellDisplayValue: cellDV,
+						cellActualValue: cellAV,
+						cellTitleValue: row[col.key] && row[col.key]['meta_info'] ? row[col.key]['title'] : row[col.key],
+						cellOldValue: row[col.key] && row[col.key]['meta_info'] ? row[col.key]['old_value'] : row[col.key],
+						isValueEmpty: enableColumnEditing && col.isEditable && !cellDV,
+						InputChnageFun: col.datatype == 'date' ? handleDateChange : handleInputChange
+					} : row[col.key];
+				});
+				return row;
+			});
+			setDisplayData(temp);
+		}
 	}, [data]);
 
 	useEffect(() => {
@@ -125,18 +152,25 @@ export const DynamicTableComponents = ({
 		}
 	};
 
-	const handleCellEdit = (rowIndex, columnkey, cellValue, dataType, rowId) => {
-		setEditingCell({ rowIndex, columnkey, id: rowId.value });
+	const handleCellEdit = (rowIndex, columnkey, cellValue, dataType, rowId, unit) => {
+		setEditingCell({ rowIndex, columnkey, id: rowId.value, unit: unit });
 		if (dataType === "date" && cellValue) {
 			setInputValue({
 				value: dayjs(cellValue),
 				displayValue: cellValue
 			});
 		} else {
-			setInputValue({
-				value: cellValue,
-				displayValue: cellValue
-			});
+			if (unit == 'percent') {
+				setInputValue({
+					value: cellValue * 100,
+					displayValue: cellValue * 100
+				});
+			} else {
+				setInputValue({
+					value: cellValue,
+					displayValue: cellValue
+				});
+			}
 		}
 		// setInputValue(cellValue);
 	};
@@ -157,8 +191,12 @@ export const DynamicTableComponents = ({
 
 	const handleSaveEdit = async () => {
 
-		const { rowIndex, columnkey, id } = editingCell;
-		const saveStatus = await onChangeSave(rowIndex, columnkey, inputValue.displayValue, id);
+		const { rowIndex, columnkey, id, unit } = editingCell;
+		let value = inputValue.displayValue;
+		if (unit == 'percent') {
+			value = value / 100;
+		}
+		const saveStatus = await onChangeSave(rowIndex, columnkey, value, id);
 
 		if (saveStatus.success) {
 			setEditingCell(null);
@@ -244,24 +282,33 @@ export const DynamicTableComponents = ({
 							}
 						</div>
 						{showSettingsDiv &&
-							<div style={{ position: 'absolute', display: 'flex', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px' }}>
-								<div className={tableStyles.crossIcon}><CloseOutlined onClick={handleOpenSettings} /></div>
-								{breaks?.map((b, i) => {
-									if (i !== 0) {
-										return (
-											<div className={tableStyles.columnSelectionContainer} key={i}>
-												{columnSelectionList?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
-													return <>
-														<div key={index} className={tableStyles.columnContainer} style={{ fontSize: 'small' }}>
-															<input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)} />
-															<label htmlFor={col.key}>{col.label}</label>
-														</div>
-													</>;
-												}
-												)}
-											</div>);
-									}
-								})}
+							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px' }}>
+								<div style={{display: 'flex', margin: '5px 0', justifyContent: 'space-between'}}>
+									<div>
+										<Icons.InfoIcon style={{margin: '0 5px 0 0'}} />Select columns to view data in the table
+									</div>
+									<div className={tableStyles.crossIcon}>
+										<CloseOutlined onClick={handleOpenSettings} />
+									</div>
+								</div>
+								<div style={{display: 'flex'}}>
+									{breaks?.map((b, i) => {
+										if (i !== 0) {
+											return (
+												<div className={tableStyles.columnSelectionContainer} key={i}>
+													{columnSelectionList?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
+														return <>
+															<div key={index} className={tableStyles.columnContainer} style={{ fontSize: 'small' }}>
+																<input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)} />
+																<label htmlFor={col.key}>{col.label}</label>
+															</div>
+														</>;
+													}
+													)}
+												</div>);
+										}
+									})}
+								</div>
 							</div>}
 						{showFilterDiv &&
 							filterSelections && filterSelections.length > 0 &&
@@ -317,32 +364,13 @@ export const DynamicTableComponents = ({
 								<tr key={rowIndex} className={tableStyles.tr} onClick={() => setActiveRowIndex(rowIndex)}>
 									{updatedColumnsData?.map((col, colIndex) => {
 										if (selectedColumns.includes(col.label)) {
-											const isEditable = enableColumnEditing && col.isEditable;
-											let cellDisplayValue = row[col.key];
-											let cellActualValue = row[col.key];
-											let cellTitleValue = row[col.key];
-											let cellOldValue = row[col.key];
-											if (row[col.key] && row[col.key]['meta_info']) {
-												cellDisplayValue = row[col.key]['display_value'];
-												cellActualValue = row[col.key]['value'];
-												switch (col.unit) {
-												case 'percent': cellDisplayValue = `${(cellActualValue * 100).toFixed(2)}%`; break;
-												case 'date': cellDisplayValue = `${((new Date(cellActualValue)).toLocaleDateString("en-US"))}`; break;
-												default:
-													break;
-												}
-												cellTitleValue = row[col.key]['title'];
-												cellOldValue = row[col.key]['old_value'];
-											}
-											const isValueEmpty = isEditable && !cellDisplayValue;
-											const InputChnageFun = col.datatype == 'date' ? handleDateChange : handleInputChange;
 											return (
-												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : isValueEmpty ? tableStyles.emptyValue : tableStyles.td } ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${cellActualValue != cellOldValue ? tableStyles.editedCell : ''}`}
-													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, cellActualValue) : isEditable ? () => handleCellEdit(rowIndex, col.key, cellActualValue, col.datatype, row.id) : () => col.clickHandler && col.clickHandler(cellActualValue, row)} title={`${cellActualValue != cellOldValue ? 'Updated: ' + fmtDisplayVal(cellActualValue) + '\nPrevious: ' + fmtDisplayVal(cellOldValue) : fmtDisplayVal(cellTitleValue)}`}>
+												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td } ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''}`}
+													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
 													{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 														(
 															<div className={tableStyles.editIconsContainer}>
-																<DynamicInputComponent inputValue={inputValue?.value} inputType={col.datatype} onInputChange={InputChnageFun} autoFocusInput={true} />
+																<DynamicInputComponent inputValue={inputValue?.value} inputType={col.datatype} onInputChange={row[col.key]?.InputChnageFun} autoFocusInput={true} />
 																<img
 																	src={RightIcon}
 																	alt="Save"
@@ -358,7 +386,7 @@ export const DynamicTableComponents = ({
 															</div>
 														)
 														:
-														col.render ? col.render(cellDisplayValue, row) : (cellDisplayValue ? fmtDisplayVal(cellDisplayValue) : '-')
+														col.render ? col.render(row[col.key]?.cellDisplayValue, row) : (row[col.key]?.cellDisplayValue ? fmtDisplayVal(row[col.key]?.cellDisplayValue) : typeof row[col.key] !== 'object' ? row[col.key] : '-')
 													}
 												</td>
 											);

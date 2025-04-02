@@ -23,6 +23,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	// const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
 	const [obligorFliteredValue, setObligorFliteredValue] = useState([]);
 	const [securityFilteredValue, setSecurityFilteredValue] = useState([]);
+	const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
 	const [filteredData, setFilteredData] = useState(baseFilePreviewData?.baseData?.data);
 	const [selectedFiles, setSelectedFiles] = useState([]);
 	const [isOpenFileUpload, setIsOpenFileUpload] = useState(false);
@@ -220,7 +221,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						<div>
 							<div className={styles.cardContainer}>
 								{baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
-									<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/security-mapping') : () => {}}>
+									<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/configuration?tab=security_mapping') : () => {}}>
 										<div>{cardTitle}</div>
 										<div className={styles.cardTitle}><b>{fmtDisplayVal(baseFilePreviewData?.cardData[cardTitle], 0)}</b></div>
 									</div>
@@ -228,8 +229,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							</div>
 						</div>
 						<div>
-							<UIComponents.Button onClick={showModal} isFilled={true} text='Add Securities Data' btnDisabled={previewFundType == 'PCOF' ? false : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : 'Add more securities data in the base data'} />
-							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' btnDisabled={previewFundType == 'PCOF' ? false : false} title={previewFundType == 'PCOF' ? 'This feature is a work in progress for PCOF and will be available soon.' : ''} />
+							<UIComponents.Button onClick={showModal} isFilled={true} text='Add Securities Data' btnDisabled={previewFundType == 'PCOF' ? false : false} title={'Add more securities data in the base data'} />
+							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PCOF' ? false : false} />
 						</div>
 					</div>
 					<div>
@@ -254,6 +255,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				setIsAddFieldModalOpen={setIsAddFieldModalOpen}
 				onClose={() => setIsAddFieldModalOpen(false)}
 				dataId={baseFilePreviewData.infoId || infoId}
+				setTriggerBBCalculation={setTriggerBBCalculation}
 				data={baseFilePreviewData.otherInfo}
 				previewFundType={previewFundType}
 				selectedFiles={selectedFiles}

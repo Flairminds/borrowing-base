@@ -1,7 +1,7 @@
 from datetime import datetime
 from flask import jsonify, request
 
-from models import BaseDataFile
+from models import BaseDataFile, ModifiedBaseDataFile, WhatIfAnalysis
 from source.utility.HTTPResponse import HTTPResponse
 from source.services.commons import commonServices
 from source.services import dashboardService
@@ -10,6 +10,7 @@ from source.services.PFLT.PfltDashboardService import PfltDashboardService
 from Exceptions.StdFileFormatException import StdFileFormatException
 from source.services.PCOF.standardFileFormat import std_file_format as PCOF_STANDARD_FILE_FORMAT
 from source.services.PFLT.PFLT_std_file_format import std_file_format as PFLT_STANDARD_FILE_FORMAT
+from source.utility.Log import Log
 
 pcofDashboardService = PcofDashboardService()
 pfltDashboardService = PfltDashboardService()
@@ -89,18 +90,28 @@ def get_card_overview_data():
         base_data_file_id = data.get("base_data_file_id")
         card_name = data["card_name"]
         user_id = data.get("user_id")
+        what_if_analysis_id = data.get("what_if_analysis_id")
+        what_if_analysis_type = data.get("what_if_analysis_type")
 
         base_data_file = commonServices.get_base_data_file(
             base_data_file_id=base_data_file_id, user_id=user_id
         )
+        what_if_analysis = None
+        if what_if_analysis_id and what_if_analysis_type:
+            if what_if_analysis_type == "Update asset":
+                what_if_analysis = ModifiedBaseDataFile.query.filter_by(id=what_if_analysis_id).first()
+                base_data_file = BaseDataFile.query.filter_by(id=what_if_analysis.base_data_file_id).first()
+            else:
+                what_if_analysis = WhatIfAnalysis.query.filter_by(id=what_if_analysis_id).first()
+                base_data_file = BaseDataFile.query.filter_by(id=what_if_analysis.base_data_file_id).first()
         if base_data_file.fund_type == "PCOF":
             card_overview_response = pcofDashboardService.get_card_overview(
-                base_data_file, card_name
+                base_data_file, card_name, what_if_analysis
             )
         else:
             pfltDashbardService = PfltDashboardService()
             card_overview_response = pfltDashbardService.get_card_overview(
-                base_data_file, card_name
+                base_data_file, card_name, what_if_analysis
             )
 
         return card_overview_response
@@ -232,6 +243,7 @@ def calculate_bb():
 
         return HTTPResponse.success(result=response)
     except Exception as e:
+        Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error")
 
 def get_intermediate_metrics():
