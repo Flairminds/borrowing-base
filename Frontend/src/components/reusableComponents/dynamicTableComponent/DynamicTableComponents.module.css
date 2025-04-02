@@ -206,3 +206,7 @@
 .tableIconsActive {
     background-color: #c7c7c7;
 }
+
+.isManuallyAdd{
+    background-color:rgb(237, 71, 71);
+}
