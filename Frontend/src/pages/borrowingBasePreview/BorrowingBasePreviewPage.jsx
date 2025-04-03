@@ -266,6 +266,9 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				getborrowingbasedata= {getborrowingbasedata}
 			/>
 			<FileUploadModal
+			    data={filteredData}
+				columns={baseFilePreviewData?.baseData?.columns}
+				previewFundType={previewFundType}
 				isOpenFileUpload={isOpenFileUpload}
 				handleCancel={handleCancel}
 				handleBaseDataPreview={handleBaseDataPreview}
