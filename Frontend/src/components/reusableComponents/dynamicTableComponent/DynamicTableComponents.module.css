@@ -206,3 +206,21 @@
 .tableIconsActive {
     background-color: #c7c7c7;
 }
+
+.isEdited {
+    background-color: rgb(99, 175, 237);
+}
+.Showbox {
+    position: absolute;
+    top: 50%;
+    left: -120px;
+    transform: translateY(-50%);
+    background-color: rgb(99, 175, 237); /* Light Blue */
+    color: black;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
