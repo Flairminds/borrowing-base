@@ -99,19 +99,22 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 							<span style={{display: 'inline-block', backgroundColor: STATUS_BG_COLOR[row.extraction_status], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
 								{row.extraction_status}
 							</span>
-							{row.extraction_status === 'Failed' && <span
-                                onClick={() => {
-                                    const recordData = Object.entries(row);
-                                    recordData.forEach((data)=>{
-                                        if (data[0] === "validation_info") {
-											setShowErrorsModal(true)
-											setValidationInfoData(data[1])
-                                        }
-                                    })
-                                }}
-                            >
-                                Show more
-                            </span>}
+							{row.extraction_status === 'Failed' && row.validation_info &&
+								<span
+									style={{cursor: "pointer", paddingLeft: "3px"}}
+									onClick={() => {
+										const recordData = Object.entries(row);
+										recordData.forEach((data)=>{
+											if (data[0] === "validation_info") {
+												setShowErrorsModal(true)
+												setValidationInfoData(data[1])
+											}
+										})
+									}}
+								>
+									Show more
+								</span>
+							}
 						</div>
 					)
 				};

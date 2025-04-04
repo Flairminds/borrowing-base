@@ -136,6 +136,12 @@ def get_bb_data_of_date(selected_date, user_id, base_data_file_id):
             jsonify({"error": True, "message": f"No data found for {selected_date}"}),
             404,
         )
+    
+    base_data_files = BaseDataFile.query.filter_by(user_id=user_id).all()
+    closing_dates = [
+        base_data_file.closing_date.strftime("%Y-%m-%d")
+        for base_data_file in base_data_files
+    ]
 
     pickle_borrowing_base_date_wise_results = borrowing_base_results.response
     borrowing_base_date_wise_results = pickle.loads(
@@ -144,6 +150,8 @@ def get_bb_data_of_date(selected_date, user_id, base_data_file_id):
     borrowing_base_date_wise_results["base_data_file_id"] = borrowing_base_results.id
     borrowing_base_date_wise_results["file_name"] = borrowing_base_results.file_name
     borrowing_base_date_wise_results["fund_name"] = borrowing_base_results.fund_type
+    borrowing_base_date_wise_results["closing_date"] = borrowing_base_results.closing_date.strftime("%Y-%m-%d")
+    borrowing_base_date_wise_results["closing_dates"] = closing_dates
     return jsonify(borrowing_base_date_wise_results)
 
 

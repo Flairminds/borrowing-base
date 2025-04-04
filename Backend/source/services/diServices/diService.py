@@ -1573,11 +1573,11 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
             full_column_name = column_categories + ' ' + column if column_categories is not None else column
             # print(sheet_name+ ': ' + full_column_name)
             if full_column_name not in sheet_df.columns:
-                mismatched_data.append(mismatched_data.append({
+                mismatched_data.append({
                     'sheet_name': sheet_name,
                     'column_name': column,
                     'is_column_available': False
-                }))
+                })
             else:
                 column_list = sheet_df[full_column_name].tolist()
                 for index in range(len(column_list)):
