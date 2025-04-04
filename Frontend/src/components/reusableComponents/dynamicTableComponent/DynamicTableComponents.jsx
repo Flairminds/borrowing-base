@@ -1,5 +1,6 @@
-import { SettingOutlined, DragOutlined, CloseOutlined, FilterOutlined, EditOutlined } from '@ant-design/icons';
-import { Popover, Switch, Select } from 'antd';
+import { SettingOutlined, CloseOutlined, FilterOutlined, EditOutlined } from '@ant-design/icons';
+import { Popover, Select } from 'antd';
+import Input from 'antd/es/input/Input';
 import dayjs from "dayjs";
 import React, { useEffect, useState } from 'react';
 import { TbReorder } from "react-icons/tb";
@@ -16,7 +17,6 @@ import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePre
 import { Icons } from '../../icons';
 import { DynamicInputComponent } from '../dynamicInputsComponent/DynamicInputComponent';
 import tableStyles from './DynamicTableComponents.module.css';
-import Input from 'antd/es/input/Input';
 
 export const DynamicTableComponents = ({
 	data,
@@ -64,10 +64,10 @@ export const DynamicTableComponents = ({
 					const cellAV = row[col.key] && row[col.key]['meta_info'] ? row[col.key]['value'] : row[col.key];
 					let cellDV = row[col.key] && row[col.key]['meta_info'] ? row[col.key]['display_value'] : row[col.key];
 					switch (col.unit) {
-						case 'percent': cellDV = `${(cellAV * 100).toFixed(2)}%`; break;
-						case 'date': cellDV = `${((new Date(cellAV)).toLocaleDateString("en-US"))}`; break;
-						default:
-							break;
+					case 'percent': cellDV = `${(cellAV * 100).toFixed(2)}%`; break;
+					case 'date': cellDV = `${((new Date(cellAV)).toLocaleDateString("en-US"))}`; break;
+					default:
+						break;
 					}
 					row[col.key] = row[col.key] && row[col.key]['meta_info'] ? {
 						...row[col.key],
@@ -255,7 +255,6 @@ export const DynamicTableComponents = ({
 			setDisplayData(filterData([...data], columnName, newSortType));
 		}
 	};
-	console.log("ColumnSearch :- ", columnSearch);
 
 	return (
 		<div>
@@ -291,7 +290,7 @@ export const DynamicTableComponents = ({
 							}
 						</div>
 						{showSettingsDiv &&
-							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px', minWidth: '1400px' }}>
+							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: '#F5F5F5', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px', minWidth: '1400px' }}>
 								<div style={{ display: 'flex', margin: '5px 0', justifyContent: 'space-between', alignItems: 'center' }}>
 									<div>
 										<Icons.InfoIcon style={{ margin: '0 5px 0 0' }} />
