@@ -16,6 +16,7 @@ import { BaseFilePreviewReorder } from '../../columnReorderComponent/baseFilePre
 import { Icons } from '../../icons';
 import { DynamicInputComponent } from '../dynamicInputsComponent/DynamicInputComponent';
 import tableStyles from './DynamicTableComponents.module.css';
+import Input from 'antd/es/input/Input';
 
 export const DynamicTableComponents = ({
 	data,
@@ -52,6 +53,8 @@ export const DynamicTableComponents = ({
 	const [isInUpdateMode, setIsInUpdateMode] = useState(false);
 	const [selectedSort, setSelectedSort] = useState({ name: null, type: null });
 	const [displayData, setDisplayData] = useState([]);
+	const [columnSearch, setColumnSearch] = useState('');
+
 
 	useEffect(() => {
 		if (data) {
@@ -61,10 +64,10 @@ export const DynamicTableComponents = ({
 					const cellAV = row[col.key] && row[col.key]['meta_info'] ? row[col.key]['value'] : row[col.key];
 					let cellDV = row[col.key] && row[col.key]['meta_info'] ? row[col.key]['display_value'] : row[col.key];
 					switch (col.unit) {
-					case 'percent': cellDV = `${(cellAV * 100).toFixed(2)}%`; break;
-					case 'date': cellDV = `${((new Date(cellAV)).toLocaleDateString("en-US"))}`; break;
-					default:
-						break;
+						case 'percent': cellDV = `${(cellAV * 100).toFixed(2)}%`; break;
+						case 'date': cellDV = `${((new Date(cellAV)).toLocaleDateString("en-US"))}`; break;
+						default:
+							break;
 					}
 					row[col.key] = row[col.key] && row[col.key]['meta_info'] ? {
 						...row[col.key],
@@ -252,6 +255,7 @@ export const DynamicTableComponents = ({
 			setDisplayData(filterData([...data], columnName, newSortType));
 		}
 	};
+	console.log("ColumnSearch :- ", columnSearch);
 
 	return (
 		<div>
@@ -287,34 +291,55 @@ export const DynamicTableComponents = ({
 							}
 						</div>
 						{showSettingsDiv &&
-							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px' }}>
-								<div style={{display: 'flex', margin: '5px 0', justifyContent: 'space-between'}}>
+							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px', minWidth: '1400px' }}>
+								<div style={{ display: 'flex', margin: '5px 0', justifyContent: 'space-between', alignItems: 'center' }}>
 									<div>
-										<Icons.InfoIcon style={{margin: '0 5px 0 0'}} />Select columns to view data in the table
+										<Icons.InfoIcon style={{ margin: '0 5px 0 0' }} />
+										Select columns to view data in the table
 									</div>
 									<div className={tableStyles.crossIcon}>
 										<CloseOutlined onClick={handleOpenSettings} />
 									</div>
 								</div>
-								<div style={{display: 'flex'}}>
+								<Input
+									placeholder="Search columns"
+									allowClear
+									onChange={(e) => setColumnSearch(e.target.value)}
+									style={{ marginBottom: 8 }}
+								/>
+								<div style={{ display: 'flex', flexWrap: 'wrap' }}>
 									{breaks?.map((b, i) => {
 										if (i !== 0) {
+											const filteredCols = columnSelectionList
+												.slice(breaks[i - 1], breaks[i])
+												.filter(col => col.label.toLowerCase().includes(columnSearch?.toLowerCase()));
+
+											if (filteredCols.length === 0) return null;
 											return (
 												<div className={tableStyles.columnSelectionContainer} key={i}>
-													{columnSelectionList?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
-														return <>
-															<div key={index} className={tableStyles.columnContainer} style={{ fontSize: 'small' }}>
-																<input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)} />
-																<label htmlFor={col.key} className={col.isEditable ? tableStyles.isEdited : ""} >{col.label} </label>
-															</div>
-														</>;
-													}
-													)}
-												</div>);
+													{filteredCols.map((col, index) => (
+														<div key={index} className={tableStyles.columnContainer} style={{ fontSize: 'small' }}>
+															<input
+																className={tableStyles.checkbox}
+																type="checkbox"
+																id={col.key}
+																name={col.key}
+																value={col.key}
+																onClick={(e) => handleCheckboxClick(e, col.label)}
+																checked={selectedColumns.includes(col.label)}
+															/>
+															<label htmlFor={col.key} className={col.isEditable ? tableStyles.isEdited : ""}>
+																{col.label}
+															</label>
+														</div>
+													))}
+												</div>
+											);
 										}
 									})}
 								</div>
-							</div>}
+							</div>
+						}
 						{showFilterDiv &&
 							filterSelections && filterSelections.length > 0 &&
 							<div style={{ position: 'absolute', display: 'flex', justifyContent: 'space-between', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', minWidth: '40%', padding: '10px', border: '1px solid #DCDEDE', borderRadius: '5px' }}>
@@ -370,7 +395,7 @@ export const DynamicTableComponents = ({
 									{updatedColumnsData?.map((col, colIndex) => {
 										if (selectedColumns.includes(col.label)) {
 											return (
-												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td } ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''} ${isInUpdateMode && col.isEditable && tableStyles.isEdited}` }
+												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td} ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''} ${isInUpdateMode && col.isEditable && tableStyles.isEdited}`}
 													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
 													{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 														(
