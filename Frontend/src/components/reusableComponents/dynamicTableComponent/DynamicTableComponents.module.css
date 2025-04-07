@@ -207,8 +207,12 @@
     background-color: #c7c7c7;
 }
 
+.isManuallyAdd{
+    background-color: #FFEBEB;
+}
+
 .isEdited {
-    background-color: rgb(99, 175, 237);
+    background-color: #A9CBF7;
 }
 .Showbox {
     position: absolute;

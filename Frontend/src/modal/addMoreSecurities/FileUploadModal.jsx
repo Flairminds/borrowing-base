@@ -40,10 +40,12 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 	};
 
 	const showDuplicateModal = (processedRows, previewFundType, onConfirm, onCancel) => {
+		const isNewAdded = processedRows.some((d) => d.action === "add");
+
 		Modal.confirm({
-			title: "Records Found",
+			title: <span style={{lineHeight: "2rem"}}>{"Records Found"}</span>,
 			content: (
-				<div>
+				<>
 					<p><strong>Duplicate Records Found :</strong></p>
 					<ul>
 						{processedRows
@@ -65,7 +67,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 								</li>
 							))}
 					</ul>
-					<p><strong>New Records Found :</strong></p>
+					{isNewAdded && <p><strong>New Records Found :</strong></p>}
 					<ul>
 						{processedRows
 							.filter((d) => d.action === "add")
@@ -86,7 +88,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 								</li>
 							))}
 					</ul>
-				</div>
+				</>
 			),
 			icon: <span style={{ color: "red", fontSize: "18px" }}>⚠️</span>,
 			okText: "Confirm",

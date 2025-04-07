@@ -76,6 +76,7 @@ export const DynamicTableComponents = ({
 						cellActualValue: cellAV,
 						cellTitleValue: row[col.key] && row[col.key]['meta_info'] ? row[col.key]['title'] : row[col.key],
 						cellOldValue: row[col.key] && row[col.key]['meta_info'] ? row[col.key]['old_value'] : row[col.key],
+						isManuallyAdded: row["is_manually_added"]?.value === true,
 						isValueEmpty: enableColumnEditing && col.isEditable && !cellDV,
 						InputChnageFun: col.datatype == 'date' ? handleDateChange : handleInputChange
 					} : row[col.key];
@@ -268,18 +269,18 @@ export const DynamicTableComponents = ({
 							{(showCellDetailsModal && enableColumnEditing) &&
 								<>
 									<div style={{ display: 'inline-block', margin: '5px 15px' }}>
-										{isInUpdateMode && (
+										{/* {isInUpdateMode && (
 											<div className={`${tableStyles.Showbox}`}>
 												Editable Columns
 											</div>
-										)}
+										)} */}
 										<FilterOutlined size={30} onClick={(e) => handleOpenFilter(e)} className={`${tableStyles.tableIcons} ${showFilterDiv ? tableStyles.tableIconsActive : ''}`} title='Filter data' />
 										<SettingOutlined size={30} onClick={(e) => handleOpenSettings(e)} className={`${tableStyles.tableIcons} ${showSettingsDiv ? tableStyles.tableIconsActive : ''}`} title='Select/Unselect columns' />
 										<Popover trigger={'click'} placement="bottomRight" className={`${tableStyles.tableIcons}`} title={"Reorder Columns"} content={<BaseFilePreviewReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
 											<TbReorder size={30} title='Reorder columns' />
 											{/* <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} /> */}
 										</Popover>
-										<EditOutlined size={30} className={`${tableStyles.tableIcons} ${isInUpdateMode ? tableStyles.tableIconsActive : ''}`} onClick={(e) => handleToggleChange(e)} title='Edit Mode' />
+										<EditOutlined size={30} className={`${tableStyles.tableIcons} ${isInUpdateMode ? tableStyles.isEdited : ''}`} onClick={(e) => handleToggleChange(e)} title='Edit Mode' />
 									</div>
 									{/* <div style={{display: 'inline-block', fontSize: 'small'}}>
 								<span style={{margin: '7px'}}>View Only</span>
@@ -290,7 +291,7 @@ export const DynamicTableComponents = ({
 							}
 						</div>
 						{showSettingsDiv &&
-							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: '#F5F5F5', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px', minWidth: '1400px' }}>
+							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: '#F6F8FB', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px', minWidth: '1400px' }}>
 								<div style={{ display: 'flex', margin: '5px 0', justifyContent: 'space-between', alignItems: 'center' }}>
 									<div>
 										<Icons.InfoIcon style={{ margin: '0 5px 0 0' }} />
@@ -394,7 +395,7 @@ export const DynamicTableComponents = ({
 									{updatedColumnsData?.map((col, colIndex) => {
 										if (selectedColumns.includes(col.label)) {
 											return (
-												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td} ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''} ${isInUpdateMode && col.isEditable && tableStyles.isEdited}`}
+												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td} ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''} ${row[col.key]?.isManuallyAdded && tableStyles.isManuallyAdd} ${(isInUpdateMode && col.isEditable) && tableStyles.isEdited}`}
 													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
 													{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 														(
