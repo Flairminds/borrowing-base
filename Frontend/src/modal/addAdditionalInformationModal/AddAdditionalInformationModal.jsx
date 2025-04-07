@@ -32,7 +32,8 @@ export const AddAdditionalInformationModal = (
 		setSelectedFiles,
 		baseFilePreviewData,
 		previewPageId,
-		getborrowingbasedata
+		getborrowingbasedata,
+		setLoading
 	}
 ) => {
 	const [form] = Form.useForm();
@@ -112,7 +113,7 @@ export const AddAdditionalInformationModal = (
 		setAddType("add");
 	};
 
-	const generateBaseData = async (e) => {
+	const generateBaseData = async () => {
 		// e.preventDefault();
 		setTriggerBBCalculation(true);
 		try {
@@ -127,10 +128,13 @@ export const AddAdditionalInformationModal = (
 			if (run) {
 				const response = await generateBaseDataFile({ 'bdi_id': previewPageId });
 				const detail = response?.data;
-				showToast('success', detail?.message);
-				const baseFileId = response.data.result.base_data_file_id;
-				await getborrowingbasedata(baseFileId);
-				navigate('/');
+				if (response.status === 200) {
+					setLoading(true);
+					showToast('success', detail?.message);
+					const baseFileId = response.data.result.base_data_file_id;
+					await getborrowingbasedata(baseFileId);
+					navigate('/');
+				}
 			}
 			setTriggerBBCalculation(false);
 			return;

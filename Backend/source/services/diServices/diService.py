@@ -6,7 +6,7 @@ import pandas as pd
 from datetime import datetime
 import pytz
 # import azure.functions as func
-from sqlalchemy import text, join, select
+from sqlalchemy import text, join, select, func
 import threading
 import numpy as np
 from numerize import numerize
@@ -190,7 +190,8 @@ def update_column_names(df, sheet_name, sheet_column_mapper):
             column_initials = ""
             for heading in list(column_level_map.keys()):
                 if index in range(column_level_map[heading][1], column_level_map[heading][2]):
-                    column_initials = column_initials + "[" + "".join(word[0].upper() for word in heading.split()) + "] "
+                # if (index >= heading[1] and index < heading[2]):
+                    column_initials = column_initials + "[" + "".join(word[0].upper() for word in column_level_map[heading].split()) + "] "
             column_name = column_initials + str(column)
             columns.append(column_name.strip())
 
@@ -698,7 +699,7 @@ def edit_base_data(changes):
                 setattr(base_data, key, value)
                 db.session.add(base_data)
                 db.session.commit()
-    return ServiceResponse.success(message = "Basse data edited updated successfully")
+    return ServiceResponse.success(message = "Base data edited updated successfully")
 
 def get_base_data_mapping(info_id):
     try:
@@ -722,8 +723,8 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_t
     
     extraction_result = {
         "columns": [{
-            "id": "id",
-            "id": "id"
+            "key": "id",
+            "label": "id"
         }, {
             "key": "report_date",
             "label": "Report Date"
@@ -1509,42 +1510,71 @@ def validate_add_securities(file, fund_type, base_data_info_id, company_id, repo
     return ServiceResponse.success()
 
 
-def add_to_base_data_table(file, fund_type, base_data_info_id, company_id, report_date):
+def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, report_date):
     try:
-        engine = db.get_engine()
-        df = pd.read_excel(file, engine='openpyxl')
-
-        df['base_data_info_id'] = base_data_info_id
-        df['company_id'] = company_id
-        df['report_date'] = report_date
-        df["is_manually_added"] = True
-
         if fund_type == 'PCOF':
             sheet_name = "PL BB Build"
-            base_data_name = 'pcof_base_data'
-        if fund_type == 'PFLT':
+            bd_table = PcofBaseData
+        elif fund_type == 'PFLT':
             sheet_name = "Loan List"
-            base_data_name = 'pflt_base_data'
+            bd_table = PfltBaseData
+        else:
+            return ServiceResponse.error(message="Invalid fund type.")
 
-        base_data_mapping = (
-            BaseDataMapping.query
-                .with_entities(BaseDataMapping.bd_column_lookup, BaseDataMapping.bd_column_name)
-                .filter(
-                    BaseDataMapping.fund_type == fund_type,
-                    BaseDataMapping.bd_sheet_name == sheet_name,
-                )
-                .all()
-        )
-        column_mapping = {item.bd_column_name: item.bd_column_lookup for item in base_data_mapping}
-        df.columns = df.columns.str.strip()
-        df.rename(columns=column_mapping, inplace=True)
-        df.to_sql(base_data_name, con=engine, if_exists='append', index=False)
+        # Fetch column mapping
+        base_data_mapping = {
+            mapping.bd_column_name: {
+                'bd_column_lookup': mapping.bd_column_lookup,
+                'bd_column_datatype': mapping.bd_column_datatype
+            }
+            for mapping in BaseDataMapping.query.filter(
+                BaseDataMapping.fund_type == fund_type,
+                BaseDataMapping.bd_sheet_name == sheet_name,
+            ).all()
+        }
 
-        return ServiceResponse.success(message="Data added succesfully.")
-    
+        for record in records:
+            if record.get('action') == 'add':
+                bd_table_obj = bd_table()
+            else:
+                id = record.get('id')
+                bd_table_obj = bd_table.query.filter_by(id=id).first()
+
+                if not bd_table_obj:
+                    print(f"No record found with ID {id}")
+                    continue
+
+            for bd_column_name, value in record.items():
+                if bd_column_name not in ['id', 'action']:
+                    bd_column_lookup = base_data_mapping.get(bd_column_name).get('bd_column_lookup')
+                    bd_column_datatype = base_data_mapping.get(bd_column_name).get('bd_column_datatype')
+                    if bd_column_datatype == "datetime":
+                        if value == '':
+                            value = None
+                        else:
+                            value = datetime.strptime(value, "%m-%d-%Y")
+                    if bd_column_lookup:
+                        setattr(bd_table_obj, bd_column_lookup, value)
+                    else:
+                        print(f"Warning: No mapping found for {bd_column_name}")
+
+            
+            setattr(bd_table_obj, 'base_data_info_id', base_data_info_id)
+            setattr(bd_table_obj, 'company_id', company_id)
+            setattr(bd_table_obj, 'report_date', report_date)
+            setattr(bd_table_obj, 'is_manually_added', True)
+
+            if record.get('action') == 'add':
+                db.session.add(bd_table_obj)
+
+        db.session.commit()
+
+        return ServiceResponse.success(message="Data added successfully.")
+
     except Exception as e:
-        print(e)
-        print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+        import traceback
+        print(f"Error: {e}")
+        traceback.print_exc()
         return ServiceResponse.error(message="Something went wrong.")
     
 def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
@@ -1573,11 +1603,11 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
             full_column_name = column_categories + ' ' + column if column_categories is not None else column
             # print(sheet_name+ ': ' + full_column_name)
             if full_column_name not in sheet_df.columns:
-                mismatched_data.append(mismatched_data.append({
+                mismatched_data.append({
                     'sheet_name': sheet_name,
                     'column_name': column,
                     'is_column_available': False
-                }))
+                })
             else:
                 column_list = sheet_df[full_column_name].tolist()
                 for index in range(len(column_list)):

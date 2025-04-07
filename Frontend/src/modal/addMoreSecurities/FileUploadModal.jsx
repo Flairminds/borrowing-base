@@ -40,10 +40,12 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 	};
 
 	const showDuplicateModal = (processedRows, previewFundType, onConfirm, onCancel) => {
+		const isNewAdded = processedRows.some((d) => d.action === "add");
+
 		Modal.confirm({
-			title: "Records Found",
+			title: <span style={{lineHeight: "2rem"}}>{"Records Found"}</span>,
 			content: (
-				<div>
+				<>
 					<p><strong>Duplicate Records Found :</strong></p>
 					<ul>
 						{processedRows
@@ -52,20 +54,20 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 								<li key={index}>
 									{previewFundType === "PFLT" ? (
 										<>
-											<strong>Obligor:</strong> {d["obligor_name"]},{" "}
-											<strong>Security:</strong> {d["security_name"]},{" "}
-											<strong>Loan Type:</strong> {d["loan_type"]}
+											<strong>Obligor:</strong> {d["Obligor Name"]},{" "}
+											<strong>Security:</strong> {d["Security Name"]},{" "}
+											<strong>Loan Type:</strong> {d["Loan Type (Term / Delayed Draw / Revolver)"]}
 										</>
 									) : (
 										<>
-											<strong>Investment Name:</strong> {d["investment_name"]},{" "}
-											<strong>Issuer:</strong> {d["issuer"]}
+											<strong>Investment Name:</strong> {d["Investment Name"]},{" "}
+											<strong>Issuer:</strong> {d["Issuer"]}
 										</>
 									)}
 								</li>
 							))}
 					</ul>
-					<p><strong>New Records Found :</strong></p>
+					{isNewAdded && <p><strong>New Records Found :</strong></p>}
 					<ul>
 						{processedRows
 							.filter((d) => d.action === "add")
@@ -73,20 +75,20 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 								<li key={index}>
 									{previewFundType === "PFLT" ? (
 										<>
-											<strong>Obligor:</strong> {d["obligor_name"]},{" "}
-											<strong>Security:</strong> {d["security_name"]},{" "}
-											<strong>Loan Type:</strong> {d["loan_type"]}
+											<strong>Obligor:</strong> {d["Obligor Name"]},{" "}
+											<strong>Security:</strong> {d["Security Name"]},{" "}
+											<strong>Loan Type:</strong> {d["Loan Type (Term / Delayed Draw / Revolver)"]}
 										</>
 									) : (
 										<>
-											<strong>Investment Name:</strong> {d["investment_name"]},{" "}
-											<strong>Issuer:</strong> {d["issuer"]}
+											<strong>Investment Name:</strong> {d["Investment Name"]},{" "}
+											<strong>Issuer:</strong> {d["Issuer"]}
 										</>
 									)}
 								</li>
 							))}
 					</ul>
-				</div>
+				</>
 			),
 			icon: <span style={{ color: "red", fontSize: "18px" }}>⚠️</span>,
 			okText: "Confirm",
@@ -114,10 +116,24 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			reader.onload = (e) => {
 				try {
 					const binaryStr = e.target.result;
-					const workbook = XLSX.read(binaryStr, { type: "binary" });
+					const workbook = XLSX.read(binaryStr, { type: "binary", cellDates: true });
 					const sheetName = workbook.SheetNames[0];
 					const sheetData = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1 });
-					resolve(sheetData);
+					const formatDate = (date) => {
+						if (Object.prototype.toString.call(date) === "[object Date]" && !isNaN(date)) {
+							const month = (date.getMonth() + 1).toString().padStart(2, "0");
+							const day = date.getDate().toString().padStart(2, "0");
+							const year = date.getFullYear();
+							return `${month}-${day}-${year}`;
+						}
+						return date;
+					};
+
+					const formattedData = sheetData.map((row) =>
+						row.map((cell) => (typeof cell === "object" && cell instanceof Date ? formatDate(cell) : cell))
+					);
+
+					resolve(formattedData);
 				} catch (error) {
 					reject("Error reading Excel file");
 				}
@@ -129,7 +145,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 	const processExcelData = (sheetData, previewFundType) => {
 		const columnMap = DATA_COLUMNS[previewFundType];
 		const headers = sheetData[0].map((h) => {
-			const lower = h?.toString().toLowerCase().trim();
+			const lower = h?.toString().trim();
 			return columnMap.find((col, i) => lower.includes(EXCEL_COLUMNS[previewFundType][i])) || lower;
 		});
 		return sheetData.slice(1).map((row) => {
@@ -140,23 +156,28 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			return rowData;
 		}).filter((row) => Object.values(row).some((value) => value !== ""));
 	};
+
 	const checkForDuplicates = (processedRows, data, previewFundType) => {
-		const normalize = (value) => value?.toLowerCase().trim() || "";
-		const existingRecords = new Set(data.map((d) => {
-			return previewFundType === "PFLT"
-				? `${normalize(d.obligor_name?.display_value)}-${normalize(d.security_name?.display_value)}-${normalize(d.loan_type?.display_value)}`
-				: `${normalize(d.investment_name?.display_value)}-${normalize(d.issuer?.display_value)}`;
-		}));
+		const normalize = (value) => value?.trim() || "";
+
+		const existingRecords = new Map(
+			data.map((d) => {
+				const key = previewFundType === "PFLT"
+					? `${normalize(d.obligor_name?.display_value)}-${normalize(d.security_name?.display_value)}-${normalize(d.loan_type?.display_value)}`
+					: `${normalize(d.investment_name?.display_value)}-${normalize(d.issuer?.display_value)}`;
+				return [key, d.id?.value];
+			})
+		);
 
 		let hasDuplicates = false;
 		const finalRows = processedRows.map((row) => {
 			const recordKey = previewFundType === "PFLT"
-				? `${normalize(row["obligor_name"])}-${normalize(row["security_name"])}-${normalize(row["loan_type"])}`
-				: `${normalize(row["investment_name"])}-${normalize(row["issuer"])}`;
+				? `${normalize(row["Obligor Name"])}-${normalize(row["Security Name"])}-${normalize(row["Loan Type (Term / Delayed Draw / Revolver)"])}`
+				: `${normalize(row["Investment Name"])}-${normalize(row["Issuer"])}`;
 
 			if (existingRecords.has(recordKey)) {
 				hasDuplicates = true;
-				return { ...row, action: "overwrite" };
+				return { ...row, action: "overwrite", id: existingRecords.get(recordKey) };
 			} else {
 				return { ...row, action: "add" };
 			}
@@ -164,6 +185,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 		return { finalRows, hasDuplicates };
 	};
+
 	const handleSave = async () => {
 		if (addsecFiles.length === 0) {
 			showToast("error", "Please upload a file before saving.");
@@ -187,8 +209,14 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			}
 
 			const { finalRows, hasDuplicates } = checkForDuplicates(processedRows, data, previewFundType);
-			const finalData = { records: finalRows };
-			console.log("FinalData :- ", finalData);
+			const finalData = {
+				records: finalRows.map(row =>
+					Object.fromEntries(
+						Object.entries(row).map(([key, value]) => [key.replace(/_/g, " "), value])
+					)
+				)
+			};
+
 
 			if (hasDuplicates) {
 				showDuplicateModal(
@@ -203,7 +231,6 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			}
 
 			await uploadFile(finalData);
-			showToast("success", "File uploaded successfully!");
 		} catch (error) {
 			console.error("Error in handleSave:", error);
 			showToast("error", "An error occurred while processing the file.");

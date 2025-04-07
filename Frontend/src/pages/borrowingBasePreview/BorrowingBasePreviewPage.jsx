@@ -276,6 +276,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				previewPageId= {previewPageId}
 				setTablesData= {setTablesData}
 				getborrowingbasedata= {getborrowingbasedata}
+				setLoading= {setLoading}
 			/>
 			<FileUploadModal
 				data={filteredData}
