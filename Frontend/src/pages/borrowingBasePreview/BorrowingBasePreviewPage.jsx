@@ -13,6 +13,8 @@ import styles from './BorrowingBasePreviewPage.module.css';
 import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
 import { PAGE_ROUTES } from '../../utils/constants/constants';
 import { UIComponents } from '../../components/uiComponents';
+import { ShowEmptyBasedDataValues } from '../../modal/showEmptyBasedDataValues/ShowEmptyBasedDataValues';
+
 
 export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setPreviewFundType, setTablesData, setPreviewPageId, getborrowingbasedata}) => {
 	const navigate = useNavigate();
@@ -20,6 +22,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [mapping, setMapping] = useState({});
 	const [cellDetail, setCellDetail] = useState({});
 	const [isAddFieldModalOpen, setIsAddFieldModalOpen] = useState(false);
+	const [isShowEmptyBaseDataModalOpen, setIsShowEmptyBaseDataModalOpen] = useState(false);
 	// const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
 	const [obligorFliteredValue, setObligorFliteredValue] = useState([]);
 	const [securityFilteredValue, setSecurityFilteredValue] = useState([]);
@@ -212,6 +215,15 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		}]
 	};
 
+	const handleConfirmEmptyBaseModal = () => {
+		setIsShowEmptyBaseDataModalOpen(false);
+		setIsAddFieldModalOpen(true);
+	};
+
+	const handleCancelEmptyBaseModal = () => {
+		setIsShowEmptyBaseDataModalOpen(false);
+	};
+
 
 	return (
 		<div className={styles.previewPage}>
@@ -230,7 +242,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						</div>
 						<div>
 							<UIComponents.Button onClick={showModal} isFilled={true} text='Add Securities Data' btnDisabled={previewFundType == 'PCOF' ? false : false} title={'Add more securities data in the base data'} />
-							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PCOF' ? false : false} />
+							<UIComponents.Button onClick={() => setIsShowEmptyBaseDataModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PCOF' ? false : false} />
 						</div>
 					</div>
 					<div>
@@ -277,6 +289,13 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				reportId={baseFilePreviewData.reportDate}
 				addsecFiles={addsecFiles}
 				setAddsecFiles={setAddsecFiles}
+			/>
+			<ShowEmptyBasedDataValues
+				visible={isShowEmptyBaseDataModalOpen}
+				columnNames={baseFilePreviewData?.baseData?.columns}
+				data={filteredData}
+				onConfirm={handleConfirmEmptyBaseModal}
+				onCancel={handleCancelEmptyBaseModal}
 			/>
 		</div>
 		// <div>
