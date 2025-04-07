@@ -305,7 +305,8 @@ export const DynamicTableComponents = ({
 														</>;
 													}
 													)}
-												</div>);
+												</div>
+											);
 										}
 									})}
 								</div>
