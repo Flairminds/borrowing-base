@@ -266,7 +266,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				getborrowingbasedata= {getborrowingbasedata}
 			/>
 			<FileUploadModal
-			    data={filteredData}
+				data={filteredData}
 				columns={baseFilePreviewData?.baseData?.columns}
 				previewFundType={previewFundType}
 				isOpenFileUpload={isOpenFileUpload}
@@ -276,7 +276,6 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				reportId={baseFilePreviewData.reportDate}
 				addsecFiles={addsecFiles}
 				setAddsecFiles={setAddsecFiles}
-				previewFundType={previewFundType}
 			/>
 		</div>
 		// <div>

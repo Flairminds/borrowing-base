@@ -141,19 +141,21 @@ export const getProbableSecuritiesData = (cashSecurity) => {
 	return fileListResponse;
 };
 
-export const uploadAddMoreSecFile = (file, dataId, fundType, reportDate) => {
-	const formData = new FormData();
-	formData.append('base_data_info_id', dataId);
-	formData.append('fund_type', fundType);
-	formData.append('report_date', reportDate);
-	formData.append('file', file); // Append the file
+export const uploadAddMoreSecFile = (finalData, dataId, fundType, reportDate) => {
+	const payload = {
+		base_data_info_id: dataId,
+		fund_type: fundType,
+		report_date: reportDate,
+		...finalData
+	};
 
-	return axios.post(`${ApiURL}/data_ingestion/add_base_data`, formData, {
+	return axios.post(`${ApiURL}/data_ingestion/add_base_data`, payload, {
 		headers: {
-			'Content-Type': 'multipart/form-data'
+			'Content-Type': 'application/json'
 		}
 	});
 };
+
 
 export const getLoanTypeMappingData = (fundType, mappingType) => {
 	const mappingDataRes = axios.get(`${ApiURL}/mapping/${mappingType}_type/${fundType}`);
