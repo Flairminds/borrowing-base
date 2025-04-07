@@ -190,7 +190,8 @@ def update_column_names(df, sheet_name, sheet_column_mapper):
             column_initials = ""
             for heading in list(column_level_map.keys()):
                 if index in range(column_level_map[heading][1], column_level_map[heading][2]):
-                    column_initials = column_initials + "[" + "".join(word[0].upper() for word in heading.split()) + "] "
+                # if (index >= heading[1] and index < heading[2]):
+                    column_initials = column_initials + "[" + "".join(word[0].upper() for word in column_level_map[heading].split()) + "] "
             column_name = column_initials + str(column)
             columns.append(column_name.strip())
 
@@ -1522,7 +1523,10 @@ def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, re
 
         # Fetch column mapping
         base_data_mapping = {
-            mapping.bd_column_name: mapping.bd_column_lookup
+            mapping.bd_column_name: {
+                'bd_column_lookup': mapping.bd_column_lookup,
+                'bd_column_datatype': mapping.bd_column_datatype
+            }
             for mapping in BaseDataMapping.query.filter(
                 BaseDataMapping.fund_type == fund_type,
                 BaseDataMapping.bd_sheet_name == sheet_name,
@@ -1542,7 +1546,13 @@ def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, re
 
             for bd_column_name, value in record.items():
                 if bd_column_name not in ['id', 'action']:
-                    bd_column_lookup = base_data_mapping.get(bd_column_name)
+                    bd_column_lookup = base_data_mapping.get(bd_column_name).get('bd_column_lookup')
+                    bd_column_datatype = base_data_mapping.get(bd_column_name).get('bd_column_datatype')
+                    if bd_column_datatype == "datetime":
+                        if value == '':
+                            value = None
+                        else:
+                            value = datetime.strptime(value, "%m-%d-%Y")
                     if bd_column_lookup:
                         setattr(bd_table_obj, bd_column_lookup, value)
                     else:
