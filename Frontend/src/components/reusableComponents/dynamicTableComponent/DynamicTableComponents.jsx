@@ -328,6 +328,15 @@ export const DynamicTableComponents = ({
 															</label>
 														</div>
 													))}
+													{columnSelectionList?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
+														return <>
+															<div key={index} className={tableStyles.columnContainer} style={{ fontSize: 'small' }}>
+																<input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)} />
+																<label htmlFor={col.key} className={col.isEditable ? tableStyles.isEdited : ""} >{col.label} </label>
+															</div>
+														</>;
+													}
+													)}
 												</div>
 											);
 										}
