@@ -269,18 +269,13 @@ export const DynamicTableComponents = ({
 							{(showCellDetailsModal && enableColumnEditing) &&
 								<>
 									<div style={{ display: 'inline-block', margin: '5px 15px' }}>
-										{/* {isInUpdateMode && (
-											<div className={`${tableStyles.Showbox}`}>
-												Editable Columns
-											</div>
-										)} */}
 										<FilterOutlined size={30} onClick={(e) => handleOpenFilter(e)} className={`${tableStyles.tableIcons} ${showFilterDiv ? tableStyles.tableIconsActive : ''}`} title='Filter data' />
 										<SettingOutlined size={30} onClick={(e) => handleOpenSettings(e)} className={`${tableStyles.tableIcons} ${showSettingsDiv ? tableStyles.tableIconsActive : ''}`} title='Select/Unselect columns' />
 										<Popover trigger={'click'} placement="bottomRight" className={`${tableStyles.tableIcons}`} title={"Reorder Columns"} content={<BaseFilePreviewReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
 											<TbReorder size={30} title='Reorder columns' />
 											{/* <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} /> */}
 										</Popover>
-										<EditOutlined size={30} className={`${tableStyles.tableIcons} ${isInUpdateMode ? tableStyles.isEdited : ''}`} onClick={(e) => handleToggleChange(e)} title='Edit Mode' />
+										<EditOutlined size={30} className={`${tableStyles.tableIcons} ${isInUpdateMode && tableStyles.isEdited}`} onClick={(e) => handleToggleChange(e)} title='Edit Mode' />
 									</div>
 									{/* <div style={{display: 'inline-block', fontSize: 'small'}}>
 								<span style={{margin: '7px'}}>View Only</span>
@@ -333,6 +328,15 @@ export const DynamicTableComponents = ({
 															</label>
 														</div>
 													))}
+													{columnSelectionList?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
+														return <>
+															<div key={index} className={tableStyles.columnContainer} style={{ fontSize: 'small' }}>
+																<input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)} />
+																<label htmlFor={col.key} className={col.isEditable ? tableStyles.isEdited : ""} >{col.label} </label>
+															</div>
+														</>;
+													}
+													)}
 												</div>
 											);
 										}
