@@ -19,7 +19,9 @@ VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'borrower_sta
 INSERT INTO public.column_metadata_master
 (fund_id, sheet_id, company_id, column_name, column_lookup, column_aliases, description, calculation_formula, data_type, unit, "sequence", is_raw_data_input, is_base_data_input, is_output, is_intermediate, is_index_column, is_mandatory, is_required, created_by, modified_by, modified_at, column_categories, column_number, exceptions)
 VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'borrower_stats'), 1, '1st Lien Net Debt / EBITDA', 'current_interest_coverage_ratio', '{""}', '1st Lien Net Debt / EBITDA', NULL, 'float', NULL, 4, true, false, false, false, false, true, true, 1, NULL, NULL, '[ACM] [C-ACM(AC]', 'BK', NULL);
-
+INSERT INTO public.column_metadata_master
+(fund_id, sheet_id, company_id, column_name, column_lookup, column_aliases, description, calculation_formula, data_type, unit, "sequence", is_raw_data_input, is_base_data_input, is_output, is_intermediate, is_index_column, is_mandatory, is_required, created_by, modified_by, modified_at, column_categories, column_number, exceptions)
+VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'borrower_stats'), 1, 'Company', 'company', '{""}', 'Company', NULL, 'string', NULL, 4, true, false, false, false, false, true, true, 1, NULL, NULL, NULL, 'A', NULL);
 
 INSERT INTO public.column_metadata_master
 (fund_id, sheet_id, company_id, column_name, column_lookup, column_aliases, description, calculation_formula, data_type, unit, "sequence", is_raw_data_input, is_base_data_input, is_output, is_intermediate, is_index_column, is_mandatory, is_required, created_by, modified_by, modified_at, column_categories, column_number, exceptions)
@@ -66,7 +68,9 @@ VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'securities_s
 INSERT INTO public.column_metadata_master
 (fund_id, sheet_id, company_id, column_name, column_lookup, column_aliases, description, calculation_formula, data_type, unit, "sequence", is_raw_data_input, is_base_data_input, is_output, is_intermediate, is_index_column, is_mandatory, is_required, created_by, modified_by, modified_at, column_categories, column_number, exceptions)
 VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'securities_stats'), 1, 'Obligor Country', 'obligor_country', '{}', 'Obligor Country', NULL, 'string', NULL, 15, true, false, false, false, false, true, true, 1, NULL, NULL, '[SI]', 'AB', NULL);
-
+INSERT INTO public.column_metadata_master
+(fund_id, sheet_id, company_id, column_name, column_lookup, column_aliases, description, calculation_formula, data_type, unit, "sequence", is_raw_data_input, is_base_data_input, is_output, is_intermediate, is_index_column, is_mandatory, is_required, created_by, modified_by, modified_at, column_categories, column_number, exceptions)
+VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'securities_stats'), 1, 'Family Name', 'family_name1', '{}', 'Family Name', NULL, 'string', NULL, 16, true, false, false, false, false, true, true, 1, NULL, NULL, NULL, 'B', NULL);
 
 INSERT INTO public.column_metadata_master
 (fund_id, sheet_id, company_id, column_name, column_lookup, column_aliases, description, calculation_formula, data_type, unit, "sequence", is_raw_data_input, is_base_data_input, is_output, is_intermediate, is_index_column, is_mandatory, is_required, created_by, modified_by, modified_at, column_categories, column_number, exceptions)
@@ -154,7 +158,9 @@ VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'pflt_borrowi
 INSERT INTO public.column_metadata_master
 (fund_id, sheet_id, company_id, column_name, column_lookup, column_aliases, description, calculation_formula, data_type, unit, "sequence", is_raw_data_input, is_base_data_input, is_output, is_intermediate, is_index_column, is_mandatory, is_required, created_by, modified_by, modified_at, column_categories, column_number, exceptions)
 VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'pflt_borrowing_base'), 1, 'Current LTM EBITDA', 'current_ltm_ebitda', '{}', 'Current LTM EBITDA', NULL, 'float', 'currency', NULL, true, false, false, false, false, true, true, 1, NULL, NULL, NULL, 'P', NULL);
-
+INSERT INTO public.column_metadata_master
+(fund_id, sheet_id, company_id, column_name, column_lookup, column_aliases, description, calculation_formula, data_type, unit, "sequence", is_raw_data_input, is_base_data_input, is_output, is_intermediate, is_index_column, is_mandatory, is_required, created_by, modified_by, modified_at, column_categories, column_number, exceptions)
+VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'pflt_borrowing_base'), 1, 'Security', 'Security2', '{}', 'Security', NULL, 'string', NULL, NULL, true, false, false, false, false, true, true, 1, NULL, NULL, NULL, 'B', NULL);
 
 
 INSERT INTO public.column_metadata_master
@@ -193,3 +199,6 @@ VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'pcof_iii_bor
 INSERT INTO public.column_metadata_master
 (fund_id, sheet_id, company_id, column_name, column_lookup, column_aliases, description, calculation_formula, data_type, unit, "sequence", is_raw_data_input, is_base_data_input, is_output, is_intermediate, is_index_column, is_mandatory, is_required, created_by, modified_by, modified_at, column_categories, column_number, exceptions)
 VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'pcof_iii_borrrowing_base'), 1, 'Security Name', 'security_name1', '{}', 'Security Name', NULL, 'string', NULL, NULL, true, false, false, false, false, true, true, 1, NULL, NULL, NULL, 'B', NULL);
+INSERT INTO public.column_metadata_master
+(fund_id, sheet_id, company_id, column_name, column_lookup, column_aliases, description, calculation_formula, data_type, unit, "sequence", is_raw_data_input, is_base_data_input, is_output, is_intermediate, is_index_column, is_mandatory, is_required, created_by, modified_by, modified_at, column_categories, column_number, exceptions)
+VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'pcof_iii_borrrowing_base'), 1, 'Family Name', 'family_name2', '{}', 'Family Name', NULL, 'string', NULL, NULL, true, false, false, false, false, true, true, 1, NULL, NULL, NULL, 'B', NULL);

@@ -1,5 +1,6 @@
-import { SettingOutlined, DragOutlined, CloseOutlined, FilterOutlined, EditOutlined } from '@ant-design/icons';
-import { Popover, Switch, Select } from 'antd';
+import { SettingOutlined, CloseOutlined, FilterOutlined, EditOutlined } from '@ant-design/icons';
+import { Popover, Select } from 'antd';
+import Input from 'antd/es/input/Input';
 import dayjs from "dayjs";
 import React, { useEffect, useState } from 'react';
 import { TbReorder } from "react-icons/tb";
@@ -52,6 +53,8 @@ export const DynamicTableComponents = ({
 	const [isInUpdateMode, setIsInUpdateMode] = useState(false);
 	const [selectedSort, setSelectedSort] = useState({ name: null, type: null });
 	const [displayData, setDisplayData] = useState([]);
+	const [columnSearch, setColumnSearch] = useState('');
+
 
 	useEffect(() => {
 		if (data) {
@@ -73,6 +76,7 @@ export const DynamicTableComponents = ({
 						cellActualValue: cellAV,
 						cellTitleValue: row[col.key] && row[col.key]['meta_info'] ? row[col.key]['title'] : row[col.key],
 						cellOldValue: row[col.key] && row[col.key]['meta_info'] ? row[col.key]['old_value'] : row[col.key],
+						isManuallyAdded: row["is_manually_added"]?.value === true,
 						isValueEmpty: enableColumnEditing && col.isEditable && !cellDV,
 						InputChnageFun: col.datatype == 'date' ? handleDateChange : handleInputChange
 					} : row[col.key];
@@ -271,7 +275,7 @@ export const DynamicTableComponents = ({
 											<TbReorder size={30} title='Reorder columns' />
 											{/* <DragOutlined style={{fontSize: '20px', margin: '0px 3px'}} /> */}
 										</Popover>
-										<EditOutlined size={30} className={`${tableStyles.tableIcons} ${isInUpdateMode ? tableStyles.tableIconsActive : ''}`} onClick={(e) => handleToggleChange(e)} title='Edit Mode' />
+										<EditOutlined size={30} className={`${tableStyles.tableIcons} ${isInUpdateMode && tableStyles.isEdited}`} onClick={(e) => handleToggleChange(e)} title='Edit Mode' />
 									</div>
 									{/* <div style={{display: 'inline-block', fontSize: 'small'}}>
 								<span style={{margin: '7px'}}>View Only</span>
@@ -282,34 +286,64 @@ export const DynamicTableComponents = ({
 							}
 						</div>
 						{showSettingsDiv &&
-							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px' }}>
-								<div style={{display: 'flex', margin: '5px 0', justifyContent: 'space-between'}}>
+							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: '#F6F8FB', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px', minWidth: '1400px' }}>
+								<div style={{ display: 'flex', margin: '5px 0', justifyContent: 'space-between', alignItems: 'center' }}>
 									<div>
-										<Icons.InfoIcon style={{margin: '0 5px 0 0'}} />Select columns to view data in the table
+										<Icons.InfoIcon style={{ margin: '0 5px 0 0' }} />
+										Select columns to view data in the table
 									</div>
 									<div className={tableStyles.crossIcon}>
 										<CloseOutlined onClick={handleOpenSettings} />
 									</div>
 								</div>
-								<div style={{display: 'flex'}}>
+								<Input
+									placeholder="Search columns"
+									allowClear
+									onChange={(e) => setColumnSearch(e.target.value)}
+									style={{ marginBottom: 8 }}
+								/>
+								<div style={{ display: 'flex', flexWrap: 'wrap' }}>
 									{breaks?.map((b, i) => {
 										if (i !== 0) {
+											const filteredCols = columnSelectionList
+												.slice(breaks[i - 1], breaks[i])
+												.filter(col => col.label.toLowerCase().includes(columnSearch?.toLowerCase()));
+
+											if (filteredCols.length === 0) return null;
 											return (
 												<div className={tableStyles.columnSelectionContainer} key={i}>
+													{filteredCols.map((col, index) => (
+														<div key={index} className={tableStyles.columnContainer} style={{ fontSize: 'small' }}>
+															<input
+																className={tableStyles.checkbox}
+																type="checkbox"
+																id={col.key}
+																name={col.key}
+																value={col.key}
+																onClick={(e) => handleCheckboxClick(e, col.label)}
+																checked={selectedColumns.includes(col.label)}
+															/>
+															<label htmlFor={col.key} className={col.isEditable ? tableStyles.isEdited : ""}>
+																{col.label}
+															</label>
+														</div>
+													))}
 													{columnSelectionList?.slice(breaks[i - 1], breaks[i]).map((col, index) => {
 														return <>
 															<div key={index} className={tableStyles.columnContainer} style={{ fontSize: 'small' }}>
 																<input className={tableStyles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)} />
-																<label htmlFor={col.key}>{col.label}</label>
+																<label htmlFor={col.key} className={col.isEditable ? tableStyles.isEdited : ""} >{col.label} </label>
 															</div>
 														</>;
 													}
 													)}
-												</div>);
+												</div>
+											);
 										}
 									})}
 								</div>
-							</div>}
+							</div>
+						}
 						{showFilterDiv &&
 							filterSelections && filterSelections.length > 0 &&
 							<div style={{ position: 'absolute', display: 'flex', justifyContent: 'space-between', zIndex: '500', top: '50', right: '0', backgroundColor: 'white', textAlign: 'left', minWidth: '40%', padding: '10px', border: '1px solid #DCDEDE', borderRadius: '5px' }}>
@@ -336,7 +370,7 @@ export const DynamicTableComponents = ({
 			</div>
 			<div style={{ overflow: 'auto', maxHeight: '75vh' }}>
 				<table className={tableStyles.table} style={{ tableLayout: enableStickyColumns ? 'fixed' : 'auto' }}>
-					<thead>
+					<thead className={tableStyles.headRowThead}>
 						<tr className={tableStyles.headRow}>
 							{updatedColumnsData?.map((col, index) => {
 								if (selectedColumns.includes(col.label)) {
@@ -365,7 +399,7 @@ export const DynamicTableComponents = ({
 									{updatedColumnsData?.map((col, colIndex) => {
 										if (selectedColumns.includes(col.label)) {
 											return (
-												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td } ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''}`}
+												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td} ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''} ${row[col.key]?.isManuallyAdded && tableStyles.isManuallyAdd} ${(isInUpdateMode && col.isEditable) && tableStyles.isEdited}`}
 													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
 													{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 														(

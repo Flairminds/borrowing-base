@@ -13,6 +13,7 @@ import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import styles from './DataIngestionPage.module.css';
 import { Calender } from '../../components/calender/Calender';
+import { SrcFileValidationErrorModal } from '../../modal/srcFIleValidationErrorModal/srcFileValidationErrorModal';
 
 export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
@@ -30,6 +31,8 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [filterDate, setFilterDate] = useState(null);
 	const [reportDates, setReportDates] = useState([]);
 	const [extractionInProgress, setExtractionInProgress] = useState(false);
+	const [showErrorsModal, setShowErrorsModal] = useState(false);
+	const [validationInfoData, setValidationInfoData] = useState([]);
 
 	const navigate = useNavigate();
 	let extractionInterval;
@@ -96,6 +99,22 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 							<span style={{display: 'inline-block', backgroundColor: STATUS_BG_COLOR[row.extraction_status], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
 								{row.extraction_status}
 							</span>
+							{row.extraction_status === 'Failed' && row.validation_info &&
+								<span
+									style={{cursor: "pointer", paddingLeft: "3px"}}
+									onClick={() => {
+										const recordData = Object.entries(row);
+										recordData.forEach((data)=>{
+											if (data[0] === "validation_info") {
+												setShowErrorsModal(true)
+												setValidationInfoData(data[1])
+											}
+										})
+									}}
+								>
+									Show more
+								</span>
+							}
 						</div>
 					)
 				};
@@ -358,6 +377,12 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 				uploadFilesPopupOpen={uploadFilesPopupOpen}
 				setUploadFilesPopupOpen={setUploadFilesPopupOpen}
 				blobFilesList={blobFilesList}
+			/>
+
+			<SrcFileValidationErrorModal
+				isModalOpen={showErrorsModal}
+				setIsModalOpen={setShowErrorsModal}
+				validationInfoData={validationInfoData}
 			/>
 		</>
 	);

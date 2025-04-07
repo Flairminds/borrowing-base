@@ -522,7 +522,6 @@ class PcofBaseData(db.Model):
     classifications_warehouse_asset_expected_rating = db.Column(db.String)
     classifications_approved_foreign_jurisdiction = db.Column(db.String)
     classifications_ltv_transaction = db.Column(db.String)
-    Classifications_noteless_assigned_loan = db.Column(db.String)
     classifications_undelivered_note = db.Column(db.String)
     classifications_structured_finance_obligation = db.Column(db.String)
     classifications_third_party_finance_company = db.Column(db.String)

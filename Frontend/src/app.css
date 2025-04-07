@@ -45,8 +45,12 @@
 }
 
 .ant-tabs .ant-tabs-ink-bar {
-  background-color: white;
-  display: none;
+  /* display: none; */
+  background-color: var(--primary-theme-color);
+}
+
+.ant-tabs-nav-wrap {
+  background-color: rgb(241, 241, 241);
 }
 
 .ant-tabs .ant-tabs-tab {

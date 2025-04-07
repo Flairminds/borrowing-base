@@ -80,7 +80,7 @@ export const ConfigurationPage = () => {
 	}, []);
 
 	return (
-		<div style={{padding: '10px 15px'}}>
+		<div style={{padding: '10px'}}>
 			{defaultKey &&
 			<Tabs
 				defaultActiveKey={defaultKey}
