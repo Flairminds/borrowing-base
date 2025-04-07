@@ -231,7 +231,6 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			}
 
 			await uploadFile(finalData);
-			showToast("success", "File uploaded successfully!");
 		} catch (error) {
 			console.error("Error in handleSave:", error);
 			showToast("error", "An error occurred while processing the file.");
