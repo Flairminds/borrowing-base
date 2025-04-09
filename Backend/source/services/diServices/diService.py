@@ -21,10 +21,11 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, PsslBaseData, PsslBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
+from source.services.diServices.PSSL import base_data_extractor as pssl_base_data_extractor
 from source.services.diServices.PCOF import BBTrigger as PCOF_BBTrigger
 from source.services.diServices import ColumnSheetMap
 from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
@@ -191,7 +192,10 @@ def update_column_names(df, sheet_name, sheet_column_mapper):
             for heading in list(column_level_map.keys()):
                 if index in range(column_level_map[heading][1], column_level_map[heading][2]):
                 # if (index >= heading[1] and index < heading[2]):
-                    column_initials = column_initials + "[" + "".join(word[0].upper() for word in column_level_map[heading].split()) + "] "
+                    if column_level_map[heading][0] == -1:
+                        column_initials = column_initials + heading + " "
+                    else:
+                        column_initials = column_initials + "[" + "".join(word[0].upper() for word in heading.split()) + "] "
             column_name = column_initials + str(column)
             columns.append(column_name.strip())
 
@@ -202,26 +206,7 @@ def update_column_names(df, sheet_name, sheet_column_mapper):
     except Exception as e:
         Log.func_error(e)
 
-def extract(file_sheet_map, sheet_column_mapper, args):
-    extrcted_df = {}
-    updated_column_df = {}
 
-    for file in file_sheet_map.keys():
-        blob_data = file_sheet_map[file]["file"]
-        sheets = file_sheet_map[file]["sheets"]
-        source_file = file_sheet_map[file]["source_file_obj"]
-        if not file_sheet_map[file]["is_extracted"]:
-            for sheet in sheets:
-                column_level_map = sheet_column_mapper[sheet]
-                df_result = get_data(blob_data, sheet, column_level_map, args)
-                if df_result["success_status"] is True:
-                    extrcted_df[sheet] = df_result["dataframe"]
-                    extracted_df = df_result["dataframe"].copy(deep=True)
-                    updated_col_df = update_column_names(extracted_df, sheet, sheet_column_mapper)
-                    updated_col_df["source_file_id"] = source_file.id
-                    updated_column_df[sheet] = updated_col_df
-                print(sheet + ' extracted')
-    return updated_column_df
 
 def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, fund_type):
     try:
@@ -306,6 +291,14 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                 extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
             else:
                 raise Exception(service_response.get("message"))
+        if fund_name == 'PSSL':
+            if cash_file_details == None or master_comp_file_details == None:
+                raise Exception('Proper files not selected.')
+            service_response = pssl_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
+            if service_response["success"]:   
+                extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
+            else:
+                raise Exception(service_response.get("message"))
         else:
             if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
                 raise Exception('Proper files not selected.')
@@ -359,7 +352,7 @@ def get_sheet_data(blob_data, sheet_name, output_file_name, args):
     
 def get_file_type(sheet_name_list):
     cashFileSheetList = {"US Bank Holdings", "Client Holdings"} 
-    masterCompSheetList = {"Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping"} 
+    masterCompSheetList = {"Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping", "PSSL II Borrowing Base"} 
     marketValueSheetList = {"Sheet1"}
 
     if cashFileSheetList.issubset(set(sheet_name_list)):  
@@ -503,6 +496,13 @@ def get_base_data(info_id):
                 "Total Commitment": '$' + numerize.numerize(total_commitment, 2) if total_commitment is not None else 0,
                 "Total Outstanding Balance": '$' + numerize.numerize(total_outstanding_balance, 2)  if total_outstanding_balance is not None else 0,
                 "Unmapped Securities": unmapped_records,
+                "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
+                "Fund Type": base_data_info.fund_type
+            }]
+        if base_data_info.fund_type == 'PSSL':
+            base_data = PsslBaseData.query.filter(PsslBaseData.base_data_info_id == info_id).order_by(PsslBaseData.id).all()
+            HistoryData = PsslBaseDataHistory
+            card_data = [{
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
                 "Fund Type": base_data_info.fund_type
             }]
@@ -1312,24 +1312,24 @@ def extract_validate_store_update(source_file):
             validation_status = None
 
             mismatched_data = []
-            for sheet_tuple in sheets:
-                sheet = sheet_tuple[0]
-                if sheet in extraction_response.get("data"):
-                    extracted_df = extraction_response.get("data").get(sheet)
-                    validation_res = validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
+            # for sheet_tuple in sheets:
+            #     sheet = sheet_tuple[0]
+            #     if sheet in extraction_response.get("data"):
+            #         extracted_df = extraction_response.get("data").get(sheet)
+            #         validation_res = validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
     
-                    validation_status = validation_res.get('success')
-                    if validation_status == False:
-                        break
-                else:
-                    mismatched_data.append({'sheet_name': sheet, 'is_sheet_available': False})
+            #         validation_status = validation_res.get('success')
+            #         if validation_status == False:
+            #             break
+            #     else:
+            #         mismatched_data.append({'sheet_name': sheet, 'is_sheet_available': False})
                         
             is_Extracted = False
             is_validated = (not bool(len(mismatched_data))) and validation_status 
-            if is_validated:
-                extracted_data = extraction_response.get("data")
-                store_response = store_sheet_data(data_dict=extracted_data)
-                is_Extracted = store_response.get("success")
+            # if is_validated:
+            extracted_data = extraction_response.get("data")
+            store_response = store_sheet_data(data_dict=extracted_data)
+            is_Extracted = store_response.get("success")
 
             update_source_file_info(source_file, isValidated= is_validated, isExtracted=is_Extracted, validation_info=mismatched_data)
         print(f"{file_full_name} extracted, validated, stored")
