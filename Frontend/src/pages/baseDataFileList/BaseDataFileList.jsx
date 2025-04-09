@@ -5,7 +5,7 @@ import { CustomButton } from '../../components/uiComponents/Button/CustomButton'
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { SourceFileModal } from '../../modal/sourceFileModal/SourceFileModal';
 import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dataIngestionApi';
-import { fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
+import { fundMap, fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
 import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
@@ -135,7 +135,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 	};
 
 	const getFilesList = async (fundType) => {
-		const Fund = (fundType === 1) ? 'PCOF' : (fundType === 2) ? 'PFLT' : undefined;
+		const Fund = fundMap[fundType];
 		try {
 			setDataLoading(true);
 			const data = {

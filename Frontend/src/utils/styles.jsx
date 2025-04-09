@@ -4,7 +4,8 @@ export const THEME = {
 
 export const FUND_BG_COLOR = {
 	'PFLT': '#d14bff',
-	'PCOF': '#4b8aff'
+	'PCOF': '#4b8aff',
+	'PSSL': 'green'
 };
 
 export const SELECTED_TAG = {
