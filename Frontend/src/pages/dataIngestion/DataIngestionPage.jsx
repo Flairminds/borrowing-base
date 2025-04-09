@@ -8,7 +8,7 @@ import { DynamicSwitchComponent } from '../../components/reusableComponents/dyna
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { UploadExtractionFiles } from '../../modal/dataIngestionModals/uploadFilesModal/UploadExtractionFiles';
 import { exportBaseDataFile, getArchive, getBaseDataFilesList, getBaseFilePreviewData, getBlobFilesList, updateArchiveStatus } from '../../services/dataIngestionApi';
-import { fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
+import { fundMap, fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import styles from './DataIngestionPage.module.css';
@@ -40,7 +40,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const blobFilesList = async(fundType) => {
 		try {
 			setDataLoading(true);
-			const payload = fundType === 1 ? 'PCOF' : 'PFLT';
+			const payload = fundMap[fundType] || '';
 			const fileresponse = await getBlobFilesList(payload);
 			const responseData = fileresponse.data.result;
 			// const temp = responseData.data.map(d => {
@@ -168,7 +168,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 		// setFileExtractionLoading(true);
 		try {
 			setExtractionInProgress(true);
-			const selectedFund = selectedFundType == 1 ? "PCOF" : "PFLT";
+			const selectedFund = fundMap[selectedFundType] || "";
 			setBaseFilePreviewData([]);
 			const extractionResponse = await exportBaseDataFile(selectedIds.current, selectedFund);
 			console.info(extractionResponse, 'rex');

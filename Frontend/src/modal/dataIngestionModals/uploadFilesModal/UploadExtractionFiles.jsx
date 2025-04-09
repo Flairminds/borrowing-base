@@ -6,6 +6,7 @@ import { uploadNewFile } from '../../../services/dataIngestionApi';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import styles from './UploadExtractionFiles.module.css';
 import { ModalComponents } from '../../../components/modalComponents';
+import { checkboxOptions } from '../../../utils/constants/constants';
 
 export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopupOpen, blobFilesList }) => {
 
@@ -14,7 +15,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 	const [reportDate, setReportDate] = useState();
 	const [selectedOptions, setSelectedOptions] = useState([]);
 
-	const checkboxOptions = ['PCOF', 'PFLT'];
+	
 
 
 	const { getRootProps, getInputProps } = useDropzone({
