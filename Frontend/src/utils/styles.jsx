@@ -13,10 +13,10 @@ export const SELECTED_TAG = {
 };
 
 export const STATUS_BG_COLOR = {
-	'completed': 'green',
-	'Completed': 'green',
-	'in progress': 'blue',
-	'In Progress': 'blue',
-	'failed': 'red',
-	'Failed': 'red'
+	'completed': { backgroundColor: '#E6FBFB', color: '#149696' },
+	'in progress': { backgroundColor: '#FCF3E0', color: '#D38A00' },
+	'failed': { backgroundColor: '#FFEAEA', color: '#D32029' },
+	'Completed': { backgroundColor: '#E6FBFB', color: '#149696' },
+	'In Progress': { backgroundColor: '#FCF3E0', color: '#D38A00' },
+	'Failed': { backgroundColor: '#FFEAEA', color: '#D32029' }
 };
