@@ -202,3 +202,54 @@ VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'pcof_iii_bor
 INSERT INTO public.column_metadata_master
 (fund_id, sheet_id, company_id, column_name, column_lookup, column_aliases, description, calculation_formula, data_type, unit, "sequence", is_raw_data_input, is_base_data_input, is_output, is_intermediate, is_index_column, is_mandatory, is_required, created_by, modified_by, modified_at, column_categories, column_number, exceptions)
 VALUES(1, (SELECT smm_id from sheet_metadata_master WHERE lookup = 'pcof_iii_borrrowing_base'), 1, 'Family Name', 'family_name2', '{}', 'Family Name', NULL, 'string', NULL, NULL, true, false, false, false, false, true, true, 1, NULL, NULL, NULL, 'B', NULL);
+
+
+insert into column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) values 
+	(1, (select smm_id from sheet_metadata_master where lookup = 'client_holdings'), 1, 'Issuer/Borrower Name', 'issuer_borrower_name', 'Issuer/Borrower Name', 'String', '', 
+	1, true, true, true, 1, null, 'E', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'client_holdings'), 1, 'Current Par Amount (Issue Currency) - Settled', 'Current_Par_Amount_settled', 'Current Par Amount (Issue Currency) - Settled', 'float', 'currency', 
+	2, true, true, true, 1, null, 'AG', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'client_holdings'), 1, 'Issue Name', 'issue_name', 'Issue Name', 'String', '', 
+	3, true, true, true, 1, null, 'F', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'client_holdings'), 1, 'Deal Issue (Derived) Rating - Moody''s', 'deal_issue_rating_moodys', 'Deal Issue (Derived) Rating - Moody''s', 'String', '', 
+	4, true, true, true, 1, null, 'AC', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'client_holdings'), 1, 'Deal Issue (Derived) Rating - S&P', 'deal_issue_rating_sp', 'Deal Issue (Derived) Rating - S&P', 'String', '', 
+	5, true, true, true, 1, null, 'AD', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'client_holdings'), 1, 'Payment Period', 'payment_period', 'Payment Period', 'String', '', 
+	6, true, true, true, 1, null, 'U', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'client_holdings'), 1, 'As Of Date', 'as_of_date', 'As Of Date', 'datetime', '', 
+	7, true, true, true, 1, null, 'D', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'client_holdings'), 1, 'LoanX ID', 'loanx_id', 'LoanX ID', 'String', '', 
+	8, true, true, true, 1, null, 'C', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'client_holdings'), 1, 'Par Amount (Deal Currency)', 'par_amount', 'Par Amount (Deal Currency)', 'float', 'currency', 
+	9, true, true, true, 1, null, 'G', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'client_holdings'), 1, 'Principal Balance (Deal Currency)', 'principal_balance', 'Principal Balance (Deal Currency)', 'float', 'currency', 
+	10, true, true, true, 1, null, 'H', null);
+
+
+insert into column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) values 
+	(1, (select smm_id from sheet_metadata_master where lookup = 'us_bank_holdings'), 1, 'Issuer/Borrower Name', 'issuer_borrower_name', 'Issuer/Borrower Name', 'String', '', 
+	1, true, true, true, 1, null, 'F', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'us_bank_holdings'), 1, 'Current Par Amount (Issue Currency) - Settled', 'current_par_amount_settled', 'Current Par Amount (Issue Currency) - Settled', 'float', 'currency', 
+	2, true, true, true, 1, null, 'M', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'us_bank_holdings'), 1, 'Security/Facility Name', 'security_facility_name', 'Security/Facility Name', 'String', '', 
+	3, true, true, true, 1, null, 'D', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'us_bank_holdings'), 1, 'Maturity Date', 'maturity_date', 'Maturity Date', 'datetime', '', 
+	4, true, true, true, 1, null, 'T', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'us_bank_holdings'), 1, 'Market Value Indenture', 'market_value_indenture', 'Market Value Indenture', 'float', '', 
+	5, true, true, true, 1, null, 'Q', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'us_bank_holdings'), 1, 'Issue Name', 'issue_name_usbh', 'Issue Name', 'String', '', 
+	6, true, true, true, 1, null, 'E', null);
+
+
+
+
+
+
+
