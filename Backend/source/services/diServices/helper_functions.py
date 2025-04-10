@@ -115,6 +115,7 @@ def store_sheet_data(data_dict):
     
 
 def check_data_type(value, data_type, exceptions):
+    data_type = data_type.lower()
     type_mapping = {
         'string': str,
         'float': float,

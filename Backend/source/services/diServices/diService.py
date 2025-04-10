@@ -1311,18 +1311,23 @@ def extract_validate_store_update(source_file):
 
             validation_status = None
 
+            sheet_validation_list = ["US Bank Holdings", "Client Holdings", "Borrower Stats"]
+
             mismatched_data = []
-            # for sheet_tuple in sheets:
-            #     sheet = sheet_tuple[0]
-            #     if sheet in extraction_response.get("data"):
-            #         extracted_df = extraction_response.get("data").get(sheet)
-            #         validation_res = validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
-    
-            #         validation_status = validation_res.get('success')
-            #         if validation_status == False:
-            #             break
-            #     else:
-            #         mismatched_data.append({'sheet_name': sheet, 'is_sheet_available': False})
+            for sheet_tuple in sheets:
+                sheet = sheet_tuple[0]
+                if sheet in extraction_response.get("data"):
+                    if sheet in sheet_validation_list:
+                        extracted_df = extraction_response.get("data").get(sheet)
+                        validation_res = validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
+        
+                        validation_status = validation_res.get('success')
+                        if validation_status == False:
+                            break
+                        validated_df = validation_res.get('data')
+                        extraction_response.get("data")[sheet] = validated_df
+                else:
+                    mismatched_data.append({'sheet_name': sheet, 'is_sheet_available': False})
                         
             is_Extracted = False
             is_validated = (not bool(len(mismatched_data))) and validation_status 
@@ -1624,7 +1629,11 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
                             'index': index,
                             'column_categories': column_categories
                         })
-        return ServiceResponse.success(data=mismatched_data)       
+
+                column_names.append(full_column_name)
+        sheet_df = sheet_df[column_names]
+        
+        return ServiceResponse.success(data=sheet_df)       
 
     except Exception as e:
         print(e)
