@@ -21,11 +21,11 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     bs."[ACM] [COI/LC] Closing Date" as "investment_closing_date",
                     ss."[SI] Maturity" as "investment_maturity",
                 --    sum(usbh."P. Lot Current Par Amount (Deal Currency)"::float) as "investment_par", -- selecting this column for now
-                    ssmb."Committed" as "investment_par",
+                    ssmb."Commitment" as "investment_par",
                 --    sum(ssmb."Book Value"::float)  as "investment_cost", -- could not map -- considering null for now
-                    ssmb."Book Value" as "investment_cost",
+                    ssmb."BookValue" as "investment_cost",
                 --    sum(ssmb."Market Value"::float)  as "investment_external_valuation", -- could not map -- considering null for now
-                    ssmb."Market Value"  as "investment_external_valuation",
+                    ssmb."MarketValue"  as "investment_external_valuation",
                     null as "investment_internal_valuation", -- Complete column is empty
                     ss."[SI] PIK Coupon" as "rates_fixed_coupon",
                     ss."[SI] Cash Spread to LIBOR" as "rates_floating_cash_spread",
@@ -111,7 +111,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
                 left join lien_type_mapping lien_mapping on lien_mapping.lien_type = ss."[SI] Credit Facility Lien Type" and (lien_mapping.is_deleted = false or lien_mapping.is_deleted is null)
 				left join lien_type_master lien_master on lien_master.id = lien_mapping.master_lien_type_id
-                left join sf_sheet_marketbook ssmb on lower(substring(ch."Issuer/Borrower Name" from 1 for 20)) = lower(substring(ssmb."Issuer" from 1 for 20)) and ssmb."Asset" like '%' || usbh."Issue Name" || '%'
+                left join sf_sheet_marketbook_1 ssmb on lower(substring(ch."Issuer/Borrower Name" from 1 for 20)) = lower(ssmb."Issuer_Name") and ssmb."Asset_Name" like '%' || usbh."Issue Name" || '%'
                 where (usbh.source_file_id = :cash_file_id AND ch.source_file_id = :cash_file_id and (ssmb.source_file_id is null or ssmb.source_file_id = :market_book_file_id)) and
                 ((sm.id is not null AND ss.source_file_id = :master_comp_file_id AND bs.source_file_id = :master_comp_file_id) or sm.id is null)
                 group by sm.id, usbh."Security/Facility Name", usbh."Issuer/Borrower Name", ss."[SI] Credit Facility Lien Type", bs."[ACM] [COI/LC] PNNT Industry",
@@ -138,9 +138,9 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."Pennant Gross Leverage",
                     sspibb."TotalCapitalization", -- from PCOF III Borrrowing Base
                     ss."LTV",
-                    ssmb."Committed",
-                    ssmb."Book Value",
-                    ssmb."Market Value",
+                    ssmb."Commitment",
+                    ssmb."BookValue",
+                    ssmb."MarketValue",
                     lien_master.lien_type
                 order by usbh."Security/Facility Name"
             '''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}))

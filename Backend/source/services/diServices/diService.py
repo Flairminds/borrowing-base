@@ -335,6 +335,8 @@ def get_sheet_data(blob_data, sheet_name, output_file_name, args):
         for name in args:
             if df.eq(name).any(axis=1).any():
                 first_occurrence_index = df.eq(name).any(axis=1).idxmax()
+            elif name in df.columns:
+                first_occurrence_index = 0
             else:
                 first_occurrence_index = None 
             if first_occurrence_index is None:
@@ -344,22 +346,24 @@ def get_sheet_data(blob_data, sheet_name, output_file_name, args):
         if first_occurrence_index is None:
             return {"success_status": False, "error": "No such column found", "dataframe": None}
         
-        new_df = df.loc[first_occurrence_index + 1:].reset_index(drop=True)
-        new_df.columns = df.loc[first_occurrence_index]
+        new_df = df if first_occurrence_index == 0 else df.loc[first_occurrence_index + 1:].reset_index(drop=True)
+        new_df.columns = df.columns if first_occurrence_index == 0 else df.loc[first_occurrence_index]
         return {"success_status": True, "error": None, "dataframe": new_df}
     except Exception as e:
+        Log.func_error(e)
         return {"success_status": False, "error": str(e), "dataframe": None}
     
 def get_file_type(sheet_name_list):
     cashFileSheetList = {"US Bank Holdings", "Client Holdings"} 
-    masterCompSheetList = {"Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping", "PSSL II Borrowing Base"} 
-    marketValueSheetList = {"Sheet1"}
+    masterCompSheetList = {"Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping", "PSSL II Borrowing Base"}
+    # marketValueSheetList = {"Sheet1"}
+    marketValueSheetList = {"Market and Book Value Position_"}
 
     if cashFileSheetList.issubset(set(sheet_name_list)):  
         return "cashfile", list(cashFileSheetList)
     elif masterCompSheetList.issubset(set(sheet_name_list)): 
         return "master_comp", list(masterCompSheetList)
-    elif marketValueSheetList.issubset(set(sheet_name_list)): 
+    elif (set(sheet_name_list)).issubset(marketValueSheetList): 
         return "market_book_file", list(marketValueSheetList)
 
 def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_column_mapper, args):
@@ -387,13 +391,13 @@ def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_c
 
     except Exception as e:
         Log.func_error(e)
-        print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+        raise Exception(e)
 
 def extract_source_file(file_value):
     try:
         print("inside", file_value["source_file"])
         sheet_column_mapper = ColumnSheetMap.sheet_column_mapper
-        args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset", "Issuer"]
+        args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset", "Issuer", "MVMinusBV"]
         updated_column_df = {}
 
         # for file_value in file_list:
