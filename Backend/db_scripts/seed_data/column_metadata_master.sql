@@ -248,8 +248,161 @@ insert into column_metadata_master (
 	6, true, true, true, 1, null, 'E', null);
 
 
+-- Validation for Add Other Info
+-- PFLT
+INSERT INTO column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) VALUES 
+	(2, (select smm_id from sheet_metadata_master where lookup = 'input'), 1, 'Determination Date', 'determination_date', 'Determination Date', 'datetime', '', 
+	1, true, true, true, 1, null, 'A', null),
+	(2, (select smm_id from sheet_metadata_master where lookup = 'input'), 1, 'Minimum Equity Amount Floor ($)', 'minimum_equity_amount_floor', 'Minimum Equity Amount Floor ($)', 'float', 'currency', 
+	2, true, true, true, 1, null, 'A', null);
+
+INSERT INTO column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) VALUES 
+	(2, (select smm_id from sheet_metadata_master where lookup = 'other_sheet'), 1, 'Currency', 'currency', 'Currency', 'string', '', 
+	1, true, true, true, 1, null, 'A', null),
+	(2, (select smm_id from sheet_metadata_master where lookup = 'other_sheet'), 1, 'Borrowing', 'borrowing', 'Borrowing', 'float', '', 
+	2, true, true, true, 1, null, 'B', null),
+	(2, (select smm_id from sheet_metadata_master where lookup = 'other_sheet'), 1, 'Exchange Rates', 'exchange_rates', 'Exchange Rates', 'float', '', 
+	3, true, true, true, 1, null, 'C', null),
+	(2, (select smm_id from sheet_metadata_master where lookup = 'other_sheet'), 1, 'Current Credit Facility Balance', 'current_credit_facility_balance', 'Current Credit Facility Balance', 'float', '', 
+	4, true, true, true, 1, null, 'D', null),
+	(2, (select smm_id from sheet_metadata_master where lookup = 'other_sheet'), 1, 'Cash Current And Preborrowing', 'cash_current_and_preborrowing', 'Cash Current And Preborrowing', 'float', '', 
+	5, true, true, true, 1, null, 'E', null),
+	(2, (select smm_id from sheet_metadata_master where lookup = 'other_sheet'), 1, 'Additional Expenses 1', 'additional_expenses_1', 'Additional Expenses 1', 'float', '', 
+	6, true, true, true, 1, null, 'F', null),
+	(2, (select smm_id from sheet_metadata_master where lookup = 'other_sheet'), 1, 'Additional Expenses 2', 'additional_expenses_2', 'Additional Expenses 2', 'float', '', 
+	7, true, true, true, 1, null, 'G', null),
+	(2, (select smm_id from sheet_metadata_master where lookup = 'other_sheet'), 1, 'Additional Expenses 3', 'additional_expenses_3', 'Additional Expenses 3', 'float', '', 
+	8, true, true, true, 1, null, 'H', null);
+
+
+-- PCOF
+INSERT INTO column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) VALUES 
+	(1, (select smm_id from sheet_metadata_master where lookup = 'availability_borrower'), 1, 'Borrower', 'borrower', 'Borrower', 'string', '', 
+	1, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'availability_borrower'), 1, 'Determination Date', 'determination_date', 'Determination Date', 'datetime', '', 
+	2, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'availability_borrower'), 1, 'Revolving Closing Date', 'revolving_closing_date', 'Revolving Closing Date', 'datetime', '', 
+	3, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'availability_borrower'), 1, 'Commitment Period', 'commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)', 'Commitment Period', 'string', '', 
+	4, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'availability_borrower'), 1, 'Facility Size', '(b)_facility_size', 'Facility Size', 'float', '', 
+	5, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'availability_borrower'), 1, 'Loans (USD)', 'loans_(usd)', 'Loans (USD)', 'float', '', 
+	6, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'availability_borrower'), 1, 'Loans (CAD)', 'loans_(cad)', 'Loans (CAD)', 'float', '', 
+	7, true, true, true, 1, null, 'A', null);
+
+
+INSERT INTO column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) VALUES 
+	(1, (select smm_id from sheet_metadata_master where lookup = 'principle_obligations'), 1, 'Principal Obligations', 'principle_obligations', 'Principal Obligations', 'string', '', 
+	1, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'principle_obligations'), 1, 'Currency', 'currency', 'Currency', 'string', '', 
+	2, true, true, true, 1, null, 'B', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'principle_obligations'), 1, 'Amount', 'amount', 'Amount', 'float', '', 
+	3, true, false, false, 1, null, 'C', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'principle_obligations'), 1, 'Spot Rate', 'spot_rate', 'Spot Rate', 'float', '', 
+	4, true, true, true, 1, null, 'D', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'principle_obligations'), 1, 'Dollar Equivalent', 'dollar_equivalent', 'Dollar Equivalent', 'float', '', 
+	5, true, true, true, 1, null, 'E', null);
+
+
+INSERT INTO column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) VALUES 
+	(1, (select smm_id from sheet_metadata_master where lookup = 'subscription_bb'), 1, 'Investor', 'investor', 'Investor', 'string', '', 
+	1, true, false, false, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'subscription_bb'), 1, 'Master/Feeder', 'master_feeder', 'Master/Feeder', 'string', '', 
+	2, true, false, false, 1, null, 'B', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'subscription_bb'), 1, 'Ultimate Investor Parent', 'ultimate_investor_parent', 'Ultimate Investor Parent', 'string', '', 
+	3, true, false, false, 1, null, 'C', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'subscription_bb'), 1, 'Designation', 'designation', 'Designation', 'string', '', 
+	4, true, true, true, 1, null, 'D', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'subscription_bb'), 1, 'Commitment', 'commitment', 'Commitment', 'float', '', 
+	5, true, false, false, 1, null, 'E', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'subscription_bb'), 1, 'Capital Called', 'capital_called', 'Capital Called', 'float', '', 
+	6, true, false, false, 1, null, 'F', null);
+
+
+INSERT INTO column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) VALUES 
+	(1, (select smm_id from sheet_metadata_master where lookup = 'pricing'), 1, 'Pricing', 'pricing', 'Pricing', 'string', '', 
+	1, true, true, true, 1, null, 'A', null),	
+	(1, (select smm_id from sheet_metadata_master where lookup = 'pricing'), 1, 'Percent', 'percent', 'Percent', 'float', 'percent', 
+	2, true, true, true, 1, null, 'B', null);
 
 
 
+INSERT INTO column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) VALUES 
+	(1, (select smm_id from sheet_metadata_master where lookup = 'portfolio_leverageborrowingbase'), 1, 'Investment Type', 'investment_type', 'Investment Type', 'string', '', 
+	1, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'portfolio_leverageborrowingbase'), 1, 'Unquoted (%)', 'unquoted', 'Unquoted (%)', 'float', 'percent', 
+	2, true, true, true, 1, null, 'B', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'portfolio_leverageborrowingbase'), 1, 'Quoted (%)', 'quoted', 'Qquoted (%)', 'float', 'percent', 
+	3, true, true, true, 1, null, 'C', null);
+
+INSERT INTO column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) VALUES 
+	(1, (select smm_id from sheet_metadata_master where lookup = 'advance_rates'), 1, 'Investor Type', 'investor_type', 'Investor Type', 'string', '', 
+	1, true, true, true, 1, null, 'A', null),	
+	(1, (select smm_id from sheet_metadata_master where lookup = 'advance_rates'), 1, 'Advance Rate (%)', 'advance_rate', 'Advance Rate (%)', 'float', 'percent', 
+	2, true, true, true, 1, null, 'B', null);
 
 
+INSERT INTO column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) VALUES 
+	(1, (select smm_id from sheet_metadata_master where lookup = 'concentration_limits'), 1, 'Investors', 'investors', 'Investors', 'string', '', 
+	1, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'concentration_limits'), 1, 'Rank', 'rank', 'Ranks', 'string', '', 
+	2, true, false, false, 1, null, 'B', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'concentration_limits'), 1, 'Concentration Limit (%)', 'concentration_limit', 'Concentration Limit (%)', 'float', 'percent', 
+	3, true, true, true, 1, null, 'C', null);
+
+
+INSERT INTO column_metadata_master (
+	fund_id , sheet_id , company_id , column_name , column_lookup , description , data_type , unit , "sequence" , is_raw_data_input , is_mandatory , is_required , created_by , 
+	column_categories , column_number , exceptions 
+) VALUES 
+	(1, (select smm_id from sheet_metadata_master where lookup = 'other_metrics'), 1, 'First Lien Leverage Cut-Off Point', 'first_lien_leverage_cut_off_point', 'First Lien Leverage Cut-Off Point', 'float', '', 
+	1, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'other_metrics'), 1, 'Warehouse First Lien Leverage Cut-Off', 'warehouse_first_lien_leverage_cut_off', 'Warehouse First Lien Leverage Cut-Off', 'float', '', 
+	2, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'other_metrics'), 1, 'Last Out Attachment Point', 'last_out_attachment_point', 'Last Out Attachment Point', 'float', '', 
+	3, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'other_metrics'), 1, 'Trailing 12-Month EBITDA', 'trailing_12_month_ebitda', 'Trailing 12-Month EBITDA', 'float', '', 
+	4, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'other_metrics'), 1, 'Trailing 24-Month EBITDA', 'trailing_24_month_ebitda', 'Trailing 24-Month EBITDA', 'float', '', 
+	5, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'other_metrics'), 1, 'Total Leverage', 'total_leverage', 'Total Leverage', 'float', '', 
+	6, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'other_metrics'), 1, 'LTV (%)', 'ltv', 'LTV (%)', 'float', 'percent', 
+	7, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'other_metrics'), 1, 'Concentration Test Threshold 1 (%)', 'concentration_test_threshold_1', 'Concentration Test Threshold 1 (%)', 'float', 'percent', 
+	8, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'other_metrics'), 1, 'Concentration Test Threshold 2 (%)', 'concentration_test_threshold_2', 'Concentration Test Threshold 2 (%)', 'float', 'percent', 
+	9, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'other_metrics'), 1, 'Threshold 1 Advance Rate (%)', 'threshold_1_advance_rate', 'Threshold 1 Advance Rate (%)', 'float', 'percent', 
+	10, true, true, true, 1, null, 'A', null),
+	(1, (select smm_id from sheet_metadata_master where lookup = 'other_metrics'), 1, 'Threshold 2 Advance Rate (%)', 'threshold_2_advance_rate', 'Threshold 2 Advance Rate (%)', 'float', 'percent', 
+	11, true, true, true, 1, null, 'A', null);
