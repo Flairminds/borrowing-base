@@ -7,6 +7,7 @@ import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import styles from './UploadExtractionFiles.module.css';
 import { ModalComponents } from '../../../components/modalComponents';
 import { checkboxOptions } from '../../../utils/constants/constants';
+import { DynamicFileUploadComponent } from '../../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent';
 
 export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopupOpen, blobFilesList }) => {
 
@@ -15,20 +16,17 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 	const [reportDate, setReportDate] = useState();
 	const [selectedOptions, setSelectedOptions] = useState([]);
 
-	
-
-
-	const { getRootProps, getInputProps } = useDropzone({
-		accept: [
-			'text/csv',
-			'document/csv',
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-		],
-		multiple: true,
-		onDrop: (acceptedFiles) => {
-			setSelectedFiles([...selectedFiles, ...acceptedFiles]);
-		}
-	});
+	// const { getRootProps, getInputProps } = useDropzone({
+	// 	accept: [
+	// 		'text/csv',
+	// 		'document/csv',
+	// 		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+	// 	],
+	// 	multiple: true,
+	// 	onDrop: (acceptedFiles) => {
+	// 		setSelectedFiles([...selectedFiles, ...acceptedFiles]);
+	// 	}
+	// });
 
 	const handleCancel = () => {
 		setSelectedFiles([]);
@@ -101,7 +99,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 								/>
 							</div>
 						</div>
-						<div className={styles.visible}>
+						{/* <div className={styles.visible}>
 							<div {...getRootProps({ className: 'dropzone' })}>
 								<input {...getInputProps()} />
 								<div>
@@ -121,7 +119,13 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 								</div>
 								<p className={styles.supportHeading}>Supported file format: CSV, XLSX</p>
 							</div>
-						</div>
+						</div> */}
+						<DynamicFileUploadComponent
+							uploadedFiles={selectedFiles}
+							setUploadedFiles={setSelectedFiles}
+							supportedFormats={['csv', 'xlsx', 'xlsm']}
+							showDownload={false}
+						/>
 					</div>
 				</>
 

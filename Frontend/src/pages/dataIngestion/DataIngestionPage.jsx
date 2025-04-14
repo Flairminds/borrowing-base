@@ -96,7 +96,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 					...col,
 					render: (value, row) => (
 						<div>
-							<span style={{display: 'inline-block', backgroundColor: STATUS_BG_COLOR[row.extraction_status], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
+							<span style={{display: 'inline-block', padding: '3px 7px', borderRadius: '8px', ...(STATUS_BG_COLOR[row.extraction_status.toLowerCase()] || {backgroundColor: 'gray', color: 'white'})}}>
 								{row.extraction_status}
 							</span>
 							{row.extraction_status === 'Failed' && row.validation_info &&
