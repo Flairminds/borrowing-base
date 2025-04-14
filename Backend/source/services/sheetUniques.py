@@ -17,4 +17,6 @@ sheet_uniques = {
     "Advance Rates": "Investor Type",
     "Concentration Limits": "Investors",
     "Principle Obligations": "Principal Obligations",
+
+    "Portfolio": "Borrower"
 }
