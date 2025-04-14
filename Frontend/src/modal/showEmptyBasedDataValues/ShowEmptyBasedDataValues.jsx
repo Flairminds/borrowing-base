@@ -4,14 +4,15 @@ import { ModalComponents } from '../../components/modalComponents';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import styles from './ShowEmptyBasedDataValues.module.css';
 
-export const ShowEmptyBasedDataValues = ({ visible, data, columnNames, onConfirm, onCancel }) => {
+export const ShowEmptyBasedDataValues = ({ visible, data, columnNames, onConfirm, onCancel, previewFundType }) => {
 	const getMissingData = () => {
 		const excludedFields = ['created_by', 'modified_at', 'modified_by', 'is_manually_added'];
 		const rows = data || [];
 
 		return rows
 			.map((row) => {
-				const obligorName = row["obligor_name"]?.display_value || "Unknown";
+				const nameKey = previewFundType === 'PFLT' ? 'obligor_name' : 'issuer';
+				const obligorName = row[nameKey]?.display_value || "Unknown";
 				const missingFields = [];
 
 				Object.entries(row).forEach(([key, value]) => {
@@ -68,7 +69,7 @@ export const ShowEmptyBasedDataValues = ({ visible, data, columnNames, onConfirm
 				) : (
 					missingDataRows.map((row, index) => (
 						<div key={index} className={styles.missingDataCard}>
-							<p className={styles.obligorTitle}>Obligor Name: {row.obligorName}</p>
+							<p className={styles.obligorTitle}>{previewFundType === 'PFLT' ? 'Obligor Name' : 'Issuer'}: {row.obligorName}</p>
 							<ul className={styles.missingFieldsList}>
 								{row.missingFields.map((field, i) => (
 									<li key={i} className={styles.missingFieldItem}>{field}</li>

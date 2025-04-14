@@ -7,3 +7,8 @@ insert into file_metadata_master (
 	company_id , created_by, fund_ids , "name" , lookup , "type" , description, is_input 
 ) values 
 	(1, 1, '{1,2}', 'CashFile.xlsx', 'cash_file', 'cashfile', 'cash_file_data', true)
+
+INSERT INTO file_metadata_master (
+	company_id , created_by, fund_ids , "name" , lookup , "type" , description, is_input 
+) VALUES 
+	(1, 1, '{1, 2}', 'OtherInfo.xlsx', 'other_info', 'otherinfo', 'add_other_info', true);

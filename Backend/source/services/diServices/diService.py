@@ -30,7 +30,7 @@ from source.services.diServices.PCOF import BBTrigger as PCOF_BBTrigger
 from source.services.diServices import ColumnSheetMap
 from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
-from source.services.diServices.helper_functions import store_sheet_data, check_data_type
+from source.services.diServices.helper_functions import store_sheet_data, check_data_type, check_value_data_type
 
 pfltDashboardService = PfltDashboardService()
 
@@ -510,7 +510,7 @@ def get_base_data(info_id):
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
                 "Fund Type": base_data_info.fund_type
             }]
-        else:
+        if base_data_info.fund_type == 'PCOF':
             base_data = PcofBaseData.query.filter_by(base_data_info_id = info_id).order_by(PcofBaseData.id).all()
             HistoryData = PcofBaseDataHistory
             with engine.connect() as connection:
@@ -1308,7 +1308,7 @@ def extract_validate_store_update(source_file):
         
             with engine.connect() as connection:
                 sheets = connection.execute(text(f"""
-                    select smm."name"  from sheet_metadata_master smm 
+                    select smm."name" from sheet_metadata_master smm 
                     join file_metadata_master fmm on smm.file_id = fmm.id 
                     where fmm."type" = '{file_type}'
                 """)).fetchall()
@@ -1638,6 +1638,128 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
         sheet_df = sheet_df[column_names]
         
         return ServiceResponse.success(data=sheet_df)       
+
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
+    
+
+def validate_key_value_sheet(sheet_data, sheet_name, mismatched_data):
+    try:
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            key_info_list = connection.execute(text(f"""
+                select cmm.column_lookup, cmm.is_required, cmm.data_type
+                from column_metadata_master cmm 
+                join sheet_metadata_master smm on cmm.sheet_id = smm.smm_id 
+                where smm."lookup" = '{sheet_name}'
+            """)).fetchall()
+
+            for key in key_info_list:
+                key_name = key[0]
+                key_isRequired = key[1]
+                value_data_type = key[2]
+
+                if key_name not in sheet_data and key_isRequired:
+                    mismatched_data.append({
+                        'sheet_name': sheet_name,
+                        'column_name': key_name,
+                        'is_column_available': False
+                    })
+                else:
+                    value = sheet_data[key_name]
+                    if not check_value_data_type(value, value_data_type):
+                        mismatched_data.append({
+                            'sheet_name': sheet_name,
+                            'column_name': key_name,
+                            'value': value,
+                            'expected_type': value_data_type,
+                            'actual_type': type(value).__name__,
+                            'is_sheet_available': True,
+                            'is_column_available': True,
+                            'index': None,
+                            'column_categories': None
+                        })
+
+        return ServiceResponse.success()
+    
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
+    
+def validate_tabular_sheet(sheet_df, sheet_name, mismatched_data):
+    try:
+        engine = db.get_engine()
+        
+        with engine.connect() as connection:
+            columns_tuple = connection.execute(text(f"""
+                select cmm.column_lookup, cmm.is_required, cmm.data_type
+                from column_metadata_master cmm 
+                join sheet_metadata_master smm on cmm.sheet_id = smm.smm_id 
+                where smm."lookup" = '{sheet_name}'
+            """)).fetchall()
+        
+        for column_tuple in columns_tuple:
+            column = column_tuple[0]
+            column_isRequired = column_tuple[1]
+            expected_type = column_tuple[2]
+            if column not in sheet_df.columns and column_isRequired:
+                mismatched_data.append({
+                    'sheet_name': sheet_name,
+                    'column_name': column,
+                    'is_column_available': False
+                })
+            else:
+                column_list = sheet_df[column].tolist() if column in sheet_df.columns else []
+                for index in range(len(column_list)):
+                    value = column_list[index]
+                    if not check_value_data_type(value, expected_type):
+                        mismatched_data.append({
+                            'sheet_name': sheet_name,
+                            'column_name': column,
+                            'value': value,
+                            'expected_type': expected_type,
+                            'actual_type': type(value).__name__,
+                            'is_sheet_available': True,
+                            'is_column_available': True,
+                            'index': index,
+                            'column_categories': None
+                        })
+        return ServiceResponse.success(data=sheet_df)       
+
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
+    
+
+def validate_other_info_sheet(extraction_info_id, determination_date, fund_type, other_data):
+    try:
+        engine = db.get_engine()
+
+        with engine.connect() as connection:
+                sheets_info_list = connection.execute(text(f"""
+                    select smm."lookup", smm.data_format from file_metadata_master fmm join sheet_metadata_master smm on fmm.id = smm.file_id 	
+                    where fmm."type" = 'otherinfo' and smm.fund_id = (select id from fund where fund_name = '{fund_type}')
+                """)).fetchall()
+
+        mismatched_data = []
+
+        for sheet_info in sheets_info_list:
+            sheet_name = sheet_info[0]
+            sheet_data_format = sheet_info[1]
+            sheet_data = other_data[sheet_name]
+            if sheet_data_format == 'tabular':
+                sheet_df = pd.DataFrame(sheet_data)
+                validation_response = validate_tabular_sheet(sheet_df, sheet_name, mismatched_data)
+
+            else:
+                validation_response = validate_key_value_sheet(sheet_data, sheet_name, mismatched_data)
+
+            validation_status = validation_response.get('success')
+            if validation_status == False:
+                return ServiceResponse.info(success=False, data=mismatched_data)
+        
+        return ServiceResponse.info(data=mismatched_data)       
 
     except Exception as e:
         print(e)

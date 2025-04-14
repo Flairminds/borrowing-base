@@ -113,7 +113,7 @@ def store_sheet_data(data_dict):
         return ServiceResponse.error()
     
 
-def check_data_type(value, data_type, exceptions):
+def check_data_type(value, data_type, exceptions=[]):
     data_type = data_type.lower()
     type_mapping = {
         'string': str,
@@ -130,3 +130,37 @@ def check_data_type(value, data_type, exceptions):
     if value in exceptions:
         return True
     return check
+
+
+def check_value_data_type(value, data_type):
+    data_type = data_type.lower()
+    if value != value:
+        return True
+
+    if value == "":
+        return True
+    
+
+    try:
+        if data_type == 'string':
+            return isinstance(value, str)
+
+        elif data_type == 'integer':
+            if isinstance(value, int):
+                return True
+            return str(value).isdigit()
+
+        elif data_type == 'float':
+            float_val = float(value)
+            return True
+
+        elif data_type == 'datetime':
+            if isinstance(value, datetime):
+                return True
+            datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+            return True
+
+    except (ValueError, TypeError):
+        return False
+
+    return False 
