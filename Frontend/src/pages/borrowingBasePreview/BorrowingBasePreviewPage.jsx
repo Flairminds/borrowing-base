@@ -294,6 +294,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				visible={isShowEmptyBaseDataModalOpen}
 				columnNames={baseFilePreviewData?.baseData?.columns}
 				data={filteredData}
+				previewFundType={previewFundType}
 				onConfirm={handleConfirmEmptyBaseModal}
 				onCancel={handleCancelEmptyBaseModal}
 			/>

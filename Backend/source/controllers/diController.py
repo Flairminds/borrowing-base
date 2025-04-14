@@ -324,6 +324,15 @@ def base_data_other_info():
         fund_type = req_body.get("fund_type")
         other_data = req_body.get("other_data")
 
+        validation_response = diService.validate_other_info_sheet(extraction_info_id, determination_date, fund_type, other_data)
+
+        if not validation_response.get("success"):
+            return HTTPResponse.error(message="Internal Server Error", status_code=500)
+        
+        mismatched_data = validation_response.get("data")
+        if validation_response.get("success") and len(mismatched_data) > 0:
+            return HTTPResponse.error(message="File validation failed.", result=mismatched_data, status_code=200, error='VALIDATION_FAILED')
+
         if extraction_info_id:
             service_response = diService.add_base_data_other_info(
                 extraction_info_id,

@@ -89,8 +89,8 @@ def store_sheet_data(data_dict):
             print(f"Processing sheet: {sheet_name}")
 
             df = truncate_and_rename_columns(df)
-            if (sheet_name == "Sheet1"):
-                table_name = "sf_sheet_marketbook"
+            if (sheet_name == "Market and Book Value Position_"):
+                table_name = "sf_sheet_marketbook_1"
             else:
                 table_name = 'sf_sheet' + '_' + sheet_name.lower().replace(" ", "_")
 
@@ -109,12 +109,11 @@ def store_sheet_data(data_dict):
                 
         return ServiceResponse.success()
     except Exception as e:
-        print(f"Failed to store sheet {sheet_name}")
         print(str(e))
         return ServiceResponse.error()
     
 
-def check_data_type(value, data_type, exceptions):
+def check_data_type(value, data_type, exceptions=[]):
     data_type = data_type.lower()
     type_mapping = {
         'string': str,
@@ -131,3 +130,37 @@ def check_data_type(value, data_type, exceptions):
     if value in exceptions:
         return True
     return check
+
+
+def check_value_data_type(value, data_type):
+    data_type = data_type.lower()
+    if value != value:
+        return True
+
+    if value == "":
+        return True
+    
+
+    try:
+        if data_type == 'string':
+            return isinstance(value, str)
+
+        elif data_type == 'integer':
+            if isinstance(value, int):
+                return True
+            return str(value).isdigit()
+
+        elif data_type == 'float':
+            float_val = float(value)
+            return True
+
+        elif data_type == 'datetime':
+            if isinstance(value, datetime):
+                return True
+            datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
+            return True
+
+    except (ValueError, TypeError):
+        return False
+
+    return False 
