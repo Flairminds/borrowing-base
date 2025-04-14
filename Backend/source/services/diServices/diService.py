@@ -27,6 +27,7 @@ from source.services.diServices import base_data_mapping
 from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
 from source.services.diServices.PSSL import base_data_extractor as pssl_base_data_extractor
 from source.services.diServices.PCOF import BBTrigger as PCOF_BBTrigger
+from source.services.diServices.PSSL import BBTrigger as PSSL_BBTrigger
 from source.services.diServices import ColumnSheetMap
 from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
@@ -936,6 +937,9 @@ def trigger_bb_calculation(bdi_id):
         if extracted_base_data_info.fund_type == 'PCOF':
             pcof_bb_trigger_response = PCOF_BBTrigger.trigger_pcof_bb(bdi_id)
             return pcof_bb_trigger_response
+        if extracted_base_data_info.fund_type == 'PSSL':
+            pssl_bb_trigger_response = PSSL_BBTrigger.trigger_pssl_bb(bdi_id)
+            return pssl_bb_trigger_response
         engine = db.get_engine()
         with engine.connect() as connection:
             df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
