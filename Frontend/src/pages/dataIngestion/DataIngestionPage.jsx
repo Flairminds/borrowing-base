@@ -126,7 +126,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 						<div>
 							{row.fund.map((f, i) => {
 								return (
-									<span key={i} style={{display: 'inline-block', backgroundColor: FUND_BG_COLOR[f], padding: '3px 7px', margin: '0 2px', borderRadius: '8px', color: 'white'}}>
+									<span key={i} style={{display: 'inline-block', ...(FUND_BG_COLOR[f] || { backgroundColor: 'gray', color: 'white'}), padding: '3px 7px', margin: '0 2px', borderRadius: '8px'}}>
 										{f}
 									</span>
 								);

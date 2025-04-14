@@ -1,10 +1,10 @@
 import { Modal, Popover } from 'antd';
 import React, { useEffect } from 'react';
-import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
 import PCOFAddSecSampleFile from '../../assets/template File/PCOF Add Base Data.xlsx';
 import PFLTAddSecSampleFile from '../../assets/template File/PFLT Add Base Data.xlsx';
 import { ModalComponents } from '../../components/modalComponents';
+import { DynamicFileUploadComponent } from '../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { uploadAddMoreSecFile } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
@@ -12,17 +12,6 @@ import styles from "./FileUploadModal.module.css";
 
 
 export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, setAddsecFiles, previewFundType, dataId, reportId, handleBaseDataPreview, data }) => {
-	const { getRootProps, getInputProps } = useDropzone({
-		accept: {
-			'text/csv': [],
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': []
-		},
-		multiple: false,
-		onDrop: (acceptedFiles) => {
-			setAddsecFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
-		}
-	});
-
 	useEffect(() => {
 		if (!isOpenFileUpload) {
 			setAddsecFiles([]);
@@ -261,6 +250,17 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		}
 	};
 
+	const fileDownloadOptions = {
+		PCOF: {
+			href: PCOFAddSecSampleFile,
+			name: 'PCOF Add Base Data.xlsx'
+		},
+		PFLT: {
+			href: PFLTAddSecSampleFile,
+			name: 'PFLT Add Base Data.xlsx'
+		}
+	};
+
 
 	return (
 		<Modal
@@ -270,32 +270,14 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			footer={null}
 			width={700}
 		>
-			<div className={styles.downloadContainer}>
-				<Popover placement="bottomRight" content={<>Refer to sample template file</>}>
-					<a
-						href={previewFundType === "PCOF" ? PCOFAddSecSampleFile : PFLTAddSecSampleFile}
-						rel="noreferrer"
-						download={previewFundType === "PCOF" ? 'PCOF Add Base Data.xlsx' : 'PFLT Add Base Data.xlsx'}
-						className={styles.downloadLink}
-					>
-						Download sample file template
-					</a>
-				</Popover>
-			</div>
-			<div {...getRootProps({ className: styles.dropzone })}>
-				<input {...getInputProps()} />
-				<div>
-					<b>
-						{addsecFiles?.length > 0
-							? addsecFiles.map((file) => file.name).join(', ')
-							: 'Drag and drop files here, or'}
-					</b>
-					<span className={styles.browseText}>Browse</span>
-				</div>
-				<p className={styles.supportedFormats}>
-					Supported file formats: CSV, XLSX
-				</p>
-			</div>
+			<DynamicFileUploadComponent
+				uploadedFiles={addsecFiles}
+				setUploadedFiles={setAddsecFiles}
+				supportedFormats={['csv', 'xlsx']}
+				fundType={previewFundType}
+				fileDownloadOptions={fileDownloadOptions}
+				showDownload={true}
+			/>
 			<div className={styles.buttonContainer}>
 				<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
 				<CustomButton isFilled={true} text="Save" onClick={handleSave} />

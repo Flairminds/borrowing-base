@@ -16,6 +16,7 @@ import styles from "./AddAdditionalInformationModal.module.css";
 import { useNavigate } from 'react-router';
 import { UIComponents } from "../../components/uiComponents";
 import { ModalComponents } from "../../components/modalComponents";
+import { DynamicFileUploadComponent } from "../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent";
 
 const { TabPane } = Tabs;
 
@@ -265,16 +266,16 @@ export const AddAdditionalInformationModal = (
 		}
 	};
 
-	const { getRootProps, getInputProps } = useDropzone({
-		accept: {
-			'text/csv': [],
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': []
-		},
-		multiple: false,
-		onDrop: (acceptedFiles) => {
-			setSelectedFiles(acceptedFiles);
-		}
-	});
+	// const { getRootProps, getInputProps } = useDropzone({
+	// 	accept: {
+	// 		'text/csv': [],
+	// 		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': []
+	// 	},
+	// 	multiple: false,
+	// 	onDrop: (acceptedFiles) => {
+	// 		setSelectedFiles(acceptedFiles);
+	// 	}
+	// });
 
 	const handleChange = (e) => {
 		setAddType(e.target.value);
@@ -444,20 +445,31 @@ export const AddAdditionalInformationModal = (
 		saveAs(xlsxBlob, `${previewFundType} - Other Info - ${fmtDisplayVal(baseFilePreviewData.reportDate)}.xlsx`);
 	};
 
+	const fileDownloadOptions = {
+		PCOF: {
+			href: PCOF_OTHER_INFO_SAMPLE,
+			name: 'PCOF - Other Info.xlsx'
+		},
+		PFLT: {
+			href: PFLT_OTHER_INFO_SAMPLE,
+			name: 'PFLT - Other Info.xlsx'
+		}
+	};
+
 	return (
 		<Modal
 			title={<ModalComponents.Title title='Additional Information' showDescription={true} description="Add more informations about the base data for borrowing base calculation" />}
 			open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"} style={{ top: 10 }}>
 			<div style={{ display: "flex", justifyContent: "space-between", margin: "1rem 0" }}>
 				<Radio.Group options={OTHER_INFO_OPTIONS} value={addType} onChange={handleChange} />
-				{addType === "upload" && (
+				{/* {addType === "upload" && (
 					<>
 						{(typeof data === 'object' && data !== null && Object.keys(data).length > 0)
 							? <a onClick={exportSample} style={{ paddingRight: "1rem", color: "blue", textDecoration: "underline" }}>Download file template</a>
 							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{ paddingRight: "1rem" }}>Export file template</a>
 						}
 					</>
-				)}
+				)} */}
 			</div>
 			<Form
 				form={form}
@@ -581,7 +593,7 @@ export const AddAdditionalInformationModal = (
 				{addType === "upload" && (
 					<>
 						<Form.Item>
-							<div className={styles.visible}>
+							{/* <div className={styles.visible}>
 								<div {...getRootProps({ className: 'dropzone' })}>
 									<input {...getInputProps()} />
 									<div>
@@ -601,7 +613,15 @@ export const AddAdditionalInformationModal = (
 									</div>
 									<p style={{ fontWeight: '400', color: 'rgb(109, 110, 111)' }}>Supported file format: CSV, XLSX</p>
 								</div>
-							</div>
+							</div> */}
+							<DynamicFileUploadComponent
+								uploadedFiles={selectedFiles}
+								setUploadedFiles={setSelectedFiles}
+								supportedFormats={['csv', 'xlsx']}
+								fundType={previewFundType}
+								showDownload={true}
+								fileDownloadOptions={fileDownloadOptions}
+							/>
 						</Form.Item>
 
 						<div className={styles.buttonContainer}>
