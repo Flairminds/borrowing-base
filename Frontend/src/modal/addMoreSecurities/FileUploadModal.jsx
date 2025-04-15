@@ -1,17 +1,21 @@
 import { Modal, Popover } from 'antd';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
 import PCOFAddSecSampleFile from '../../assets/template File/PCOF Add Base Data.xlsx';
 import PFLTAddSecSampleFile from '../../assets/template File/PFLT Add Base Data.xlsx';
 import { ModalComponents } from '../../components/modalComponents';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
-import { uploadAddMoreSecFile } from '../../services/dataIngestionApi';
+import { uploadAddMoreSecFile, validateAddSecurities } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from "./FileUploadModal.module.css";
+import { SrcFileValidationErrorModal } from '../srcFIleValidationErrorModal/srcFileValidationErrorModal';
 
 
 export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, setAddsecFiles, previewFundType, dataId, reportId, handleBaseDataPreview, data }) => {
+	const [validationInfo, setValidationInfo] = useState([]);
+	const [validationModal, setValidationModal] = useState(false);
+
 	const { getRootProps, getInputProps } = useDropzone({
 		accept: {
 			'text/csv': [],
@@ -109,6 +113,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			}
 		});
 	};
+
 	const readExcelFile = (file) => {
 		return new Promise((resolve, reject) => {
 			const reader = new FileReader();
@@ -142,6 +147,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			reader.onerror = () => reject("File reading failed");
 		});
 	};
+
 	const processExcelData = (sheetData, previewFundType) => {
 		const columnMap = DATA_COLUMNS[previewFundType];
 		const headers = sheetData[0].map((h) => {
@@ -217,6 +223,15 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				)
 			};
 
+			const validationResponse = await validateAddSecurities(finalData, previewFundType);
+
+			if (validationResponse?.data?.error_code === "ERR_400") {
+				showToast("error", validationResponse?.data?.message);
+				setValidationInfo(validationResponse?.data?.result);
+				setValidationModal(true);
+				return;
+			}
+
 
 			if (hasDuplicates) {
 				showDuplicateModal(
@@ -263,43 +278,48 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 
 	return (
-		<Modal
-			title={<ModalComponents.Title title='Add Securities Data' showDescription={true} description="Add more securities data which are not present in the extracted base data" />}
-			open={isOpenFileUpload}
-			onCancel={handleCancel}
-			footer={null}
-			width={700}
-		>
-			<div className={styles.downloadContainer}>
-				<Popover placement="bottomRight" content={<>Refer to sample template file</>}>
-					<a
-						href={previewFundType === "PCOF" ? PCOFAddSecSampleFile : PFLTAddSecSampleFile}
-						rel="noreferrer"
-						download={previewFundType === "PCOF" ? 'PCOF Add Base Data.xlsx' : 'PFLT Add Base Data.xlsx'}
-						className={styles.downloadLink}
-					>
-						Download sample file template
-					</a>
-				</Popover>
-			</div>
-			<div {...getRootProps({ className: styles.dropzone })}>
-				<input {...getInputProps()} />
-				<div>
-					<b>
-						{addsecFiles?.length > 0
-							? addsecFiles.map((file) => file.name).join(', ')
-							: 'Drag and drop files here, or'}
-					</b>
-					<span className={styles.browseText}>Browse</span>
+		<>
+			<Modal
+				title={<ModalComponents.Title title='Add Securities Data' showDescription={true} description="Add more securities data which are not present in the extracted base data" />}
+				open={isOpenFileUpload}
+				onCancel={handleCancel}
+				footer={null}
+				width={700}
+			>
+				<div className={styles.downloadContainer}>
+					<Popover placement="bottomRight" content={<>Refer to sample template file</>}>
+						<a
+							href={previewFundType === "PCOF" ? PCOFAddSecSampleFile : PFLTAddSecSampleFile}
+							rel="noreferrer"
+							download={previewFundType === "PCOF" ? 'PCOF Add Base Data.xlsx' : 'PFLT Add Base Data.xlsx'}
+							className={styles.downloadLink}
+						>
+							Download sample file template
+						</a>
+					</Popover>
 				</div>
-				<p className={styles.supportedFormats}>
-					Supported file formats: CSV, XLSX
-				</p>
-			</div>
-			<div className={styles.buttonContainer}>
-				<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
-				<CustomButton isFilled={true} text="Save" onClick={handleSave} />
-			</div>
-		</Modal>
+				<div {...getRootProps({ className: styles.dropzone })}>
+					<input {...getInputProps()} />
+					<div>
+						<b>
+							{addsecFiles?.length > 0
+								? addsecFiles.map((file) => file.name).join(', ')
+								: 'Drag and drop files here, or'}
+						</b>
+						<span className={styles.browseText}>Browse</span>
+					</div>
+					<p className={styles.supportedFormats}>
+						Supported file formats: CSV, XLSX
+					</p>
+				</div>
+				<div className={styles.buttonContainer}>
+					<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
+					<CustomButton isFilled={true} text="Save" onClick={handleSave} />
+				</div>
+			</Modal>
+			{validationModal &&
+				<SrcFileValidationErrorModal isModalOpen = {validationModal} setIsModalOpen={setValidationModal} validationInfoData = {validationInfo} />
+			}
+		</>
 	);
 };

@@ -324,7 +324,7 @@ def base_data_other_info():
         fund_type = req_body.get("fund_type")
         other_data = req_body.get("other_data")
 
-        validation_response = diService.validate_other_info_sheet(extraction_info_id, determination_date, fund_type, other_data)
+        validation_response = diService.validate_other_info_sheet(fund_type, other_data)
 
         if not validation_response.get("success"):
             return HTTPResponse.error(message="Internal Server Error", status_code=500)
@@ -367,10 +367,10 @@ def add_base_data():
         company_id = 1 #Need to change later
         records = req_body.get("records")
 
-
-        # validate_response = diService.validate_add_securities(file, fund_type, base_data_info_id, company_id, report_date)
-        # if not validate_response["success"]:
-        #     return HTTPResponse.error(message=validate_response.get('message'))
+        validation_response = diService.validate_add_securities(records, fund_type)
+        mismatched_data = validation_response.get("data")
+        if validation_response.get("success") and len(mismatched_data) > 0:
+            return HTTPResponse.error(message="File validation failed.", result=mismatched_data, status_code=200, error='VALIDATION_FAILED')
 
         service_response = diService.add_to_base_data_table(records, fund_type, base_data_info_id,company_id, report_date)
 
@@ -378,6 +378,24 @@ def add_base_data():
             return HTTPResponse.success(message=service_response.get("message"))
 
         return HTTPResponse.error(message=service_response.get('message'), status_code=500)
+    except Exception as e:
+        Log.func_error(e=e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+
+def validate_add_securities():
+    try:
+        req_body = flask.request.get_json()
+        fund_type = req_body.get('fund_type')
+        records = req_body.get("records")
+
+        validation_response = diService.validate_add_securities(records, fund_type)
+        mismatched_data = validation_response.get("data")
+        if validation_response.get("success") and len(mismatched_data) > 0:
+            return HTTPResponse.error(message="File validation failed.", result=mismatched_data, status_code=200, error='VALIDATION_FAILED')
+        
+        return HTTPResponse.success(message="Validation successful.")
+
     except Exception as e:
         Log.func_error(e=e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
