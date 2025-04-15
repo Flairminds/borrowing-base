@@ -14,6 +14,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 	const [reportDate, setReportDate] = useState();
 	const [selectedOptions, setSelectedOptions] = useState([]);
 
+	
 	const handleCancel = () => {
 		setSelectedFiles([]);
 		setSelectedOptions([]);

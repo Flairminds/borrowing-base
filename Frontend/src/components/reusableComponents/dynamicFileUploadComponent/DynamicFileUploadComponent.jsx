@@ -60,7 +60,7 @@ export const DynamicFileUploadComponent = ({
 							? uploadedFiles.map((file) => file.name).join(', ')
 							: 'Drag and drop files here, or'}
 					</b>
-					<span className={styles.browseText}> Browse</span>
+					<span className={styles.browseText}>Browse</span>
 				</div>
 				<p className={styles.supportedFormats}>
 					Supported file formats: {supportedFormats.map(ext => ext.toUpperCase()).join(', ')}
