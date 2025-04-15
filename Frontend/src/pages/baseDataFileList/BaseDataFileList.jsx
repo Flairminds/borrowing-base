@@ -104,10 +104,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 					...col,
 					render: (value, row) => (
 						<div>
-							<span style={{display: 'inline-block', padding: '3px 7px', borderRadius: '8px', ...(STATUS_BG_COLOR[row.extraction_status.toLowerCase()] || {
-      backgroundColor: 'gray',
-      color: 'white'
-    })}}>
+							<span style={{display: 'inline-block', padding: '3px 7px', borderRadius: '8px', ...(STATUS_BG_COLOR[row.extraction_status.toLowerCase()] || { backgroundColor: 'gray', color: 'white'})}}>
 								{row.extraction_status.split(" ")
 									.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
 									.join(" ")}
@@ -121,7 +118,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 					...col,
 					render: (value, row) => (
 						<div>
-							<span style={{display: 'inline-block', backgroundColor: FUND_BG_COLOR[row.fund], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
+							<span style={{display: 'inline-block', padding: '3px 7px', borderRadius: '8px', ...(FUND_BG_COLOR[row.fund] || { backgroundColor: 'gray', color: 'white'})}}>
 								{row.fund}
 							</span>
 						</div>
