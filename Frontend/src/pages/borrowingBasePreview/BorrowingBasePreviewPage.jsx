@@ -73,7 +73,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			"title": columnName,
 			"data": {
 				// 'Base data column name': columnName,
-				'Value': cellValue,
+				'Current Value': cellValue,
 				'Source file name': 'Not mapped',
 				'Sheet name': 'Not mapped',
 				'Column name': 'Not mapped',
@@ -95,25 +95,28 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			const sourceData = detail?.source_data;
 			if (sourceData) {
 
-				temp['htmlRender'] = <table style={{ textAlign: 'center', margin: '15px 0' }}>
-					<thead>
-						{Object.keys(sourceData[0]).map((h, i) => {
-							return (<th key={i} style={{ padding: '3px 10px', border: "1px solid #DCDEDE", backgroundColor: '#DCDEDE' }}>{h}</th>);
-						})}
-					</thead>
-					<tbody>
-						{sourceData.map((d, j) => {
-							return (
-								<tr key={j}>
-									{Object.keys(d).map((key, k) => {
-										return (
-											<td key={k} style={{ padding: '3px', border: "1px solid #DCDEDE" }}>{d[key]}</td>);
-									})}
-								</tr>
-							);
-						})}
-					</tbody>
-				</table>;
+				temp['htmlRender'] = <>
+					<p style={{ fontWeight: 'bold', textAlign: 'Left', margin: '15px 0 5px' }}>Source File Details</p>
+					<table style={{ textAlign: 'center', margin: '5px 0 15px' }}>
+						<thead>
+							{Object.keys(sourceData[0]).map((h, i) => {
+								return (<th key={i} style={{ padding: '3px 10px', border: "1px solid #DCDEDE", backgroundColor: '#DCDEDE' }}>{h}</th>);
+							})}
+						</thead>
+						<tbody>
+							{sourceData.map((d, j) => {
+								return (
+									<tr key={j}>
+										{Object.keys(d).map((key, k) => {
+											return (
+												<td key={k} style={{ padding: '3px', border: "1px solid #DCDEDE" }}>{d[key]}</td>);
+										})}
+									</tr>
+								);
+							})}
+						</tbody>
+					</table>
+				</>;
 			}
 			setCellDetail(temp);
 		} catch (error) {
