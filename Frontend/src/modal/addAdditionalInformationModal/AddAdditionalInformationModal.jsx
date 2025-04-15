@@ -272,17 +272,6 @@ export const AddAdditionalInformationModal = (
 		}
 	};
 
-	// const { getRootProps, getInputProps } = useDropzone({
-	// 	accept: {
-	// 		'text/csv': [],
-	// 		'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': []
-	// 	},
-	// 	multiple: false,
-	// 	onDrop: (acceptedFiles) => {
-	// 		setSelectedFiles(acceptedFiles);
-	// 	}
-	// });
-
 	const handleChange = (e) => {
 		setAddType(e.target.value);
 	};
