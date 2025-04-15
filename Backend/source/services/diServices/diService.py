@@ -896,20 +896,26 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
             identifier_col_name = None
             if table_name == 'sf_sheet_client_holdings':
                 identifier_col_name = 'ch."Issuer/Borrower Name"'
+                alias = "ch"
             elif table_name == 'sf_sheet_us_bank_holdings':
                 identifier_col_name = 'usbh."Issuer/Borrower Name"'
+                alias = "usbh"
             elif table_name == 'sf_sheet_securities_stats':
                 identifier_col_name = 'ss."Security"'
+                alias = "ss"
             elif table_name == 'sf_sheet_borrower_stats':
                 identifier_col_name = 'bs."Company"'
+                alias = "bs"
             elif table_name == 'sf_sheet_pflt_borrowing_base':
                 identifier_col_name = 'pbb."Security"'
+                alias = "pbb"
             sd_df_dict = None
             if identifier_col_name is not None:
                 if df_dict[0]['sf_column_categories'] is not None:
                     sd_col_name = df_dict[0]['sf_column_categories'][0] + " " + sd_col_name
+                sd_col_name = alias + "." + '"' + sd_col_name + '"'
                 with engine.connect() as connection:
-                    sd_df = pd.DataFrame(connection.execute(text(f'''select distinct {identifier_col_name}, "{sd_col_name}" from sf_sheet_us_bank_holdings usbh
+                    sd_df = pd.DataFrame(connection.execute(text(f'''select distinct {identifier_col_name}, {sd_col_name} from sf_sheet_us_bank_holdings usbh
                     left join sf_sheet_client_holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
                     left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
                     left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
