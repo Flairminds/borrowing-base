@@ -137,13 +137,13 @@ def check_value_data_type(value, data_type):
     if value != value:
         return True
 
-    if value == "":
+    if value == "" or value == 'N/A':
         return True
     
 
     try:
         if data_type == 'string':
-            return isinstance(value, str)
+            return isinstance(value, str) and not value.strip().replace('.', '', 1).isdigit()
 
         elif data_type == 'integer':
             if isinstance(value, int):
@@ -157,10 +157,73 @@ def check_value_data_type(value, data_type):
         elif data_type == 'datetime':
             if isinstance(value, datetime):
                 return True
-            datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ')
-            return True
+
+            # Different date formats
+            date_formats = [
+                '%Y-%m-%dT%H:%M:%S.%fZ', 
+                '%Y-%m-%d',  
+                '%d-%m-%Y',
+                '%m/%d/%Y',  
+                '%m-%d-%Y',           
+            ]
+            for fmt in date_formats:
+                try:
+                    datetime.strptime(value, fmt)
+                    return True
+                except ValueError:
+                    continue
+            return False
 
     except (ValueError, TypeError):
         return False
 
     return False 
+
+def infer_data_type(value):
+    if value != value:
+        return 'unknown'
+
+    if value == "":
+        return 'unknown'
+
+    try:
+        if isinstance(value, int) or (isinstance(value, str) and value.isdigit()):
+            return 'integer'
+    except:
+        pass
+
+
+    try:
+        float_val = float(value)
+        if '.' in str(value) or isinstance(value, float):
+            return 'float'
+    except:
+        pass
+
+    if isinstance(value, datetime):
+        return 'datetime'
+
+    date_formats = [
+        '%Y-%m-%dT%H:%M:%S.%fZ',
+        '%Y-%m-%d',
+        '%d-%m-%Y',
+        '%m/%d/%Y',
+        '%m-%d-%Y',
+    ]
+    if isinstance(value, str):
+        for fmt in date_formats:
+            try:
+                datetime.strptime(value, fmt)
+                return 'datetime'
+            except:
+                continue
+
+    if isinstance(value, str):
+        stripped = value.strip()
+        try:
+            float(stripped)
+            return 'float' if '.' in stripped else 'integer'
+        except ValueError:
+            return 'string'
+
+    return 'unknown'

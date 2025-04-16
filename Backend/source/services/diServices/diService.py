@@ -30,7 +30,7 @@ from source.services.diServices.PCOF import BBTrigger as PCOF_BBTrigger
 from source.services.diServices import ColumnSheetMap
 from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
-from source.services.diServices.helper_functions import store_sheet_data, check_data_type, check_value_data_type
+from source.services.diServices.helper_functions import store_sheet_data, check_data_type, check_value_data_type, infer_data_type
 
 pfltDashboardService = PfltDashboardService()
 
@@ -1509,20 +1509,35 @@ def get_cash_sec(security_type):
     }
     return ServiceResponse.success(data=unmapped_securities_list, message="All Securities")
 
-def validate_add_securities(file, fund_type, base_data_info_id, company_id, report_date):
-    required_fields = {
-        "file": file,
-        "fund type": fund_type,
-        "base data info id": base_data_info_id,
-        "company id": company_id,
-        "report date": report_date
-    }
-    
-    for field, value in required_fields.items():
-        if not value:
-            return ServiceResponse.error(message=f"Invalid {field} provided.")
+def validate_add_securities(sheet_data, fund_type):
+    try:
+        engine = db.get_engine()
 
-    return ServiceResponse.success()
+        with engine.connect() as connection:
+                sheets_info_list = connection.execute(text(f"""
+                    select smm."lookup", smm.data_format from file_metadata_master fmm join sheet_metadata_master smm on fmm.id = smm.file_id 	
+                    where fmm."type" = 'addbasedata' and smm.fund_id = (select id from fund where fund_name = '{fund_type}')
+                """)).fetchall()
+
+        mismatched_data = []
+
+        for sheet_info in sheets_info_list:
+            sheet_name = sheet_info[0]
+
+            sheet_df = pd.DataFrame(sheet_data)
+            sheet_df = sheet_df.drop(columns=[col for col in ['id', 'action'] if col in sheet_df.columns])
+
+            validation_response = validate_tabular_sheet(sheet_df, sheet_name, mismatched_data, base_data_add=True)
+
+            validation_status = validation_response.get('success')
+            if validation_status == False:
+                return ServiceResponse.info(success=False, data=mismatched_data)
+        
+        return ServiceResponse.info(data=mismatched_data)       
+
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
 
 
 def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, report_date):
@@ -1680,7 +1695,7 @@ def validate_key_value_sheet(sheet_data, sheet_name, mismatched_data):
                             'column_name': key_name,
                             'value': value,
                             'expected_type': value_data_type,
-                            'actual_type': type(value).__name__,
+                            'actual_type': infer_data_type(value),
                             'is_sheet_available': True,
                             'is_column_available': True,
                             'index': None,
@@ -1693,22 +1708,22 @@ def validate_key_value_sheet(sheet_data, sheet_name, mismatched_data):
         print(e)
         return ServiceResponse.error()
     
-def validate_tabular_sheet(sheet_df, sheet_name, mismatched_data):
+def validate_tabular_sheet(sheet_df, sheet_name, mismatched_data, base_data_add = False):
     try:
         engine = db.get_engine()
         
         with engine.connect() as connection:
             columns_tuple = connection.execute(text(f"""
-                select cmm.column_lookup, cmm.is_required, cmm.data_type
+                select cmm.column_lookup, cmm.column_name, cmm.is_required, cmm.data_type
                 from column_metadata_master cmm 
                 join sheet_metadata_master smm on cmm.sheet_id = smm.smm_id 
                 where smm."lookup" = '{sheet_name}'
             """)).fetchall()
         
         for column_tuple in columns_tuple:
-            column = column_tuple[0]
-            column_isRequired = column_tuple[1]
-            expected_type = column_tuple[2]
+            column = column_tuple[1] if base_data_add else column_tuple[0]
+            column_isRequired = column_tuple[2]
+            expected_type = column_tuple[3]
             if column not in sheet_df.columns and column_isRequired:
                 mismatched_data.append({
                     'sheet_name': sheet_name,
@@ -1725,7 +1740,7 @@ def validate_tabular_sheet(sheet_df, sheet_name, mismatched_data):
                             'column_name': column,
                             'value': value,
                             'expected_type': expected_type,
-                            'actual_type': type(value).__name__,
+                            'actual_type': infer_data_type(value),
                             'is_sheet_available': True,
                             'is_column_available': True,
                             'index': index,
@@ -1738,7 +1753,7 @@ def validate_tabular_sheet(sheet_df, sheet_name, mismatched_data):
         return ServiceResponse.error()
     
 
-def validate_other_info_sheet(extraction_info_id, determination_date, fund_type, other_data):
+def validate_other_info_sheet(fund_type, other_data):
     try:
         engine = db.get_engine()
 
