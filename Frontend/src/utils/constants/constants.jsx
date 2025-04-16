@@ -370,6 +370,82 @@ export const PCOFData = {
 	}
 };
 
+export const PSSLData = {
+	availability: {
+		Header: [
+			{
+				name: "effective_date",
+				label: "Effective Date",
+				type: "datePicker"
+			},
+			{
+				name: "scheduled_revolving_period_end_date",
+				label: "Scheduled Revolving Period End Date",
+				type: "datePicker"
+			},
+			{
+				name: "termination_date",
+				label: "Termination Date:",
+				type: "datePicker"
+			},
+			{
+				name: "determination_date",
+				label: "Determination Date",
+				type: "datePicker"
+			},
+			{
+				name: "payment_date",
+				label: "Payment Date",
+				type: "datePicker"
+			},
+			{
+				name: "reporting_date",
+				label: "Reporting Date",
+				type: "datePicker"
+			},
+			{
+				name: "advance_date",
+				label: "Advance Date",
+				type: "datePicker"
+			},
+			{
+				name: "measurement_date",
+				label: "Measurement Date",
+				type: "datePicker"
+			},
+			{
+				name: "facility_amount",
+				label: "Facility Amount ($)",
+				type: "text"
+			},
+			{
+				name: "cash_on_deposit_in_principal_collections_account",
+				label: "Cash on deposit in Principal Collections Account ($)",
+				type: "text"
+			},
+			{
+				name: "current_advances_outstanding",
+				label: "Current Advances Outstanding ($)",
+				type: "text"
+			}
+		]
+	},
+	exchange_rates: {
+		Column: [
+			{
+				name: "currency",
+				label: "Currency",
+				type: "text"
+			},
+			{
+				name: "exchange_rates",
+				label: "Exchange Rates ($)",
+				type: "text"
+			}
+		]
+	}
+};
+
 export const OTHER_INFO_OPTIONS = [
 	{ label: 'Enter Data manually', value: 'add' },
 	{ label: 'Upload file to extract', value: 'upload'}
