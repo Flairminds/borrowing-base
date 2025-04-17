@@ -73,7 +73,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			"title": columnName,
 			"data": {
 				// 'Base data column name': columnName,
-				'Current Value': cellValue,
+				'Current Value': fmtDisplayVal(cellValue),
 				'Source file name': 'Not mapped',
 				'Sheet name': 'Not mapped',
 				'Column name': 'Not mapped',
@@ -84,19 +84,32 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId || infoId, 'column_key': columnKey, 'data_id': baseFilePreviewData?.baseData?.data[rowIndex]['id']['value'] });
 			const detail = response?.data?.result;
 			const mappingData = detail?.mapping_data;
-			const t = {
-				...temp.data,
-				'Source file name': mappingData.file_name + mappingData.extension,
-				'Sheet name': mappingData.sf_sheet_name,
-				'Column name': mappingData.sf_column_name,
-				'Formula': mappingData.formula ? mappingData.formula : 'Value same as source column value'
+			let t = {
+				...temp.data
 			};
+			if (!detail.is_manual) {
+				t = {
+					...t,
+					'Source file name': mappingData.file_name + mappingData.extension,
+					'Sheet name': mappingData.sf_sheet_name,
+					'Column name': mappingData.sf_column_name,
+					'Formula': mappingData.formula ? mappingData.formula : 'Value same as source column value'
+				};
+			} else {
+				t = {
+					...t,
+					'Source file name': 'Manually added data',
+					'Sheet name': undefined,
+					'Column name': undefined,
+					'Formula': undefined
+				};
+			}
 			temp['data'] = t;
 			const sourceData = detail?.source_data;
 			if (sourceData) {
 
 				temp['htmlRender'] = <>
-					<p style={{ fontWeight: 'bold', textAlign: 'Left', margin: '15px 0 5px' }}>Source File Details</p>
+					<p style={{ fontWeight: 'bold', textAlign: 'Left', margin: '15px 0 5px' }}>Source File Value</p>
 					<table style={{ textAlign: 'center', margin: '5px 0 15px' }}>
 						<thead>
 							{Object.keys(sourceData[0]).map((h, i) => {
@@ -109,7 +122,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 									<tr key={j}>
 										{Object.keys(d).map((key, k) => {
 											return (
-												<td key={k} style={{ padding: '3px', border: "1px solid #DCDEDE" }}>{d[key]}</td>);
+												<td key={k} style={{ padding: '3px', border: "1px solid #DCDEDE" }}>{fmtDisplayVal(d[key])}</td>);
 										})}
 									</tr>
 								);
