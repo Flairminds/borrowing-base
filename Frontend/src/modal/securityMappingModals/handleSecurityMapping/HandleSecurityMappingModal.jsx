@@ -149,7 +149,7 @@ export const HandleSecurityMappingModal = ({ isOpen, setIsOpen, selectedSecuriti
 				<Radio value="mapToExisting">Map to Existing Record</Radio>
 				<Radio value="addNewMapping">Add New Mapping</Radio>
 			</Radio.Group>
-			{selectedOption === 'mapToExisting' && (
+			{selectedOption === 'mapToExisting' && probableEntriesData?.data && (
 				<DynamicTableComponents data={probableEntriesData?.data} columns={probableEntriesData?.columns} additionalColumns={additionalColumns}
 				/>
 			)}

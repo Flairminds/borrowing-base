@@ -8,7 +8,7 @@ import { DynamicSwitchComponent } from '../../components/reusableComponents/dyna
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { UploadExtractionFiles } from '../../modal/dataIngestionModals/uploadFilesModal/UploadExtractionFiles';
 import { exportBaseDataFile, getArchive, getBaseDataFilesList, getBaseFilePreviewData, getBlobFilesList, updateArchiveStatus } from '../../services/dataIngestionApi';
-import { fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
+import { fundMap, fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import styles from './DataIngestionPage.module.css';
@@ -22,7 +22,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [uploadFilesPopupOpen, setUploadFilesPopupOpen] = useState(false);
 	const [previewBaseDataLoading, setPreviewBaseDataLoading] = useState(false);
 	const [previewReportDate, setPreviewReportDate] = useState('');
-	const [selectedFundType, setSelectedFundType] = useState(2);
+	const [selectedFundType, setSelectedFundType] = useState(0);
 	const [archiveToggle, setArchiveToggle] = useState(false);
 	const [archiveFilesData, setArchiveFilesData] = useState(null);
 	const [isbuttonDisable, setButtonDisable] = useState(false);
@@ -40,7 +40,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const blobFilesList = async(fundType) => {
 		try {
 			setDataLoading(true);
-			const payload = fundType === 1 ? 'PCOF' : 'PFLT';
+			const payload = fundMap[fundType] || null;
 			const fileresponse = await getBlobFilesList(payload);
 			const responseData = fileresponse.data.result;
 			// const temp = responseData.data.map(d => {
@@ -96,7 +96,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 					...col,
 					render: (value, row) => (
 						<div>
-							<span style={{display: 'inline-block', backgroundColor: STATUS_BG_COLOR[row.extraction_status], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
+							<span style={{display: 'inline-block', padding: '3px 7px', borderRadius: '8px', ...(STATUS_BG_COLOR[row.extraction_status.toLowerCase()] || {backgroundColor: 'gray', color: 'white'})}}>
 								{row.extraction_status}
 							</span>
 							{row.extraction_status === 'Failed' && row.validation_info &&
@@ -126,7 +126,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 						<div>
 							{row.fund.map((f, i) => {
 								return (
-									<span key={i} style={{display: 'inline-block', backgroundColor: FUND_BG_COLOR[f], padding: '3px 7px', margin: '0 2px', borderRadius: '8px', color: 'white'}}>
+									<span key={i} style={{display: 'inline-block', ...(FUND_BG_COLOR[f] || { backgroundColor: 'gray', color: 'white'}), padding: '3px 7px', margin: '0 2px', borderRadius: '8px'}}>
 										{f}
 									</span>
 								);
@@ -141,9 +141,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
 	const handleDropdownChange = (value) => {
 		setSelectedFundType(value);
-		if (value !== 0) {
-			blobFilesList(value);
-		}
+		blobFilesList(value);
 	};
 
 	useEffect(() => {
@@ -167,8 +165,16 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const handleFileExtraction = async() => {
 		// setFileExtractionLoading(true);
 		try {
+			if (!selectedFundType) {
+				alert('Please select a fund for data extraction.');
+				return;
+			}
+			if (selectedIds.current.length == 0) {
+				alert('Please select files.');
+				return;
+			}
 			setExtractionInProgress(true);
-			const selectedFund = selectedFundType == 1 ? "PCOF" : "PFLT";
+			const selectedFund = fundMap[selectedFundType] || "";
 			setBaseFilePreviewData([]);
 			const extractionResponse = await exportBaseDataFile(selectedIds.current, selectedFund);
 			console.info(extractionResponse, 'rex');

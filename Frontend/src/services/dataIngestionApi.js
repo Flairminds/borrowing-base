@@ -156,6 +156,19 @@ export const uploadAddMoreSecFile = (finalData, dataId, fundType, reportDate) =>
 	});
 };
 
+export const validateAddSecurities = (finalData, fundType) => {
+	const payload = {
+		fund_type: fundType,
+		...finalData
+	};
+
+	return axios.post(`${ApiURL}/data_ingestion/validate_add_securities`, payload, {
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+};
+
 
 export const getLoanTypeMappingData = (fundType, mappingType) => {
 	const mappingDataRes = axios.get(`${ApiURL}/mapping/${mappingType}_type/${fundType}`);

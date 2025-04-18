@@ -16,6 +16,8 @@ import styles from "./AddAdditionalInformationModal.module.css";
 import { useNavigate } from 'react-router';
 import { UIComponents } from "../../components/uiComponents";
 import { ModalComponents } from "../../components/modalComponents";
+import { SrcFileValidationErrorModal } from "../srcFIleValidationErrorModal/srcFileValidationErrorModal";
+import { DynamicFileUploadComponent } from "../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent";
 
 const { TabPane } = Tabs;
 
@@ -40,6 +42,8 @@ export const AddAdditionalInformationModal = (
 	const [initialFormData, setInitialFormData] = useState(null);
 	const [addType, setAddType] = useState("add");
 	const [uploadedData, setUploadedData] = useState({});
+	const [validationModalOpen, setValidationModalOpen] = useState(false);
+	const [validationInfoList, setValidationInfoList] = useState([]);
 	const navigate = useNavigate();
 
 	const selectedData = previewFundType === "PCOF" ? PCOFData : PFLTData;
@@ -147,7 +151,6 @@ export const AddAdditionalInformationModal = (
 	const handleSubmit = async (isTriggerCalled) => {
 		const extractionInfoId = dataId;
 		let values = form.getFieldsValue();
-
 		try {
 			let otherData = {};
 			if (previewFundType === "PCOF") {
@@ -247,14 +250,18 @@ export const AddAdditionalInformationModal = (
 				"other_data": otherData,
 				"fund_type": previewFundType
 			};
-
 			const response = await submitOtherInfo(transformedData);
-			if (response.message) {
-				showToast("success", response.message);
+			if (response.error_code == "ERR_400") {
+				showToast('error', response.message);
+				setValidationInfoList(response?.result);
+				setIsAddFieldModalOpen(false);
+				setValidationModalOpen(true);
+			} else if (response?.message) {
+				showToast("success", response?.message);
 				form.resetFields();
 				onClose();
 			}
-			if (isTriggerCalled && response["success"]) {
+			if (isTriggerCalled && response?.["success"]) {
 				generateBaseData();
 			}
 
@@ -264,17 +271,6 @@ export const AddAdditionalInformationModal = (
 			showToast("error", errorMessage);
 		}
 	};
-
-	const { getRootProps, getInputProps } = useDropzone({
-		accept: {
-			'text/csv': [],
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': []
-		},
-		multiple: false,
-		onDrop: (acceptedFiles) => {
-			setSelectedFiles(acceptedFiles);
-		}
-	});
 
 	const handleChange = (e) => {
 		setAddType(e.target.value);
@@ -444,173 +440,180 @@ export const AddAdditionalInformationModal = (
 		saveAs(xlsxBlob, `${previewFundType} - Other Info - ${fmtDisplayVal(baseFilePreviewData.reportDate)}.xlsx`);
 	};
 
+	const fileDownloadOptions = {
+		PCOF: {
+			href: PCOF_OTHER_INFO_SAMPLE,
+			name: 'PCOF - Other Info.xlsx'
+		},
+		PFLT: {
+			href: PFLT_OTHER_INFO_SAMPLE,
+			name: 'PFLT - Other Info.xlsx'
+		}
+	};
+
 	return (
-		<Modal
-			title={<ModalComponents.Title title='Additional Information' showDescription={true} description="Add more informations about the base data for borrowing base calculation" />}
-			open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"} style={{ top: 10 }}>
-			<div style={{ display: "flex", justifyContent: "space-between", margin: "1rem 0" }}>
-				<Radio.Group options={OTHER_INFO_OPTIONS} value={addType} onChange={handleChange} />
-				{addType === "upload" && (
-					<>
-						{(typeof data === 'object' && data !== null && Object.keys(data).length > 0)
-							? <a onClick={exportSample} style={{ paddingRight: "1rem", color: "blue", textDecoration: "underline" }}>Download file template</a>
-							: <a href={previewFundType === "PCOF" ? PCOF_OTHER_INFO_SAMPLE : PFLT_OTHER_INFO_SAMPLE} style={{ paddingRight: "1rem" }}>Export file template</a>
-						}
-					</>
-				)}
-			</div>
-			<Form
-				form={form}
-				layout="vertical"
-				onFinish={handleSubmit}
-				autoComplete="off"
-				initialValues={initialFormData}
-			// initialValues={initalFormData || selectedData == "PCOF" ? pcofEmptyFormStructure : pfltEmptyFormStructure}
-			>
-				{useEffect(() => {
-					form.setFieldsValue(initialFormData);
-				}, [initialFormData, form, uploadedData])}
+		<>
+			<Modal
+				title={<ModalComponents.Title title='Additional Information' showDescription={true} description="Add more informations about the base data for borrowing base calculation" />}
+				open={isAddFieldModalOpen} onCancel={handleCancel} footer={null} width={"90%"} style={{ top: 10 }}>
+				<div style={{ display: "flex", justifyContent: "space-between", margin: "1rem 0" }}>
+					<Radio.Group options={OTHER_INFO_OPTIONS} value={addType} onChange={handleChange} />
+					{addType === "upload" && (
+						<>
+							{(typeof data === 'object' && data !== null && Object.keys(data).length > 0) && (
+								<a
+									onClick={exportSample}
+									style={{ paddingRight: "1rem", color: "blue", textDecoration: "underline" }}
+								>
+									Export file template
+								</a>
+							)}
+						</>
+					)}
+				</div>
+				<Form
+					form={form}
+					layout="vertical"
+					onFinish={handleSubmit}
+					autoComplete="off"
+					initialValues={initialFormData}
+				// initialValues={initalFormData || selectedData == "PCOF" ? pcofEmptyFormStructure : pfltEmptyFormStructure}
+				>
+					{useEffect(() => {
+						form.setFieldsValue(initialFormData);
+					}, [initialFormData, form, uploadedData])}
 
-				{addType === "add" && (
-					<Tabs defaultActiveKey="1">
-						{Object.keys(selectedData)?.map((sheet, index) => {
-							const formattedSheetName = sheet.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+					{addType === "add" && (
+						<Tabs defaultActiveKey="1">
+							{Object.keys(selectedData)?.map((sheet, index) => {
+								const formattedSheetName = sheet.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
-							return (
-								<TabPane tab={formattedSheetName} key={index + 1} forceRender>
-									<>
-										{selectedData[sheet]?.Header?.map((header, ind) => (
-											<Form.Item
-												key={ind}
-												label={header.label + (header.unit && header.unit == 'percent' ? ' (%)' : '')}
-												name={header.name}
-												rules={[{ required: true, message: `Please enter ${header.label.toLowerCase()}!` }]}
-												style={{ display: "inline-block", width: "25%", margin: "0 1rem 1rem 1rem" }}
-											>
-												{header.type === "datePicker" ? (
-													<DatePicker style={{ width: "100%" }} />
-												) : (
-													<Input placeholder={`Enter ${header.label}`} />
-												)}
-											</Form.Item>
-										))}
+								return (
+									<TabPane tab={formattedSheetName} key={index + 1} forceRender>
+										<>
+											{selectedData[sheet]?.Header?.map((header, ind) => (
+												<Form.Item
+													key={ind}
+													label={header.label + (header.unit && header.unit == 'percent' ? ' (%)' : '')}
+													name={header.name}
+													rules={[{ required: true, message: `Please enter ${header.label.toLowerCase()}!` }]}
+													style={{ display: "inline-block", width: "25%", margin: "0 1rem 1rem 1rem" }}
+												>
+													{header.type === "datePicker" ? (
+														<DatePicker style={{ width: "100%" }} />
+													) : (
+														<Input placeholder={`Enter ${header.label}`} />
+													)}
+												</Form.Item>
+											))}
 
-										{selectedData[sheet]?.Column?.length > 0 && (
-											<Form.List name={sheet}>
-												{(fields, { add, remove }) => (
-													<>
-														<div className={styles.rowHeader}
-															style={{
-																display: "grid",
-																gridTemplateColumns: `repeat(${selectedData[sheet]?.Column?.length}, 1fr)`, // Dynamic grid
-																gap: "10px",
-																padding: "10px"
-															}}>
-															{selectedData[sheet]?.Column?.map((inputField, index) => (
-																<div key={index} className={styles.column}>
-																	{inputField.label}
-																</div>
-															))}
-														</div>
+											{selectedData[sheet]?.Column?.length > 0 && (
+												<Form.List name={sheet}>
+													{(fields, { add, remove }) => (
+														<>
+															<div className={styles.rowHeader}
+																style={{
+																	display: "grid",
+																	gridTemplateColumns: `repeat(${selectedData[sheet]?.Column?.length}, 1fr)`, // Dynamic grid
+																	gap: "10px",
+																	padding: "10px"
+																}}>
+																{selectedData[sheet]?.Column?.map((inputField, index) => (
+																	<div key={index} className={styles.column}>
+																		{inputField.label}
+																	</div>
+																))}
+															</div>
 
-														<div className={styles.rowContainer}>
-															{fields?.map((field, index) => (
-																<div key={index} className={styles.row}
-																	style={{
-																		display: "grid",
-																		gridTemplateColumns: `repeat(${selectedData[sheet]?.Column.length}, 1fr)`, // Dynamic grid
-																		gap: "10px",
-																		padding: "10px"
-																	}}
-																>
-																	{selectedData[sheet]?.Column?.map((inputField, index) => (
-																		<Form.Item
-																			key={index}
-																			name={[field.name, inputField.name]}
-																			noStyle
-																		>
-																			{inputField.type === "datePicker" ? (
-																				<DatePicker
-																					placeholder={inputField.label}
-																					style={{
-																						width: "100%",
-																						padding: "4px",
-																						borderRadius: "8px",
-																						border: "1px solid rgba(201, 196, 196, 0.6)"
-																					}}
-																				/>
-																			) : (
-																				<Input
-																					placeholder={inputField.label}
-																					style={{
-																						width: "100%",
-																						padding: "4px",
-																						borderRadius: "8px",
-																						border: "1px solid rgba(201, 196, 196, 0.6)"
-																					}}
-																				/>
-																			)}
-																		</Form.Item>
-																	))}
-																</div>
-															))}
-														</div>
+															<div className={styles.rowContainer}>
+																{fields?.map((field, index) => (
+																	<div key={index} className={styles.row}
+																		style={{
+																			display: "grid",
+																			gridTemplateColumns: `repeat(${selectedData[sheet]?.Column.length}, 1fr)`, // Dynamic grid
+																			gap: "10px",
+																			padding: "10px"
+																		}}
+																	>
+																		{selectedData[sheet]?.Column?.map((inputField, index) => (
+																			<Form.Item
+																				key={index}
+																				name={[field.name, inputField.name]}
+																				noStyle
+																			>
+																				{inputField.type === "datePicker" ? (
+																					<DatePicker
+																						placeholder={inputField.label}
+																						style={{
+																							width: "100%",
+																							padding: "4px",
+																							borderRadius: "8px",
+																							border: "1px solid rgba(201, 196, 196, 0.6)"
+																						}}
+																					/>
+																				) : (
+																					<Input
+																						placeholder={inputField.label}
+																						style={{
+																							width: "100%",
+																							padding: "4px",
+																							borderRadius: "8px",
+																							border: "1px solid rgba(201, 196, 196, 0.6)"
+																						}}
+																					/>
+																				)}
+																			</Form.Item>
+																		))}
+																	</div>
+																))}
+															</div>
 
-														<Form.Item>
-															<Button style={{ marginBottom: "1rem" }} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-																Add Details
-															</Button>
-														</Form.Item>
-													</>
-												)}
-											</Form.List>
-										)}
+															<Form.Item>
+																<Button style={{ marginBottom: "1rem" }} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+																	Add Details
+																</Button>
+															</Form.Item>
+														</>
+													)}
+												</Form.List>
+											)}
 
-										<div className={styles.buttonContainer}>
-											<UIComponents.Button isFilled={true} text="Save" onClick={() => handleSubmit(false)} />
-											<UIComponents.Button isFilled={true} onClick={() => handleSubmit(true)} text={'Save & Trigger'} />
-											<UIComponents.Button isFilled={false} text="Cancel" onClick={handleCancel} />
-										</div>
-									</>
-								</TabPane>
-							);
-						})}
-					</Tabs>
-				)}
+											<div className={styles.buttonContainer}>
+												<UIComponents.Button isFilled={true} text="Save" onClick={() => handleSubmit(false)} />
+												<UIComponents.Button isFilled={true} onClick={() => handleSubmit(true)} text={'Save & Trigger'} />
+												<UIComponents.Button isFilled={false} text="Cancel" onClick={handleCancel} />
+											</div>
+										</>
+									</TabPane>
+								);
+							})}
+						</Tabs>
+					)}
 
-				{addType === "upload" && (
-					<>
-						<Form.Item>
-							<div className={styles.visible}>
-								<div {...getRootProps({ className: 'dropzone' })}>
-									<input {...getInputProps()} />
-									<div>
-										<span>
-											<b>{selectedFiles.length ? selectedFiles.map((file) => file.name).join(', ') : 'Drag and drop files here, or'}</b>
-										</span>
-										<span
-											style={{
-												color: '#3B7DDD',
-												textDecoration: 'underline',
-												cursor: 'pointer',
-												marginLeft: '5px'
-											}}
-										>
-											Browse
-										</span>
-									</div>
-									<p style={{ fontWeight: '400', color: 'rgb(109, 110, 111)' }}>Supported file format: CSV, XLSX</p>
-								</div>
+					{addType === "upload" && (
+						<>
+							<Form.Item>
+								<DynamicFileUploadComponent
+									uploadedFiles={selectedFiles}
+									setUploadedFiles={setSelectedFiles}
+									supportedFormats={['csv', 'xlsx']}
+									fundType={previewFundType}
+									showDownload={!(typeof data === 'object' && data !== null && Object.keys(data).length > 0)}
+									fileDownloadOptions={fileDownloadOptions}
+								/>
+							</Form.Item>
+
+							<div className={styles.buttonContainer}>
+								<UIComponents.Button isFilled={true} text="Extract" onClick={handleExtract} />
+								<UIComponents.Button isFilled={false} text="Cancel" onClick={handleCancel} />
 							</div>
-						</Form.Item>
-
-						<div className={styles.buttonContainer}>
-							<UIComponents.Button isFilled={true} text="Extract" onClick={handleExtract} />
-							<UIComponents.Button isFilled={false} text="Cancel" onClick={handleCancel} />
-						</div>
-					</>
-				)}
-			</Form>
-		</Modal>
+						</>
+					)}
+				</Form>
+			</Modal>
+			{validationModalOpen &&
+				<SrcFileValidationErrorModal isModalOpen={validationModalOpen} setIsModalOpen={setValidationModalOpen} validationInfoData={validationInfoList} />
+			}
+		</>
 	);
 };

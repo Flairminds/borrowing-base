@@ -21,15 +21,16 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, PsslBaseData, PsslBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
+from source.services.diServices.PSSL import base_data_extractor as pssl_base_data_extractor
 from source.services.diServices.PCOF import BBTrigger as PCOF_BBTrigger
 from source.services.diServices import ColumnSheetMap
 from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
-from source.services.diServices.helper_functions import store_sheet_data, check_data_type
+from source.services.diServices.helper_functions import store_sheet_data, check_data_type, check_value_data_type, infer_data_type
 
 pfltDashboardService = PfltDashboardService()
 
@@ -191,7 +192,10 @@ def update_column_names(df, sheet_name, sheet_column_mapper):
             for heading in list(column_level_map.keys()):
                 if index in range(column_level_map[heading][1], column_level_map[heading][2]):
                 # if (index >= heading[1] and index < heading[2]):
-                    column_initials = column_initials + "[" + "".join(word[0].upper() for word in column_level_map[heading].split()) + "] "
+                    if column_level_map[heading][0] == -1:
+                        column_initials = column_initials + heading + " "
+                    else:
+                        column_initials = column_initials + "[" + "".join(word[0].upper() for word in heading.split()) + "] "
             column_name = column_initials + str(column)
             columns.append(column_name.strip())
 
@@ -202,26 +206,7 @@ def update_column_names(df, sheet_name, sheet_column_mapper):
     except Exception as e:
         Log.func_error(e)
 
-def extract(file_sheet_map, sheet_column_mapper, args):
-    extrcted_df = {}
-    updated_column_df = {}
 
-    for file in file_sheet_map.keys():
-        blob_data = file_sheet_map[file]["file"]
-        sheets = file_sheet_map[file]["sheets"]
-        source_file = file_sheet_map[file]["source_file_obj"]
-        if not file_sheet_map[file]["is_extracted"]:
-            for sheet in sheets:
-                column_level_map = sheet_column_mapper[sheet]
-                df_result = get_data(blob_data, sheet, column_level_map, args)
-                if df_result["success_status"] is True:
-                    extrcted_df[sheet] = df_result["dataframe"]
-                    extracted_df = df_result["dataframe"].copy(deep=True)
-                    updated_col_df = update_column_names(extracted_df, sheet, sheet_column_mapper)
-                    updated_col_df["source_file_id"] = source_file.id
-                    updated_column_df[sheet] = updated_col_df
-                print(sheet + ' extracted')
-    return updated_column_df
 
 def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, fund_type):
     try:
@@ -306,6 +291,14 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                 extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
             else:
                 raise Exception(service_response.get("message"))
+        if fund_name == 'PSSL':
+            if cash_file_details == None or master_comp_file_details == None:
+                raise Exception('Proper files not selected.')
+            service_response = pssl_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
+            if service_response["success"]:   
+                extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
+            else:
+                raise Exception(service_response.get("message"))
         else:
             if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
                 raise Exception('Proper files not selected.')
@@ -342,6 +335,8 @@ def get_sheet_data(blob_data, sheet_name, output_file_name, args):
         for name in args:
             if df.eq(name).any(axis=1).any():
                 first_occurrence_index = df.eq(name).any(axis=1).idxmax()
+            elif name in df.columns:
+                first_occurrence_index = 0
             else:
                 first_occurrence_index = None 
             if first_occurrence_index is None:
@@ -351,22 +346,24 @@ def get_sheet_data(blob_data, sheet_name, output_file_name, args):
         if first_occurrence_index is None:
             return {"success_status": False, "error": "No such column found", "dataframe": None}
         
-        new_df = df.loc[first_occurrence_index + 1:].reset_index(drop=True)
-        new_df.columns = df.loc[first_occurrence_index]
+        new_df = df if first_occurrence_index == 0 else df.loc[first_occurrence_index + 1:].reset_index(drop=True)
+        new_df.columns = df.columns if first_occurrence_index == 0 else df.loc[first_occurrence_index]
         return {"success_status": True, "error": None, "dataframe": new_df}
     except Exception as e:
+        Log.func_error(e)
         return {"success_status": False, "error": str(e), "dataframe": None}
     
 def get_file_type(sheet_name_list):
     cashFileSheetList = {"US Bank Holdings", "Client Holdings"} 
-    masterCompSheetList = {"Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping"} 
-    marketValueSheetList = {"Sheet1"}
+    masterCompSheetList = {"Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping", "PSSL II Borrowing Base"}
+    # marketValueSheetList = {"Sheet1"}
+    marketValueSheetList = {"Market and Book Value Position_"}
 
     if cashFileSheetList.issubset(set(sheet_name_list)):  
         return "cashfile", list(cashFileSheetList)
     elif masterCompSheetList.issubset(set(sheet_name_list)): 
         return "master_comp", list(masterCompSheetList)
-    elif marketValueSheetList.issubset(set(sheet_name_list)): 
+    elif (set(sheet_name_list)).issubset(marketValueSheetList): 
         return "market_book_file", list(marketValueSheetList)
 
 def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_column_mapper, args):
@@ -394,13 +391,13 @@ def sheet_data_extract(db_source_file, uploaded_file, updated_column_df, sheet_c
 
     except Exception as e:
         Log.func_error(e)
-        print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+        raise Exception(e)
 
 def extract_source_file(file_value):
     try:
         print("inside", file_value["source_file"])
         sheet_column_mapper = ColumnSheetMap.sheet_column_mapper
-        args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset", "Issuer"]
+        args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset", "Issuer", "MVMinusBV"]
         updated_column_df = {}
 
         # for file_value in file_list:
@@ -506,7 +503,14 @@ def get_base_data(info_id):
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
                 "Fund Type": base_data_info.fund_type
             }]
-        else:
+        if base_data_info.fund_type == 'PSSL':
+            base_data = PsslBaseData.query.filter(PsslBaseData.base_data_info_id == info_id).order_by(PsslBaseData.id).all()
+            HistoryData = PsslBaseDataHistory
+            card_data = [{
+                "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
+                "Fund Type": base_data_info.fund_type
+            }]
+        if base_data_info.fund_type == 'PCOF':
             base_data = PcofBaseData.query.filter_by(base_data_info_id = info_id).order_by(PcofBaseData.id).all()
             HistoryData = PcofBaseDataHistory
             with engine.connect() as connection:
@@ -715,16 +719,16 @@ def get_extracted_base_data_info(company_id, extracted_base_data_info_id, fund_t
     if extracted_base_data_info_id:
         extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(id = extracted_base_data_info_id)
     else:
-        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.report_date.desc())
+        extracted_base_datas = ExtractedBaseDataInfo.query.filter_by(company_id = company_id).order_by(ExtractedBaseDataInfo.id.desc())
     if fund_type:
-        extracted_base_datas = extracted_base_datas.filter_by(fund_type=fund_type).order_by(ExtractedBaseDataInfo.report_date.desc())
+        extracted_base_datas = extracted_base_datas.filter_by(fund_type=fund_type).order_by(ExtractedBaseDataInfo.id.desc())
         
     extracted_base_datas = extracted_base_datas.order_by(ExtractedBaseDataInfo.report_date.desc()).all()
     
     extraction_result = {
         "columns": [{
             "key": "id",
-            "label": "id"
+            "label": "#"
         }, {
             "key": "report_date",
             "label": "Report Date"
@@ -881,8 +885,8 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
     try:
         engine = db.get_engine()
         with engine.connect() as connection:
-            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
-            bd_df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where id = :data_id'), {'data_id': data_id}).fetchall())
+            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key and pbdm.fund_type = ebdi.fund_type'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
+            bd_df = pd.DataFrame(connection.execute(text(f'select * from pcof_base_data where id = :data_id'), {'data_id': data_id}).fetchall())
         
         df = df.replace({np.nan: None})
         df_dict = df.to_dict(orient='records')
@@ -892,38 +896,53 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
             identifier_col_name = None
             if table_name == 'sf_sheet_client_holdings':
                 identifier_col_name = 'ch."Issuer/Borrower Name"'
+                alias = "ch"
             elif table_name == 'sf_sheet_us_bank_holdings':
                 identifier_col_name = 'usbh."Issuer/Borrower Name"'
+                alias = "usbh"
             elif table_name == 'sf_sheet_securities_stats':
                 identifier_col_name = 'ss."Security"'
+                alias = "ss"
             elif table_name == 'sf_sheet_borrower_stats':
                 identifier_col_name = 'bs."Company"'
+                alias = "bs"
             elif table_name == 'sf_sheet_pflt_borrowing_base':
                 identifier_col_name = 'pbb."Security"'
+                alias = "pbb"
             sd_df_dict = None
             if identifier_col_name is not None:
                 if df_dict[0]['sf_column_categories'] is not None:
                     sd_col_name = df_dict[0]['sf_column_categories'][0] + " " + sd_col_name
+                sd_col_name = alias + "." + '"' + sd_col_name + '"'
                 with engine.connect() as connection:
-                    sd_df = pd.DataFrame(connection.execute(text(f'''select distinct {identifier_col_name}, "{sd_col_name}" from sf_sheet_us_bank_holdings usbh
+                    sd_df = pd.DataFrame(connection.execute(text(f'''select distinct {identifier_col_name}, usbh."LoanX ID", {sd_col_name} from sf_sheet_us_bank_holdings usbh
                     left join sf_sheet_client_holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
                     left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
                     left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
                     left join sf_sheet_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
-                    left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name" where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name and (usbh.source_file_id = :sf_id or ch.source_file_id = :sf_id or ss.source_file_id = :sf_id or pbb.source_file_id = :sf_id or bs.source_file_id = :sf_id)'''), {'obligor_name': bd_df['obligor_name'][0], 'security_name': bd_df['security_name'][0], 'sf_id': df_dict[0]['id']}).fetchall())
+                    left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name" where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name and ((usbh.source_file_id = :sf_id and ch.source_file_id = :sf_id) or (ss.source_file_id = :sf_id and pbb.source_file_id = :sf_id and bs.source_file_id = :sf_id))'''), {'obligor_name': bd_df['obligor_name'][0], 'security_name': bd_df['security_name'][0], 'sf_id': df_dict[0]['id']}).fetchall())
                 sd_df_dict = sd_df.to_dict(orient='records')
         except Exception as e:
             print(str(e)[:150])
-        result = {
-            'mapping_data': df_dict[0],
-            'source_data': sd_df_dict
-		}
+        if len(bd_df.columns) > 0 and bd_df['is_manually_added'][0]:
+            result = {
+                'mapping_data': df_dict[0],
+                'source_data': sd_df_dict,
+                'is_manual': True
+            }
+        else:
+            result = {
+                'mapping_data': df_dict[0],
+                'source_data': sd_df_dict,
+                'is_manual': False
+            }
         if len(df_dict) == 0:
             return ServiceResponse.error(message='No data found.', status_code=404)
         if len(df_dict) > 1:
             return ServiceResponse.error(message='Multiple records found.', status_code=409)
         return ServiceResponse.success(data=result)
     except Exception as e:
+        print(str(e)[:150])
         raise Exception(e)
 
 def trigger_bb_calculation(bdi_id):
@@ -935,7 +954,7 @@ def trigger_bb_calculation(bdi_id):
         engine = db.get_engine()
         with engine.connect() as connection:
             df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
-            df2 = pd.DataFrame(connection.execute(text(f'select bd_column_name, bd_column_lookup from base_data_mapping where bd_column_lookup is not null')).fetchall())
+            df2 = pd.DataFrame(connection.execute(text(f'select bd_column_name, bd_column_lookup from base_data_mapping where bd_column_lookup is not null and fund_type = \'PFLT\'')).fetchall())
             # haircut_config = pd.DataFrame(connection.execute(text(f'select haircut_level, obligor_tier, "position", value from pflt_haircut_config')).fetchall())
             industry_list = pd.DataFrame(connection.execute(text(f'select industry_no as "Industry No", industry_name as "Industry" from pflt_industry_list')).fetchall())
         df = df.replace({np.nan: None})
@@ -1304,32 +1323,37 @@ def extract_validate_store_update(source_file):
         
             with engine.connect() as connection:
                 sheets = connection.execute(text(f"""
-                    select smm."name"  from sheet_metadata_master smm 
+                    select smm."name" from sheet_metadata_master smm 
                     join file_metadata_master fmm on smm.file_id = fmm.id 
                     where fmm."type" = '{file_type}'
                 """)).fetchall()
 
             validation_status = None
 
+            sheet_validation_list = ["US Bank Holdings", "Client Holdings", "Borrower Stats"]
+
             mismatched_data = []
             for sheet_tuple in sheets:
                 sheet = sheet_tuple[0]
                 if sheet in extraction_response.get("data"):
-                    extracted_df = extraction_response.get("data").get(sheet)
-                    validation_res = validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
-    
-                    validation_status = validation_res.get('success')
-                    if validation_status == False:
-                        break
+                    if sheet in sheet_validation_list:
+                        extracted_df = extraction_response.get("data").get(sheet)
+                        validation_res = validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
+        
+                        validation_status = validation_res.get('success')
+                        if validation_status == False:
+                            break
+                        validated_df = validation_res.get('data')
+                        extraction_response.get("data")[sheet] = validated_df
                 else:
                     mismatched_data.append({'sheet_name': sheet, 'is_sheet_available': False})
                         
             is_Extracted = False
             is_validated = (not bool(len(mismatched_data))) and validation_status 
-            if is_validated:
-                extracted_data = extraction_response.get("data")
-                store_response = store_sheet_data(data_dict=extracted_data)
-                is_Extracted = store_response.get("success")
+            # if is_validated:
+            extracted_data = extraction_response.get("data")
+            store_response = store_sheet_data(data_dict=extracted_data)
+            is_Extracted = store_response.get("success")
 
             update_source_file_info(source_file, isValidated= is_validated, isExtracted=is_Extracted, validation_info=mismatched_data)
         print(f"{file_full_name} extracted, validated, stored")
@@ -1494,20 +1518,35 @@ def get_cash_sec(security_type):
     }
     return ServiceResponse.success(data=unmapped_securities_list, message="All Securities")
 
-def validate_add_securities(file, fund_type, base_data_info_id, company_id, report_date):
-    required_fields = {
-        "file": file,
-        "fund type": fund_type,
-        "base data info id": base_data_info_id,
-        "company id": company_id,
-        "report date": report_date
-    }
-    
-    for field, value in required_fields.items():
-        if not value:
-            return ServiceResponse.error(message=f"Invalid {field} provided.")
+def validate_add_securities(sheet_data, fund_type):
+    try:
+        engine = db.get_engine()
 
-    return ServiceResponse.success()
+        with engine.connect() as connection:
+                sheets_info_list = connection.execute(text(f"""
+                    select smm."lookup", smm.data_format from file_metadata_master fmm join sheet_metadata_master smm on fmm.id = smm.file_id 	
+                    where fmm."type" = 'addbasedata' and smm.fund_id = (select id from fund where fund_name = '{fund_type}')
+                """)).fetchall()
+
+        mismatched_data = []
+
+        for sheet_info in sheets_info_list:
+            sheet_name = sheet_info[0]
+
+            sheet_df = pd.DataFrame(sheet_data)
+            sheet_df = sheet_df.drop(columns=[col for col in ['id', 'action'] if col in sheet_df.columns])
+
+            validation_response = validate_tabular_sheet(sheet_df, sheet_name, mismatched_data, base_data_add=True)
+
+            validation_status = validation_response.get('success')
+            if validation_status == False:
+                return ServiceResponse.info(success=False, data=mismatched_data)
+        
+        return ServiceResponse.info(data=mismatched_data)       
+
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
 
 
 def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, report_date):
@@ -1624,7 +1663,135 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
                             'index': index,
                             'column_categories': column_categories
                         })
-        return ServiceResponse.success(data=mismatched_data)       
+
+                column_names.append(full_column_name)
+        
+        # store only those columns that are in column metadata table
+        # sheet_df = sheet_df[column_names]
+        
+        return ServiceResponse.success(data=sheet_df)       
+
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
+    
+
+def validate_key_value_sheet(sheet_data, sheet_name, mismatched_data):
+    try:
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            key_info_list = connection.execute(text(f"""
+                select cmm.column_lookup, cmm.is_required, cmm.data_type
+                from column_metadata_master cmm 
+                join sheet_metadata_master smm on cmm.sheet_id = smm.smm_id 
+                where smm."lookup" = '{sheet_name}'
+            """)).fetchall()
+
+            for key in key_info_list:
+                key_name = key[0]
+                key_isRequired = key[1]
+                value_data_type = key[2]
+
+                if key_name not in sheet_data and key_isRequired:
+                    mismatched_data.append({
+                        'sheet_name': sheet_name,
+                        'column_name': key_name,
+                        'is_column_available': False
+                    })
+                else:
+                    value = sheet_data[key_name]
+                    if not check_value_data_type(value, value_data_type):
+                        mismatched_data.append({
+                            'sheet_name': sheet_name,
+                            'column_name': key_name,
+                            'value': value,
+                            'expected_type': value_data_type,
+                            'actual_type': infer_data_type(value),
+                            'is_sheet_available': True,
+                            'is_column_available': True,
+                            'index': None,
+                            'column_categories': None
+                        })
+
+        return ServiceResponse.success()
+    
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
+    
+def validate_tabular_sheet(sheet_df, sheet_name, mismatched_data, base_data_add = False):
+    try:
+        engine = db.get_engine()
+        
+        with engine.connect() as connection:
+            columns_tuple = connection.execute(text(f"""
+                select cmm.column_lookup, cmm.column_name, cmm.is_required, cmm.data_type
+                from column_metadata_master cmm 
+                join sheet_metadata_master smm on cmm.sheet_id = smm.smm_id 
+                where smm."lookup" = '{sheet_name}'
+            """)).fetchall()
+        
+        for column_tuple in columns_tuple:
+            column = column_tuple[1] if base_data_add else column_tuple[0]
+            column_isRequired = column_tuple[2]
+            expected_type = column_tuple[3]
+            if column not in sheet_df.columns and column_isRequired:
+                mismatched_data.append({
+                    'sheet_name': sheet_name,
+                    'column_name': column,
+                    'is_column_available': False
+                })
+            else:
+                column_list = sheet_df[column].tolist() if column in sheet_df.columns else []
+                for index in range(len(column_list)):
+                    value = column_list[index]
+                    if not check_value_data_type(value, expected_type):
+                        mismatched_data.append({
+                            'sheet_name': sheet_name,
+                            'column_name': column,
+                            'value': value,
+                            'expected_type': expected_type,
+                            'actual_type': infer_data_type(value),
+                            'is_sheet_available': True,
+                            'is_column_available': True,
+                            'index': index,
+                            'column_categories': None
+                        })
+        return ServiceResponse.success(data=sheet_df)       
+
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
+    
+
+def validate_other_info_sheet(fund_type, other_data):
+    try:
+        engine = db.get_engine()
+
+        with engine.connect() as connection:
+                sheets_info_list = connection.execute(text(f"""
+                    select smm."lookup", smm.data_format from file_metadata_master fmm join sheet_metadata_master smm on fmm.id = smm.file_id 	
+                    where fmm."type" = 'otherinfo' and smm.fund_id = (select id from fund where fund_name = '{fund_type}')
+                """)).fetchall()
+
+        mismatched_data = []
+
+        for sheet_info in sheets_info_list:
+            sheet_name = sheet_info[0]
+            sheet_data_format = sheet_info[1]
+            sheet_data = other_data[sheet_name]
+            if sheet_data_format == 'tabular':
+                sheet_df = pd.DataFrame(sheet_data)
+                validation_response = validate_tabular_sheet(sheet_df, sheet_name, mismatched_data)
+
+            else:
+                validation_response = validate_key_value_sheet(sheet_data, sheet_name, mismatched_data)
+
+            validation_status = validation_response.get('success')
+            if validation_status == False:
+                return ServiceResponse.info(success=False, data=mismatched_data)
+        
+        return ServiceResponse.info(data=mismatched_data)       
 
     except Exception as e:
         print(e)

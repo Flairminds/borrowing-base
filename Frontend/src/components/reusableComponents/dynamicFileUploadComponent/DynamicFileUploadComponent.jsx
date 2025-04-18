@@ -1,37 +1,34 @@
 import { Popover } from 'antd';
 import React from 'react';
 import { useDropzone } from 'react-dropzone';
+import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import styles from './DynamicFileUploadComponent.module.css';
-
-
-const mimeTypeMap = {
-	csv: 'text/csv',
-	xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-	pdf: 'application/pdf'
-};
 
 export const DynamicFileUploadComponent = ({
 	uploadedFiles,
 	setUploadedFiles,
-	supportedFormats = ['csv', 'xlsx'],
+	supportedFormats = ['csv', 'xlsx', 'xlsm'], // supported extensions
 	fundType,
 	fileDownloadOptions = {},
 	showDownload = true
 }) => {
-
-	const acceptedMimeTypes = supportedFormats
-		.map(ext => mimeTypeMap[ext])
-		.filter(Boolean);
-
+	// Setup Dropzone
 	const { getRootProps, getInputProps } = useDropzone({
-		accept: acceptedMimeTypes.reduce((acc, format) => ({ ...acc, [format]: [] }), {}),
-		multiple: false,
+		accept: supportedFormats.reduce((acc, ext) => {
+			acc[`.${ext}`] = [];
+			return acc;
+		}, {}),
+		multiple: true,
 		onDrop: (acceptedFiles) => {
-			const file = acceptedFiles[0];
-			if (file && acceptedMimeTypes.includes(file.type)) {
-				setUploadedFiles([file]);
+			const validFiles = acceptedFiles.filter(file => {
+				const fileExtension = file.name.split('.').pop()?.toLowerCase();
+				return supportedFormats.includes(fileExtension);
+			});
+
+			if (validFiles.length > 0) {
+				setUploadedFiles(prev => [...prev, ...validFiles]);
 			} else {
-				alert("Invalid file format. Please upload a valid file.");
+				showToast('error', 'Invalid file format. Please upload a valid file.');
 			}
 		}
 	});
@@ -40,7 +37,6 @@ export const DynamicFileUploadComponent = ({
 
 	return (
 		<div>
-
 			{showDownload && downloadFile && (
 				<div className={styles.downloadContainer}>
 					<Popover placement="bottomRight" content="Refer to sample template file">
@@ -57,7 +53,7 @@ export const DynamicFileUploadComponent = ({
 			)}
 
 			<div {...getRootProps({ className: styles.dropzone })}>
-				<input {...getInputProps()} />
+				<input {...getInputProps()} accept={supportedFormats.map(ext => `.${ext}`).join(',')} />
 				<div>
 					<b>
 						{uploadedFiles?.length > 0

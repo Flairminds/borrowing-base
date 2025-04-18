@@ -91,3 +91,7 @@ def base_data_other_info():
 @di_blueprint.route('/add_base_data', methods=["POST"])
 def add_base_data():
     return diController.add_base_data()
+
+@di_blueprint.route('/validate_add_securities', methods=["POST"])
+def validate_add_securities():
+    return diController.validate_add_securities()
