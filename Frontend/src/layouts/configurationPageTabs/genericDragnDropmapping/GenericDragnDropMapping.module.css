@@ -35,6 +35,8 @@
 	position: sticky;
 	top: 0;
 	padding: 10px;
+	max-height: 250px;
+	overflow-y: auto;
 }
 
 .unmappedLoantypeList {
