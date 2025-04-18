@@ -1,0 +1,34 @@
+.tableWrapper {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.mappingTable {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #f0f0f0;
+}
+
+.mappingTable th,
+.mappingTable td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.mappingTable th {
+    background-color: #fafafa;
+    font-weight: 600;
+}
+
+.excelColCell {
+    color: #595959;
+    font-weight: 500;
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}

@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import PCOFAddSecSampleFile from '../../assets/template File/PCOF Add Base Data.xlsx';
 import PFLTAddSecSampleFile from '../../assets/template File/PFLT Add Base Data.xlsx';
+import { ColumnMappingModal } from '../../components/columnMappingModal/ColumnMappingModal';
 import { ModalComponents } from '../../components/modalComponents';
 import { DynamicFileUploadComponent } from '../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
@@ -22,6 +23,23 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		}
 	}, [isOpenFileUpload]);
 
+
+	const EXCEL_UNMAPPED_COLUMNS = [
+		"Obligor Name",
+		"Security Name",
+		"Loan Type",
+		"Tenure",
+		"Interest Rate"
+	];
+
+	const SYSTEM_UNMAPPED_COLUMNS = [
+		"Obligor Name",
+		"Security Name",
+		"Loan Type",
+		"Tenure",
+		"Interest Rate"
+	];
+
 	const EXCEL_COLUMNS = {
 		PFLT: ["obligor name", "security name", "loan type"],
 		PCOF: ["investment name", "issuer"]
@@ -32,11 +50,13 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		PCOF: ["investment_name", "issuer"]
 	};
 
+	const [showMappingModal, setShowMappingModal] = useState(false);
+
 	const showDuplicateModal = (processedRows, previewFundType, onConfirm, onCancel) => {
 		const isNewAdded = processedRows.some((d) => d.action === "add");
 
 		Modal.confirm({
-			title: <span style={{lineHeight: "2rem"}}>{"Records Found"}</span>,
+			title: <span style={{ lineHeight: "2rem" }}>{"Records Found"}</span>,
 			content: (
 				<>
 					<p><strong>Duplicate Records Found :</strong></p>
@@ -186,7 +206,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			showToast("error", "Please upload a file before saving.");
 			return;
 		}
-
+		setShowMappingModal(true);
 		try {
 			const file = addsecFiles[0];
 			const sheetData = await readExcelFile(file);
