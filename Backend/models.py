@@ -746,6 +746,7 @@ class PsslBaseData(db.Model):
     initial_annualized_recurring_revenue = db.Column(db.String)
     annualized_recurring_revenue = db.Column(db.String)
     initial_liquidity = db.Column(db.String)
+    current_liquidity = db.Column(db.String)
     # current _liquidity
     initial_cash_interest_expense  = db.Column(db.Float, nullable=True)
     current_cash_interest_expense = db.Column(db.Float, nullable=True)

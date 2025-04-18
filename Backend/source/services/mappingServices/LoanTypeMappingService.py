@@ -11,14 +11,24 @@ def get_unmapped_loan_types(fund_name):
     engine = db.get_engine()
     with engine.connect() as connection:
         unmapped_loan_types = connection.execute(text(f'''
-            select ssch."Issue Name", MIN(ssch.source_file_id) AS source_file_id
+            (select distinct ssch."Issue Name", MIN(ssch.source_file_id) AS source_file_id, array_agg(distinct ltm2.fund_type) 
             from sf_sheet_client_holdings ssch
             left join loan_type_mapping ltm ON ssch."Issue Name" = ltm.loan_type and is_deleted = false
-            left join loan_type_master ltm2 on ltm2.id = ltm.master_loan_type_id and ltm2.fund_type = '{fund_name}'
+            left join loan_type_master ltm2 on ltm2.id = ltm.master_loan_type_id
             join source_files sf on sf.id = ssch.source_file_id and '{fund_name}' in (select unnest(fund_types) from source_files sf2 where sf.id = ssch.source_file_id)
-            where (ltm2.fund_type is null or ltm.master_loan_type_id IS NULL OR ltm.is_deleted = TRUE)
-            group by ssch."Issue Name"
-            order by ssch."Issue Name"
+            group by ssch."Issue Name", ltm.is_deleted
+            HAVING NOT ('{fund_name}' = ANY(array_remove(array_agg(DISTINCT ltm2.fund_type), NULL)))
+            OR ltm.is_deleted = true
+            union
+            select ssm."Asset_Name" as "Issue Name", MIN(ssm.source_file_id) AS source_file_id, array_agg(distinct ltm2.fund_type) 
+            from sf_sheet_marketbook_1 ssm
+            left join loan_type_mapping ltm ON ssm."Asset_Name" = ltm.loan_type and is_deleted = false
+            left join loan_type_master ltm2 on ltm2.id = ltm.master_loan_type_id
+            join source_files sf on sf.id = ssm.source_file_id and '{fund_name}' in (select unnest(fund_types) from source_files sf2 where sf.id = ssm.source_file_id)
+            group by ssm."Asset_Name", ltm.is_deleted
+            HAVING NOT ('{fund_name}' = ANY(array_remove(array_agg(DISTINCT ltm2.fund_type), NULL)))
+            OR ltm.is_deleted = true)
+            order by "Issue Name"
         ''')).fetchall()
     unmapped_loan_type_data = [{'unmapped_loan_type': unmapped_loan_type[0], 'source_file_id': unmapped_loan_type[1]} for unmapped_loan_type in unmapped_loan_types]
     return ServiceResponse.success(data=unmapped_loan_type_data, message="Unmapped Loan Types")

@@ -22,7 +22,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [uploadFilesPopupOpen, setUploadFilesPopupOpen] = useState(false);
 	const [previewBaseDataLoading, setPreviewBaseDataLoading] = useState(false);
 	const [previewReportDate, setPreviewReportDate] = useState('');
-	const [selectedFundType, setSelectedFundType] = useState(2);
+	const [selectedFundType, setSelectedFundType] = useState(0);
 	const [archiveToggle, setArchiveToggle] = useState(false);
 	const [archiveFilesData, setArchiveFilesData] = useState(null);
 	const [isbuttonDisable, setButtonDisable] = useState(false);
@@ -40,7 +40,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const blobFilesList = async(fundType) => {
 		try {
 			setDataLoading(true);
-			const payload = fundMap[fundType] || '';
+			const payload = fundMap[fundType] || null;
 			const fileresponse = await getBlobFilesList(payload);
 			const responseData = fileresponse.data.result;
 			// const temp = responseData.data.map(d => {
@@ -141,9 +141,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
 	const handleDropdownChange = (value) => {
 		setSelectedFundType(value);
-		if (value !== 0) {
-			blobFilesList(value);
-		}
+		blobFilesList(value);
 	};
 
 	useEffect(() => {
@@ -167,6 +165,14 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const handleFileExtraction = async() => {
 		// setFileExtractionLoading(true);
 		try {
+			if (!selectedFundType) {
+				alert('Please select a fund for data extraction.');
+				return;
+			}
+			if (selectedIds.current.length == 0) {
+				alert('Please select files.');
+				return;
+			}
 			setExtractionInProgress(true);
 			const selectedFund = fundMap[selectedFundType] || "";
 			setBaseFilePreviewData([]);
