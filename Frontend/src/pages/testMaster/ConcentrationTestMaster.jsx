@@ -176,7 +176,7 @@ export const ConcentrationTestMaster = () => {
 												column.key == "eligible_funds" ?
 													<>
 														{row[column.key]?.map((el) => (
-															<span key={el} className={styles.fundNameTag} style={{backgroundColor: FUND_BG_COLOR[el]}}>{el}</span>
+															<span key={el} className={styles.fundNameTag} style={{...(FUND_BG_COLOR[el] || { backgroundColor: 'gray', color: 'white'})}}>{el}</span>
 														))}
 													</>
 													:

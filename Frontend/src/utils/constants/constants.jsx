@@ -35,8 +35,18 @@ export const updateAssetModalData = (fundType) => {
 export const fundOptionsArray = [
 	{ value: 0, label: '-- Select Fund --' },
 	{ value: 1, label: 'PCOF' },
-	{ value: 2, label: 'PFLT' }
+	{ value: 2, label: 'PFLT' },
+	{ value: 3, label: 'PSSL' }
+
 ];
+
+export const checkboxOptions = ['PCOF', 'PFLT', 'PSSL'];
+
+export const fundMap = {
+	1: 'PCOF',
+	2: 'PFLT',
+	3: 'PSSL'
+};
 
 export const PAGE_ROUTES = {
 	BASE_DATA_LIST: {

@@ -5,7 +5,7 @@ import { CustomButton } from '../../components/uiComponents/Button/CustomButton'
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { SourceFileModal } from '../../modal/sourceFileModal/SourceFileModal';
 import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dataIngestionApi';
-import { fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
+import { fundMap, fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
 import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
@@ -68,7 +68,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 		'key': 'file_preview',
 		'label': '',
 		'render': (value, row) => <div onClick={() => handleBaseDataPreview(row)}
-			style={{color: '#0EB198', cursor: 'pointer'}}>
+			style={{color: row.extraction_status.toLowerCase() === "completed" ? 'green' : 'red', cursor: 'pointer'}} title={row.extraction_status.toLowerCase() === "completed" ? 'Click to preview base data' : 'Click to view errors' } >
 			{row.extraction_status.toLowerCase() === "completed" ? 'Preview Base Data' : (row.extraction_status.toLowerCase() === "failed" ? 'Errors' : '')}
 		</div>
 	}];
@@ -104,7 +104,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 					...col,
 					render: (value, row) => (
 						<div>
-							<span style={{display: 'inline-block', backgroundColor: STATUS_BG_COLOR[row.extraction_status.toLowerCase()], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
+							<span style={{display: 'inline-block', padding: '3px 7px', borderRadius: '8px', ...(STATUS_BG_COLOR[row.extraction_status.toLowerCase()] || { backgroundColor: 'gray', color: 'white'})}}>
 								{row.extraction_status.split(" ")
 									.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
 									.join(" ")}
@@ -118,7 +118,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 					...col,
 					render: (value, row) => (
 						<div>
-							<span style={{display: 'inline-block', backgroundColor: FUND_BG_COLOR[row.fund], padding: '3px 7px', borderRadius: '8px', color: 'white'}}>
+							<span style={{display: 'inline-block', padding: '3px 7px', borderRadius: '8px', ...(FUND_BG_COLOR[row.fund] || { backgroundColor: 'gray', color: 'white'})}}>
 								{row.fund}
 							</span>
 						</div>
@@ -135,7 +135,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 	};
 
 	const getFilesList = async (fundType) => {
-		const Fund = (fundType === 1) ? 'PCOF' : (fundType === 2) ? 'PFLT' : undefined;
+		const Fund = fundMap[fundType];
 		try {
 			setDataLoading(true);
 			const data = {

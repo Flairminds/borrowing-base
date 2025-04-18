@@ -1,11 +1,11 @@
-import { Button, Checkbox, DatePicker, Modal } from 'antd';
-import React, { useEffect, useState } from 'react';
-import { useDropzone } from 'react-dropzone';
-import ButtonStyles from '../../../components/uiComponents/Button/ButtonStyle.module.css';
+import { Checkbox, DatePicker, Modal } from 'antd';
+import React, { useState } from 'react';
+import { ModalComponents } from '../../../components/modalComponents';
+import { DynamicFileUploadComponent } from '../../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent';
 import { uploadNewFile } from '../../../services/dataIngestionApi';
+import { checkboxOptions } from '../../../utils/constants/constants';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import styles from './UploadExtractionFiles.module.css';
-import { ModalComponents } from '../../../components/modalComponents';
 
 export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopupOpen, blobFilesList }) => {
 
@@ -14,21 +14,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 	const [reportDate, setReportDate] = useState();
 	const [selectedOptions, setSelectedOptions] = useState([]);
 
-	const checkboxOptions = ['PCOF', 'PFLT'];
-
-
-	const { getRootProps, getInputProps } = useDropzone({
-		accept: [
-			'text/csv',
-			'document/csv',
-			'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-		],
-		multiple: true,
-		onDrop: (acceptedFiles) => {
-			setSelectedFiles([...selectedFiles, ...acceptedFiles]);
-		}
-	});
-
+	
 	const handleCancel = () => {
 		setSelectedFiles([]);
 		setSelectedOptions([]);
@@ -100,27 +86,12 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 								/>
 							</div>
 						</div>
-						<div className={styles.visible}>
-							<div {...getRootProps({ className: 'dropzone' })}>
-								<input {...getInputProps()} />
-								<div>
-									<span>
-										<b>{selectedFiles?.length ? selectedFiles.map((file) => file.name).join(', ') : 'Drag and drop files here, or'}</b>
-									</span>
-									<span
-										style={{
-											color: '#3B7DDD',
-											textDecoration: 'underline',
-											cursor: 'pointer',
-											marginLeft: '5px'
-										}}
-									>
-										Browse
-									</span>
-								</div>
-								<p className={styles.supportHeading}>Supported file format: CSV, XLSX</p>
-							</div>
-						</div>
+						<DynamicFileUploadComponent
+							uploadedFiles={selectedFiles}
+							setUploadedFiles={setSelectedFiles}
+							supportedFormats={['csv', 'xlsx', 'xlsm']}
+							showDownload={false}
+						/>
 					</div>
 				</>
 

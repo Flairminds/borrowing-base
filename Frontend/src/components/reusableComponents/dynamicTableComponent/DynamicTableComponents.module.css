@@ -11,12 +11,24 @@
     width: 100%;
     border-collapse: collapse;
     font-size: small;
-    border: 1px solid #DCDEDE;
+    text-align: left;
+    /* border: 1px solid #DCDEDE; */
 }
 
 .tr {
+    /* margin: 10px 0; */
     /* background-color: red; */
     /* box-shadow: 5px 10px 15px 5px rgba(0,0,0,0.5); */
+}
+
+.headRow {
+    /* border-bottom: 1px solid var(--primary-theme-color); */
+    position: sticky;
+    top: 0;
+    z-index: 300;
+    padding: 0;
+    /* background-color: #e0fffa; */
+    background-color: #DCDEDE;
 }
 
 .th::-webkit-scrollbar,
@@ -51,16 +63,16 @@
 }
 
 .th{
-    padding: 12px 8px;
-    text-align: left;
+    padding: 8px 6px;
+    /* text-align: left; */
     /* border-top: 1px solid #DCDEDE; */
-    border-bottom: 1px solid #DCDEDE;
+    /* border-bottom: 1px solid #DCDEDE; */
     font-weight: 600;
     /* min-width: 3rem; */
     max-width: 200px;
     align-items: center;
     justify-content: center;
-    background-color: #f2f2f2;
+    /* background-color: #f2f2f2; */
     position: sticky;
     top: 0;
     z-index: 100;
@@ -69,8 +81,8 @@
 }
   
 .td {
-    padding: 8px;
-    text-align: left;
+    padding: 6px;
+    /* text-align: left; */
     /* border-top: 1px solid #DCDEDE; */
     border-bottom: 1px solid #DCDEDE;
     /* min-width: 3rem; */
@@ -83,17 +95,17 @@
 }
 
 .stickyColTh{
-    padding: 8px;
-    text-align: left;
+    padding: 8px 6px;
+    /* text-align: left; */
     /* border-top: 1px solid #DCDEDE; */
-    border-bottom: 1px solid #DCDEDE;
+    /* border-bottom: 1px solid #DCDEDE; */
     /* border-radius: 5px; */
     /* border: 1px solid #DCDEDE; */
     font-weight: 600;
     width: 175px;
     align-items: center;
     justify-content: center;
-    background-color: #f2f2f2;
+    /* background-color: #f2f2f2; */
     position: sticky;
     top: 0;
     z-index: 100;
@@ -102,10 +114,10 @@
 }
 
 .stickyColTd {
-    padding: 8px;
-    text-align: left;
+    padding: 6px;
+    /* text-align: left; */
     vertical-align: top;
-    border-top: 1px solid #DCDEDE;
+    /* border-top: 1px solid #DCDEDE; */
     border-bottom: 1px solid #DCDEDE;
     width: 175px;
     align-items: center;
@@ -144,7 +156,7 @@
 .emptyValue
 {
     padding: 8px;
-    text-align: left;
+    /* text-align: left; */
     border-bottom: 1px solid #DCDEDE;
     min-width: 4rem;
     max-width: 200px;
@@ -193,4 +205,26 @@
 
 .tableIconsActive {
     background-color: #c7c7c7;
+}
+
+.isManuallyAdd{
+    background-color: #FFEBEB;
+}
+
+.isEdited {
+    background-color: #B8E1FF;
+}
+.Showbox {
+    position: absolute;
+    top: 50%;
+    left: -120px;
+    transform: translateY(-50%);
+    background-color: rgb(99, 175, 237); /* Light Blue */
+    color: black;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    white-space: nowrap;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }

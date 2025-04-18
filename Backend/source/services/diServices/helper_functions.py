@@ -89,8 +89,8 @@ def store_sheet_data(data_dict):
             print(f"Processing sheet: {sheet_name}")
 
             df = truncate_and_rename_columns(df)
-            if (sheet_name == "Sheet1"):
-                table_name = "sf_sheet_marketbook"
+            if (sheet_name == "Market and Book Value Position_"):
+                table_name = "sf_sheet_marketbook_1"
             else:
                 table_name = 'sf_sheet' + '_' + sheet_name.lower().replace(" ", "_")
 
@@ -109,12 +109,12 @@ def store_sheet_data(data_dict):
                 
         return ServiceResponse.success()
     except Exception as e:
-        print(f"Failed to store sheet {sheet_name}")
         print(str(e))
         return ServiceResponse.error()
     
 
-def check_data_type(value, data_type, exceptions):
+def check_data_type(value, data_type, exceptions=[]):
+    data_type = data_type.lower()
     type_mapping = {
         'string': str,
         'float': float,
@@ -130,3 +130,100 @@ def check_data_type(value, data_type, exceptions):
     if value in exceptions:
         return True
     return check
+
+
+def check_value_data_type(value, data_type):
+    data_type = data_type.lower()
+    if value != value:
+        return True
+
+    if value == "" or value == 'N/A':
+        return True
+    
+
+    try:
+        if data_type == 'string':
+            return isinstance(value, str) and not value.strip().replace('.', '', 1).isdigit()
+
+        elif data_type == 'integer':
+            if isinstance(value, int):
+                return True
+            return str(value).isdigit()
+
+        elif data_type == 'float':
+            float_val = float(value)
+            return True
+
+        elif data_type == 'datetime':
+            if isinstance(value, datetime):
+                return True
+
+            # Different date formats
+            date_formats = [
+                '%Y-%m-%dT%H:%M:%S.%fZ', 
+                '%Y-%m-%d',  
+                '%d-%m-%Y',
+                '%m/%d/%Y',  
+                '%m-%d-%Y',           
+            ]
+            for fmt in date_formats:
+                try:
+                    datetime.strptime(value, fmt)
+                    return True
+                except ValueError:
+                    continue
+            return False
+
+    except (ValueError, TypeError):
+        return False
+
+    return False 
+
+def infer_data_type(value):
+    if value != value:
+        return 'unknown'
+
+    if value == "":
+        return 'unknown'
+
+    try:
+        if isinstance(value, int) or (isinstance(value, str) and value.isdigit()):
+            return 'integer'
+    except:
+        pass
+
+
+    try:
+        float_val = float(value)
+        if '.' in str(value) or isinstance(value, float):
+            return 'float'
+    except:
+        pass
+
+    if isinstance(value, datetime):
+        return 'datetime'
+
+    date_formats = [
+        '%Y-%m-%dT%H:%M:%S.%fZ',
+        '%Y-%m-%d',
+        '%d-%m-%Y',
+        '%m/%d/%Y',
+        '%m-%d-%Y',
+    ]
+    if isinstance(value, str):
+        for fmt in date_formats:
+            try:
+                datetime.strptime(value, fmt)
+                return 'datetime'
+            except:
+                continue
+
+    if isinstance(value, str):
+        stripped = value.strip()
+        try:
+            float(stripped)
+            return 'float' if '.' in stripped else 'integer'
+        except ValueError:
+            return 'string'
+
+    return 'unknown'
