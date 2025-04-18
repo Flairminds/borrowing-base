@@ -13,6 +13,8 @@ import styles from './BorrowingBasePreviewPage.module.css';
 import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
 import { PAGE_ROUTES } from '../../utils/constants/constants';
 import { UIComponents } from '../../components/uiComponents';
+import { ShowEmptyBasedDataValues } from '../../modal/showEmptyBasedDataValues/ShowEmptyBasedDataValues';
+
 
 export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setPreviewFundType, setTablesData, setPreviewPageId, getborrowingbasedata}) => {
 	const navigate = useNavigate();
@@ -20,6 +22,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [mapping, setMapping] = useState({});
 	const [cellDetail, setCellDetail] = useState({});
 	const [isAddFieldModalOpen, setIsAddFieldModalOpen] = useState(false);
+	const [isShowEmptyBaseDataModalOpen, setIsShowEmptyBaseDataModalOpen] = useState(false);
 	// const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
 	const [obligorFliteredValue, setObligorFliteredValue] = useState([]);
 	const [securityFilteredValue, setSecurityFilteredValue] = useState([]);
@@ -70,7 +73,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			"title": columnName,
 			"data": {
 				// 'Base data column name': columnName,
-				'Value': cellValue,
+				'Current Value': fmtDisplayVal(cellValue),
 				'Source file name': 'Not mapped',
 				'Sheet name': 'Not mapped',
 				'Column name': 'Not mapped',
@@ -81,36 +84,52 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId || infoId, 'column_key': columnKey, 'data_id': baseFilePreviewData?.baseData?.data[rowIndex]['id']['value'] });
 			const detail = response?.data?.result;
 			const mappingData = detail?.mapping_data;
-			const t = {
-				...temp.data,
-				'Source file name': mappingData.file_name + mappingData.extension,
-				'Sheet name': mappingData.sf_sheet_name,
-				'Column name': mappingData.sf_column_name,
-				'Formula': mappingData.formula ? mappingData.formula : 'Value same as source column value'
+			let t = {
+				...temp.data
 			};
+			if (!detail.is_manual) {
+				t = {
+					...t,
+					'Source file name': mappingData.file_name + mappingData.extension,
+					'Sheet name': mappingData.sf_sheet_name,
+					'Column name': mappingData.sf_column_name,
+					'Formula': mappingData.formula ? mappingData.formula : 'Value same as source column value'
+				};
+			} else {
+				t = {
+					...t,
+					'Source file name': 'Manually added data',
+					'Sheet name': undefined,
+					'Column name': undefined,
+					'Formula': undefined
+				};
+			}
 			temp['data'] = t;
 			const sourceData = detail?.source_data;
 			if (sourceData) {
 
-				temp['htmlRender'] = <table style={{ textAlign: 'center', margin: '15px 0' }}>
-					<thead>
-						{Object.keys(sourceData[0]).map((h, i) => {
-							return (<th key={i} style={{ padding: '3px 10px', border: "1px solid #DCDEDE", backgroundColor: '#DCDEDE' }}>{h}</th>);
-						})}
-					</thead>
-					<tbody>
-						{sourceData.map((d, j) => {
-							return (
-								<tr key={j}>
-									{Object.keys(d).map((key, k) => {
-										return (
-											<td key={k} style={{ padding: '3px', border: "1px solid #DCDEDE" }}>{d[key]}</td>);
-									})}
-								</tr>
-							);
-						})}
-					</tbody>
-				</table>;
+				temp['htmlRender'] = <>
+					<p style={{ fontWeight: 'bold', textAlign: 'Left', margin: '15px 0 5px' }}>Source File Value</p>
+					<table style={{ textAlign: 'center', margin: '5px 0 15px' }}>
+						<thead>
+							{Object.keys(sourceData[0]).map((h, i) => {
+								return (<th key={i} style={{ padding: '3px 10px', border: "1px solid #DCDEDE", backgroundColor: '#DCDEDE' }}>{h}</th>);
+							})}
+						</thead>
+						<tbody>
+							{sourceData.map((d, j) => {
+								return (
+									<tr key={j}>
+										{Object.keys(d).map((key, k) => {
+											return (
+												<td key={k} style={{ padding: '3px', border: "1px solid #DCDEDE" }}>{fmtDisplayVal(d[key])}</td>);
+										})}
+									</tr>
+								);
+							})}
+						</tbody>
+					</table>
+				</>;
 			}
 			setCellDetail(temp);
 		} catch (error) {
@@ -212,6 +231,15 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		}]
 	};
 
+	const handleConfirmEmptyBaseModal = () => {
+		setIsShowEmptyBaseDataModalOpen(false);
+		setIsAddFieldModalOpen(true);
+	};
+
+	const handleCancelEmptyBaseModal = () => {
+		setIsShowEmptyBaseDataModalOpen(false);
+	};
+
 
 	return (
 		<div className={styles.previewPage}>
@@ -229,8 +257,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							</div>
 						</div>
 						<div>
-							<UIComponents.Button onClick={showModal} isFilled={true} text='Add Securities Data' btnDisabled={previewFundType == 'PCOF' ? false : false} title={'Add more securities data in the base data'} />
-							<UIComponents.Button onClick={() => setIsAddFieldModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PCOF' ? false : false} />
+							<UIComponents.Button onClick={showModal} isFilled={true} text='Add Securities Data' btnDisabled={previewFundType == 'PSSL' ? true : false} title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />
+							<UIComponents.Button onClick={() => setIsShowEmptyBaseDataModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PSSL' ? true : false} />
 						</div>
 					</div>
 					<div>
@@ -264,8 +292,12 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				previewPageId= {previewPageId}
 				setTablesData= {setTablesData}
 				getborrowingbasedata= {getborrowingbasedata}
+				setLoading= {setLoading}
 			/>
 			<FileUploadModal
+				data={filteredData}
+				columns={baseFilePreviewData?.baseData?.columns}
+				previewFundType={previewFundType}
 				isOpenFileUpload={isOpenFileUpload}
 				handleCancel={handleCancel}
 				handleBaseDataPreview={handleBaseDataPreview}
@@ -273,7 +305,14 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				reportId={baseFilePreviewData.reportDate}
 				addsecFiles={addsecFiles}
 				setAddsecFiles={setAddsecFiles}
+			/>
+			<ShowEmptyBasedDataValues
+				visible={isShowEmptyBaseDataModalOpen}
+				columnNames={baseFilePreviewData?.baseData?.columns}
+				data={filteredData}
 				previewFundType={previewFundType}
+				onConfirm={handleConfirmEmptyBaseModal}
+				onCancel={handleCancelEmptyBaseModal}
 			/>
 		</div>
 		// <div>

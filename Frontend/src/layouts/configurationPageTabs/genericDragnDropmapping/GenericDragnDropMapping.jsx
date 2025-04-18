@@ -39,8 +39,8 @@ const DraggableItem = ({ item, itemAccessKey, title, getEntryMappingInfo, select
 		<div
 			ref={drag}
 			style={{
-				padding: "3px 7px",
-				margin: "4px",
+				padding: "3px 5px",
+				margin: "2px",
 				color: selectedMappingItem == item[itemAccessKey] ? SELECTED_TAG.TEXT_COLOR : 'black',
 				backgroundColor: selectedMappingItem == item[itemAccessKey] ? SELECTED_TAG.BACKGROUND_COLOR : "#d3d3d3",
 				// border: selectedMappingItem == item[itemAccessKey] ? '1px solid #0EB198' : null,
@@ -48,7 +48,7 @@ const DraggableItem = ({ item, itemAccessKey, title, getEntryMappingInfo, select
 				cursor: "grab",
 				opacity: isDragging ? 0.5 : 1,
 				// minWidth: "175px",
-				borderRadius: '5px'
+				borderRadius: '4px'
 				// maxHeight: "35px"
 			}}
 		>
@@ -147,16 +147,17 @@ export const GenericDragnDropMapping = ({activeMappingType}) => {
 	};
 
 	const handleFundChange = (value) => {
-
-		let fundType = "";
-		if (value == 1) {
-			fundType = "PCOF";
-		} else if (value === 2) {
-			fundType = "PFLT";
+		try {
+			let fundType = "";
+			fundType = fundOptionsArray.find(f => f.value == value)?.label;
+			if (!fundType) {
+				return;
+			}
+			setSelectedFundType(fundType);
+			getEntryMappingInfo(fundType);
+		} catch (error) {
+			console.error(error);
 		}
-
-		setSelectedFundType(fundType);
-		getEntryMappingInfo(fundType);
 	};
 
 
