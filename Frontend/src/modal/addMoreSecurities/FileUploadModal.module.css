@@ -5,9 +5,12 @@
 }
 
 .downloadLink {
-    text-decoration: underline;
-    color: #3B7DDD;
+	text-decoration: underline;
+	color: #3B7DDD;
+	font-weight: 500;
+	cursor: pointer;
 }
+
 
 .dropzone {
     text-align: center;
