@@ -1557,6 +1557,9 @@ def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, re
         elif fund_type == 'PFLT':
             sheet_name = "Loan List"
             bd_table = PfltBaseData
+        elif fund_type == 'PSSL':
+            sheet_name = "Portfolio"
+            bd_table = PsslBaseData
         else:
             return ServiceResponse.error(message="Invalid fund type.")
 
