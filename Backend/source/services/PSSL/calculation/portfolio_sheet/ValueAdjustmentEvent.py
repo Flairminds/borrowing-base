@@ -9,7 +9,7 @@ class ValueAdjustmentEvent:
         # =IF(AND(DV11/DU11<0.85,DV11<1.5),"Yes","No")
         def cash_interest_coverage_ratio_test_helper(row):
             try:
-                if (row["Current Interest Coverage Ratio"] / row["VAE Interest Coverage"]) and (row["Current Interest Coverage Ratio"] < 1.5):
+                if (row["Current Interest Coverage Ratio"] / row["VAE Interest Coverage"] < 0.85) and (row["Current Interest Coverage Ratio"] < 1.5):
                     return "Yes"
                 else:
                     return "No"
@@ -108,8 +108,8 @@ class ValueAdjustmentEvent:
     def calculate_vae(self):
         self.cash_interest_coverage_ratio_test() # column 'DW'
         self.net_senior_leverage_ratio_test() # column 'DX'
-        self.net_total_leverage_test() # clumn 'DY'
+        self.net_total_leverage_test() # column 'DY'
         self.recurring_revenue_multiple() # column 'DZ'
         self.liquidity_credit_quality_deterioration() # column 'EA'
         self.day_count() # column 'EP'
-        self.advance_rate_class # column 'ER'
+        self.advance_rate_class() # column 'ER'

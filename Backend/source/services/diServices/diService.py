@@ -884,10 +884,24 @@ def get_source_file_data(file_id, file_type, sheet_name):
 
 def get_source_file_data_detail(ebd_id, column_key, data_id):
     try:
+        extract_base_data_info = ExtractedBaseDataInfo.query.filter_by(id = ebd_id).first()
+        fund_type = extract_base_data_info.fund_type
+ 
+        match fund_type:
+            case "PCOF":
+                table_name = "pcof_base_data"
+                history_table_name = "pcof_base_data_history"
+            case "PFLT":
+                table_name = "pflt_base_data"
+                history_table_name = "pflt_base_data_history"
+               
+            case "PSSL":
+                table_name = "pssl_base_data"
+                history_table_name = "pssl_base_data_history"
         engine = db.get_engine()
         with engine.connect() as connection:
             df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key and pbdm.fund_type = ebdi.fund_type'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
-            bd_df = pd.DataFrame(connection.execute(text(f'select * from pcof_base_data where id = :data_id'), {'data_id': data_id}).fetchall())
+            bd_df = pd.DataFrame(connection.execute(text(f'select * from {table_name} where id = :data_id'), {'data_id': data_id}).fetchall())
         
         df = df.replace({np.nan: None})
         df_dict = df.to_dict(orient='records')
@@ -1522,35 +1536,20 @@ def get_cash_sec(security_type):
     }
     return ServiceResponse.success(data=unmapped_securities_list, message="All Securities")
 
-def validate_add_securities(sheet_data, fund_type):
-    try:
-        engine = db.get_engine()
+def validate_add_securities(file, fund_type, base_data_info_id, company_id, report_date):
+    required_fields = {
+        "file": file,
+        "fund type": fund_type,
+        "base data info id": base_data_info_id,
+        "company id": company_id,
+        "report date": report_date
+    }
+    
+    for field, value in required_fields.items():
+        if not value:
+            return ServiceResponse.error(message=f"Invalid {field} provided.")
 
-        with engine.connect() as connection:
-                sheets_info_list = connection.execute(text(f"""
-                    select smm."lookup", smm.data_format from file_metadata_master fmm join sheet_metadata_master smm on fmm.id = smm.file_id 	
-                    where fmm."type" = 'addbasedata' and smm.fund_id = (select id from fund where fund_name = '{fund_type}')
-                """)).fetchall()
-
-        mismatched_data = []
-
-        for sheet_info in sheets_info_list:
-            sheet_name = sheet_info[0]
-
-            sheet_df = pd.DataFrame(sheet_data)
-            sheet_df = sheet_df.drop(columns=[col for col in ['id', 'action'] if col in sheet_df.columns])
-
-            validation_response = validate_tabular_sheet(sheet_df, sheet_name, mismatched_data, base_data_add=True)
-
-            validation_status = validation_response.get('success')
-            if validation_status == False:
-                return ServiceResponse.info(success=False, data=mismatched_data)
-        
-        return ServiceResponse.info(data=mismatched_data)       
-
-    except Exception as e:
-        print(e)
-        return ServiceResponse.error()
+    return ServiceResponse.success()
 
 
 def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, report_date):
