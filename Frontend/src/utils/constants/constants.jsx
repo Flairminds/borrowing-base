@@ -242,7 +242,7 @@ export const PCOFData = {
 			},
 			{
 				name: "percent",
-				label: "Percent",
+				label: "Percent (%)",
 				type: "text",
 				unit: "percent"
 			}
@@ -419,15 +419,35 @@ export const PSSLData = {
 				type: "text"
 			},
 			{
+				name: "on_deposit_in_unfunded_exposure_account",
+				label: "On Deposit in Unfunded Exposure Account",
+				type: "text"
+			},
+			{
 				name: "cash_on_deposit_in_principal_collections_account",
 				label: "Cash on deposit in Principal Collections Account ($)",
+				type: "text"
+			},
+			{
+				name: "foreign_currency_hedged_by_borrower",
+				label: "Foreign Currency hedged by Borrower",
 				type: "text"
 			},
 			{
 				name: "current_advances_outstanding",
 				label: "Current Advances Outstanding ($)",
 				type: "text"
-			}
+			},
+			{
+				name: "advances_repaid",
+				label: "Advances Repaid",
+				type: "text"
+			},
+			{
+				name: "advances_requested",
+				label: "Advances Requested",
+				type: "text"
+			},
 		]
 	},
 	exchange_rates: {
@@ -441,6 +461,36 @@ export const PSSLData = {
 				name: "exchange_rates",
 				label: "Exchange Rates ($)",
 				type: "text"
+			}
+		]
+	},
+	obligor_tiers: {
+		Column: [
+			{
+				name: "obligor",
+				label: "Obligor",
+				type: "text"
+			},
+			{
+				name: "first_lien_loans",
+				label: "First Lien Loans",
+				type: "float"
+			},
+			{
+				name: "fllo_2nd_lien_loans",
+				label: "FLLO/2nd Lien Loans",
+				type: "float"
+			},
+			{
+				name: "recurring_revenue",
+				label: "Recurring Revenue",
+				type: "float"
+			},
+			{
+				name: "applicable_collateral_value",
+				label: "Applicable Collateral Value (%)",
+				type: "float",
+				unit: "percent"
 			}
 		]
 	}

@@ -3,21 +3,22 @@ import { Form, Input, DatePicker, Button, Radio, Tabs, Col, Row } from "antd";
 import Modal from "antd/es/modal/Modal";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import { useDropzone } from "react-dropzone";
+import { useNavigate } from 'react-router';
 import * as XLSX from "xlsx";
 import PCOF_OTHER_INFO_SAMPLE from '../../assets/template File/PCOF - Other Info.xlsx';
+import { ModalComponents } from "../../components/modalComponents";
+import { DynamicFileUploadComponent } from "../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent";
+import { UIComponents } from "../../components/uiComponents";
+import styles from "./AddAdditionalInformationModal.module.css";
+import { SrcFileValidationErrorModal } from "../srcFIleValidationErrorModal/srcFileValidationErrorModal";
+import { useDropzone } from "react-dropzone";
 import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/PFLT - Other Info.xlsx';
 import { generateBaseDataFile, getDateReport } from "../../services/api";
+import { showToast } from "../../utils/helperFunctions/toastUtils";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
 import { PFLTData, PCOFData, OTHER_INFO_OPTIONS, PFLT_COLUMNS_NAME, PCOF_COLUMNS_NAME, PSSLData } from "../../utils/constants/constants";
 import { fmtDateValue, fmtDisplayVal, formatColumnName } from "../../utils/helperFunctions/formatDisplayData";
-import { showToast } from "../../utils/helperFunctions/toastUtils";
-import styles from "./AddAdditionalInformationModal.module.css";
-import { useNavigate } from 'react-router';
-import { UIComponents } from "../../components/uiComponents";
-import { ModalComponents } from "../../components/modalComponents";
-import { SrcFileValidationErrorModal } from "../srcFIleValidationErrorModal/srcFileValidationErrorModal";
-import { DynamicFileUploadComponent } from "../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent";
+
 
 const { TabPane } = Tabs;
 
@@ -124,18 +125,24 @@ export const AddAdditionalInformationModal = (
 			break;
 
 		case "PSSL":
-			formData["effective_date"] = uploadedData?.effective_date ? dayjs(uploadedData.effective_date) : data?.other_data?.availability?.effective_date ? dayjs(data.other_data.availability.effective_date) : null;
-			formData["scheduled_revolving_period_end_date"] = uploadedData?.scheduled_revolving_period_end_date ? dayjs(uploadedData.scheduled_revolving_period_end_date) : data?.scheduled_revolving_period_end_date ? dayjs(data.scheduled_revolving_period_end_date) : null;
-			formData["termination_date"] = uploadedData?.termination_date ? dayjs(uploadedData.termination_date) : data?.termination_date ? dayjs(data.termination_date) : null;
-			formData["determination_date"] = uploadedData?.determination_date ? dayjs(uploadedData.determination_date) : data?.determination_date ? dayjs(data.determination_date) : null;
-			formData["payment_date"] = uploadedData?.payment_date ? dayjs(uploadedData.payment_date) : data?.payment_date ? dayjs(data.payment_date) : null;
-			formData["reporting_date"] = uploadedData?.reporting_date ? dayjs(uploadedData.reporting_date) : data?.reporting_date ? dayjs(data.reporting_date) : null;
-			formData["advance_date"] = uploadedData?.advance_date ? dayjs(uploadedData.advance_date) : data?.advance_date ? dayjs(data.advance_date) : null;
-			formData["measurement_date"] = uploadedData?.measurement_date ? dayjs(uploadedData.measurement_date) : data?.measurement_date ? dayjs(data.measurement_date) : null;
-			formData["facility_amount"] = uploadedData?.facility_amount ? uploadedData.facility_amount : data?.facility_amount ? data.facility_amount : null;
-			formData["cash_on_deposit_in_principal_collections_account"] = uploadedData?.cash_on_deposit_in_principal_collections_account ? uploadedData.cash_on_deposit_in_principal_collections_account : data?.cash_on_deposit_in_principal_collections_account ? dayjs(data.cash_on_deposit_in_principal_collections_account) : null;
-			formData["current_advances_outstanding"] = uploadedData?.current_advances_outstanding ? uploadedData.current_advances_outstanding : data?.current_advances_outstanding ? data.current_advances_outstanding : null;
+			formData["effective_date"] = uploadedData?.effective_date ? dayjs(uploadedData.effective_date) : data?.other_data?.availability?.effective_date ? dayjs(data.other_data.effective_date) : null;
+			formData["scheduled_revolving_period_end_date"] = uploadedData?.scheduled_revolving_period_end_date ? dayjs(uploadedData.scheduled_revolving_period_end_date) : data?.other_data?.scheduled_revolving_period_end_date ? dayjs(data.other_data.scheduled_revolving_period_end_date) : null;
+			formData["termination_date"] = uploadedData?.termination_date ? dayjs(uploadedData.termination_date) : data?.other_data?.termination_date ? dayjs(data.other_data.termination_date) : null;
+			formData["determination_date"] = uploadedData?.determination_date ? dayjs(uploadedData.determination_date) : data?.other_data?.determination_date ? dayjs(data.other_data.determination_date) : null;
+			formData["payment_date"] = uploadedData?.payment_date ? dayjs(uploadedData.payment_date) : data?.other_data?.payment_date ? dayjs(data.other_data.payment_date) : null;
+			formData["reporting_date"] = uploadedData?.reporting_date ? dayjs(uploadedData.reporting_date) : data?.other_data?.reporting_date ? dayjs(data.other_data.reporting_date) : null;
+			formData["advance_date"] = uploadedData?.advance_date ? dayjs(uploadedData.advance_date) : data?.other_data?.advance_date ? dayjs(data.other_data.advance_date) : null;
+			formData["measurement_date"] = uploadedData?.measurement_date ? dayjs(uploadedData.measurement_date) : data?.other_data?.measurement_date ? dayjs(data.other_data.measurement_date) : null;
+			formData["facility_amount"] = uploadedData?.facility_amount ? uploadedData.facility_amount : data?.other_data?.facility_amount ? data.other_data.facility_amount : null;
+			formData["on_deposit_in_unfunded_exposure_account"] = uploadedData?.on_deposit_in_unfunded_exposure_account ? uploadedData.on_deposit_in_unfunded_exposure_account : data?.other_data?.on_deposit_in_unfunded_exposure_account ? data.other_data.on_deposit_in_unfunded_exposure_account : null;
+			formData["cash_on_deposit_in_principal_collections_account"] = uploadedData?.cash_on_deposit_in_principal_collections_account ? uploadedData.cash_on_deposit_in_principal_collections_account : data?.other_data?.cash_on_deposit_in_principal_collections_account ? data.other_data.cash_on_deposit_in_principal_collections_account : null;
+			formData["foreign_currency_hedged_by_borrower"] = uploadedData?.foreign_currency_hedged_by_borrower ? uploadedData.foreign_currency_hedged_by_borrower : data?.other_data?.foreign_currency_hedged_by_borrower ? data.other_data.foreign_currency_hedged_by_borrower : null;
+			formData["cash_on_deposit_in_principal_collections_account"] = uploadedData?.cash_on_deposit_in_principal_collections_account ? uploadedData.cash_on_deposit_in_principal_collections_account : data?.other_data?.cash_on_deposit_in_principal_collections_account ? data.other_data.cash_on_deposit_in_principal_collections_account : null;
+			formData["current_advances_outstanding"] = uploadedData?.current_advances_outstanding ? uploadedData.current_advances_outstanding : data?.other_data?.current_advances_outstanding ? data.other_data.current_advances_outstanding : null;
+			formData["advances_repaid"] = uploadedData?.advances_repaid ? uploadedData.advances_repaid : data?.other_data?.advances_repaid ? data.other_data.current_advances_outstanding : null;
+			formData["advances_requested"] = uploadedData?.advances_requested ? uploadedData.advances_requested : data?.other_data?.advances_requested ? data.other_data.current_advances_outstanding : null;
 			formData["exchange_rates"] = uploadedData?.exchange_rates?.length > 0 ? uploadedData.exchange_rates : data?.other_data?.exchange_rates?.length > 0 ? data.other_data.exchange_rates : null;
+			formData["obligor_tiers"] = uploadedData?.obligor_tiers?.length > 0 ? uploadedData.obligor_tiers : data?.other_data?.obligor_tiers?.length > 0 ? data.other_data.obligor_tiers : null;
 			break;
 		}
 		setInitialFormData(formData);
@@ -288,6 +295,7 @@ export const AddAdditionalInformationModal = (
 				values = {
 					...values,
 					"exchange_rates": values["exchange_rates"],
+					"obligor_tiers": values["obligor_tiers"],
 					"availability": {
 						"effective_date": values.effective_date,
 						"scheduled_revolving_period_end_date": values.scheduled_revolving_period_end_date,
@@ -298,8 +306,12 @@ export const AddAdditionalInformationModal = (
 						"advance_date": values.reporting_date,
 						"measurement_date": values.measurement_date,
 						"facility_amount": `${values["facility_amount"]}`,
+						"on_deposit_in_unfunded_exposure_account": values.on_deposit_in_unfunded_exposure_account,
 						"cash_on_deposit_in_principal_collections_account": `${values["cash_on_deposit_in_principal_collections_account"]}`,
+						"foreign_currency_hedged_by_borrower": values.foreign_currency_hedged_by_borrower,
 						"current_advances_outstanding": `${values["current_advances_outstanding"]}`,
+						"advances_repaid": values.advances_repaid,
+						"advances_requested": values.advances_requested
 					}
 				};
 
@@ -388,25 +400,31 @@ export const AddAdditionalInformationModal = (
 		const reader = new FileReader();
 		reader.onload = (e) => {
 			const data = new Uint8Array(e.target.result);
-			const workbook = XLSX.read(data, { type: "array", cellDates: true, cellText: true });
+			const workbook = XLSX.read(data, { type: "array", cellDates: true, cellText: false, dateNF: "yyyy-mm-dd"});
+
 			const sheetsData = workbook.SheetNames.map((sheetName) => {
 				const sheet = workbook.Sheets[sheetName];
-				const rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
+				let rawData = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true });
 
-				const isPercentageCell = (row, cell) => {
-					const columnIndex = row.indexOf(cell);
+				rawData = rawData.map(row => row.map(cell => {
+					if (cell instanceof Date && cell >= new Date(1900, 2, 1)) {
+						cell.setDate(cell.getDate() + 1);
+					}
+					return cell;
+				}));
+
+				const isPercentageCell = (row, cell, index) => {
+					const columnIndex = index;
 					let isPercentageColumn = false;
-					if (columnIndex === 2) {
+					const header = rawData[0][columnIndex];
+					if (header && (header.toLowerCase().includes("percentage") ||
+						header.toLowerCase().includes("percent") ||
+						header.toLowerCase().includes("unquoted") ||
+						header.toLowerCase().includes("advance rate") ||
+						header.toLowerCase().includes("concentration limit") ||
+						header.toLowerCase().includes("applicable collateral value")
+					)) {
 						isPercentageColumn = true;
-					} else {
-						const header = rawData[0][columnIndex];
-						if (header && (header.toLowerCase().includes("percentage") ||
-							header.toLowerCase().includes("percent") ||
-							header.toLowerCase().includes("unquoted") ||
-							header.toLowerCase().includes("advance rate")
-						)) {
-							isPercentageColumn = true;
-						}
 					}
 
 					if (isPercentageColumn) {
@@ -427,7 +445,7 @@ export const AddAdditionalInformationModal = (
 						if (typeof cell === "string" && cell.includes("%")) {
 							return cell;
 						}
-						if (typeof cell === "number" && cell >= 0 && cell <= 1 && isPercentageCell(row, cell)) {
+						if (typeof cell === "number" && cell >= 0 && cell <= 1 && isPercentageCell(row, cell, index)) {
 							return `${(cell * 100)}`;
 						}
 						if (index !== 0 &&
@@ -441,6 +459,7 @@ export const AddAdditionalInformationModal = (
 						return cell;
 					})
 				);
+
 				return { sheetName, data: formattedData };
 			});
 
@@ -464,6 +483,7 @@ export const AddAdditionalInformationModal = (
 					uploadedDataValues[sheet.sheetName.toLowerCase().replace(/\s+/g, '_')] = mapDataToPrincipalObligations(sheet.data);
 				}
 			});
+
 			setUploadedData((prevState) => ({ ...prevState, ...uploadedDataValues }));
 			setSelectedFiles([]);
 			setAddType("add");
@@ -588,7 +608,7 @@ export const AddAdditionalInformationModal = (
 													style={{ display: "inline-block", width: "25%", margin: "0 1rem 1rem 1rem" }}
 												>
 													{header.type === "datePicker" ? (
-														<DatePicker style={{ width: "100%" }} />
+														<DatePicker style={{ width: "100%" }} format="MM-DD-YYYY"/>
 													) : (
 														<Input placeholder={`Enter ${header.label}`} />
 													)}
@@ -632,6 +652,7 @@ export const AddAdditionalInformationModal = (
 																				{inputField.type === "datePicker" ? (
 																					<DatePicker
 																						placeholder={inputField.label}
+																						format="MM-DD-YYYY"
 																						style={{
 																							width: "100%",
 																							padding: "4px",
