@@ -13,9 +13,10 @@ import styles from "./AddAdditionalInformationModal.module.css";
 import { SrcFileValidationErrorModal } from "../srcFIleValidationErrorModal/srcFileValidationErrorModal";
 import { useDropzone } from "react-dropzone";
 import PFLT_OTHER_INFO_SAMPLE from '../../assets/template File/PFLT - Other Info.xlsx';
+import { PFLTData, PCOFData, OTHER_INFO_OPTIONS, PFLT_COLUMNS_NAME, PCOF_COLUMNS_NAME, PSSL_COLUMNS_NAME, PSSLData } from "../../utils/constants/constants";
+import PSSL_OTHER_INFO_SAMPLE from '../../assets/template File/PSSL - Other Info.xlsx';
 import { generateBaseDataFile, getDateReport } from "../../services/api";
 import { submitOtherInfo } from "../../services/dataIngestionApi";
-import { PFLTData, PCOFData, OTHER_INFO_OPTIONS, PFLT_COLUMNS_NAME, PCOF_COLUMNS_NAME, PSSLData } from "../../utils/constants/constants";
 import { fmtDateValue, fmtDisplayVal, formatColumnName } from "../../utils/helperFunctions/formatDisplayData";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 
@@ -338,7 +339,8 @@ export const AddAdditionalInformationModal = (
 				});
 
 				otherData = {
-					...values
+					...values,
+					"column_info": PSSL_COLUMNS_NAME
 				};
 				break;
 			}
@@ -496,10 +498,22 @@ export const AddAdditionalInformationModal = (
 
 		const processData = (obj, sheetName) => {
 			const rows = [];
-			const columnSequence = data?.other_data?.column_info[sheetName]?.columns_info;
+			const columnSequence = data?.other_data?.column_info?.[sheetName]?.columns_info;
 
-			const columnDetails = previewFundType === "PCOF" ? PCOFData[sheetName]?.Column || PCOFData[sheetName]?.Header :
-				previewFundType === "PFLT" ? PFLTData[sheetName]?.Column || PFLTData[sheetName]?.Header : null;
+			let columnDetails;
+			switch (previewFundType) {
+			case "PCOF":
+				columnDetails = PCOFData[sheetName]?.Column || PCOFData[sheetName]?.Header;
+				break;
+			case "PFLT":
+				columnDetails = PFLTData[sheetName]?.Column || PFLTData[sheetName]?.Header;
+				break;
+			case "PSSL":
+				columnDetails = PSSLData[sheetName]?.Column || PSSLData[sheetName]?.Header;
+				break;
+			default:
+				null;
+			}
 
 			if (columnSequence && columnDetails) {
 				const headerRow = columnSequence.map((col) => {
@@ -509,7 +523,7 @@ export const AddAdditionalInformationModal = (
 				rows.push(headerRow);
 			}
 
-			if (sheetName === "input" || sheetName === "availability_borrower" || sheetName === "other_metrics") {
+			if (["input", "availability_borrower", "other_metrics", "availability"].includes(sheetName) ) {
 				for (const key in obj) {
 					let formattedValue = fmtDateValue(obj[key]);
 					if ((key.includes("threshold") || key.includes("ltv")) && key !== "") {
@@ -556,6 +570,10 @@ export const AddAdditionalInformationModal = (
 		PFLT: {
 			href: PFLT_OTHER_INFO_SAMPLE,
 			name: 'PFLT - Other Info.xlsx'
+		},
+		PSSL: {
+			href: PSSL_OTHER_INFO_SAMPLE,
+			name: 'PSSL - Other Info.xlsx'
 		}
 	};
 

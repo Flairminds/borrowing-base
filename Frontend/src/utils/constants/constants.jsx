@@ -816,3 +816,68 @@ export const PCOF_COLUMNS_NAME = {
 		]
 	}
 };
+
+export const PSSL_COLUMNS_NAME = {
+	"availability": {
+		"columns_info": [
+			{
+				"col_name": "input",
+				"sequence": 1,
+				"display_name": "Input"
+			},
+			{
+				"col_name": "value",
+				"sequence": 2,
+				"display_name": "Value"
+			}
+		]
+	},
+	"exchange_rates": {
+		"columns_info": [
+			{
+				"col_name": "currency",
+				"sequence": 1,
+				"display_name": "Currency"
+			},
+			{
+				"col_name": "exchange_rates",
+				"sequence": 2,
+				"display_name": "Exchange Rates"
+			}
+		]
+	},
+	"obligor_tiers": {
+		"columns_info": [
+			{
+				"col_name": "obligor",
+				"sequence": 1,
+				"display_name": "Obligor"
+			},
+			{
+				"col_name": "first_lien_loans",
+				"sequence": 2,
+				"display_name": "First Lien Loans"
+			},
+			{
+				"col_name": "fllo_2nd_lien_loans",
+				"sequence": 3,
+				"display_name": "FLLO/2nd Lien Loans"
+			},
+			{
+				"col_name": "fllo_2nd_lien_loans",
+				"sequence": 4,
+				"display_name": "FLLO/2nd Lien Loans"
+			},
+			{
+				"col_name": "recurring_revenue",
+				"sequence": 5,
+				"display_name": "Recurring Revenue"
+			},
+			{
+				"col_name": "applicable_collateral_value",
+				"sequence": 6,
+				"display_name": "Applicable Collateral Value"
+			}
+		]
+	}
+};
