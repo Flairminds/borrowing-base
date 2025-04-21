@@ -10,9 +10,10 @@ import { uploadAddMoreSecFile, validateAddSecurities } from '../../services/data
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { SrcFileValidationErrorModal } from '../srcFIleValidationErrorModal/srcFileValidationErrorModal';
 import styles from "./FileUploadModal.module.css";
+import { exportToExcel } from '../../utils/helperFunctions/jsonToExcel';
 
 
-export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, setAddsecFiles, previewFundType, dataId, reportId, handleBaseDataPreview, data }) => {
+export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, setAddsecFiles, previewFundType, dataId, reportId, handleBaseDataPreview, data, columns }) => {
 	const [validationInfo, setValidationInfo] = useState([]);
 	const [validationModal, setValidationModal] = useState(false);
 
@@ -36,7 +37,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		const isNewAdded = processedRows.some((d) => d.action === "add");
 
 		Modal.confirm({
-			title: <span style={{lineHeight: "2rem"}}>{"Records Found"}</span>,
+			title: <span style={{ lineHeight: "2rem" }}>{"Records Found"}</span>,
 			content: (
 				<>
 					<p><strong>Duplicate Records Found :</strong></p>
@@ -265,34 +266,57 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		}
 	};
 
-	const fileDownloadOptions = {
-		PCOF: {
-			href: PCOFAddSecSampleFile,
-			name: 'PCOF Add Base Data.xlsx'
-		},
-		PFLT: {
-			href: PFLTAddSecSampleFile,
-			name: 'PFLT Add Base Data.xlsx'
-		}
+	const getMappedExportData = (columns, rawData) => {
+		return rawData.map(row => {
+			const formattedRow = {};
+
+			columns.forEach(col => {
+				const rawValue = row[col.key];
+				let value = rawValue?.value ?? rawValue ?? "";
+
+				if (col.unit === 'percent') {
+					const numericValue = Number(value);
+					value = !isNaN(numericValue) ? `${(numericValue * 100).toFixed(2)}%` : "0.00%";
+				}
+
+				formattedRow[col.label] = value;
+			});
+
+			return formattedRow;
+		});
 	};
+
+
+	const handleExport = () => {
+		const mappedData = getMappedExportData(columns, data);
+		exportToExcel(mappedData, "ExportedBaseData.xlsx");
+	};
+
 
 
 	return (
 		<>
 			<Modal
-				title={<ModalComponents.Title title='Add Securities Data' showDescription={true} description="Add more securities data which are not present in the extracted base data" />}
+				title={<ModalComponents.Title title='Update Securities Data' showDescription={true} description="Add more securities data which are not present in the extracted base data" />}
 				open={isOpenFileUpload}
 				onCancel={handleCancel}
 				footer={null}
 				width={700}
 			>
+				<div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "8px" }}>
+					<a
+						className="downloadLink"
+						onClick={handleExport}
+					>
+						Export Base Data
+					</a>
+				</div>
 				<DynamicFileUploadComponent
 					uploadedFiles={addsecFiles}
 					setUploadedFiles={setAddsecFiles}
 					supportedFormats={['csv', 'xlsx']}
 					fundType={previewFundType}
-					fileDownloadOptions={fileDownloadOptions}
-					showDownload={true}
+					showDownload={false}
 				/>
 				<div className={styles.buttonContainer}>
 					<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
@@ -301,7 +325,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			</Modal>
 
 			{validationModal &&
-				<SrcFileValidationErrorModal isModalOpen = {validationModal} setIsModalOpen={setValidationModal} validationInfoData = {validationInfo} />
+				<SrcFileValidationErrorModal isModalOpen={validationModal} setIsModalOpen={setValidationModal} validationInfoData={validationInfo} />
 			}
 		</>
 	);
