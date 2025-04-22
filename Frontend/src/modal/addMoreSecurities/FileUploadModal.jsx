@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import PCOFAddSecSampleFile from '../../assets/template File/PCOF Add Base Data.xlsx';
 import PFLTAddSecSampleFile from '../../assets/template File/PFLT Add Base Data.xlsx';
+import { ColumnMappingModal } from '../../components/columnMappingModal/ColumnMappingModal';
 import { ModalComponents } from '../../components/modalComponents';
 import { DynamicFileUploadComponent } from '../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
@@ -18,12 +19,14 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 	const [validationInfo, setValidationInfo] = useState([]);
 	const [validationModal, setValidationModal] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
+	const [showMappingModal, setShowMappingModal] = useState(false);
 
 	useEffect(() => {
 		if (!isOpenFileUpload) {
 			setAddsecFiles([]);
 		}
 	}, [isOpenFileUpload]);
+
 
 	const EXCEL_COLUMNS = {
 		PFLT: ["obligor name", "security name", "loan type"],
@@ -58,6 +61,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			<strong>Loan Type:</strong> {data["Loan Type"]}
 		</li>
 	);
+
 
 	const showDuplicateModal = (processedRows, previewFundType, onConfirm, onCancel) => {
 		const isNewAdded = processedRows.some((d) => d.action === "add");
@@ -233,7 +237,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			showToast("error", "Please upload a file before saving.");
 			return;
 		}
-
+		setShowMappingModal(true);
 		try {
 			setIsSaving(true);
 			const file = addsecFiles[0];
@@ -323,7 +327,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		return rawData.map(row => {
 			const formattedRow = {};
 			columns.forEach(col => {
-				let rawValue = row[col.key];
+				const rawValue = row[col.key];
 				let value = "";
 				// Prefer .value if present
 				if (rawValue && typeof rawValue === "object" && "value" in rawValue) {
