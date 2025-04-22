@@ -40,27 +40,6 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			title: <span style={{ lineHeight: "2rem" }}>{"Records Found"}</span>,
 			content: (
 				<>
-					<p><strong>Duplicate Records Found :</strong></p>
-					<ul>
-						{processedRows
-							.filter((d) => d.action === "overwrite")
-							.map((d, index) => (
-								<li key={index}>
-									{previewFundType === "PFLT" ? (
-										<>
-											<strong>Obligor:</strong> {d["Obligor Name"]},{" "}
-											<strong>Security:</strong> {d["Security Name"]},{" "}
-											<strong>Loan Type:</strong> {d["Loan Type (Term / Delayed Draw / Revolver)"]}
-										</>
-									) : (
-										<>
-											<strong>Investment Name:</strong> {d["Investment Name"]},{" "}
-											<strong>Issuer:</strong> {d["Issuer"]}
-										</>
-									)}
-								</li>
-							))}
-					</ul>
 					{isNewAdded && <p><strong>New Records Found :</strong></p>}
 					<ul>
 						{processedRows
@@ -221,9 +200,10 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				setValidationModal(true);
 				return;
 			}
+			const hasNewAdditions = finalRows.some((d) => d.action === "add");
+			const hasOverwrites = finalRows.some((d) => d.action === "overwrite");
 
-
-			if (hasDuplicates) {
+			if (hasNewAdditions && hasOverwrites) {
 				showDuplicateModal(
 					finalRows,
 					previewFundType,
