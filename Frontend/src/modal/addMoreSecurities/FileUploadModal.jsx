@@ -255,9 +255,10 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				setValidationModal(true);
 				return;
 			}
+			const hasNewAdditions = finalRows.some((d) => d.action === "add");
+			const hasOverwrites = finalRows.some((d) => d.action === "overwrite");
 
-
-			if (hasDuplicates) {
+			if (hasNewAdditions && hasOverwrites) {
 				showDuplicateModal(
 					finalRows,
 					previewFundType,
