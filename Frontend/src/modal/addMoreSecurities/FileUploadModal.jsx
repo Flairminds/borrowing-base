@@ -395,6 +395,18 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				</div>
 			</Modal>
 
+			<ColumnMappingModal
+				visible={showMappingModal}
+				onClose={() => setShowMappingModal(false)}
+				excelUnmappedColumns={EXCEL_UNMAPPED_COLUMNS}
+				systemUnmappedColumns={SYSTEM_UNMAPPED_COLUMNS}
+				onSubmit={(mappings) => {
+					console.log("Submitted mappings:", mappings);
+					setShowMappingModal(false);
+				}}
+			/>
+
+
 			{validationModal &&
 				<SrcFileValidationErrorModal isModalOpen={validationModal} setIsModalOpen={setValidationModal} validationInfoData={validationInfo} />
 			}
