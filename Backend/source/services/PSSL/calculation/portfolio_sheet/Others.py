@@ -530,4 +530,4 @@ class Others:
         self.recurring_revenue_amounts_in_excess_of_tier_3_reclassified_as_zero_value() # column 'BB'
         self.recurring_revenue_amount() # column 'BC'
         self.recurring_evenue_value() # column 'BD'
-        self.adjusted_orrowing_value() # collumn 'W'
+        self.adjusted_orrowing_value() # column 'W'

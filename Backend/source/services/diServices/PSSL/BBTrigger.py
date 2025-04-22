@@ -3,10 +3,11 @@ from datetime import datetime
 import pickle
 import json
 
-from models import BaseDataFile
-from source.services.PSSL.PsslDashboardService import PsslDashboardService
+from models import db, BaseDataFile
+from source.services.PSSL.pssl_calculation_initiator import PsslCalculationInitiator
+from source.utility.ServiceResponse import ServiceResponse
 
-pssl_dashboard_service = PsslDashboardService()
+pssl_calculation_initiator = PsslCalculationInitiator()
 
 def trigger_pssl_bb(bdi_id):
     path1 = 'PSSL_Base_Data.xlsx'
@@ -36,5 +37,14 @@ def trigger_pssl_bb(bdi_id):
         file_data=pickled_base_data,
         included_excluded_assets_map=included_excluded_assets_map
     )
+    db.session.add(base_data_file)
+    db.session.commit()
+    db.session.refresh(base_data_file)
 
-    response = pssl_dashboard_service.get_bb_calculation(base_data_file, selected_assets=included_assets, user_id=user_id)
+    bb_response = pssl_calculation_initiator.get_bb_calculation(base_data_file, selected_assets=included_assets, user_id=user_id)
+
+    base_data_file.response = pickle.dumps(bb_response)
+
+    return ServiceResponse.success(message="Successfully processed calculation.", data=bb_response)
+
+
