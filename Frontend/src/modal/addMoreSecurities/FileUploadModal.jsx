@@ -25,13 +25,37 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 	const EXCEL_COLUMNS = {
 		PFLT: ["obligor name", "security name", "loan type"],
-		PCOF: ["investment name", "issuer"]
+		PCOF: ["investment name", "issuer"],
+		PSSL: ["borrower", "loan type"]
 	};
 
 	const DATA_COLUMNS = {
 		PFLT: ["obligor_name", "security_name", "loan_type"],
-		PCOF: ["investment_name", "issuer"]
+		PCOF: ["investment_name", "issuer"],
+		PSSL: ["borrower", "loan_type"]
 	};
+
+	const PFLTItem = ({ data }) => (
+		<li>
+			<strong>Obligor:</strong> {data["Obligor Name"]},{" "}
+			<strong>Security:</strong> {data["Security Name"]},{" "}
+			<strong>Loan Type:</strong> {data["Loan Type (Term / Delayed Draw / Revolver)"]}
+		</li>
+	);
+
+	const PCOFItem = ({ data }) => (
+		<li>
+			<strong>Investment Name:</strong> {data["Investment Name"]},{" "}
+			<strong>Issuer:</strong> {data["Issuer"]}
+		</li>
+	);
+
+	const PSSLItem = ({ data }) => (
+		<li>
+			<strong>Borrower:</strong> {data["Borrower"]},{" "}
+			<strong>Loan Type:</strong> {data["Loan Type"]}
+		</li>
+	);
 
 	const showDuplicateModal = (processedRows, previewFundType, onConfirm, onCancel) => {
 		const isNewAdded = processedRows.some((d) => d.action === "add");
@@ -40,26 +64,39 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			title: <span style={{ lineHeight: "2rem" }}>{"Records Found"}</span>,
 			content: (
 				<>
+					<p><strong>Duplicate Records Found :</strong></p>
+					<ul>
+						{processedRows
+							.filter((d) => d.action === "overwrite")
+							.map((data, index) => {
+								switch (previewFundType) {
+								case "PFLT":
+									return <PFLTItem key={index} data={data} />;
+								case "PCOF":
+									return <PCOFItem key={index} data={data} />;
+								case "PSSL":
+									return <PSSLItem key={index} data={data} />;
+								default:
+									return null;
+								}
+							})}
+					</ul>
 					{isNewAdded && <p><strong>New Records Found :</strong></p>}
 					<ul>
 						{processedRows
 							.filter((d) => d.action === "add")
-							.map((d, index) => (
-								<li key={index}>
-									{previewFundType === "PFLT" ? (
-										<>
-											<strong>Obligor:</strong> {d["Obligor Name"]},{" "}
-											<strong>Security:</strong> {d["Security Name"]},{" "}
-											<strong>Loan Type:</strong> {d["Loan Type (Term / Delayed Draw / Revolver)"]}
-										</>
-									) : (
-										<>
-											<strong>Investment Name:</strong> {d["Investment Name"]},{" "}
-											<strong>Issuer:</strong> {d["Issuer"]}
-										</>
-									)}
-								</li>
-							))}
+							.map((data, index) => {
+								switch (previewFundType) {
+								case "PFLT":
+									return <PFLTItem key={index} data={data} />;
+								case "PCOF":
+									return <PCOFItem key={index} data={data} />;
+								case "PSSL":
+									return <PSSLItem key={index} data={data} />;
+								default:
+									return null;
+								}
+							})}
 					</ul>
 				</>
 			),
@@ -137,18 +174,36 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 		const existingRecords = new Map(
 			data.map((d) => {
-				const key = previewFundType === "PFLT"
-					? `${normalize(d.obligor_name?.display_value)}-${normalize(d.security_name?.display_value)}-${normalize(d.loan_type?.display_value)}`
-					: `${normalize(d.investment_name?.display_value)}-${normalize(d.issuer?.display_value)}`;
+				let key;
+				switch (previewFundType) {
+				case "PFLT":
+					key = `${normalize(d.obligor_name?.display_value)}-${normalize(d.security_name?.display_value)}-${normalize(d.loan_type?.display_value)}`;
+					break;
+				case "PCOF":
+					key = `${normalize(d.investment_name?.display_value)}-${normalize(d.issuer?.display_value)}`;
+					break;
+				case "PSSL":
+					key = `${normalize(d.borrower?.display_value)}-${normalize(d.loan_type?.display_value)}`;
+					break;
+				}
 				return [key, d.id?.value];
 			})
 		);
 
 		let hasDuplicates = false;
 		const finalRows = processedRows.map((row) => {
-			const recordKey = previewFundType === "PFLT"
-				? `${normalize(row["Obligor Name"])}-${normalize(row["Security Name"])}-${normalize(row["Loan Type (Term / Delayed Draw / Revolver)"])}`
-				: `${normalize(row["Investment Name"])}-${normalize(row["Issuer"])}`;
+			let recordKey;
+			switch (previewFundType) {
+			case "PFLT":
+				recordKey = `${normalize(row["Obligor Name"])}-${normalize(row["Security Name"])}-${normalize(row["Loan Type (Term / Delayed Draw / Revolver)"])}`;
+				break;
+			case "PCOF":
+				recordKey = `${normalize(row["Investment Name"])}-${normalize(row["Issuer"])}`;
+				break;
+			case "PSSL":
+				recordKey = `${normalize(row["Borrower"])}-${normalize(row["Loan Type"])}`;
+				break;
+			}
 
 			if (existingRecords.has(recordKey)) {
 				hasDuplicates = true;
