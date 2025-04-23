@@ -10,9 +10,10 @@ import { uploadAddMoreSecFile, validateAddSecurities } from '../../services/data
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { SrcFileValidationErrorModal } from '../srcFIleValidationErrorModal/srcFileValidationErrorModal';
 import styles from "./FileUploadModal.module.css";
+import { exportToExcel } from '../../utils/helperFunctions/jsonToExcel';
 
 
-export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, setAddsecFiles, previewFundType, dataId, reportId, handleBaseDataPreview, data }) => {
+export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, setAddsecFiles, previewFundType, dataId, reportId, handleBaseDataPreview, data, columns }) => {
 	const [validationInfo, setValidationInfo] = useState([]);
 	const [validationModal, setValidationModal] = useState(false);
 
@@ -24,62 +25,78 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 	const EXCEL_COLUMNS = {
 		PFLT: ["obligor name", "security name", "loan type"],
-		PCOF: ["investment name", "issuer"]
+		PCOF: ["investment name", "issuer"],
+		PSSL: ["borrower", "loan type"]
 	};
 
 	const DATA_COLUMNS = {
 		PFLT: ["obligor_name", "security_name", "loan_type"],
-		PCOF: ["investment_name", "issuer"]
+		PCOF: ["investment_name", "issuer"],
+		PSSL: ["borrower", "loan_type"]
 	};
+
+	const PFLTItem = ({ data }) => (
+		<li>
+			<strong>Obligor:</strong> {data["Obligor Name"]},{" "}
+			<strong>Security:</strong> {data["Security Name"]},{" "}
+			<strong>Loan Type:</strong> {data["Loan Type (Term / Delayed Draw / Revolver)"]}
+		</li>
+	);
+
+	const PCOFItem = ({ data }) => (
+		<li>
+			<strong>Investment Name:</strong> {data["Investment Name"]},{" "}
+			<strong>Issuer:</strong> {data["Issuer"]}
+		</li>
+	);
+
+	const PSSLItem = ({ data }) => (
+		<li>
+			<strong>Borrower:</strong> {data["Borrower"]},{" "}
+			<strong>Loan Type:</strong> {data["Loan Type"]}
+		</li>
+	);
 
 	const showDuplicateModal = (processedRows, previewFundType, onConfirm, onCancel) => {
 		const isNewAdded = processedRows.some((d) => d.action === "add");
 
 		Modal.confirm({
-			title: <span style={{lineHeight: "2rem"}}>{"Records Found"}</span>,
+			title: <span style={{ lineHeight: "2rem" }}>{"Records Found"}</span>,
 			content: (
 				<>
 					<p><strong>Duplicate Records Found :</strong></p>
 					<ul>
 						{processedRows
 							.filter((d) => d.action === "overwrite")
-							.map((d, index) => (
-								<li key={index}>
-									{previewFundType === "PFLT" ? (
-										<>
-											<strong>Obligor:</strong> {d["Obligor Name"]},{" "}
-											<strong>Security:</strong> {d["Security Name"]},{" "}
-											<strong>Loan Type:</strong> {d["Loan Type (Term / Delayed Draw / Revolver)"]}
-										</>
-									) : (
-										<>
-											<strong>Investment Name:</strong> {d["Investment Name"]},{" "}
-											<strong>Issuer:</strong> {d["Issuer"]}
-										</>
-									)}
-								</li>
-							))}
+							.map((data, index) => {
+								switch (previewFundType) {
+								case "PFLT":
+									return <PFLTItem key={index} data={data} />;
+								case "PCOF":
+									return <PCOFItem key={index} data={data} />;
+								case "PSSL":
+									return <PSSLItem key={index} data={data} />;
+								default:
+									return null;
+								}
+							})}
 					</ul>
 					{isNewAdded && <p><strong>New Records Found :</strong></p>}
 					<ul>
 						{processedRows
 							.filter((d) => d.action === "add")
-							.map((d, index) => (
-								<li key={index}>
-									{previewFundType === "PFLT" ? (
-										<>
-											<strong>Obligor:</strong> {d["Obligor Name"]},{" "}
-											<strong>Security:</strong> {d["Security Name"]},{" "}
-											<strong>Loan Type:</strong> {d["Loan Type (Term / Delayed Draw / Revolver)"]}
-										</>
-									) : (
-										<>
-											<strong>Investment Name:</strong> {d["Investment Name"]},{" "}
-											<strong>Issuer:</strong> {d["Issuer"]}
-										</>
-									)}
-								</li>
-							))}
+							.map((data, index) => {
+								switch (previewFundType) {
+								case "PFLT":
+									return <PFLTItem key={index} data={data} />;
+								case "PCOF":
+									return <PCOFItem key={index} data={data} />;
+								case "PSSL":
+									return <PSSLItem key={index} data={data} />;
+								default:
+									return null;
+								}
+							})}
 					</ul>
 				</>
 			),
@@ -157,18 +174,36 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 		const existingRecords = new Map(
 			data.map((d) => {
-				const key = previewFundType === "PFLT"
-					? `${normalize(d.obligor_name?.display_value)}-${normalize(d.security_name?.display_value)}-${normalize(d.loan_type?.display_value)}`
-					: `${normalize(d.investment_name?.display_value)}-${normalize(d.issuer?.display_value)}`;
+				let key;
+				switch (previewFundType) {
+				case "PFLT":
+					key = `${normalize(d.obligor_name?.display_value)}-${normalize(d.security_name?.display_value)}-${normalize(d.loan_type?.display_value)}`;
+					break;
+				case "PCOF":
+					key = `${normalize(d.investment_name?.display_value)}-${normalize(d.issuer?.display_value)}`;
+					break;
+				case "PSSL":
+					key = `${normalize(d.borrower?.display_value)}-${normalize(d.loan_type?.display_value)}`;
+					break;
+				}
 				return [key, d.id?.value];
 			})
 		);
 
 		let hasDuplicates = false;
 		const finalRows = processedRows.map((row) => {
-			const recordKey = previewFundType === "PFLT"
-				? `${normalize(row["Obligor Name"])}-${normalize(row["Security Name"])}-${normalize(row["Loan Type (Term / Delayed Draw / Revolver)"])}`
-				: `${normalize(row["Investment Name"])}-${normalize(row["Issuer"])}`;
+			let recordKey;
+			switch (previewFundType) {
+			case "PFLT":
+				recordKey = `${normalize(row["Obligor Name"])}-${normalize(row["Security Name"])}-${normalize(row["Loan Type (Term / Delayed Draw / Revolver)"])}`;
+				break;
+			case "PCOF":
+				recordKey = `${normalize(row["Investment Name"])}-${normalize(row["Issuer"])}`;
+				break;
+			case "PSSL":
+				recordKey = `${normalize(row["Borrower"])}-${normalize(row["Loan Type"])}`;
+				break;
+			}
 
 			if (existingRecords.has(recordKey)) {
 				hasDuplicates = true;
@@ -220,9 +255,10 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				setValidationModal(true);
 				return;
 			}
+			const hasNewAdditions = finalRows.some((d) => d.action === "add");
+			const hasOverwrites = finalRows.some((d) => d.action === "overwrite");
 
-
-			if (hasDuplicates) {
+			if (hasNewAdditions && hasOverwrites) {
 				showDuplicateModal(
 					finalRows,
 					previewFundType,
@@ -265,34 +301,57 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		}
 	};
 
-	const fileDownloadOptions = {
-		PCOF: {
-			href: PCOFAddSecSampleFile,
-			name: 'PCOF Add Base Data.xlsx'
-		},
-		PFLT: {
-			href: PFLTAddSecSampleFile,
-			name: 'PFLT Add Base Data.xlsx'
-		}
+	const getMappedExportData = (columns, rawData) => {
+		return rawData.map(row => {
+			const formattedRow = {};
+
+			columns.forEach(col => {
+				const rawValue = row[col.key];
+				let value = rawValue?.value ?? rawValue ?? "";
+
+				if (col.unit === 'percent') {
+					const numericValue = Number(value);
+					value = !isNaN(numericValue) ? `${(numericValue * 100).toFixed(2)}%` : "0.00%";
+				}
+
+				formattedRow[col.label] = value;
+			});
+
+			return formattedRow;
+		});
 	};
+
+
+	const handleExport = () => {
+		const mappedData = getMappedExportData(columns, data);
+		exportToExcel(mappedData, "ExportedBaseData.xlsx");
+	};
+
 
 
 	return (
 		<>
 			<Modal
-				title={<ModalComponents.Title title='Add Securities Data' showDescription={true} description="Add more securities data which are not present in the extracted base data" />}
+				title={<ModalComponents.Title title='Update Securities Data' showDescription={true} description="Edit existing securities data or add more securities data which are not present in the extracted base data" />}
 				open={isOpenFileUpload}
 				onCancel={handleCancel}
 				footer={null}
 				width={700}
 			>
+				<div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "8px" }}>
+					<a
+						className="downloadLink"
+						onClick={handleExport}
+					>
+						Export extracted base data
+					</a>
+				</div>
 				<DynamicFileUploadComponent
 					uploadedFiles={addsecFiles}
 					setUploadedFiles={setAddsecFiles}
 					supportedFormats={['csv', 'xlsx']}
 					fundType={previewFundType}
-					fileDownloadOptions={fileDownloadOptions}
-					showDownload={true}
+					showDownload={false}
 				/>
 				<div className={styles.buttonContainer}>
 					<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
@@ -301,7 +360,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			</Modal>
 
 			{validationModal &&
-				<SrcFileValidationErrorModal isModalOpen = {validationModal} setIsModalOpen={setValidationModal} validationInfoData = {validationInfo} />
+				<SrcFileValidationErrorModal isModalOpen={validationModal} setIsModalOpen={setValidationModal} validationInfoData={validationInfo} />
 			}
 		</>
 	);

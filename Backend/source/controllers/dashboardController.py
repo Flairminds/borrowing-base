@@ -7,6 +7,7 @@ from source.services.commons import commonServices
 from source.services import dashboardService
 from source.services.PCOF.PcofDashboardService import PcofDashboardService
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
+from source.services.PSSL.PsslDashboardService import PsslDashboardService
 from Exceptions.StdFileFormatException import StdFileFormatException
 from source.services.PCOF.standardFileFormat import std_file_format as PCOF_STANDARD_FILE_FORMAT
 from source.services.PFLT.PFLT_std_file_format import std_file_format as PFLT_STANDARD_FILE_FORMAT
@@ -14,6 +15,7 @@ from source.utility.Log import Log
 
 pcofDashboardService = PcofDashboardService()
 pfltDashboardService = PfltDashboardService()
+pssl_dashboard_service = PsslDashboardService()
 
 
 def handle_upload_fund_file():
@@ -200,14 +202,19 @@ def get_trend_graph():
             )
         )
 
-        if fund_type == "PCOF":
-            return pcofDashboardService.get_trend_graph(
-                base_data_file_sorted, closing_date
-            )
-        else:
-            return pfltDashboardService.get_trend_graph(
-                base_data_file_sorted, closing_date
-            )
+        # if fund_type == "PCOF":
+        #     return pcofDashboardService.get_trend_graph(
+        #         base_data_file_sorted, closing_date
+        #     )
+        # else:
+        #     return pfltDashboardService.get_trend_graph(
+        #         base_data_file_sorted, closing_date
+        #     )
+        
+        match fund_type:
+            case "PCOF": return pcofDashboardService.get_trend_graph(base_data_file_sorted, closing_date)
+            case "PFLT": return pfltDashboardService.get_trend_graph(base_data_file_sorted, closing_date)
+            case "PSSL": return pssl_dashboard_service.get_trend_graph(base_data_file_sorted, closing_date)
 
     except Exception as e:
         return {
