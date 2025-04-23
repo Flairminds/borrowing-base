@@ -27,6 +27,7 @@ from source.services.diServices import base_data_mapping
 from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
 from source.services.diServices.PSSL import base_data_extractor as pssl_base_data_extractor
 from source.services.diServices.PCOF import BBTrigger as PCOF_BBTrigger
+from source.services.diServices.PSSL import BBTrigger as PSSL_BBTrigger
 from source.services.diServices import ColumnSheetMap
 from source.services.diServices.ColumnSheetMap import ExtractionStatusMaster
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
@@ -459,11 +460,19 @@ def extract_base_data(file_ids, fund_type):
         raise Exception(e)
 
 
+
 def get_base_data(info_id):
     try:
         # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
-        
+       
         base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
+        if base_data_info.fund_type == 'PFLT':
+            sheet_name = "Loan List"
+        elif base_data_info.fund_type == 'PCOF':
+            sheet_name = "PL BB Build"
+        else:
+            sheet_name = "Portfolio"
+ 
         base_data_mapping = db.session.query(
             BaseDataMapping.bdm_id,
             BaseDataMapping.bd_column_lookup,
@@ -473,21 +482,21 @@ def get_base_data(info_id):
             BaseDataMapping.is_editable,
             BaseDataMappingColumnInfo.sequence,
             BaseDataMappingColumnInfo.is_selected
-        ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
-
-
+        ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type, BaseDataMapping.bd_sheet_name == sheet_name).order_by(BaseDataMappingColumnInfo.sequence).all()
+ 
+ 
         card_data = []
-
+ 
         engine = db.get_engine()
-        
+       
         if base_data_info.fund_type == 'PFLT':
             base_data = PfltBaseData.query.filter(PfltBaseData.base_data_info_id == info_id).order_by(PfltBaseData.id).all()
             HistoryData = PfltBaseDataHistory
             with engine.connect() as connection:
                 result = connection.execute(text('''
-                    select count(distinct pbd.obligor_name) as no_of_obligors, 
-                            count(distinct pbd.security_name) as no_of_assets, 
-                            sum(pbd.total_commitment::float) as total_commitment, 
+                    select count(distinct pbd.obligor_name) as no_of_obligors,
+                            count(distinct pbd.security_name) as no_of_assets,
+                            sum(pbd.total_commitment::float) as total_commitment,
                             sum(pbd.outstanding_principal::float) as total_outstanding_balance,
                             (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
                     from pflt_base_data pbd
@@ -515,9 +524,9 @@ def get_base_data(info_id):
             HistoryData = PcofBaseDataHistory
             with engine.connect() as connection:
                 result = connection.execute(text('''
-                    select count(distinct pbd.issuer) as no_of_issuers, 
-                            count(distinct pbd.investment_name) as no_of_investments, 
-                            --sum(pbd.total_commitment::float) as total_commitment, 
+                    select count(distinct pbd.issuer) as no_of_issuers,
+                            count(distinct pbd.investment_name) as no_of_investments,
+                            --sum(pbd.total_commitment::float) as total_commitment,
                             --sum(pbd.outstanding_principal::float) as total_outstanding_balance,
                             (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
                     from pcof_base_data pbd
@@ -531,7 +540,7 @@ def get_base_data(info_id):
                 "Unmapped Securities": unmapped_records,
                 "Fund Type": base_data_info.fund_type
             }]
-
+ 
         temp = []
         # print(base_data[0])
         for b in base_data:
@@ -582,13 +591,13 @@ def get_base_data(info_id):
             } for column in base_data_mapping],
             "data": temp
         }
-
+ 
         # print(type(base_data_table))
-        
-        
+       
+       
         # for index, row in base_data.iterrows():
         #     row_data = {}
-            
+           
         #     for col, value in row.items():
         #         if value != value:
         #             value = ""
@@ -608,7 +617,7 @@ def get_base_data(info_id):
         return ServiceResponse.success(data=result, message="Base Data")
     except Exception as e:
         raise Exception(e)
-
+    
 def change_bd_col_seq(updated_sequence):
     try:
         updated_sequence_list = []
@@ -695,11 +704,24 @@ def edit_base_data(changes):
         return ServiceResponse.error(message = "Please provide changes.", status_code = 400)
     for change in changes:
         id = change.get("id")
+        fund = change.get("fundType")
+        table = None
+        match(fund):
+            case 'PFLT':
+                table = PfltBaseData
+            case 'PCOF':
+                table = PcofBaseData
+            case 'PFLT':
+                table = PsslBaseData
+            case _:
+                return
+        if table is None:
+            return ServiceResponse.error(message = "Fund not specified", status_code = 400)
         for key in change.keys():
-            if key != "id":
+            if key != "id" and key != "fundType":
                 value = change.get(key)
                 # column = key.replace('_', " ")
-                base_data = PfltBaseData.query.filter_by(id=id).first()
+                base_data = table.query.filter_by(id=id).first()
                 setattr(base_data, key, value)
                 db.session.add(base_data)
                 db.session.commit()
@@ -883,10 +905,24 @@ def get_source_file_data(file_id, file_type, sheet_name):
 
 def get_source_file_data_detail(ebd_id, column_key, data_id):
     try:
+        extract_base_data_info = ExtractedBaseDataInfo.query.filter_by(id = ebd_id).first()
+        fund_type = extract_base_data_info.fund_type
+ 
+        match fund_type:
+            case "PCOF":
+                table_name = "pcof_base_data"
+                history_table_name = "pcof_base_data_history"
+            case "PFLT":
+                table_name = "pflt_base_data"
+                history_table_name = "pflt_base_data_history"
+               
+            case "PSSL":
+                table_name = "pssl_base_data"
+                history_table_name = "pssl_base_data_history"
         engine = db.get_engine()
         with engine.connect() as connection:
             df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key and pbdm.fund_type = ebdi.fund_type'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
-            bd_df = pd.DataFrame(connection.execute(text(f'select * from pcof_base_data where id = :data_id'), {'data_id': data_id}).fetchall())
+            bd_df = pd.DataFrame(connection.execute(text(f'select * from {table_name} where id = :data_id'), {'data_id': data_id}).fetchall())
         
         df = df.replace({np.nan: None})
         df_dict = df.to_dict(orient='records')
@@ -951,6 +987,9 @@ def trigger_bb_calculation(bdi_id):
         if extracted_base_data_info.fund_type == 'PCOF':
             pcof_bb_trigger_response = PCOF_BBTrigger.trigger_pcof_bb(bdi_id)
             return pcof_bb_trigger_response
+        if extracted_base_data_info.fund_type == 'PSSL':
+            pssl_bb_trigger_response = PSSL_BBTrigger.trigger_pssl_bb(bdi_id)
+            return pssl_bb_trigger_response
         engine = db.get_engine()
         with engine.connect() as connection:
             df = pd.DataFrame(connection.execute(text(f'select * from pflt_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
@@ -1557,6 +1596,9 @@ def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, re
         elif fund_type == 'PFLT':
             sheet_name = "Loan List"
             bd_table = PfltBaseData
+        elif fund_type == 'PSSL':
+            sheet_name = "Portfolio"
+            bd_table = PsslBaseData
         else:
             return ServiceResponse.error(message="Invalid fund type.")
 

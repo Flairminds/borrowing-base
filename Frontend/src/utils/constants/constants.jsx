@@ -242,7 +242,7 @@ export const PCOFData = {
 			},
 			{
 				name: "percent",
-				label: "Percent",
+				label: "Percent (%)",
 				type: "text",
 				unit: "percent"
 			}
@@ -364,6 +364,132 @@ export const PCOFData = {
 				name: "threshold_2_advance_rate",
 				label: "Threshold 2 Advance Rate",
 				type: "text",
+				unit: "percent"
+			}
+		]
+	}
+};
+
+export const PSSLData = {
+	availability: {
+		Header: [
+			{
+				name: "effective_date",
+				label: "Effective Date",
+				type: "datePicker"
+			},
+			{
+				name: "scheduled_revolving_period_end_date",
+				label: "Scheduled Revolving Period End Date",
+				type: "datePicker"
+			},
+			{
+				name: "termination_date",
+				label: "Termination Date:",
+				type: "datePicker"
+			},
+			{
+				name: "determination_date",
+				label: "Determination Date",
+				type: "datePicker"
+			},
+			{
+				name: "payment_date",
+				label: "Payment Date",
+				type: "datePicker"
+			},
+			{
+				name: "reporting_date",
+				label: "Reporting Date",
+				type: "datePicker"
+			},
+			{
+				name: "advance_date",
+				label: "Advance Date",
+				type: "datePicker"
+			},
+			{
+				name: "measurement_date",
+				label: "Measurement Date",
+				type: "datePicker"
+			},
+			{
+				name: "facility_amount",
+				label: "Facility Amount ($)",
+				type: "text"
+			},
+			{
+				name: "on_deposit_in_unfunded_exposure_account",
+				label: "On Deposit in Unfunded Exposure Account",
+				type: "text"
+			},
+			{
+				name: "cash_on_deposit_in_principal_collections_account",
+				label: "Cash on deposit in Principal Collections Account ($)",
+				type: "text"
+			},
+			{
+				name: "foreign_currency_hedged_by_borrower",
+				label: "Foreign Currency hedged by Borrower",
+				type: "text"
+			},
+			{
+				name: "current_advances_outstanding",
+				label: "Current Advances Outstanding ($)",
+				type: "text"
+			},
+			{
+				name: "advances_repaid",
+				label: "Advances Repaid",
+				type: "text"
+			},
+			{
+				name: "advances_requested",
+				label: "Advances Requested",
+				type: "text"
+			},
+		]
+	},
+	exchange_rates: {
+		Column: [
+			{
+				name: "currency",
+				label: "Currency",
+				type: "text"
+			},
+			{
+				name: "exchange_rates",
+				label: "Exchange Rates ($)",
+				type: "text"
+			}
+		]
+	},
+	obligor_tiers: {
+		Column: [
+			{
+				name: "obligor",
+				label: "Obligor",
+				type: "text"
+			},
+			{
+				name: "first_lien_loans",
+				label: "First Lien Loans",
+				type: "float"
+			},
+			{
+				name: "fllo/2nd_lien_loans",
+				label: "FLLO/2nd Lien Loans",
+				type: "float"
+			},
+			{
+				name: "recurring_revenue",
+				label: "Recurring Revenue",
+				type: "float"
+			},
+			{
+				name: "applicable_collateral_value",
+				label: "Applicable Collateral Value (%)",
+				type: "float",
 				unit: "percent"
 			}
 		]
@@ -549,9 +675,9 @@ export const PCOF_COLUMNS_NAME = {
 	"principle_obligations": {
 		"columns_info": [
 			{
-				"col_name": "principal_obligations",
+				"col_name": "principle_obligations",
 				"sequence": 1,
-				"display_name": "Principal Obligations"
+				"display_name": "Principle Obligations"
 			},
 			{
 				"col_name": "currency",
@@ -686,6 +812,66 @@ export const PCOF_COLUMNS_NAME = {
 				"col_name": "values",
 				"sequence": 2,
 				"display_name": "Values"
+			}
+		]
+	}
+};
+
+export const PSSL_COLUMNS_NAME = {
+	"availability": {
+		"columns_info": [
+			{
+				"col_name": "input",
+				"sequence": 1,
+				"display_name": "Input"
+			},
+			{
+				"col_name": "value",
+				"sequence": 2,
+				"display_name": "Value"
+			}
+		]
+	},
+	"exchange_rates": {
+		"columns_info": [
+			{
+				"col_name": "currency",
+				"sequence": 1,
+				"display_name": "Currency"
+			},
+			{
+				"col_name": "exchange_rates",
+				"sequence": 2,
+				"display_name": "Exchange Rates"
+			}
+		]
+	},
+	"obligor_tiers": {
+		"columns_info": [
+			{
+				"col_name": "obligor",
+				"sequence": 1,
+				"display_name": "Obligor"
+			},
+			{
+				"col_name": "first_lien_loans",
+				"sequence": 2,
+				"display_name": "First Lien Loans"
+			},
+			{
+				"col_name": "fllo/2nd_lien_loans",
+				"sequence": 3,
+				"display_name": "FLLO/2nd Lien Loans"
+			},
+			{
+				"col_name": "recurring_revenue",
+				"sequence": 4,
+				"display_name": "Recurring Revenue"
+			},
+			{
+				"col_name": "applicable_collateral_value",
+				"sequence": 5,
+				"display_name": "Applicable Collateral Value"
 			}
 		]
 	}
