@@ -64,7 +64,7 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	ch."Deal Issue (Derived) Rating - S&P" as current_sp_rating,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as initial_fixed_charge_coverage_ratio,
 	null as date_of_default,
-	ssm."MarketValue" as market_value,
+	avg(ssm."MarkPrice_MarkPrice"::float) as market_value,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as current_fixed_charge_coverage_ratio,
 	bs."[CM] [CLSO] EBITDA / Cash Interest" as current_interest_coverage_ratio,
 	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization" as initial_debt_to_capitalization_ratio,
@@ -119,7 +119,7 @@ left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issue
 left join 
 	(select loan_mapping_cashfile.loan_type, loan_master_cashfile.loan_type as master_loan_type from loan_type_mapping loan_mapping_cashfile
 		left join loan_type_master loan_master_cashfile on loan_master_cashfile.id = loan_mapping_cashfile.master_loan_type_id
-		where loan_mapping_cashfile.is_deleted = false or loan_mapping_cashfile.is_deleted is null and loan_master_cashfile.fund_type = 'PFLT')
+		where (loan_mapping_cashfile.is_deleted = false or loan_mapping_cashfile.is_deleted is null) and loan_master_cashfile.fund_type = 'PFLT')
 	as t2 on t2.loan_type = ch."Issue Name"
 left join 
 	(select *, loan_master_marketbook.loan_type as master_loan_type from sf_sheet_marketbook_1 ssm 
@@ -145,7 +145,7 @@ where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id A
 	pbb."Equity Security", pbb."Subject of an Offer or Called for Redemption", pbb."Margin Stock", pbb."Subject to Withholding Tax", pbb."Zero Coupon Obligation",
 	pbb."Covenant Lite", pbb."Structured Finance Obligation / finance lease", pbb."Material Non-Credit Related Risk", pbb."Primarily Secured by Real Estate",
 	pbb."Interest Only Security", pbb."Satisfies Other Criteria(1)", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio", bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA",
-	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon", ssm."MarketValue", ch."LoanX ID",
+	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon", ch."LoanX ID",
 	lien_master.lien_type, bs."[CM] [CLSO] EBITDA / Cash Interest", bs."[CM] [CS] Updated as of", t2.master_loan_type
 	order by security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}).fetchall())
             df = cash_file

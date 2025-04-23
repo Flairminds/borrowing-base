@@ -9,8 +9,9 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
         print("storing base data of pcof")
         with engine.connect() as connection:
             pcof_base_data = pd.DataFrame(connection.execute(text(f'''
-                select 
-                    distinct usbh."Security/Facility Name" as "investment_name",
+                select distinct
+                    --usbh."Security/Facility Name" as "investment_name",
+                    ss."Security" as investment_name,
                     usbh."Issuer/Borrower Name"  as "issuer",
                     case
 						when lien_master.lien_type is null then ss."[SI] Credit Facility Lien Type"
@@ -114,7 +115,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                 left join 
 	                (select loan_mapping_cashfile.loan_type, loan_master_cashfile.loan_type as master_loan_type from loan_type_mapping loan_mapping_cashfile
 		                left join loan_type_master loan_master_cashfile on loan_master_cashfile.id = loan_mapping_cashfile.master_loan_type_id
-		                where loan_mapping_cashfile.is_deleted = false or loan_mapping_cashfile.is_deleted is null and loan_master_cashfile.fund_type = 'PFLT')
+		                where (loan_mapping_cashfile.is_deleted = false or loan_mapping_cashfile.is_deleted is null) and loan_master_cashfile.fund_type = 'PCOF')
                     as t2 on t2.loan_type = ch."Issue Name"
                 left join 
 	                (select *, loan_master_marketbook.loan_type as master_loan_type from sf_sheet_marketbook_1 ssm 
@@ -124,7 +125,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     as ssm on lower(regexp_replace(ch."Issuer/Borrower Name", '[^a-zA-Z0-9]','', 'g')) = lower(regexp_replace(ssm."Issuer_Name", '[^a-zA-Z0-9]','', 'g')) and t2.master_loan_type = ssm.master_loan_type
                 where (usbh.source_file_id = :cash_file_id AND ch.source_file_id = :cash_file_id and (ssm.source_file_id is null or ssm.source_file_id = :market_book_file_id)) and
                 ((sm.id is not null AND ss.source_file_id = :master_comp_file_id AND bs.source_file_id = :master_comp_file_id) or sm.id is null)
-                group by sm.id, usbh."Security/Facility Name", usbh."Issuer/Borrower Name", ss."[SI] Credit Facility Lien Type", bs."[ACM] [COI/LC] PNNT Industry",
+                group by sm.id, ss."Security", usbh."Security/Facility Name", usbh."Issuer/Borrower Name", ss."[SI] Credit Facility Lien Type", bs."[ACM] [COI/LC] PNNT Industry",
                 bs."[ACM] [COI/LC] Closing Date", ss."[SI] Maturity",
                     ss."[SI] PIK Coupon",
                     ss."[SI] Cash Spread to LIBOR",
@@ -152,7 +153,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ssm."BookValue",
                     ssm."MarketValue",
                     lien_master.lien_type
-                order by usbh."Security/Facility Name"
+                order by ss."Security"
             '''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}))
 
         if pcof_base_data.empty:
