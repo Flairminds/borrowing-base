@@ -509,7 +509,7 @@ export const AddAdditionalInformationModal = (
 				columnDetails = PFLTData[sheetName]?.Column || PFLTData[sheetName]?.Header;
 				break;
 			case "PSSL":
-				columnDetails = PSSLData[sheetName]?.Column || PSSLData[sheetName]?.Header;
+				columnDetails = PSSL_COLUMNS_NAME[sheetName]?.columns_info;
 				break;
 			default:
 				null;

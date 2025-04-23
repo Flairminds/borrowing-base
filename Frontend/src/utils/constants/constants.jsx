@@ -477,7 +477,7 @@ export const PSSLData = {
 				type: "float"
 			},
 			{
-				name: "fllo_2nd_lien_loans",
+				name: "fllo/2nd_lien_loans",
 				label: "FLLO/2nd Lien Loans",
 				type: "float"
 			},
@@ -675,9 +675,9 @@ export const PCOF_COLUMNS_NAME = {
 	"principle_obligations": {
 		"columns_info": [
 			{
-				"col_name": "principal_obligations",
+				"col_name": "principle_obligations",
 				"sequence": 1,
-				"display_name": "Principal Obligations"
+				"display_name": "Principle Obligations"
 			},
 			{
 				"col_name": "currency",
@@ -859,23 +859,18 @@ export const PSSL_COLUMNS_NAME = {
 				"display_name": "First Lien Loans"
 			},
 			{
-				"col_name": "fllo_2nd_lien_loans",
+				"col_name": "fllo/2nd_lien_loans",
 				"sequence": 3,
 				"display_name": "FLLO/2nd Lien Loans"
 			},
 			{
-				"col_name": "fllo_2nd_lien_loans",
-				"sequence": 4,
-				"display_name": "FLLO/2nd Lien Loans"
-			},
-			{
 				"col_name": "recurring_revenue",
-				"sequence": 5,
+				"sequence": 4,
 				"display_name": "Recurring Revenue"
 			},
 			{
 				"col_name": "applicable_collateral_value",
-				"sequence": 6,
+				"sequence": 5,
 				"display_name": "Applicable Collateral Value"
 			}
 		]
