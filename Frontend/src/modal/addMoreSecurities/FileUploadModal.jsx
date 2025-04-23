@@ -332,7 +332,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 	return (
 		<>
 			<Modal
-				title={<ModalComponents.Title title='Update Securities Data' showDescription={true} description="Add more securities data which are not present in the extracted base data" />}
+				title={<ModalComponents.Title title='Update Securities Data' showDescription={true} description="Edit existing securities data or add more securities data which are not present in the extracted base data" />}
 				open={isOpenFileUpload}
 				onCancel={handleCancel}
 				footer={null}
@@ -343,7 +343,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 						className="downloadLink"
 						onClick={handleExport}
 					>
-						Export Base Data
+						Export extracted base data
 					</a>
 				</div>
 				<DynamicFileUploadComponent
