@@ -704,11 +704,24 @@ def edit_base_data(changes):
         return ServiceResponse.error(message = "Please provide changes.", status_code = 400)
     for change in changes:
         id = change.get("id")
+        fund = change.get("fundType")
+        table = None
+        match(fund):
+            case 'PFLT':
+                table = PfltBaseData
+            case 'PCOF':
+                table = PcofBaseData
+            case 'PFLT':
+                table = PsslBaseData
+            case _:
+                return
+        if table is None:
+            return ServiceResponse.error(message = "Fund not specified", status_code = 400)
         for key in change.keys():
-            if key != "id":
+            if key != "id" and key != "fundType":
                 value = change.get(key)
                 # column = key.replace('_', " ")
-                base_data = PfltBaseData.query.filter_by(id=id).first()
+                base_data = table.query.filter_by(id=id).first()
                 setattr(base_data, key, value)
                 db.session.add(base_data)
                 db.session.commit()

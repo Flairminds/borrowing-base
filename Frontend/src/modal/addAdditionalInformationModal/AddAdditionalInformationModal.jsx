@@ -611,7 +611,7 @@ export const AddAdditionalInformationModal = (
 
 					{addType === "add" && (
 						<Tabs defaultActiveKey="1">
-							{Object.keys(selectedData)?.map((sheet, index) => {
+							{selectedData && Object.keys(selectedData)?.map((sheet, index) => {
 								const formattedSheetName = sheet.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
 
 								return (
