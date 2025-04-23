@@ -80,6 +80,8 @@ class RecurringRevenueInterestCoverage:
         # =CP11/DR11
         
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df[["Permitted TTM EBITDA in Local Currency"]] = portfolio_df[["Permitted TTM EBITDA in Local Currency"]].fillna(0)
+        portfolio_df[["Initial Cash Interest Expense"]] = portfolio_df[["Initial Cash Interest Expense"]].fillna(1)
         portfolio_df["Initial Interest Coverage Ratio"] = portfolio_df.apply(lambda row: row["Permitted TTM EBITDA in Local Currency"] / row["Initial Cash Interest Expense"], axis=1)
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 

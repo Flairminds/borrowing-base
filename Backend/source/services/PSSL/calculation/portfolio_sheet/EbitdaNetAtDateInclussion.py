@@ -62,12 +62,17 @@ class EbitdaNetAtDateInclussion:
     
     def initial_unrestricted_cash(self):
         # =ARRAY_CONSTRAIN(ARRAYFORMULA(IFERROR(VLOOKUP(INDEX(Portfolio!BT:BT,MATCH(G11,Portfolio!G:G,0),0),Availability!$B$68:$L$72,11,0)*Z11,"-")), 1, 1)
+        
+        def initial_unrestricted_cash_helper(row):
+            if exchange_rate_map.get(row["Approved Currency"]) == None:
+                exchange_rate_map.get(row["Approved Currency"], 0.0) * row["Initial Unrestricted Cash (Local Currency)"]
+            else:
+                return 0
         exchange_rate_map = self.calculator_info.intermediate_calculation_dict['exchange_rate_map']
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
-        portfolio_df["Initial Unrestricted Cash"] = portfolio_df.apply(
-            lambda row: exchange_rate_map.get(row["Approved Currency"], np.nan) * row["Initial Unrestricted Cash (Local Currency)"] if pd.notna(exchange_rate_map.get(row["Approved Currency"], np.nan)) else np.nan,
-            axis=1
-        )
+        # portfolio_df["Initial Unrestricted Cash (Local Currency)"].fillna(0)
+        portfolio_df[['Initial Unrestricted Cash (Local Currency)', 'Approved Currency']] = portfolio_df[['Initial Unrestricted Cash (Local Currency)', 'Approved Currency']].fillna(value=0.0)
+        portfolio_df["Initial Unrestricted Cash"] = portfolio_df.apply(initial_unrestricted_cash_helper, axis=1)
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
 
