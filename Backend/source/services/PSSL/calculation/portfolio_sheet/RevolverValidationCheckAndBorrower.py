@@ -143,11 +143,13 @@ class RevolverValidationCheckAndBorrower :
         # =ARRAY_CONSTRAIN(ARRAYFORMULA(IFERROR(VLOOKUP(INDEX(Portfolio!BT:BT,MATCH(G11,Portfolio!G:G,0),0),Availability!$B$68:$L$72,11,0)*X11,"-")), 1, 1)
 
         def borrower_outstanding_principal_balance_usd_helper(row):
-            currency = row['Approved Currency']
-            borrower_outstanding_principal_balance = row['Borrower Outstanding Principal Balance']
-            exchange_rate = exchange_rate_map.get(currency)
-            return exchange_rate * borrower_outstanding_principal_balance if exchange_rate is not None else "-"
-        
+            try:
+                currency = row['Approved Currency']
+                borrower_outstanding_principal_balance = row['Borrower Outstanding Principal Balance']
+                exchange_rate = exchange_rate_map.get(currency)
+                return exchange_rate * borrower_outstanding_principal_balance if exchange_rate is not None else "-"
+            except Exception as e:
+                return np.nan       
         exchange_rate_map = self.calculator_info.intermediate_calculation_dict['exchange_rate_map']
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Borrower Outstanding Principal Balance (USD)"] = portfolio_df.apply(borrower_outstanding_principal_balance_usd_helper, axis=1)
@@ -157,11 +159,13 @@ class RevolverValidationCheckAndBorrower :
     def borrower_facility_commitment_usd(self):
         # =ARRAY_CONSTRAIN(ARRAYFORMULA(IFERROR(VLOOKUP(INDEX(Portfolio!BT:BT,MATCH(G11,Portfolio!G:G,0),0),Availability!$B$68:$L$72,11,0)*Y11,"-")), 1, 1)
         def borrower_facility_commitment_usd_helper(row):
-            currency = row['Approved Currency']
-            borrower_facility_commitment = row['Borrower Facility Commitment']
-            exchange_rate = exchange_rate_map.get(currency)
-            return exchange_rate * borrower_facility_commitment if exchange_rate is not None else "-"
-
+            try:
+                currency = row['Approved Currency']
+                borrower_facility_commitment = row['Borrower Facility Commitment']
+                exchange_rate = exchange_rate_map.get(currency)
+                return exchange_rate * borrower_facility_commitment if exchange_rate is not None else np.nan
+            except Exception as e:
+                return np.nan
         exchange_rate_map = self.calculator_info.intermediate_calculation_dict['exchange_rate_map']
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Borrower Facility Commitment (USD)"] = portfolio_df.apply(borrower_facility_commitment_usd_helper, axis=1)

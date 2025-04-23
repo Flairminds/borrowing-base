@@ -7,14 +7,17 @@ class Others:
     def advance_rate_definition(self):
         # =IF(G17="","-",IF(T17="Ineligible","Ineligible",IF(OR(T17="Last Out",T17="Second Lien",T17="Recurring Revenue"),T17,CONCATENATE(T17," ",ER17))))
         def advance_rate_definition_helper(row):
-            if row['Borrower'] == "":
-                return "-"
-            elif row["Calculated Loan Type post AA Discretion"] == "Ineligible":
-                return "Ineligible"
-            elif row["Calculated Loan Type post AA Discretion"] == "Last Out" or row["Calculated Loan Type post AA Discretion"] == "Second Lien" or row["Calculated Loan Type post AA Discretion"] == "Recurring Revenue":
-                return row["Calculated Loan Type post AA Discretion"]
-            else:
-                return row["Calculated Loan Type post AA Discretion"] + " " + row["Advance Rate Class"]
+            try:
+                if row['Borrower'] == "":
+                    return "-"
+                elif row["Calculated Loan Type post AA Discretion"] == "Ineligible":
+                    return "Ineligible"
+                elif row["Calculated Loan Type post AA Discretion"] == "Last Out" or row["Calculated Loan Type post AA Discretion"] == "Second Lien" or row["Calculated Loan Type post AA Discretion"] == "Recurring Revenue":
+                    return row["Calculated Loan Type post AA Discretion"]
+                else:
+                    return row["Calculated Loan Type post AA Discretion"] + " " + row["Advance Rate Class"]
+            except Exception as e:
+                return ""
 
 
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']

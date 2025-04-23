@@ -20,6 +20,7 @@ class EbitdaNetDebtRelevantTestPeriod:
     def permitted_ttm_ebitda_in_local_currency_at_relevant_test_period(self):
         # =(1-CX11)*CW11
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df[["Inclusion EBITDA Haircut", "Adjusted TTM EBITDA"]] = portfolio_df[["Inclusion EBITDA Haircut", "Adjusted TTM EBITDA"]].fillna(0.0)
         portfolio_df["Permitted TTM EBITDA in Local Currency at relevant test period"] = portfolio_df.apply(
             lambda row: ((1 - row["Inclusion EBITDA Haircut"]) * row["Adjusted TTM EBITDA"]), 
             axis=1
