@@ -460,11 +460,19 @@ def extract_base_data(file_ids, fund_type):
         raise Exception(e)
 
 
+
 def get_base_data(info_id):
     try:
         # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
-        
+       
         base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
+        if base_data_info.fund_type == 'PFLT':
+            sheet_name = "Loan List"
+        elif base_data_info.fund_type == 'PCOF':
+            sheet_name = "PL BB Build"
+        else:
+            sheet_name = "Portfolio"
+ 
         base_data_mapping = db.session.query(
             BaseDataMapping.bdm_id,
             BaseDataMapping.bd_column_lookup,
@@ -474,21 +482,21 @@ def get_base_data(info_id):
             BaseDataMapping.is_editable,
             BaseDataMappingColumnInfo.sequence,
             BaseDataMappingColumnInfo.is_selected
-        ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type).order_by(BaseDataMappingColumnInfo.sequence).all()
-
-
+        ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type, BaseDataMapping.bd_sheet_name == sheet_name).order_by(BaseDataMappingColumnInfo.sequence).all()
+ 
+ 
         card_data = []
-
+ 
         engine = db.get_engine()
-        
+       
         if base_data_info.fund_type == 'PFLT':
             base_data = PfltBaseData.query.filter(PfltBaseData.base_data_info_id == info_id).order_by(PfltBaseData.id).all()
             HistoryData = PfltBaseDataHistory
             with engine.connect() as connection:
                 result = connection.execute(text('''
-                    select count(distinct pbd.obligor_name) as no_of_obligors, 
-                            count(distinct pbd.security_name) as no_of_assets, 
-                            sum(pbd.total_commitment::float) as total_commitment, 
+                    select count(distinct pbd.obligor_name) as no_of_obligors,
+                            count(distinct pbd.security_name) as no_of_assets,
+                            sum(pbd.total_commitment::float) as total_commitment,
                             sum(pbd.outstanding_principal::float) as total_outstanding_balance,
                             (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
                     from pflt_base_data pbd
@@ -516,9 +524,9 @@ def get_base_data(info_id):
             HistoryData = PcofBaseDataHistory
             with engine.connect() as connection:
                 result = connection.execute(text('''
-                    select count(distinct pbd.issuer) as no_of_issuers, 
-                            count(distinct pbd.investment_name) as no_of_investments, 
-                            --sum(pbd.total_commitment::float) as total_commitment, 
+                    select count(distinct pbd.issuer) as no_of_issuers,
+                            count(distinct pbd.investment_name) as no_of_investments,
+                            --sum(pbd.total_commitment::float) as total_commitment,
                             --sum(pbd.outstanding_principal::float) as total_outstanding_balance,
                             (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
                     from pcof_base_data pbd
@@ -532,7 +540,7 @@ def get_base_data(info_id):
                 "Unmapped Securities": unmapped_records,
                 "Fund Type": base_data_info.fund_type
             }]
-
+ 
         temp = []
         # print(base_data[0])
         for b in base_data:
@@ -583,13 +591,13 @@ def get_base_data(info_id):
             } for column in base_data_mapping],
             "data": temp
         }
-
+ 
         # print(type(base_data_table))
-        
-        
+       
+       
         # for index, row in base_data.iterrows():
         #     row_data = {}
-            
+           
         #     for col, value in row.items():
         #         if value != value:
         #             value = ""
@@ -609,7 +617,7 @@ def get_base_data(info_id):
         return ServiceResponse.success(data=result, message="Base Data")
     except Exception as e:
         raise Exception(e)
-
+    
 def change_bd_col_seq(updated_sequence):
     try:
         updated_sequence_list = []
@@ -1536,20 +1544,35 @@ def get_cash_sec(security_type):
     }
     return ServiceResponse.success(data=unmapped_securities_list, message="All Securities")
 
-def validate_add_securities(file, fund_type, base_data_info_id, company_id, report_date):
-    required_fields = {
-        "file": file,
-        "fund type": fund_type,
-        "base data info id": base_data_info_id,
-        "company id": company_id,
-        "report date": report_date
-    }
-    
-    for field, value in required_fields.items():
-        if not value:
-            return ServiceResponse.error(message=f"Invalid {field} provided.")
+def validate_add_securities(sheet_data, fund_type):
+    try:
+        engine = db.get_engine()
 
-    return ServiceResponse.success()
+        with engine.connect() as connection:
+                sheets_info_list = connection.execute(text(f"""
+                    select smm."lookup", smm.data_format from file_metadata_master fmm join sheet_metadata_master smm on fmm.id = smm.file_id 	
+                    where fmm."type" = 'addbasedata' and smm.fund_id = (select id from fund where fund_name = '{fund_type}')
+                """)).fetchall()
+
+        mismatched_data = []
+
+        for sheet_info in sheets_info_list:
+            sheet_name = sheet_info[0]
+
+            sheet_df = pd.DataFrame(sheet_data)
+            sheet_df = sheet_df.drop(columns=[col for col in ['id', 'action'] if col in sheet_df.columns])
+
+            validation_response = validate_tabular_sheet(sheet_df, sheet_name, mismatched_data, base_data_add=True)
+
+            validation_status = validation_response.get('success')
+            if validation_status == False:
+                return ServiceResponse.info(success=False, data=mismatched_data)
+        
+        return ServiceResponse.info(data=mismatched_data)       
+
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
 
 
 def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, report_date):

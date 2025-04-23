@@ -214,7 +214,7 @@ class ColumnMetadataMaster(db.Model):
     sheet_id = db.Column(db.Integer, db.ForeignKey("sheet_metadata_master.smm_id"), nullable=False)
     company_id = db.Column(db.Integer, nullable=False)
     column_name = db.Column(db.String(255), nullable=False)
-    column_lookup = db.Column(db.String(127), nullable=False, unique=True)
+    column_lookup = db.Column(db.String(127), nullable=False)
     column_aliases = db.Column(db.ARRAY(db.String))
     description = db.Column(db.String(511))
     calculation_formula = db.Column(db.String(511))
