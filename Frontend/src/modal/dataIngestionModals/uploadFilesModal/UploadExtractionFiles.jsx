@@ -23,8 +23,8 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 	};
 
 
-	const handleDateChange = (date, dateString) => {
-		setReportDate(dateString);
+	const handleDateChange = (date) => {
+		setReportDate(date);
 	};
 
 	const handleFileUpload = async() => {
@@ -77,6 +77,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 								placeholder='Report Date'
 								onChange={handleDateChange}
 								allowClear={true}
+								value={reportDate}
 							/>
 							<div style={{ marginTop: '20px', marginBottom: '20px'}}>
 								<Checkbox.Group
