@@ -202,3 +202,15 @@ export const deleteLoanTypeMapping = (mappingId, mappingType) => {
 	const response = axios.post(`${ApiURL}/mapping/delete_${mappingType}_type_mapping`, payload);
 	return response;
 };
+
+export const compareAddSecurities = (file, fund_type) => {
+	const formData = new FormData();
+	formData.append('file', file);
+	formData.append('fund_type', fund_type);
+
+	return axios.post(`${ApiURL}/data_ingestion/compare_add_securities`, formData, {
+		headers: {
+			'Content-Type': 'multipart/form-data'
+		}
+	});
+};
