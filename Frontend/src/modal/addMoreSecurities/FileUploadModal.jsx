@@ -7,7 +7,7 @@ import { ColumnMappingModal } from '../../components/columnMappingModal/ColumnMa
 import { ModalComponents } from '../../components/modalComponents';
 import { DynamicFileUploadComponent } from '../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
-import { uploadAddMoreSecFile, validateAddSecurities } from '../../services/dataIngestionApi';
+import { compareAddSecurities, uploadAddMoreSecFile, validateAddSecurities } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { SrcFileValidationErrorModal } from '../srcFIleValidationErrorModal/srcFileValidationErrorModal';
 import styles from "./FileUploadModal.module.css";
@@ -16,7 +16,10 @@ import { exportToExcel } from '../../utils/helperFunctions/jsonToExcel';
 
 export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, setAddsecFiles, previewFundType, dataId, reportId, handleBaseDataPreview, data, columns }) => {
 	const [validationInfo, setValidationInfo] = useState([]);
+	const [showMappingModal, setShowMappingModal] = useState(false);
 	const [validationModal, setValidationModal] = useState(false);
+	const [excelColumns, setExcelColumns] = useState([]);
+	const [systemColumns, setSystemColumns] = useState([]);
 
 	useEffect(() => {
 		if (!isOpenFileUpload) {
@@ -25,21 +28,21 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 	}, [isOpenFileUpload]);
 
 
-	const EXCEL_UNMAPPED_COLUMNS = [
-		"Obligor Name",
-		"Security Name",
-		"Loan Type",
-		"Tenure",
-		"Interest Rate"
-	];
+	// const EXCEL_UNMAPPED_COLUMNS = [
+	// 	"Obligor Name",
+	// 	"Security Name",
+	// 	"Loan Type",
+	// 	"Tenure",
+	// 	"Interest Rate"
+	// ];
 
-	const SYSTEM_UNMAPPED_COLUMNS = [
-		"Obligor Name",
-		"Security Name",
-		"Loan Type",
-		"Tenure",
-		"Interest Rate"
-	];
+	// const SYSTEM_UNMAPPED_COLUMNS = [
+	// 	"Obligor Name",
+	// 	"Security Name",
+	// 	"Loan Type",
+	// 	"Tenure",
+	// 	"Interest Rate"
+	// ];
 
 	const EXCEL_COLUMNS = {
 		PFLT: ["obligor name", "security name", "loan type"],
@@ -51,7 +54,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		PCOF: ["investment_name", "issuer"]
 	};
 
-	const [showMappingModal, setShowMappingModal] = useState(false);
+
 
 	const showDuplicateModal = (processedRows, previewFundType, onConfirm, onCancel) => {
 		const isNewAdded = processedRows.some((d) => d.action === "add");
@@ -207,9 +210,11 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			showToast("error", "Please upload a file before saving.");
 			return;
 		}
-		setShowMappingModal(true);
+
 		try {
 			const file = addsecFiles[0];
+			const proceed = await fetchColumnComparisonAndSetState(file, previewFundType);
+			if (!proceed) return;
 			const sheetData = await readExcelFile(file);
 
 			if (!sheetData || sheetData.length < 2) {
@@ -312,6 +317,29 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		exportToExcel(mappedData, "ExportedBaseData.xlsx");
 	};
 
+	const fetchColumnComparisonAndSetState = async (file, fund_type) => {
+		try {
+			const response = await compareAddSecurities(file, fund_type);
+
+			const { excel_unmapped, system_unmapped } = response.data;
+
+			setExcelColumns(excel_unmapped || []);
+			setSystemColumns(system_unmapped || []);
+
+			if (system_unmapped && system_unmapped.length > 0) {
+				setShowMappingModal(true);
+				return false;
+			}
+
+			return true;
+		} catch (error) {
+			console.error("Error in column comparison:", error);
+			showToast("error", "An error occurred while comparing columns.");
+			return false;
+		}
+	};
+
+
 
 
 	return (
@@ -347,8 +375,8 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			<ColumnMappingModal
 				visible={showMappingModal}
 				onClose={() => setShowMappingModal(false)}
-				excelUnmappedColumns={EXCEL_UNMAPPED_COLUMNS}
-				systemUnmappedColumns={SYSTEM_UNMAPPED_COLUMNS}
+				excelUnmappedColumns={excelColumns}
+				systemUnmappedColumns={systemColumns}
 				onSubmit={(mappings) => {
 					console.log("Submitted mappings:", mappings);
 					setShowMappingModal(false);

@@ -1796,3 +1796,37 @@ def validate_other_info_sheet(fund_type, other_data):
     except Exception as e:
         print(e)
         return ServiceResponse.error()
+    
+    
+def compare_columns(file, fund_type):
+    try:
+        engine = db.get_engine()
+
+        with engine.connect() as connection:
+           result = connection.execute(
+                text("""
+                    SELECT bdm.bd_column_name 
+                    FROM base_data_mapping bdm 
+                    WHERE fund_type = :fund_type
+                """),
+                {"fund_type": fund_type}
+            ).fetchall()
+
+        df = pd.read_excel(file)
+        file_columns = set(df.columns.str.strip())
+
+        db_columns = set(row[0].strip() for row in result)
+
+        missing_in_file = sorted(list(db_columns - file_columns))
+        extra_in_file = sorted(list(file_columns - db_columns))
+
+        data = {
+            "missing_in_file": missing_in_file,
+            "extra_in_file": extra_in_file
+        }
+
+        return ServiceResponse.success(data=data)
+    
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
