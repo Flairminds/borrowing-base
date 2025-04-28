@@ -1369,21 +1369,19 @@ def extract_validate_store_update(source_file):
 
             validation_status = None
 
-            sheet_validation_list = ["US Bank Holdings", "Client Holdings", "Borrower Stats"]
 
             mismatched_data = []
             for sheet_tuple in sheets:
                 sheet = sheet_tuple[0]
                 if sheet in extraction_response.get("data"):
-                    if sheet in sheet_validation_list:
-                        extracted_df = extraction_response.get("data").get(sheet)
-                        validation_res = validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
-        
-                        validation_status = validation_res.get('success')
-                        if validation_status == False:
-                            break
-                        validated_df = validation_res.get('data')
-                        extraction_response.get("data")[sheet] = validated_df
+                    extracted_df = extraction_response.get("data").get(sheet)
+                    validation_res = validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
+    
+                    validation_status = validation_res.get('success')
+                    if validation_status == False:
+                        break
+                    validated_df = validation_res.get('data')
+                    extraction_response.get("data")[sheet] = validated_df
                 else:
                     mismatched_data.append({'sheet_name': sheet, 'is_sheet_available': False})
                         
