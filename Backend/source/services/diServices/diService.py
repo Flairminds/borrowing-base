@@ -1643,9 +1643,9 @@ def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, re
             setattr(bd_table_obj, 'base_data_info_id', base_data_info_id)
             setattr(bd_table_obj, 'company_id', company_id)
             setattr(bd_table_obj, 'report_date', report_date)
-            setattr(bd_table_obj, 'is_manually_added', True)
 
             if record.get('action') == 'add':
+                setattr(bd_table_obj, 'is_manually_added', True)
                 db.session.add(bd_table_obj)
 
         db.session.commit()
