@@ -43,7 +43,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     sspibb."[IE] Initial Adjusted TTM EBITDA" as "initial_ttm_adjusted_ebitda",
                     sspibb."[IE] Initial Initial EBITDA Addbacks" as "add_backs",
                     bs."[CM] [CS] Updated as of" as relevent_test_period,
-                    sspibb."[CU] Current Adjusted TTM EBITDA" as "adjusted_ttm_ebiteda",
+                    sspibb."[CE] Current Adjusted TTM EBITDA" as "adjusted_ttm_ebiteda",
                     sspibb."[VAE] Obligor Payment Default"  as "obligor_payment_default",
                     sspibb."[VAE] Exercise of Rights and Remedies" as "exercise_rights_and_remedies",
                     sspibb."[VAE] (a) Reduces/waives Principal" as "reduces_waives_principal",
@@ -54,7 +54,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     sspibb."[VAE] (f) Amends Covenants" as "amends_covenants",
                     sspibb."[VAE] (f) Failure to Deliver Financial Reports" as "reporting_failure_event",
                     sspibb."[VAE] (e) Obligor Insolvency Event"  as "insolvency_event",
-                    null as acquisition_price,
+                    usbh."Original Purchase Price" as acquisition_price,
                     null as acquisition_date,
                     null as origination_date,
                     'No' as amends_definitions,
@@ -114,7 +114,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     sspibb."[IE] Initial Date of TTM Financials",
                     sspibb."[IE] Initial Adjusted TTM EBITDA",
                     sspibb."[IE] Initial Initial EBITDA Addbacks",
-                    sspibb."[CU] Current Adjusted TTM EBITDA",
+                    sspibb."[CE] Current Adjusted TTM EBITDA",
                     sspibb."[VAE] Obligor Payment Default",
                     sspibb."[VAE] Exercise of Rights and Remedies",
                     sspibb."[VAE] (a) Reduces/waives Principal",
@@ -125,7 +125,8 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     sspibb."[VAE] (f) Amends Covenants",
                     sspibb."[VAE] (f) Failure to Deliver Financial Reports",
                     sspibb."[VAE] (e) Obligor Insolvency Event",
-                    bs."[CM] [CS] Updated as of"
+                    bs."[CM] [CS] Updated as of",
+                    usbh."Original Purchase Price"
                 order by 
                     usbh."Issuer/Borrower Name"
             '''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id}))

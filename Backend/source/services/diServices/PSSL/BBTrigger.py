@@ -28,7 +28,10 @@ def trigger_pssl_bb(bdi_id):
     base_data_df["Date of Financial Delivery VAE"] = None
     base_data_df["Date Financials Provided to Ally"] = None
     base_data_df["Current Cash Interest Expense"] = 1
-    
+    # datatype of following columns should get handled in query itself
+    base_data_df["RCF Update Date"] = pd.to_datetime(base_data_df["RCF Update Date"])
+    base_data_df['Borrower Outstanding Principal Balance'] = pd.to_numeric(base_data_df['Borrower Outstanding Principal Balance'], errors='coerce')
+
     path1 = 'PSSL_Base_Data.xlsx'
     base_data_dict = pd.read_excel(path1, sheet_name=None)
     base_data_dict["Portfolio"] = base_data_df
@@ -55,7 +58,8 @@ def trigger_pssl_bb(bdi_id):
         closing_date=closing_date,
         fund_type=fund_type, 
         file_data=pickled_base_data,
-        included_excluded_assets_map=included_excluded_assets_map
+        included_excluded_assets_map=included_excluded_assets_map,
+        extracted_base_data_info_id = bdi_id
     )
     db.session.add(base_data_file)
     db.session.commit()

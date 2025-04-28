@@ -23,7 +23,7 @@ class BaseDataFile(db.Model):
     response = db.Column(db.PickleType)
     intermediate_calculation = db.Column(db.PickleType)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime)
     included_excluded_assets_map = db.Column(db.JSON, nullable=False)
 
     # one to many relationship with WhatIfAnalysis
@@ -50,7 +50,7 @@ class WhatIfAnalysis(db.Model):
     intermediate_metrics_data = db.Column(db.PickleType, nullable=False)
     response = db.Column(db.PickleType, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime)
     note = db.Column(db.String)
     is_saved = db.Column(db.Boolean, default=False)
     simulation_type = db.Column(db.String, nullable=False)
@@ -107,7 +107,7 @@ class ModifiedBaseDataFile(db.Model):
     intermediate_metrics_data = db.Column(db.PickleType)
     response = db.Column(db.PickleType)
     created_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
-    updated_at = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime)
     note = db.Column(db.String)
     simulation_type = db.Column(db.String, default="Update asset")
     is_saved = db.Column(db.Boolean, default=False)
@@ -823,6 +823,7 @@ class PsslBaseDataHistory(db.Model):
     initial_annualized_recurring_revenue = db.Column(db.String)
     annualized_recurring_revenue = db.Column(db.String)
     initial_liquidity = db.Column(db.String)
+    current_liquidity = db.Column(db.String)
     # current _liquidity
     initial_cash_interest_expense  = db.Column(db.Float)
     current_cash_interest_expense = db.Column(db.Float)
