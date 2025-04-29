@@ -33,10 +33,12 @@ export const exportToExcel = (data, columns = [], percentColumns = [], fileName 
 			}
 			if (col.unit === 'date') {
 				for (let rowIndex = 2; rowIndex <= data.length + 1; rowIndex++) {
-					if (!isDateValid(worksheet[`${columnNumberToLetter(colIndex)}${rowIndex}`].v)) {
+					if (!worksheet[`${columnNumberToLetter(colIndex)}${rowIndex}`].v || !isDateValid(worksheet[`${columnNumberToLetter(colIndex)}${rowIndex}`].v)) {
 						worksheet[`${columnNumberToLetter(colIndex)}${rowIndex}`].v = "";
+						worksheet[`${columnNumberToLetter(colIndex)}${rowIndex}`].t = "s"; // type 'd' for date
+					} else {
+						worksheet[`${columnNumberToLetter(colIndex)}${rowIndex}`].t = "d"; // type 'd' for date
 					}
-					worksheet[`${columnNumberToLetter(colIndex)}${rowIndex}`].t = "d"; // type 'd' for date
 					worksheet[`${columnNumberToLetter(colIndex)}${rowIndex}`].z = "mm/dd/yyyy"; // or your desired format
 				}
 			}

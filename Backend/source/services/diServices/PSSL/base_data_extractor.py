@@ -54,9 +54,9 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     sspibb."[VAE] (f) Amends Covenants" as "amends_covenants",
                     sspibb."[VAE] (f) Failure to Deliver Financial Reports" as "reporting_failure_event",
                     sspibb."[VAE] (e) Obligor Insolvency Event"  as "insolvency_event",
-                    usbh."Original Purchase Price" as acquisition_price,
-                    null as acquisition_date,
-                    null as origination_date,
+                    usbh."Original Purchase Price"::float / 100 as acquisition_price,
+                    usbh."Settle Date" as acquisition_date,
+                    usbh."Purchase Date" as origination_date,
                     'No' as amends_definitions,
                     'No' as waives_or_extends_due_date_of_financial_reports,
                     'No' as ddtl,
@@ -126,7 +126,9 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     sspibb."[VAE] (f) Failure to Deliver Financial Reports",
                     sspibb."[VAE] (e) Obligor Insolvency Event",
                     bs."[CM] [CS] Updated as of",
-                    usbh."Original Purchase Price"
+                    usbh."Original Purchase Price",
+                    usbh."Settle Date",
+                    usbh."Purchase Date"
                 order by 
                     usbh."Issuer/Borrower Name"
             '''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id}))
