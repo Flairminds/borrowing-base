@@ -262,7 +262,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				return;
 			}
 
-			const { finalRows, hasDuplicates } = checkForDuplicates(processedRows, data, previewFundType);
+			const { finalRows } = checkForDuplicates(processedRows, data, previewFundType);
 			const finalData = {
 				records: finalRows.map(row =>
 					Object.fromEntries(
@@ -391,9 +391,6 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		}
 	};
 
-
-
-
 	return (
 		<>
 			<Modal
@@ -430,7 +427,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				excelUnmappedColumns={excelColumns}
 				systemUnmappedColumns={systemColumns}
 				handleSave ={handleSave}
-				onSubmit={(mappings) => {
+				onSubmit={() => {
 					setShowMappingModal(false);
 				}}
 			/>

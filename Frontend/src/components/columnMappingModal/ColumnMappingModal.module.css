@@ -1,8 +1,13 @@
 .tableWrapper {
+<<<<<<< HEAD
     max-height: 20rem;
     margin-top: 20px;
     overflow-x: auto;
     overflow-y: scroll;
+=======
+    margin-top: 20px;
+    overflow-x: auto;
+>>>>>>> 006c04bae2d824612d2c8d6dc0e7f8e4e48db7f1
 }
 
 .mappingTable {
