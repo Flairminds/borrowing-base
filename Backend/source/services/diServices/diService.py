@@ -1834,9 +1834,7 @@ def validate_other_info_sheet(fund_type, other_data):
     except Exception as e:
         print(e)
         return ServiceResponse.error()
-    
-    
-def compare_columns(file, fund_type):
+
     try:
         engine = db.get_engine()
 

@@ -416,16 +416,3 @@ def validate_add_securities():
     except Exception as e:
         Log.func_error(e=e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
-
-def compare_add_securities():
-    try:
-        file = flask.request.files.get('file')
-        fund_type = flask.request.form.get('fund_type')
-
-        compare_response = diService.compare_columns(file, fund_type)
-
-        return HTTPResponse.success(message="Compared successfully.", result=compare_response.get('data'))
-
-    except Exception as e:
-        Log.func_error(e=e)
-        return HTTPResponse.error(message="Internal Server Error", status_code=500)
