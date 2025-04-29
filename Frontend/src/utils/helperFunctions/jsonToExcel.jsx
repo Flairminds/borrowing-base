@@ -1,8 +1,7 @@
-import { saveAs } from "file-saver";
 import * as XLSX from "xlsx";
 import { isDateValid } from "./formatDisplayData";
 
-export const exportToExcel = (data, columns = [], percentColumns = [], fileName = "data.xlsx") => {
+export const exportToExcel = (data, columns = [], fileName = "data.xlsx") => {
 	console.info("Entered", data);
 	const cleanedData = data.map(row => {
 		return Object.fromEntries(

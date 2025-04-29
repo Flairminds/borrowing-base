@@ -15,7 +15,6 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 	const [reportDateStr, setReportDateStr] = useState();
 	const [selectedOptions, setSelectedOptions] = useState([]);
 
-	
 	const handleCancel = () => {
 		setSelectedFiles([]);
 		setSelectedOptions([]);
@@ -40,7 +39,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 		setLoading(true);
 		try {
 			const selectedFunds = selectedOptions;
-			const uploadresponse = await uploadNewFile(selectedFiles, reportDateStr, selectedFunds);
+			await uploadNewFile(selectedFiles, reportDateStr, selectedFunds);
 
 			// await blobFilesList(selectedOptions);
 			showToast('success', "File upload and extraction is in progress, it may take few minutes");

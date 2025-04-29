@@ -11,8 +11,8 @@ import { TableViewModal } from '../../modal/TableView/TableViewModal';
 import { getConentrationData } from '../../services/api';
 import { countOccurrencesOfTest } from '../../utils/helperFunctions/CountOfTestStatus';
 import { sortData } from '../../utils/helperFunctions/sortTableData';
-import Styles from "./TableComponent.module.css";
 import { UIComponents } from '../uiComponents';
+import Styles from "./TableComponent.module.css";
 
 const ConcentrationTestCount = ({imageSrc, testCountText, backgroundColor}) => {
 

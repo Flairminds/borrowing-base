@@ -1,11 +1,11 @@
 import { Tabs } from 'antd';
 import React, { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from "react-router-dom";
+// import { Icons } from '../../components/icons';
 import { GenericDragnDropMapping } from '../../layouts/configurationPageTabs/genericDragnDropmapping/GenericDragnDropMapping';
 import { SecurityMappingPage } from '../../layouts/configurationPageTabs/securityMappingPage/SecurityMappingPage';
 import { uniqueMappingValues } from '../../utils/constants/configurationConstants';
 import styles from './ConfigurationPage.module.css';
-import { Icons } from '../../components/icons';
 
 const TabPaneWrapper = ({
 	children,
