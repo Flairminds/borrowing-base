@@ -1,10 +1,10 @@
-import dollarMoneyCurrencyIcon from '../../assets/sideBarIcons/dollarMoneyCurrencyIcon.svg';
-import DoneCheckIcon from '../../assets/sideBarIcons/DoneCheckIcon.svg';
-import GroupUserIcon from '../../assets/sideBarIcons/GroupUserIcon.svg';
+// import dollarMoneyCurrencyIcon from '../../assets/sideBarIcons/dollarMoneyCurrencyIcon.svg';
+// import DoneCheckIcon from '../../assets/sideBarIcons/DoneCheckIcon.svg';
+// import GroupUserIcon from '../../assets/sideBarIcons/GroupUserIcon.svg';
 import HomeIcon from '../../assets/sideBarIcons/HomeIcon.svg';
 import projectDocumentsIcon from '../../assets/sideBarIcons/projectDocumentsIcon.svg';
 import settingIcon from '../../assets/sideBarIcons/settingIcon.svg';
-import suitcasePortfolioIcon from '../../assets/sideBarIcons/suitcasePortfolioIcon.svg';
+// import suitcasePortfolioIcon from '../../assets/sideBarIcons/suitcasePortfolioIcon.svg';
 import ThreeBarIcon from '../../assets/sideBarIcons/ThreeBarIcon.svg';
 
 export const updateAssetDefaultColumnsData = {
@@ -447,7 +447,7 @@ export const PSSLData = {
 				name: "advances_requested",
 				label: "Advances Requested",
 				type: "text"
-			},
+			}
 		]
 	},
 	exchange_rates: {

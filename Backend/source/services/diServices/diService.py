@@ -36,19 +36,17 @@ from source.services.diServices.helper_functions import store_sheet_data, check_
 pfltDashboardService = PfltDashboardService()
 
 def upload_src_file_to_az_storage(files, report_date, fund_type):
-    if len(files) == 0:
-        return ServiceResponse.error(message = "Please select files.", status_code = 400)
-    if not fund_type:
-        return ServiceResponse.error(message = "Please select Fund.", status_code = 400)
-    
-    blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
-    company_name = "Pennant"
-    fund_names = fund_type
-    report_date = datetime.strptime(report_date, "%Y-%m-%d").date()
-    source_files_list = []
-
-
     try:
+        if len(files) == 0:
+            return ServiceResponse.error(message = "Please select files.", status_code = 400)
+        if not fund_type:
+            return ServiceResponse.error(message = "Please select Fund.", status_code = 400)
+        
+        blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
+        company_name = "Pennant"
+        fund_names = fund_type
+        report_date = datetime.strptime(report_date, "%Y-%m-%d").date()
+        source_files_list = []
         for file in files:
             print(file.filename)
             blob_name = f"{company_name}/{file.filename}"
@@ -1628,7 +1626,7 @@ def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, re
                     bd_column_lookup = base_data_mapping.get(bd_column_name).get('bd_column_lookup')
                     bd_column_datatype = base_data_mapping.get(bd_column_name).get('bd_column_datatype')
                     if bd_column_datatype == "datetime":
-                        if value == '':
+                        if value == '' or value is None:
                             value = None
                         else:
                             value = datetime.strptime(value, "%m-%d-%Y")
@@ -1641,9 +1639,9 @@ def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, re
             setattr(bd_table_obj, 'base_data_info_id', base_data_info_id)
             setattr(bd_table_obj, 'company_id', company_id)
             setattr(bd_table_obj, 'report_date', report_date)
-            setattr(bd_table_obj, 'is_manually_added', True)
 
             if record.get('action') == 'add':
+                setattr(bd_table_obj, 'is_manually_added', True)
                 db.session.add(bd_table_obj)
 
         db.session.commit()

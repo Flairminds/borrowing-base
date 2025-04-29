@@ -1,19 +1,19 @@
-import { DatePicker, Select } from 'antd';
+import { Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { BackOption } from '../../components/BackOption/BackOption';
-import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
-import { UIComponents } from '../../components/uiComponents';
+import { Calender } from '../../components/calender/Calender';
 import { DynamicSwitchComponent } from '../../components/reusableComponents/dynamicSwichComponent/DynamicSwitchComponent';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { UIComponents } from '../../components/uiComponents';
+import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { UploadExtractionFiles } from '../../modal/dataIngestionModals/uploadFilesModal/UploadExtractionFiles';
+import { SrcFileValidationErrorModal } from '../../modal/srcFIleValidationErrorModal/srcFileValidationErrorModal';
 import { exportBaseDataFile, getArchive, getBaseDataFilesList, getBaseFilePreviewData, getBlobFilesList, updateArchiveStatus } from '../../services/dataIngestionApi';
 import { fundMap, fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import styles from './DataIngestionPage.module.css';
-import { Calender } from '../../components/calender/Calender';
-import { SrcFileValidationErrorModal } from '../../modal/srcFIleValidationErrorModal/srcFileValidationErrorModal';
 
 export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
@@ -104,12 +104,12 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 									style={{cursor: "pointer", paddingLeft: "3px"}}
 									onClick={() => {
 										const recordData = Object.entries(row);
-										recordData.forEach((data)=>{
+										recordData.forEach((data) => {
 											if (data[0] === "validation_info") {
-												setShowErrorsModal(true)
-												setValidationInfoData(data[1])
+												setShowErrorsModal(true);
+												setValidationInfoData(data[1]);
 											}
-										})
+										});
 									}}
 								>
 									Show more
