@@ -1,5 +1,6 @@
-import { Modal, Select, message } from 'antd';
+import { Modal, Select } from 'antd';
 import React, { useState, useEffect } from 'react';
+import {saveMappedColumns } from '../../services/dataIngestionApi';
 import { ModalComponents } from '../modalComponents';
 import { CustomButton } from '../uiComponents/Button/CustomButton';
 import styles from "./ColumnMappingModal.module.css";
@@ -11,7 +12,8 @@ export const ColumnMappingModal = ({
 	onClose,
 	excelUnmappedColumns = [],
 	systemUnmappedColumns = [],
-	onSubmit
+	handleSave
+
 }) => {
 	const [mappings, setMappings] = useState({});
 
@@ -23,15 +25,36 @@ export const ColumnMappingModal = ({
 		setMappings((prev) => ({ ...prev, [excelCol]: selectedSystemCol }));
 	};
 
-	const handleSave = () => {
+	const saveExcelColumns = async () => {
 		const allMapped = excelUnmappedColumns.every((col) => mappings[col]);
-		if (!allMapped) {
-			message.warning('Please map all columns before submitting.');
-			return;
+		// if (!allMapped) {
+		// 	message.warning('Please map all columns before submitting.');
+		// 	return;
+		// }
+
+		const mapped_columns = Object.entries(mappings).map(([excelCol, systemColId]) => {
+			const systemCol = systemUnmappedColumns.find((col) => col.id === systemColId);
+			return {
+				id: systemCol.id,
+				column_name: excelCol,
+			};
+		});
+
+
+		const payload = {
+			mapped_columns
+		};
+
+		try {
+			await saveMappedColumns(payload);
+			onClose();
+			handleSave();
+		} catch (error) {
+			console.error('Failed to save mappings:', error);
+			// message.error('Submission failed.');
 		}
-		onSubmit(mappings);
-		onClose();
 	};
+
 
 	return (
 		<Modal
@@ -61,18 +84,18 @@ export const ColumnMappingModal = ({
 								<td className={styles.excelColCell}>{excelCol}</td>
 								<td>
 									<Select
-										style={{ width: '100%' }}
+										style={{ minWidth: '100%' }}
 										placeholder="Select system column"
 										onChange={(val) => handleMappingChange(excelCol, val)}
 										value={mappings[excelCol]}
 									>
 										{systemUnmappedColumns.map((sysCol) => (
 											<Option
-												key={sysCol}
-												value={sysCol}
-												disabled={Object.values(mappings).includes(sysCol)}
+												key={sysCol.id}
+												value={sysCol.id}
+												disabled={Object.values(mappings).includes(sysCol.id)}
 											>
-												{sysCol}
+												{sysCol.column_name}
 											</Option>
 										))}
 									</Select>
@@ -85,7 +108,7 @@ export const ColumnMappingModal = ({
 
 			<div className={styles.buttonContainer}>
 				<CustomButton isFilled={false} text="Cancel" onClick={onClose} />
-				<CustomButton isFilled={true} text="Save" onClick={handleSave} />
+				<CustomButton isFilled={true} text="Save" onClick={saveExcelColumns} />
 			</div>
 		</Modal>
 	);

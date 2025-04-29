@@ -8,11 +8,11 @@ import { ModalComponents } from '../../components/modalComponents';
 import { DynamicFileUploadComponent } from '../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { compareAddSecurities, uploadAddMoreSecFile, validateAddSecurities } from '../../services/dataIngestionApi';
+import { fmtDateValue } from '../../utils/helperFunctions/formatDisplayData';
+import { exportToExcel } from '../../utils/helperFunctions/jsonToExcel';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { SrcFileValidationErrorModal } from '../srcFIleValidationErrorModal/srcFileValidationErrorModal';
 import styles from "./FileUploadModal.module.css";
-import { exportToExcel } from '../../utils/helperFunctions/jsonToExcel';
-import { fmtDateValue } from '../../utils/helperFunctions/formatDisplayData';
 
 
 export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, setAddsecFiles, previewFundType, dataId, reportId, handleBaseDataPreview, data, columns }) => {
@@ -29,22 +29,6 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		}
 	}, [isOpenFileUpload]);
 
-
-	// const EXCEL_UNMAPPED_COLUMNS = [
-	// 	"Obligor Name",
-	// 	"Security Name",
-	// 	"Loan Type",
-	// 	"Tenure",
-	// 	"Interest Rate"
-	// ];
-
-	// const SYSTEM_UNMAPPED_COLUMNS = [
-	// 	"Obligor Name",
-	// 	"Security Name",
-	// 	"Loan Type",
-	// 	"Tenure",
-	// 	"Interest Rate"
-	// ];
 
 	const EXCEL_COLUMNS = {
 		PFLT: ["obligor name", "security name", "loan type"],
@@ -182,11 +166,11 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 	const processExcelData = (sheetData, previewFundType) => {
 		const columnMap = DATA_COLUMNS[previewFundType];
-		const headers = sheetData[0].map((h) => {
-			const lower = h?.toString().trim();
+		const headers = sheetData?.[0]?.map((h) => {
+			const lower = h?.toString()?.trim();
 			return columnMap.find((col, i) => lower.includes(EXCEL_COLUMNS[previewFundType][i])) || lower;
 		});
-		return sheetData.slice(1).map((row) => {
+		return sheetData?.slice(1)?.map((row) => {
 			const rowData = {};
 			headers.forEach((header, index) => {
 				rowData[header] = row[index] != 0 ? (!row[index] ? null : isNaN(row[index]) ? row[index]?.toString().trim() || null : parseFloat(row[index])) : 0;
@@ -389,12 +373,12 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		try {
 			const response = await compareAddSecurities(file, fund_type);
 
-			const { excel_unmapped, system_unmapped } = response.data;
+			const { extra_columns_in_file, missing_columns_in_file } = response?.data?.result;
 
-			setExcelColumns(excel_unmapped || []);
-			setSystemColumns(system_unmapped || []);
+			setExcelColumns(extra_columns_in_file || []);
+			setSystemColumns(missing_columns_in_file || []);
 
-			if (system_unmapped && system_unmapped.length > 0) {
+			if (missing_columns_in_file && missing_columns_in_file?.length > 0) {
 				setShowMappingModal(true);
 				return false;
 			}
@@ -445,6 +429,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				onClose={() => setShowMappingModal(false)}
 				excelUnmappedColumns={excelColumns}
 				systemUnmappedColumns={systemColumns}
+				handleSave ={handleSave}
 				onSubmit={(mappings) => {
 					setShowMappingModal(false);
 				}}
