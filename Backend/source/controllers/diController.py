@@ -416,3 +416,40 @@ def validate_add_securities():
     except Exception as e:
         Log.func_error(e=e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+def compare_file_columns():
+    try:
+        file = flask.request.files.get('file')
+        fund_type = flask.request.form.get('fund_type')
+
+        company_id = 1
+        file_type = "addsecurities"
+
+        compare_response = diService.compare_columns(file, fund_type, company_id, file_type)
+        if not compare_response.get("success"):
+            return HTTPResponse.error(message="Comparison failed.")
+
+        return HTTPResponse.success(message="Compared successfully.", result=compare_response.get('data'))
+
+    except Exception as e:
+        Log.func_error(e=e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+def save_mapped_columns():
+    try:
+        req_body = flask.request.get_json()
+        mapped_columns = req_body.get('mapped_columns')
+
+        ids_list =[]
+        for col_info in mapped_columns:
+            ids_list.append(col_info.get("id"))
+        
+        response = diService.save_columns(ids_list, mapped_columns)
+        if not response.get('success'):
+            return HTTPResponse.error(message="Something went wrong.")
+        
+        return HTTPResponse.success(message="Saved successfully.")
+
+    except Exception as e:
+        Log.func_error(e=e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
