@@ -455,6 +455,55 @@ def extract_base_data(file_ids, fund_type):
             extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
+        return ServiceResponse.error()
+
+def persist_old_base_data(fund_type):
+    try:
+        # 1. get last base data and previous base data
+        extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(fund_type = fund_type, status = 'Completed').order_by(ExtractedBaseDataInfo.id.desc()).limit(2).all()
+        # if no previous base data then return
+        if len(extracted_base_data_info) < 2:
+            return ServiceResponse.error(message='No older base data present.')
+        base_data_table = None
+        unique_identifier = []
+        match fund_type:
+            case "PFLT":
+                base_data_table = PfltBaseData
+                unique_identifier = ['obligor_name', 'security_name', 'loan_type']
+            case "PCOF":
+                base_data_table = PcofBaseData
+                unique_identifier = ['investment_name', 'issuer']
+            case "PSSL":
+                base_data_table = PsslBaseData
+                unique_identifier = ['borrower', 'loan_type']
+        current_base_data = base_data_table.query.filter(base_data_table.base_data_info_id == extracted_base_data_info[0].id).order_by(base_data_table.id).all()
+        previous_base_data = base_data_table.query.filter(base_data_table.base_data_info_id == extracted_base_data_info[1].id).order_by(base_data_table.id).all()
+        column_keys = [column.name for column in PsslBaseData.__table__.columns]
+        for data in current_base_data:
+            for prev_data in previous_base_data:
+                data_prev_record = None
+                for column in unique_identifier:
+                    # if getattr(data, column) is None or getattr(prev_data, column) is None:
+                    #     data_prev_record = None
+                    #     break
+                    if getattr(data, column) != getattr(prev_data, column):
+                        data_prev_record = None
+                        break
+                    else:
+                        data_prev_record = prev_data
+                if data_prev_record is not None:
+                    break
+            if data_prev_record is not None:
+                for column in column_keys:
+                    value = getattr(data, column)
+                    temp = value
+                    if value is None:
+                        if getattr(data_prev_record, column) is not None:
+                            temp = getattr(data_prev_record, column)
+                    setattr(data, column, temp)
+        db.session.commit()
+        return ServiceResponse.success(message="Base data updated")
+    except Exception as e:
         raise Exception(e)
 
 

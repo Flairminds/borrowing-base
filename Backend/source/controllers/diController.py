@@ -50,7 +50,10 @@ def extract_base_data():
         service_response = diService.extract_base_data(file_ids, fund_type)
         if not service_response["success"]:
             return HTTPResponse.error(message=service_response.get("message"), status_code=service_response.get("status_code"))
-
+        # persist from old base data
+        persist_service_response = diService.persist_old_base_data(fund_type)
+        if not persist_service_response["success"]:
+            print('Error in persisting older base data')
         return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
     except Exception as e:
         Log.func_error(e)
