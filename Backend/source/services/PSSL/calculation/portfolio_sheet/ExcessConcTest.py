@@ -281,19 +281,10 @@ class ExcessConcTest:
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
     def largest_industry_revised_value(self):
-
+        # =MAX(0,FI11-FM11)
         def largest_industry_revised_value_helper(row):
-            if row['Largest Industry'] != 1:
-                return 0
-            try:
-                group_sum = portfolio_df[portfolio_df['Aproved Industry'] == row['Aproved Industry']]['Largest Obligor Revised Value'].sum()
-                if group_sum == 0:
-                    return 0
-                value = (row['Largest Industry Loan Limit'] - row['Largest Industry Max']) * (row['Largest Obligor Revised Value'] / group_sum)
-                return max(0, value)
-            except:
-                return 0
-            
+            return max(0, row['Largest Obligor Revised Value'] - row['Largest Industry Excess'])
+        
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Largest Industry Revised Value"] = portfolio_df.apply(largest_industry_revised_value_helper, axis=1)
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
@@ -304,7 +295,7 @@ class ExcessConcTest:
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
 
         applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Max. Industry Concentration (2nd Largest Industry, % BB)', 'Applicable Limit'].iloc[0]
-        portfolio_df["Largest Industry Max"] = applicable_limit
+        portfolio_df["Second Largest Industry Max"] = applicable_limit
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
     def second_largest_industry_loan_limit(self):
@@ -314,7 +305,7 @@ class ExcessConcTest:
             return matching_rows['Largest Industry Revised Value'].sum()
         
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
-        portfolio_df["Largest Industry Loan Limit"] = portfolio_df.apply(second_largest_industry_loan_limit_helper, axis=1)
+        portfolio_df["Second Largest Industry Loan Limit"] = portfolio_df.apply(second_largest_industry_loan_limit_helper, axis=1)
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
     def second_largest_industry(self):
@@ -332,7 +323,7 @@ class ExcessConcTest:
                 group_sum = portfolio_df[portfolio_df['Approved Industry'] == row['Approved Industry']]['Largest Industry Revised Value'].sum()
                 if group_sum == 0:
                     return 0
-                value = (row['Largest Industry Loan Limit'] - row['Largest Industry Max']) * (row['Largest Industry Revised Value'] / group_sum)
+                value = (row['Second Largest Industry Loan Limit'] - row['Second Largest Industry Max']) * (row['Largest Industry Revised Value'] / group_sum)
                 return max(0, value)
             except:
                 return 0
@@ -343,9 +334,9 @@ class ExcessConcTest:
     
 
     def second_largest_industry_revised_value(self):
-        # =MAX(0,FN11-FQ11-FR11)
+        # =MAX(0,FN11-FR11)
         def second_largest_industry_revised_value_helper(row):
-            return max(0, row['Largest Industry Revised Value'] - row['Second Largest Industry Excess'] - row['Largest Industry Max'])
+            return max(0, row['Largest Industry Revised Value'] - row['Second Largest Industry Excess'])
         
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Second Largest Industry Revised Value"] = portfolio_df.apply(second_largest_industry_revised_value_helper, axis=1)
