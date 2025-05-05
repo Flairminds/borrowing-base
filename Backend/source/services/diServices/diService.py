@@ -6,7 +6,7 @@ import pandas as pd
 from datetime import datetime
 import pytz
 # import azure.functions as func
-from sqlalchemy import text, join, select, func
+from sqlalchemy import text, join, select, func, bindparam
 import threading
 import numpy as np
 from numerize import numerize
@@ -1834,34 +1834,135 @@ def validate_other_info_sheet(fund_type, other_data):
     except Exception as e:
         print(e)
         return ServiceResponse.error()
-
+    
+def compare_columns(file, fund_type, company_id, file_type):
     try:
+        
+        match fund_type:
+            case "PCOF":
+                sheet_name = "PL BB Build"
+                fund_id = 1
+            case "PFLT":
+                sheet_name = "Loan List"
+                fund_id = 2
+            case "PSSL":
+                sheet_name = "Portfolio"
+                fund_id = 3
+
         engine = db.get_engine()
 
         with engine.connect() as connection:
-           result = connection.execute(
-                text("""
-                    SELECT bdm.bd_column_name 
-                    FROM base_data_mapping bdm 
-                    WHERE fund_type = :fund_type
-                """),
-                {"fund_type": fund_type}
-            ).fetchall()
+            # action -> addsecurit. (type of FMM), fund, comapnyId, column_id need to add
+            columns_tuple = connection.execute(text(f"""
+                select cmm.column_name, cmm.column_aliases, cmm.cmm_id
+                from column_metadata_master cmm 
+                join sheet_metadata_master smm on cmm.sheet_id = smm.smm_id 
+                join file_metadata_master fmm on fmm.id = smm.file_id 
+                where smm."name" = '{sheet_name}' and fmm.company_id = {company_id} and fmm.type = '{file_type}' and cmm.fund_id = {fund_id}
+            """)).fetchall()
 
         df = pd.read_excel(file)
-        file_columns = set(df.columns.str.strip())
+        file_columns = set(col.strip() for col in df.columns)
 
-        db_columns = set(row[0].strip() for row in result)
+        db_column_names = set()
+        db_aliases = set()
+        colname_to_cmmid = dict()
+        colname_to_aliases = dict()
 
-        missing_in_file = sorted(list(db_columns - file_columns))
-        extra_in_file = sorted(list(file_columns - db_columns))
+        for col_name, aliases, cmm_id in columns_tuple:
+            col_name = col_name.strip()
+            db_column_names.add(col_name)
+            colname_to_cmmid[col_name] = cmm_id
+
+            alias_set = set()
+            if aliases:
+                for alias in aliases:
+                    alias = alias.strip()
+                    if alias:
+                        db_aliases.add(alias)
+                        alias_set.add(alias)
+                        colname_to_cmmid[alias] = cmm_id
+
+            colname_to_aliases[col_name] = alias_set
+
+        all_known_columns = db_column_names.union(db_aliases)
+        extra_in_file = [col for col in file_columns if col not in all_known_columns]
+        
+        file_columns_set = set(file_columns)
+        missing_columns = []
+
+        for col_name in db_column_names:
+            aliases = colname_to_aliases.get(col_name, set())
+            if col_name not in file_columns_set and not aliases.intersection(file_columns_set):
+                missing_columns.append(col_name)
+
+        missing_columns = sorted(missing_columns)
+        extra_in_file = sorted(extra_in_file)
+        
+        missing_in_file = [
+            {"column_name": col, "id": colname_to_cmmid.get(col)}
+            for col in missing_columns
+        ]
 
         data = {
-            "missing_in_file": missing_in_file,
-            "extra_in_file": extra_in_file
+            "missing_columns_in_file": missing_in_file,
+            "extra_columns_in_file": extra_in_file
         }
 
         return ServiceResponse.success(data=data)
+    
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
+    
+
+def save_columns(ids_list, mapped_columns):
+    try: 
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            result = connection.execute(
+                text("""
+                    SELECT cmm_id, column_aliases 
+                    FROM column_metadata_master 
+                    WHERE cmm_id IN :ids_list
+                """).bindparams(bindparam("ids_list", expanding=True)),
+                {"ids_list": ids_list}
+            ).fetchall()
+
+            alias_dict = {row[0]: (None if row[1] == ['NULL'] else row[1]) for row in result}
+
+            updates_column_aliases = [] 
+            for updated_column in mapped_columns:
+                cmm_id = updated_column.get('id')
+                column_name = updated_column.get('column_name')
+                existing_aliases = alias_dict.get(cmm_id)
+                
+                if not existing_aliases:
+                    alias_set = set()
+                else:
+                    alias_set = set(existing_aliases)
+                
+                alias_set.add(column_name)
+                new_aliases = list(alias_set)
+
+                updates_column_aliases.append({
+                    "cmm_id": cmm_id,
+                    "new_aliases": new_aliases
+                })
+
+            for column_aliases in updates_column_aliases:
+                connection.execute(
+                    text("""
+                        UPDATE column_metadata_master
+                        SET column_aliases = :new_aliases
+                        WHERE cmm_id = :cmm_id
+                    """),
+                    {"new_aliases": column_aliases["new_aliases"], "cmm_id": column_aliases["cmm_id"]}
+                )
+            
+            connection.commit()
+
+        return ServiceResponse.success()
     
     except Exception as e:
         print(e)

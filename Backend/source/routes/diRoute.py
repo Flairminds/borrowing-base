@@ -95,3 +95,11 @@ def add_base_data():
 @di_blueprint.route('/validate_add_securities', methods=["POST"])
 def validate_add_securities():
     return diController.validate_add_securities()
+
+@di_blueprint.route('/compare_file_columns', methods=["POST"])
+def compare_file_columns():
+    return diController.compare_file_columns()
+
+@di_blueprint.route('/save_mapped_columns', methods=["PATCH"])
+def save_mapped_columns():
+    return diController.save_mapped_columns()
