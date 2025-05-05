@@ -7,9 +7,7 @@ from source.services.PCOF.calculation.cash import *
 from source.services.PCOF.calculation.pl_bb_build_Availability import *
 import numpy as np
 
-from source.concentration_test_application import ConcentrationTestExecutor
-
-from source.concentration_test_application import ConcentrationTestExecutor
+from source.services.concTestService.concTestService import ConcentrationTestExecutor
 
 # from std_file_formater import std_file_format
 

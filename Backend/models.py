@@ -129,7 +129,7 @@ class FundConcentrationTest(db.Model):
     show_on_dashboard = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_at = db.Column(db.DateTime(timezone=True))
-
+    min_limit = db.Column(db.Float)
     # Relationships
     fund = db.relationship("Fund", back_populates="concentration_tests")
     concentration_test = db.relationship("ConcentrationTest", back_populates="funds")
