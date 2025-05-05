@@ -3,27 +3,32 @@ import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import PCOFAddSecSampleFile from '../../assets/template File/PCOF Add Base Data.xlsx';
 import PFLTAddSecSampleFile from '../../assets/template File/PFLT Add Base Data.xlsx';
+import { ColumnMappingModal } from '../../components/columnMappingModal/ColumnMappingModal';
 import { ModalComponents } from '../../components/modalComponents';
 import { DynamicFileUploadComponent } from '../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
-import { uploadAddMoreSecFile, validateAddSecurities } from '../../services/dataIngestionApi';
+import { compareAddSecurities, uploadAddMoreSecFile, validateAddSecurities } from '../../services/dataIngestionApi';
+import { fmtDateValue } from '../../utils/helperFunctions/formatDisplayData';
+import { exportToExcel } from '../../utils/helperFunctions/jsonToExcel';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { SrcFileValidationErrorModal } from '../srcFIleValidationErrorModal/srcFileValidationErrorModal';
 import styles from "./FileUploadModal.module.css";
-import { exportToExcel } from '../../utils/helperFunctions/jsonToExcel';
-import { fmtDateValue } from '../../utils/helperFunctions/formatDisplayData';
 
 
 export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, setAddsecFiles, previewFundType, dataId, reportId, handleBaseDataPreview, data, columns }) => {
 	const [validationInfo, setValidationInfo] = useState([]);
+	const [showMappingModal, setShowMappingModal] = useState(false);
 	const [validationModal, setValidationModal] = useState(false);
 	const [isSaving, setIsSaving] = useState(false);
+	const [excelColumns, setExcelColumns] = useState([]);
+	const [systemColumns, setSystemColumns] = useState([]);
 
 	useEffect(() => {
 		if (!isOpenFileUpload) {
 			setAddsecFiles([]);
 		}
 	}, [isOpenFileUpload]);
+
 
 	const EXCEL_COLUMNS = {
 		PFLT: ["obligor name", "security name", "loan type"],
@@ -58,6 +63,9 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			<strong>Loan Type:</strong> {data["Loan Type"]}
 		</li>
 	);
+
+
+
 
 	const showDuplicateModal = (processedRows, previewFundType, onConfirm, onCancel) => {
 		const isNewAdded = processedRows.some((d) => d.action === "add");
@@ -158,11 +166,11 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 	const processExcelData = (sheetData, previewFundType) => {
 		const columnMap = DATA_COLUMNS[previewFundType];
-		const headers = sheetData[0].map((h) => {
-			const lower = h?.toString().trim();
+		const headers = sheetData?.[0]?.map((h) => {
+			const lower = h?.toString()?.trim();
 			return columnMap.find((col, i) => lower.includes(EXCEL_COLUMNS[previewFundType][i])) || lower;
 		});
-		return sheetData.slice(1).map((row) => {
+		return sheetData?.slice(1)?.map((row) => {
 			const rowData = {};
 			headers.forEach((header, index) => {
 				rowData[header] = row[index] != 0 ? (!row[index] ? null : isNaN(row[index]) ? row[index]?.toString().trim() || null : parseFloat(row[index])) : 0;
@@ -237,6 +245,8 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		try {
 			setIsSaving(true);
 			const file = addsecFiles[0];
+			const proceed = await fetchColumnComparisonAndSetState(file, previewFundType);
+			if (!proceed) return;
 			const sheetData = await readExcelFile(file);
 
 			if (!sheetData || sheetData.length < 2) {
@@ -252,7 +262,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				return;
 			}
 
-			const { finalRows, hasDuplicates } = checkForDuplicates(processedRows, data, previewFundType);
+			const { finalRows } = checkForDuplicates(processedRows, data, previewFundType);
 			const finalData = {
 				records: finalRows.map(row =>
 					Object.fromEntries(
@@ -323,7 +333,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		return rawData.map(row => {
 			const formattedRow = {};
 			columns.forEach(col => {
-				let rawValue = row[col.key];
+				const rawValue = row[col.key];
 				let value = "";
 				// Prefer .value if present
 				if (rawValue && typeof rawValue === "object" && "value" in rawValue) {
@@ -359,7 +369,27 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		exportToExcel(mappedData, columns, percentColumns, `${previewFundType} base data ${fmtDateValue(reportId)}.xlsx`);
 	};
 
+	const fetchColumnComparisonAndSetState = async (file, fund_type) => {
+		try {
+			const response = await compareAddSecurities(file, fund_type);
 
+			const { extra_columns_in_file, missing_columns_in_file } = response?.data?.result;
+
+			setExcelColumns(extra_columns_in_file || []);
+			setSystemColumns(missing_columns_in_file || []);
+
+			if (missing_columns_in_file && missing_columns_in_file?.length > 0) {
+				setShowMappingModal(true);
+				return false;
+			}
+
+			return true;
+		} catch (error) {
+			console.error("Error in column comparison:", error);
+			showToast("error", "An error occurred while comparing columns.");
+			return false;
+		}
+	};
 
 	return (
 		<>
@@ -390,6 +420,18 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 					<CustomButton isFilled={true} loading={isSaving} btnDisabled={isSaving} loadingText='Saving...' text="Save" onClick={handleSave} />
 				</div>
 			</Modal>
+
+			<ColumnMappingModal
+				visible={showMappingModal}
+				onClose={() => setShowMappingModal(false)}
+				excelUnmappedColumns={excelColumns}
+				systemUnmappedColumns={systemColumns}
+				handleSave ={handleSave}
+				onSubmit={() => {
+					setShowMappingModal(false);
+				}}
+			/>
+
 
 			{validationModal &&
 				<SrcFileValidationErrorModal isModalOpen={validationModal} setIsModalOpen={setValidationModal} validationInfoData={validationInfo} />
