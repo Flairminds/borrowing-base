@@ -5,6 +5,9 @@ from source.services.PSSL.calculation.portfolio_sheet.RecurringRevenue import Re
 from source.services.PSSL.calculation.portfolio_sheet.ValueAdjustmentEvent import ValueAdjustmentEvent
 from source.services.PSSL.calculation.portfolio_sheet.RevolverValidationCheckAndBorrower import RevolverValidationCheckAndBorrower
 from source.services.PSSL.calculation.portfolio_sheet.Others import Others
+from source.services.PSSL.calculation.portfolio_sheet.ExcessConcTest import ExcessConcTest
+from source.services.PSSL.calculation.concentrations_limits_sheet.ConcentrationLimits import ConcentrationLimits
+from source.services.concTestService.concTestService import ConcentrationTestExecutor
 
 class PortfolioCalculator:
     def __init__(self, calculator_info):
@@ -31,18 +34,33 @@ class PortfolioCalculator:
         self.calculator_info.intermediate_calculation_dict['obligor_tiers_map'] = obligor_tiers_map
 
     def calculate_portfolio(self):
-        ebitda_net_at_date_inclussion = EbitdaNetAtDateInclussion(self.calculator_info)
-        ebitda_net_at_date_inclussion.calculate_ENADI()
-        ebitda_net_debt_relevant_test_period = EbitdaNetDebtRelevantTestPeriod(self.calculator_info)
-        ebitda_net_debt_relevant_test_period.claculate_ENDRTP()
-        leverage_ratios_permitted_ttm_ebitda = LeverageRatiosPermittedTtmEbitda(self.calculator_info)
-        leverage_ratios_permitted_ttm_ebitda.calculate_LRPTE()
-        recurring_revenue = RecurringRevenueInterestCoverage(self.calculator_info)
-        recurring_revenue.calculate_RRIC()
-        value_adjustment_event = ValueAdjustmentEvent(self.calculator_info)
-        value_adjustment_event.calculate_vae()
-        revolver_validation_check_borrower = RevolverValidationCheckAndBorrower(self.calculator_info)
-        revolver_validation_check_borrower.calculate_RVCBB()
-        other = Others(self.calculator_info)
-        other.calculate_others()
-        print('calculation of sheet Portfolio is completed')
+        try:
+            ebitda_net_at_date_inclussion = EbitdaNetAtDateInclussion(self.calculator_info)
+            ebitda_net_at_date_inclussion.calculate_ENADI()
+            ebitda_net_debt_relevant_test_period = EbitdaNetDebtRelevantTestPeriod(self.calculator_info)
+            ebitda_net_debt_relevant_test_period.claculate_ENDRTP()
+            leverage_ratios_permitted_ttm_ebitda = LeverageRatiosPermittedTtmEbitda(self.calculator_info)
+            leverage_ratios_permitted_ttm_ebitda.calculate_LRPTE()
+            recurring_revenue = RecurringRevenueInterestCoverage(self.calculator_info)
+            recurring_revenue.calculate_RRIC()
+            value_adjustment_event = ValueAdjustmentEvent(self.calculator_info)
+            value_adjustment_event.calculate_vae()
+            revolver_validation_check_borrower = RevolverValidationCheckAndBorrower(self.calculator_info)
+            revolver_validation_check_borrower.calculate_RVCBB()
+            other = Others(self.calculator_info)
+            other.calculate_others()
+            concentration_limits = ConcentrationLimits(self.calculator_info)
+            concentration_limits.calculate_concentration()
+            excess_conc_test = ExcessConcTest(self.calculator_info)
+            excess_conc_test.calculate_excess_concentrations()
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            calculated_df_map = {
+            "Portfolio": portfolio_df
+            }
+            concentration_test_executor = ConcentrationTestExecutor(calculated_df_map, "PSSL")
+            concentration_test_df = concentration_test_executor.executeConentrationTest()
+            self.calculator_info.intermediate_calculation_dict['Concentration Test'] = concentration_test_df
+            print('calculation of sheet Portfolio is completed')
+        except Exception as e:
+            raise Exception(e)

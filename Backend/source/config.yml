@@ -138,6 +138,13 @@ fund_std_col_map:
       Industry:
         Sheet Name: Loan List
         Column Name: Obligor Industry
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Industry:
+        Sheet Name: Portfolio
+        Column Name: Approved Industry
   Max. Industry Concentration (2nd Largest Industry, % BB):
     PCOF: 
       Borrowing Base:
@@ -153,3 +160,10 @@ fund_std_col_map:
       Industry:
         Sheet Name: Loan List
         Column Name: Obligor Industry
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Industry:
+        Sheet Name: Portfolio
+        Column Name: Approved Industry

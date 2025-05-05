@@ -1,19 +1,18 @@
 from numerize import numerize
 
+from source.concentration_test_application import ConcentraionTestFormatter
 class PsslResponseGenerator:
 
     def __init__(self, calculator_info):
         self.calculator_info = calculator_info
 
     def get_concentration_test_data(self):
-        conc_test_data = {
-            "Actual": [],
-            "Concentration Limit": [],
-            "Concentration Test": [],
-            "Result": [],
-            "columns": [{"data": ["Concentration Test", "Concentration Limit", "Actual", "Result"]}]
-        }
-        return conc_test_data
+        concentration_test_df = self.calculator_info.intermediate_calculation_dict['Concentration Test']
+        concentraion_test_formatter = ConcentraionTestFormatter(concentration_test_df)
+        concentration_test_data = (
+            concentraion_test_formatter.convert_to_std_table_format()
+        )
+        return concentration_test_data
 
     def get_segmentation_overview_data(self):
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']

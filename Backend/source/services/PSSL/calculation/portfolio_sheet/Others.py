@@ -500,7 +500,7 @@ class Others:
         portfolio_df["Recurring Revenue Value"] = portfolio_df["Recurring Revenue Amount"]
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
     
-    def adjusted_orrowing_value(self):
+    def adjusted_borrowing_value(self):
         # =AV11+AW11+AZ11+BA11+BD11
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Adjusted Borrowing Value"] = portfolio_df["First Lien Value"] + portfolio_df["Leverage Metrics 2nd Lien Value"] + portfolio_df["FLLO Value"] + portfolio_df["2nd Lien Value"] + portfolio_df["Recurring Revenue Value"]
@@ -533,4 +533,4 @@ class Others:
         self.recurring_revenue_amounts_in_excess_of_tier_3_reclassified_as_zero_value() # column 'BB'
         self.recurring_revenue_amount() # column 'BC'
         self.recurring_evenue_value() # column 'BD'
-        self.adjusted_orrowing_value() # column 'W'
+        self.adjusted_borrowing_value() # column 'W'
