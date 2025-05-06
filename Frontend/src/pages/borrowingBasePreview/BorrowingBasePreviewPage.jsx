@@ -72,7 +72,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		setMapping(col);
 	}, [baseFilePreviewData]);
 
-	const getCellDetail = async (rowIndex, columnKey, columnName, cellValue) => {
+	const getCellDetail = async (rowId, columnKey, columnName, cellValue) => {
 		const temp = {
 			"title": columnName,
 			"data": {
@@ -85,7 +85,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			}
 		};
 		try {
-			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId || infoId, 'column_key': columnKey, 'data_id': baseFilePreviewData?.baseData?.data[rowIndex]['id']['value'] });
+			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId || infoId, 'column_key': columnKey, 'data_id': rowId });
 			const detail = response?.data?.result;
 			const mappingData = detail?.mapping_data;
 			let t = {

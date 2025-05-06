@@ -150,9 +150,9 @@ export const DynamicTableComponents = ({
 		}
 	};
 
-	const handleCellClick = (rowIndex, columnKey, columnName, cellValue) => {
+	const handleCellClick = (rowId, columnKey, columnName, cellValue) => {
 		if (showCellDetailsModal) {
-			getCellDetailFunc(rowIndex, columnKey, columnName, cellValue);
+			getCellDetailFunc(rowId, columnKey, columnName, cellValue);
 			setModalVisible(true);
 		}
 	};
@@ -392,7 +392,7 @@ export const DynamicTableComponents = ({
 										if (selectedColumns.includes(col.label)) {
 											return (
 												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td} ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''} ${row[col.key]?.isManuallyAdded && tableStyles.isManuallyAdd} ${(isInUpdateMode && col.isEditable) && tableStyles.isEdited}`}
-													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
+													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(row['id']['value'], col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
 													{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 														(
 															<div className={tableStyles.editIconsContainer}>
