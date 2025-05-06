@@ -8,6 +8,7 @@ from source.services.PFLT.calculation.pflt_borrowing_base import (
     PFLTBorrowingBase as PBC,
 )
 from source.services.PFLT.pflt_utility.constants import sheet_uniques
+from source.utility.Log import Log
 
 
 class PfltBBCalculator:
@@ -57,4 +58,4 @@ class PfltBBCalculator:
             db.session.commit()
             return response_data
         except Exception as e:
-            print(f"error on line {e.__traceback__.tb_lineno} inside {__file__}")
+            Log.func_error(e=e)

@@ -19,28 +19,31 @@ class PFLTBorrowingBase(PFLTCalculationInitiator):
         # return self.file_df
 
     def generate_response(self):
-        card_data = self.card_data()
-        segmentation = self.segmentation()
-        # concentration = self.concentration_test_data()
-        concentration = self.concentration_test_data_from_base_sheet()
-        # security_data = self.security_data()
-        security_data = self.security_data_from_base_sheet()
-        # security_chart_data = self.security_chart_data()
-        security_chart_data = self.security_chart_data_from_sheet()
-        # principal_data = self.principal_obligation_data()
-        principal_data = self.principal_obligation_data_from_sheet()
-        # segmentation_chart_data = self.segmentation_chart_data()
-        segmentation_chart_data = self.segmentation_chart_data_from_sheet()
+        try:
+            card_data = self.card_data()
+            segmentation = self.segmentation()
+            # concentration = self.concentration_test_data()
+            concentration = self.concentration_test_data_from_base_sheet()
+            # security_data = self.security_data()
+            security_data = self.security_data_from_base_sheet()
+            # security_chart_data = self.security_chart_data()
+            security_chart_data = self.security_chart_data_from_sheet()
+            # principal_data = self.principal_obligation_data()
+            principal_data = self.principal_obligation_data_from_sheet()
+            # segmentation_chart_data = self.segmentation_chart_data()
+            segmentation_chart_data = self.segmentation_chart_data_from_sheet()
 
-        return {
-            "card_data": card_data,
-            "segmentation_overview_data": segmentation,
-            "concentration_test_data": concentration,
-            "security_data": security_data,
-            "security_chart_data": security_chart_data,
-            "principal_obligation_data": principal_data,
-            "segmentation_chart_data": segmentation_chart_data,
-        }
+            return {
+                "card_data": card_data,
+                "segmentation_overview_data": segmentation,
+                "concentration_test_data": concentration,
+                "security_data": security_data,
+                "security_chart_data": security_chart_data,
+                "principal_obligation_data": principal_data,
+                "segmentation_chart_data": segmentation_chart_data,
+            }
+        except Exception as e:
+            raise Exception(e)
 
     def card_data(self):
         borrowing_base_df = self.file_df["Borrowing Base"]
@@ -63,6 +66,18 @@ class PFLTBorrowingBase(PFLTCalculationInitiator):
 
         Credit_Balance_Projection_df = self.file_df["Credit Balance Projection"]
 
+        Credit_Balance_Projection_df["Exchange Rates"] = pd.to_numeric(
+            Credit_Balance_Projection_df["Exchange Rates"], errors="coerce"
+        )
+        Credit_Balance_Projection_df["Projected Credit Facility Balance"] = pd.to_numeric(
+            Credit_Balance_Projection_df["Projected Credit Facility Balance"], errors="coerce"
+        )
+
+        total = (Credit_Balance_Projection_df["Exchange Rates"] * Credit_Balance_Projection_df["Projected Credit Facility Balance"]).sum()
+
+        if not pd.notnull(total):
+            total = 0
+
         # Creating the card data structure
         card_data = {
             "Borrowing Base": [{"data": f"${borrowing_base / 1e6:.2f}M"}],
@@ -74,14 +89,7 @@ class PFLTBorrowingBase(PFLTCalculationInitiator):
             "Total Credit Facility Balance": [
                 {
                     "data": "$"
-                    + numerize.numerize(
-                        sum(
-                            Credit_Balance_Projection_df["Exchange Rates"]
-                            * Credit_Balance_Projection_df[
-                                "Projected Credit Facility Balance"
-                            ].tolist()
-                        )
-                    )
+                    + numerize.numerize(total)
                 }
             ],
             "ordered_card_names": [
@@ -253,7 +261,7 @@ class PFLTBorrowingBase(PFLTCalculationInitiator):
                         "{:.2f}%".format(round(cell * 100, 2))
                         if column == "Exchange Rates"
                         else (
-                            "$" + numerize.numerize(cell)
+                            "$" + (numerize.numerize(cell) if pd.notnull(cell) else numerize.numerize(0))
                             if type(cell) == int or type(cell) == float
                             else cell
                         )
