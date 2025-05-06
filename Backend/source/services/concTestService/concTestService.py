@@ -183,10 +183,21 @@ class ConcentrationTestExecutor:
             "Max. Contribution to BB with Maturity > 8 years": self.Max_Contribution_to_BB_with_Maturity_greater_than_8_years,
             "Max. Industry Concentration (Largest Industry, % BB)": self.Max_Industry_Concentration_Largest_Industry_percent_BB,
             "Max. Industry Concentration (2nd Largest Industry, % BB)": self.Max_Industry_Concentration_2nd_Largest_Industry_percent_BB,
+            "First Lien Three Largest Obligors (each)": self.first_lien_three_largest_obligors_each,
+            "Other Obligors": self.other_obligors,
+            "Third Largest Industry": self.third_largest_industry,
+            "Other Industry": self.other_industry,
+            "Largest Industry": self.largest_industry,
+            "Second Largest Industry": self.second_largest_industry
         }
 
     def get_kth_largest_percent_BB(self, test_required_col_df, k):
         percent_BB_list = test_required_col_df["Percetage Borrowing Base"].tolist()
+        percent_BB_list.sort(reverse=True)
+        return percent_BB_list[k - 1]
+    
+    def get_kth_largest_BB(self, test_required_col_df, k):
+        percent_BB_list = test_required_col_df["Borrowing Base"].tolist()
         percent_BB_list.sort(reverse=True)
         return percent_BB_list[k - 1]
 
@@ -339,7 +350,7 @@ class ConcentrationTestExecutor:
         actual = (
             test_required_col_df["DIP Collateral Loans"].sum() / total_borrowing_base
         )
-        if actual > self.limit_percent:
+        if actual < self.limit_percent:
             result = "Pass"
         else:
             result = "Fail"
@@ -571,6 +582,159 @@ class ConcentrationTestExecutor:
         )
         return concentration_test_df
 
+    def first_lien_three_largest_obligors_each(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        test_required_col_df = test_required_col_df[test_required_col_df["Loan Type"] == "First Lien"]
+        test_required_col_df = test_required_col_df.sort_values(by='Borrowing Base', ascending=False)
+        total_bb = test_required_col_df["Borrowing Base"].sum()
+        total_exess = test_required_col_df["Exess"].sum()
+        applicable_test_limit = max(self.limit_percent * total_bb, self.min_limit)
+        test_required_col_df = test_required_col_df.head(3)
+
+        # test_passed = (test_required_col_df['Borrowing Base'] <= applicable_test_limit).all()
+        if total_exess > 0:
+            result = "Fail"
+        else:
+            result = "Pass"
+
+        # if test_passed:
+        #     result = "Pass"
+        # else:
+        #     result = "Fail"
+        actual = total_bb
+        rounded_actual = round(actual, 3)
+        row_data = {
+            "Concentration Tests": [test_name],
+            "Concentration Limit": [self.limit_percent],
+            "Actual": [rounded_actual],
+            "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
+        }
+        row_df = pd.DataFrame(row_data)
+        concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+        return concentration_test_df
+
+    def other_obligors(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        test_required_col_df = test_required_col_df.sort_values(by='Borrowing Base', ascending=False)
+        total_bb = test_required_col_df["Borrowing Base"].sum()
+        total_exess = test_required_col_df["Excess"].sum()
+        test_required_col_df = test_required_col_df.iloc[3:]
+        applicable_test_limit = max(self.limit_percent * total_bb, self.min_limit)
+
+        # test_passed = (test_required_col_df['Borrowing Base'] <= applicable_test_limit).all()
+
+        if total_exess > 0:
+            result = "Fail"
+        else:
+            result = "Pass"
+
+        actual = total_bb
+        
+        rounded_actual = round(actual, 3)
+        row_data = {
+            "Concentration Tests": [test_name],
+            "Concentration Limit": [self.limit_percent],
+            "Actual": [rounded_actual],
+            "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
+        }
+        row_df = pd.DataFrame(row_data)
+        concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+        return concentration_test_df
+
+    def third_largest_industry(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        total_exess = test_required_col_df["Excess"].sum()
+        total_bb = test_required_col_df["Borrowing Base"].sum()
+        if total_exess > 0:
+            result = "Fail"
+        else:
+            result = "Pass"
+
+        actual = total_bb
+        
+        rounded_actual = round(actual, 3)
+        row_data = {
+            "Concentration Tests": [test_name],
+            "Concentration Limit": [self.limit_percent],
+            "Actual": [rounded_actual],
+            "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
+        }
+        row_df = pd.DataFrame(row_data)
+        concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+        return concentration_test_df
+
+    def other_industry(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        total_exess = test_required_col_df["Excess"].sum()
+        total_bb = test_required_col_df["Borrowing Base"].sum()
+        if total_exess > 0:
+            result = "Fail"
+        else:
+            result = "Pass"
+
+        actual = total_bb
+        
+        rounded_actual = round(actual, 3)
+        row_data = {
+            "Concentration Tests": [test_name],
+            "Concentration Limit": [self.limit_percent],
+            "Actual": [rounded_actual],
+            "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
+        }
+        row_df = pd.DataFrame(row_data)
+        concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+        return concentration_test_df
+
+    def largest_industry(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        test_required_col_df = test_required_col_df.sort_values(by='Borrowing Base', ascending=False)
+        total_bb = test_required_col_df["Borrowing Base"].sum()
+        total_exess = test_required_col_df["Excess"].sum()
+        test_required_col_df = test_required_col_df.iloc[3:]
+        applicable_test_limit = max(self.limit_percent * total_bb, self.min_limit)
+
+        # test_passed = (test_required_col_df['Borrowing Base'] <= applicable_test_limit).all()
+
+        if total_exess > 0:
+            result = "Fail"
+        else:
+            result = "Pass"
+
+        actual = total_bb
+        
+        rounded_actual = round(actual, 3)
+        row_data = {
+            "Concentration Tests": [test_name],
+            "Concentration Limit": [self.limit_percent],
+            "Actual": [rounded_actual],
+            "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
+        }
+        row_df = pd.DataFrame(row_data)
+        concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+        return concentration_test_df
+
+    def second_largest_industry(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        total_exess = test_required_col_df["Excess"].sum()
+        total_bb = test_required_col_df["Borrowing Base"].sum()
+        if total_exess > 0:
+            result = "Fail"
+        else:
+            result = "Pass"
+
+        actual = total_bb
+        
+        rounded_actual = round(actual, 3)
+        row_data = {
+            "Concentration Tests": [test_name],
+            "Concentration Limit": [self.limit_percent],
+            "Actual": [rounded_actual],
+            "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
+        }
+        row_df = pd.DataFrame(row_data)
+        concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+        return concentration_test_df
+
     def executeConentrationTest(self):
 
         # find all applicable tests for given fund
@@ -582,6 +746,7 @@ class ConcentrationTestExecutor:
                 ConcentrationTest.mathematical_formula,
                 ConcentrationTest.columns,
                 FundConcentrationTest.limit_percentage,
+                FundConcentrationTest.min_limit,
                 FundConcentrationTest.show_on_dashboard,
             )
             .join(FundConcentrationTest)
@@ -607,6 +772,7 @@ class ConcentrationTestExecutor:
                     sheet_name, column_name
                 )
             self.limit_percent = test.limit_percentage
+            self.min_limit = test.min_limit
             test_required_col_df = pd.DataFrame(
                 zip_longest(*test_data.values(), fillvalue=None),
                 columns=test_data.keys(),

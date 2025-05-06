@@ -167,3 +167,72 @@ fund_std_col_map:
       Industry:
         Sheet Name: Portfolio
         Column Name: Approved Industry
+  First Lien Three Largest Obligors (each):
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Exess:
+        Sheet Name: Portfolio
+        Column Name: Top 3 Excess
+      Obligor:
+        Sheet Name: Portfolio
+        Column Name: Borrower
+      Loan Type:
+        Sheet Name: Portfolio
+        Column Name: Loan Type
+  Other Obligors:
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Excess:
+        Sheet Name: Portfolio
+        Column Name: Other Excess
+      Obligor:
+        Sheet Name: Portfolio
+        Column Name: Borrower
+  Third Largest Industry:
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Industry:
+        Sheet Name: Portfolio
+        Column Name: Approved Industry
+      Excess:
+        Sheet Name: Portfolio
+        Column Name: Third Largest Industry Excess
+  Other Industry:
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Industry:
+        Sheet Name: Portfolio
+        Column Name: Approved Industry
+      Excess:
+        Sheet Name: Portfolio
+        Column Name: Other Industries Excess
+  Largest Industry:
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Industry:
+        Sheet Name: Portfolio
+        Column Name: Approved Industry
+      Excess:
+        Sheet Name: Portfolio
+        Column Name: Largest Industry Excess
+  Second Largest Industry:
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Industry:
+        Sheet Name: Portfolio
+        Column Name: Approved Industry
+      Excess:
+        Sheet Name: Portfolio
+        Column Name: Second Largest Industry Excess

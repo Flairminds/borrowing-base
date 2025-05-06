@@ -230,7 +230,7 @@ class ExcessConcTest:
         conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
 
-        applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Max. Industry Concentration (Largest Industry, % BB)', 'Applicable Limit'].iloc[0]
+        applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Largest Industry', 'Applicable Limit'].iloc[0]
         portfolio_df["Largest Industry Max"] = applicable_limit
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
@@ -250,17 +250,21 @@ class ExcessConcTest:
             industry_name = row['Approved Industry']
             total_bb = portfolio_df_copy["Adjusted Borrowing Value"].sum()
             if industry_name in grouped_df['Approved Industry'].values:
-                industry_bb = grouped_df[grouped_df['Approved Industry'] == industry_name]['Adjusted Borrowing Value'].values[0]
-                percent_bb = (industry_bb / total_bb) * 100
-                return percent_bb
+                rank = grouped_df[grouped_df['Approved Industry'] == industry_name]['Rank'].values[0]
+                # percent_bb = (industry_bb / total_bb) * 100
+                return rank
             else:
                 return 0
 
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df_copy = portfolio_df.copy(deep=True)
         portfolio_df_copy[["Adjusted Borrowing Value"]] = portfolio_df_copy[["Adjusted Borrowing Value"]].fillna(0)
+
     
         grouped_df = portfolio_df_copy.groupby('Approved Industry')['Adjusted Borrowing Value'].sum().reset_index()
+        ranks = grouped_df['Adjusted Borrowing Value'].rank(method='min', ascending=False)
+        grouped_df['Rank'] = grouped_df['Adjusted Borrowing Value'].apply(lambda x: 0 if x == 0 else int(ranks.loc[grouped_df['Adjusted Borrowing Value'] == x].iloc[0]))
+
         portfolio_df["Largest Industry"] = portfolio_df.apply(largest_industry_loan_limit_helper, axis=1)
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
@@ -294,7 +298,7 @@ class ExcessConcTest:
         conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
 
-        applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Max. Industry Concentration (2nd Largest Industry, % BB)', 'Applicable Limit'].iloc[0]
+        applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Second Largest Industry', 'Applicable Limit'].iloc[0]
         portfolio_df["Second Largest Industry Max"] = applicable_limit
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
@@ -342,6 +346,123 @@ class ExcessConcTest:
         portfolio_df["Second Largest Industry Revised Value"] = portfolio_df.apply(second_largest_industry_revised_value_helper, axis=1)
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
+    def third_largest_industry_max(self):
+        # ='Concentration Limits'!$J$44
+        conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+
+        applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Third Largest Industry', 'Applicable Limit'].iloc[0]
+        portfolio_df["Third Largest Industry Max"] = applicable_limit
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def third_largest_industry_loan_limit(self):
+        # =SUMIF($BZ:$BZ,$BZ11,FS:FS)
+        def third_largest_industry_loan_limit_helper(row):
+            matching_rows = portfolio_df[portfolio_df['Borrower'] == row['Borrower']]
+            return matching_rows['Second Largest Industry Revised Value'].sum()
+        
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["Third Largest Industry Loan Limit"] = portfolio_df.apply(third_largest_industry_loan_limit_helper, axis=1)
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def third_largest_industry(self):
+        # =FL11
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["Third Largest Industry"] = portfolio_df["Largest Industry"]
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def third_largest_industry_excess(self):
+        # =MAX(0,IF(FV11=3,(FU11-FT11)*(FS11/SUMIF($BZ:$BZ,BZ11,FS:FS)),0))
+        def third_largest_industry_excess_helper(row):
+            if row['Third Largest Industry'] != 3:
+                return 0
+            try:
+                group_sum = portfolio_df[portfolio_df['Approvd Industry'] == row['Approvd Industry']]['FS'].sum()
+                if group_sum == 0:
+                    return 0
+                value = (row['Third Largest Industry Loan Limit'] - row['Third Largest Industry Max']) * (row['Second Largest Industry Revised Value'] / group_sum)
+                return max(0, value)
+            except:
+                return 0
+
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["Third Largest Industry Excess"] = portfolio_df.apply(third_largest_industry_excess_helper, axis=1)
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def third_largest_industry_revised_value(self):
+        # =MAX(0,FS11-FW11)
+        def third_largest_industry_revised_value_helper(row):
+            return max(0, row['Second Largest Industry Revised Value'] - row['Third Largest Industry Excess'])
+        
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["Third Largest Industry Revised Value"] = portfolio_df.apply(third_largest_industry_revised_value_helper, axis=1)
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def other_industry_max(self):
+        # ='Concentration Limits'!$J$45
+        conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+
+        applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Other Industry', 'Applicable Limit'].iloc[0]
+        portfolio_df["Other Industry Max"] = applicable_limit
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def other_industry_loan_limit(self):
+        # =SUMIF($BZ:$BZ,$BZ11,FX:FX)
+        def other_industry_loan_limit_helper(row):
+            matching_rows = portfolio_df[portfolio_df['Borrower'] == row['Borrower']]
+            return matching_rows['Third Largest Industry Revised Value'].sum()
+        
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["Other Industry Loan Limit"] = portfolio_df.apply(other_industry_loan_limit_helper, axis=1)
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def other_industries(self):
+        # =FL11
+        def other_industries_helper(row):
+            return row['Largest Industry']
+
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["Other Industries"] = portfolio_df.apply(other_industries_helper, axis=1)
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def other_industry_excess(self):
+        # =IF(FX11=0,0,MAX(0,IF(GA11<4,0,(FZ11-FY11)*($FX11/SUMIF($BZ:$BZ,BZ11,FX:FX)))))
+        def other_industry_excess_helper(row):
+            if row['Third Largest Industry Revised Value'] == 0:
+                return 0
+            if row['Other Industries'] < 4:
+                return 0
+            try:
+                fx_group_sum = portfolio_df[portfolio_df['Approved Industries'] == row['Approved Industries']]['Third Largest Industry Revised Value'].sum()
+                if fx_group_sum == 0:
+                    return 0
+                value = (row['Other Industry Loan Limit'] - row['Other Industry Max']) * (row['Third Largest Industry Revised Value'] / fx_group_sum)
+                return max(0, value)
+            except:
+                return np.nan
+            
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["Other Industries Excess"] = portfolio_df.apply(other_industry_excess_helper, axis=1)
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def other_industries_revised_value(self):
+        # =MAX(0,FX11-GB11)
+        def other_industries_revised_value_helper(row):
+            return max(0, row['Third Largest Industry Revised Value'] - row['Other Industries'])
+        
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["Other Industries Revised Value"] = portfolio_df.apply(other_industries_revised_value_helper, axis=1)
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def ebitda_less_than_10mm_max(self):
+        # ='Concentration Limits'!$J$46
+        conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+
+        applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'EBITDA < $10MM', 'Applicable Limit'].iloc[0]
+        portfolio_df["EBITDA Less Than $10MM Max"] = applicable_limit
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
     def calculate_excess_concentrations(self):
         self.pre_excess_concentration_adjusted_borrowing_value() # column 'ES'
@@ -378,3 +499,18 @@ class ExcessConcTest:
         self.second_largest_industry() # column 'FQ'
         self.second_largest_industry_excess() # column 'FR'
         self.second_largest_industry_revised_value() # column 'FS'
+
+        # (d)(c) 3rd Largest Industry
+        self.third_largest_industry_max() # column 'FT'
+        self.third_largest_industry_loan_limit() # column 'FU'
+        self.third_largest_industry() # column 'FV'
+        self.third_largest_industry_excess() # column 'FW'
+        self.third_largest_industry_revised_value() # column 'FX'
+
+        # (d)(d) All Other Industry Classifications
+        self.other_industry_max() # column 'FY'
+        self.other_industry_loan_limit() # column 'FZ'
+        self.other_industries() # column 'GA'
+        self.other_industry_excess() # column 'GB'
+        self.other_industries_revised_value() # column 'GC'
+
