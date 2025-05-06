@@ -262,9 +262,9 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							</div>
 						</div>
 						<div>
-							<UIComponents.Button onClick={showModal} isFilled={true} text='Bulk Update' btnDisabled={previewFundType == 'PSSL' ? false : false} title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />
-							<UIComponents.Button onClick={() => setIsPresistBaseModalVisible(true)} isFilled={true} text='Compare And Update Previous Base Data'/>
-							<UIComponents.Button onClick={() => setIsShowEmptyBaseDataModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PSSL' ? false : false} />
+							<UIComponents.Button onClick={showModal} isFilled={true} text='Bulk Update' btnDisabled={previewFundType == 'PSSL' ? true : false} title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />
+							{/* <UIComponents.Button onClick={() => setIsPresistBaseModalVisible(true)} isFilled={true} text='Compare And Update Previous Base Data'/> */}
+							<UIComponents.Button onClick={() => setIsShowEmptyBaseDataModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PSSL' ? true : false} />
 						</div>
 					</div>
 					<div>
