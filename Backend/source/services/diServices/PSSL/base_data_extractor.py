@@ -13,7 +13,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."[SI] Credit Facility Lien Type" as loan_type, -- check this
                     sspibb."RCF Exposure Type" as rcf_exposure_type,
                     sspibb."RCF Commitment Amount" as "rcf_commitment_amount",
-                    case when sspibb."RCF Exposure Type" = 'ABL - Working Capital Facility' or sspibb."RCF Exposure Type" = 'Cash Flow Priority Revolver' then sspibb."RCF Commitment Amount" else null end as rcf_outstanding_amountd,
+                    case when sspibb."RCF Exposure Type" = 'ABL - Working Capital Facility' or sspibb."RCF Exposure Type" = 'Cash Flow Priority Revolver' then sspibb."RCF Commitment Amount" else null end as rcf_outstanding_amount,
                     (date_trunc('month', CURRENT_DATE) - interval '1 day')::date as rcf_update_date,
                     sspibb."Borrower Outstanding Principal Balance" as "borrower_outstanding_principal_balance",
                     sspibb."Borrower Facility Commitment" as "borrower_facility_commitment",
@@ -143,8 +143,8 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
         
         return ServiceResponse.success(message=f"Successfully stored base data from pcof for extracted_base_data_info.id {extracted_base_data_info.id}")
     except Exception as e:
-        Log.func_error(e=e)
         print(f"Could not map and store data from sheet table for extracted_base_data_info.id {extracted_base_data_info.id}")
-        ServiceResponse.error(message=f"Could not map and store data from sheet table for extraction_info_id {extracted_base_data_info.id}")
+        print(str(e)[:150])
+        raise Exception(e)
 
 
