@@ -281,6 +281,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							refreshDataFunction={handleBaseDataPreview}
 							previewFundType={previewFundType}
 							filterSelections={filterSelections[baseFilePreviewData.fundType]}
+							showFilter={previewFundType == 'PFLT'}
 						/>
 					</div>
 				</div>}
