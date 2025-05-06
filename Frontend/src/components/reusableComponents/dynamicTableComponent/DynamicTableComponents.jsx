@@ -73,10 +73,10 @@ export const DynamicTableComponents = ({
 						...row[col.key],
 						isEditable: enableColumnEditing && col.isEditable,
 						cellDisplayValue: cellDV,
-						cellActualValue: cellAV,
+						cellActualValue: cellAV && !isNaN(cellAV) ? parseFloat(cellAV) : cellAV,
 						cellTitleValue: row[col.key] && row[col.key]['meta_info'] ? row[col.key]['title'] : row[col.key],
-						cellOldValue: row[col.key] && row[col.key]['meta_info'] ? row[col.key]['old_value'] : row[col.key],
-						isManuallyAdded: row["is_manually_added"]?.value === true,
+						cellOldValue: row[col.key] && row[col.key]['meta_info'] ? (row[col.key]['old_value'] && !isNaN(row[col.key]['old_value']) ? parseFloat(row[col.key]['old_value']) : row[col.key]['old_value']) : (!isNaN(row[col.key]) ? parseFloat(row[col.key]) : row[col.key]),
+						isManuallyAdded: row["is_manually_added"].value,
 						isValueEmpty: enableColumnEditing && col.isEditable && !cellDV,
 						InputChnageFun: col.datatype == 'date' ? handleDateChange : handleInputChange
 					} : row[col.key];

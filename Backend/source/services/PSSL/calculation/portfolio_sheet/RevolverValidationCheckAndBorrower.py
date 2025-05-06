@@ -12,10 +12,13 @@ class RevolverValidationCheckAndBorrower :
             g_value = row['Borrower']
     
             def safe_avg(facility_type):
-                filtered = portfolio_df[(portfolio_df['Borrower'] == g_value) & (portfolio_df['RCF Exposure Type'] == facility_type)]
-                if filtered.empty:
+                try:
+                    filtered = portfolio_df[(portfolio_df['Borrower'] == g_value) & (portfolio_df['RCF Exposure Type'] == facility_type)]
+                    if filtered.empty:
+                        return 0
+                    return filtered['RCF Outstanding Amount'].sum() / len(filtered)
+                except Exception as e:
                     return 0
-                return filtered['RCF Outstanding Amount'].sum() / len(filtered)
             return safe_avg("Cash Flow Priority Revolver") + safe_avg("Cash Flow Pari Passu Revolver") + safe_avg("ABL - Working Capital Facility")
             
 
@@ -29,11 +32,14 @@ class RevolverValidationCheckAndBorrower :
             g_val = row['Borrower']
     
             def safe_avg(facility_type):
-                filtered = portfolio_df[(portfolio_df['Borrower'] == g_val) & (portfolio_df['RCF Exposure Type'] == facility_type)]
-                count = len(filtered)
-                if count == 0:
+                try:
+                    filtered = portfolio_df[(portfolio_df['Borrower'] == g_val) & (portfolio_df['RCF Exposure Type'] == facility_type)]
+                    count = len(filtered)
+                    if count == 0:
+                        return 0
+                    return filtered['RCF Outstanding Amount'].sum() / count
+                except Exception as e:
                     return 0
-                return filtered['RCF Outstanding Amount'].sum() / count
 
             return safe_avg("Cash Flow Priority Revolver") + safe_avg("ABL - Working Capital Facility")
 
@@ -45,35 +51,38 @@ class RevolverValidationCheckAndBorrower :
         # =IF(OR(H11<>"First Lien",AND(H11="First Lien",OR(I11="Cash Flow Pari Passu Revolver",I11="None"))),"No",IF(AND(I11="Cash Flow Priority Revolver",OR(ISBLANK(J11),ISBLANK(K11),OR(ISBLANK(L11),(Availability!$F$12-L11)>32),M11>CY11,(J11/CR11)>1.25)),"Yes",IF(AND(I11="ABL - Working Capital Facility",OR(ISBLANK(J11),ISBLANK(K11),ISBLANK(L11),N11>CY11,(J11/CR11)>1.25)),"Yes","No")))
 
         def first_lien_working_capital_faciltiy_greater_1_25_ebitda_helper(row):
-            if row["Loan Type"] != "First Lien" or (row["Loan Type"] == "First Lien" and row["RCF Exposure Type"] in ["Cash Flow Pari Passu Revolver", "None"]):
+            try:
+                if row["Loan Type"] != "First Lien" or (row["Loan Type"] == "First Lien" and row["RCF Exposure Type"] in ["Cash Flow Pari Passu Revolver", "None"]):
+                    return "No"
+
+                if row["RCF Exposure Type"] == "Cash Flow Priority Revolver":
+                    if (
+                        pd.isna(row["RCF Commitment Amount"]) or
+                        pd.isna(row["RCF Outstanding Amount"]) or
+                        pd.isna(row["RCF Update Date"]) or
+                        ((cutoff - row["RCF Update Date"]).days > 32 if not pd.isna(row["RCF Update Date"]) else True) or
+                        (row["RCF Exposure (Priority,Pari,ABL)"] > row["Permitted TTM EBITDA in Local Currency at relevant test period"] if not pd.isna(row["RCF Exposure (Priority,Pari,ABL)"]) and not pd.isna(row["Permitted TTM EBITDA in Local Currency at relevant test period"]) else True) or
+                        (row["RCF Commitment Amount"] / row["Permitted TTM EBITDA (USD)"] > 1.25 if not pd.isna(row["RCF Commitment Amount"]) and not pd.isna(row["Permitted TTM EBITDA (USD)"]) and row["Permitted TTM EBITDA (USD)"] != 0 else True)
+                    ):
+                        return "Yes"
+                    else:
+                        return "No"
+
+                if row["RCF Exposure Type"] == "ABL - Working Capital Facility":
+                    if (
+                        pd.isna(row["RCF Commitment Amount"]) or
+                        pd.isna(row["RCF Outstanding Amount"]) or
+                        pd.isna(row["RCF Update Date"]) or
+                        (row["RCF Exposure (Priority,ABL)"] > row["Permitted TTM EBITDA in Local Currency at relevant test period"] if not pd.isna(row["RCF Exposure (Priority,ABL)"]) and not pd.isna(row["Permitted TTM EBITDA in Local Currency at relevant test period"]) else True) or
+                        (row["RCF Commitment Amount"] / row["Permitted TTM EBITDA (USD)"] > 1.25 if not pd.isna(row["RCF Commitment Amount"]) and not pd.isna(row["Permitted TTM EBITDA (USD)"]) and row["Permitted TTM EBITDA (USD)"] != 0 else True)
+                    ):
+                        return "Yes"
+                    else:
+                        return "No"
+
                 return "No"
-
-            if row["RCF Exposure Type"] == "Cash Flow Priority Revolver":
-                if (
-                    pd.isna(row["RCF Commitment Amount"]) or
-                    pd.isna(row["RCF Outstanding Amount"]) or
-                    pd.isna(row["RCF Update Date"]) or
-                    ((cutoff - row["RCF Update Date"]).days > 32 if not pd.isna(row["RCF Update Date"]) else True) or
-                    (row["RCF Exposure (Priority,Pari,ABL)"] > row["Permitted TTM EBITDA in Local Currency at relevant test period"] if not pd.isna(row["RCF Exposure (Priority,Pari,ABL)"]) and not pd.isna(row["Permitted TTM EBITDA in Local Currency at relevant test period"]) else True) or
-                    (row["RCF Commitment Amount"] / row["Permitted TTM EBITDA (USD)"] > 1.25 if not pd.isna(row["RCF Commitment Amount"]) and not pd.isna(row["Permitted TTM EBITDA (USD)"]) and row["Permitted TTM EBITDA (USD)"] != 0 else True)
-                ):
-                    return "Yes"
-                else:
-                    return "No"
-
-            if row["RCF Exposure Type"] == "ABL - Working Capital Facility":
-                if (
-                    pd.isna(row["RCF Commitment Amount"]) or
-                    pd.isna(row["RCF Outstanding Amount"]) or
-                    pd.isna(row["RCF Update Date"]) or
-                    (row["RCF Exposure (Priority,ABL)"] > row["Permitted TTM EBITDA in Local Currency at relevant test period"] if not pd.isna(row["RCF Exposure (Priority,ABL)"]) and not pd.isna(row["Permitted TTM EBITDA in Local Currency at relevant test period"]) else True) or
-                    (row["RCF Commitment Amount"] / row["Permitted TTM EBITDA (USD)"] > 1.25 if not pd.isna(row["RCF Commitment Amount"]) and not pd.isna(row["Permitted TTM EBITDA (USD)"]) and row["Permitted TTM EBITDA (USD)"] != 0 else True)
-                ):
-                    return "Yes"
-                else:
-                    return "No"
-
-            return "No"
+            except Exception as e:
+                return "No"
 
         availability_df = self.calculator_info.intermediate_calculation_dict['Availability']
         cutoff = availability_df.query("Terms == 'Measurement Date:'")["Values"].iloc[0]

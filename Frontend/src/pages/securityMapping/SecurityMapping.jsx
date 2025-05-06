@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router';
 import { BackOption } from '../../components/BackOption/BackOption';
-import { CustomButton } from "../../components/uiComponents/Button/CustomButton";
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { CustomButton } from "../../components/uiComponents/Button/CustomButton";
 import { AddSecurityMapping } from "../../modal/addSecurityMapping/AddSecurityMapping";
 import { getSecurityMappingData, editPfltSecMapping } from "../../services/dataIngestionApi";
+import { PAGE_ROUTES } from "../../utils/constants/constants";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from "./SecurityMapping.module.css";
-import { PAGE_ROUTES } from "../../utils/constants/constants";
 
 export const SecurityMapping = () => {
 	const navigate = useNavigate();

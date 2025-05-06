@@ -14,6 +14,8 @@ import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
 import { PAGE_ROUTES } from '../../utils/constants/constants';
 import { UIComponents } from '../../components/uiComponents';
 import { ShowEmptyBasedDataValues } from '../../modal/showEmptyBasedDataValues/ShowEmptyBasedDataValues';
+import { PersistBaseDataModal } from '../../modal/PresistBaseData/PresistBaseDataModal';
+
 
 
 export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setPreviewFundType, setTablesData, setPreviewPageId, getborrowingbasedata}) => {
@@ -32,6 +34,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [isOpenFileUpload, setIsOpenFileUpload] = useState(false);
 	const [addsecFiles, setAddsecFiles] = useState([]);
 	const [loading, setLoading] = useState(false);
+	const [isPresistBaseModalVisible, setIsPresistBaseModalVisible] = useState(false);
+
 
 	const {infoId} = useParams();
 
@@ -258,7 +262,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							</div>
 						</div>
 						<div>
-							<UIComponents.Button onClick={showModal} isFilled={true} text='Update Securities Data' btnDisabled={previewFundType == 'PSSL' ? true : false} title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />
+							<UIComponents.Button onClick={showModal} isFilled={true} text='Bulk Update' btnDisabled={previewFundType == 'PSSL' ? true : false} title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />
+							{/* <UIComponents.Button onClick={() => setIsPresistBaseModalVisible(true)} isFilled={true} text='Compare And Update Previous Base Data'/> */}
 							<UIComponents.Button onClick={() => setIsShowEmptyBaseDataModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PSSL' ? true : false} />
 						</div>
 					</div>
@@ -314,6 +319,10 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				previewFundType={previewFundType}
 				onConfirm={handleConfirmEmptyBaseModal}
 				onCancel={handleCancelEmptyBaseModal}
+			/>
+			<PersistBaseDataModal
+				visible={isPresistBaseModalVisible}
+				onClose={() => setIsPresistBaseModalVisible(false)}
 			/>
 		</div>
 		// <div>

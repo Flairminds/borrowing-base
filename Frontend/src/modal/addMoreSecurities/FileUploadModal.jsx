@@ -3,25 +3,32 @@ import React, { useEffect, useState } from 'react';
 import * as XLSX from 'xlsx';
 import PCOFAddSecSampleFile from '../../assets/template File/PCOF Add Base Data.xlsx';
 import PFLTAddSecSampleFile from '../../assets/template File/PFLT Add Base Data.xlsx';
+import { ColumnMappingModal } from '../../components/columnMappingModal/ColumnMappingModal';
 import { ModalComponents } from '../../components/modalComponents';
 import { DynamicFileUploadComponent } from '../../components/reusableComponents/dynamicFileUploadComponent/DynamicFileUploadComponent';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
-import { uploadAddMoreSecFile, validateAddSecurities } from '../../services/dataIngestionApi';
+import { compareAddSecurities, uploadAddMoreSecFile, validateAddSecurities } from '../../services/dataIngestionApi';
+import { fmtDateValue } from '../../utils/helperFunctions/formatDisplayData';
+import { exportToExcel } from '../../utils/helperFunctions/jsonToExcel';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { SrcFileValidationErrorModal } from '../srcFIleValidationErrorModal/srcFileValidationErrorModal';
 import styles from "./FileUploadModal.module.css";
-import { exportToExcel } from '../../utils/helperFunctions/jsonToExcel';
 
 
 export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, setAddsecFiles, previewFundType, dataId, reportId, handleBaseDataPreview, data, columns }) => {
 	const [validationInfo, setValidationInfo] = useState([]);
+	const [showMappingModal, setShowMappingModal] = useState(false);
 	const [validationModal, setValidationModal] = useState(false);
+	const [isSaving, setIsSaving] = useState(false);
+	const [excelColumns, setExcelColumns] = useState([]);
+	const [systemColumns, setSystemColumns] = useState([]);
 
 	useEffect(() => {
 		if (!isOpenFileUpload) {
 			setAddsecFiles([]);
 		}
 	}, [isOpenFileUpload]);
+
 
 	const EXCEL_COLUMNS = {
 		PFLT: ["obligor name", "security name", "loan type"],
@@ -57,15 +64,18 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		</li>
 	);
 
+
+
+
 	const showDuplicateModal = (processedRows, previewFundType, onConfirm, onCancel) => {
 		const isNewAdded = processedRows.some((d) => d.action === "add");
 
 		Modal.confirm({
-			title: <span style={{ lineHeight: "2rem" }}>{"Records Found"}</span>,
+			title: <span style={{ lineHeight: "2rem" }}>{`${processedRows.length} records found in the sheet`}</span>,
 			content: (
 				<>
-					<p><strong>Duplicate Records Found :</strong></p>
-					<ul>
+					<p><strong>{processedRows.filter((d) => d.action === "overwrite").length} existing records</strong></p>
+					{/* <ul>
 						{processedRows
 							.filter((d) => d.action === "overwrite")
 							.map((data, index) => {
@@ -80,8 +90,8 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 									return null;
 								}
 							})}
-					</ul>
-					{isNewAdded && <p><strong>New Records Found :</strong></p>}
+					</ul> */}
+					{isNewAdded && <p><strong>{processedRows.filter((d) => d.action === "add").length} new records:</strong></p>}
 					<ul>
 						{processedRows
 							.filter((d) => d.action === "add")
@@ -141,7 +151,7 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 					};
 
 					const formattedData = sheetData.map((row) =>
-						row.map((cell) => (typeof cell === "object" && cell instanceof Date ? formatDate(cell) : cell))
+						row.map((cell) => (typeof cell === "object" && cell instanceof Date ? formatDate(cell) : (cell == '' ? null : cell)))
 					);
 
 					resolve(formattedData);
@@ -156,21 +166,31 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 	const processExcelData = (sheetData, previewFundType) => {
 		const columnMap = DATA_COLUMNS[previewFundType];
-		const headers = sheetData[0].map((h) => {
-			const lower = h?.toString().trim();
+		const headers = sheetData?.[0]?.map((h) => {
+			const lower = h?.toString()?.trim();
 			return columnMap.find((col, i) => lower.includes(EXCEL_COLUMNS[previewFundType][i])) || lower;
 		});
-		return sheetData.slice(1).map((row) => {
+		return sheetData?.slice(1)?.map((row) => {
 			const rowData = {};
 			headers.forEach((header, index) => {
-				rowData[header] = row[index]?.toString().trim() || "";
+				rowData[header] = row[index] != 0 ? (!row[index] ? null : isNaN(row[index]) ? row[index]?.toString().trim() || null : parseFloat(row[index])) : 0;
 			});
 			return rowData;
 		}).filter((row) => Object.values(row).some((value) => value !== ""));
 	};
 
 	const checkForDuplicates = (processedRows, data, previewFundType) => {
-		const normalize = (value) => value?.trim() || "";
+		const normalize = (value) => {
+			if (value) {
+				if (isNaN(value)) {
+					return value?.trim();
+				} else {
+					return parseFloat(value);
+				}
+			} else {
+				return null;
+			}
+		};
 
 		const existingRecords = new Map(
 			data.map((d) => {
@@ -223,22 +243,26 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		}
 
 		try {
+			setIsSaving(true);
 			const file = addsecFiles[0];
+			const proceed = await fetchColumnComparisonAndSetState(file, previewFundType);
+			if (!proceed) return;
 			const sheetData = await readExcelFile(file);
 
 			if (!sheetData || sheetData.length < 2) {
 				showToast("error", "Uploaded file is empty or has an incorrect format.");
+				setIsSaving(false);
 				return;
 			}
 
 			const processedRows = processExcelData(sheetData, previewFundType);
-
 			if (!processedRows.length) {
 				showToast("error", "No valid records found.");
+				setIsSaving(false);
 				return;
 			}
 
-			const { finalRows, hasDuplicates } = checkForDuplicates(processedRows, data, previewFundType);
+			const { finalRows } = checkForDuplicates(processedRows, data, previewFundType);
 			const finalData = {
 				records: finalRows.map(row =>
 					Object.fromEntries(
@@ -253,12 +277,13 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				showToast("error", validationResponse?.data?.message);
 				setValidationInfo(validationResponse?.data?.result);
 				setValidationModal(true);
+				setIsSaving(false);
 				return;
 			}
 			const hasNewAdditions = finalRows.some((d) => d.action === "add");
 			const hasOverwrites = finalRows.some((d) => d.action === "overwrite");
 
-			if (hasNewAdditions && hasOverwrites) {
+			if (hasNewAdditions || hasOverwrites) {
 				showDuplicateModal(
 					finalRows,
 					previewFundType,
@@ -267,13 +292,16 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 					},
 					() => showToast("error", "Upload canceled. Please remove duplicate records.")
 				);
+				setIsSaving(false);
 				return;
 			}
 
 			await uploadFile(finalData);
+			setIsSaving(false);
 		} catch (error) {
 			console.error("Error in handleSave:", error);
 			showToast("error", "An error occurred while processing the file.");
+			setIsSaving(false);
 		}
 	};
 
@@ -304,19 +332,21 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 	const getMappedExportData = (columns, rawData) => {
 		return rawData.map(row => {
 			const formattedRow = {};
-
 			columns.forEach(col => {
 				const rawValue = row[col.key];
-				let value = rawValue?.value ?? rawValue ?? "";
-
-				if (col.unit === 'percent') {
-					const numericValue = Number(value);
-					value = !isNaN(numericValue) ? `${(numericValue * 100).toFixed(2)}%` : "0.00%";
+				let value = "";
+				// Prefer .value if present
+				if (rawValue && typeof rawValue === "object" && "value" in rawValue) {
+					value = rawValue.value;
+				} else if (rawValue != null) {
+					value = rawValue;
 				}
 
+				if (!isNaN(value)) {
+					value = parseFloat(value);
+				}
 				formattedRow[col.label] = value;
 			});
-
 			return formattedRow;
 		});
 	};
@@ -324,15 +354,47 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 	const handleExport = () => {
 		const mappedData = getMappedExportData(columns, data);
-		exportToExcel(mappedData, "ExportedBaseData.xlsx");
+		const percentColumns = [];
+		columns.map(c => {
+			if (c.unit == 'percent') {
+				percentColumns.push(c.label);
+			}
+		});
+		const dateColumns = [];
+		columns.map(c => {
+			if (c.unit == 'date') {
+				dateColumns.push(c.label);
+			}
+		});
+		exportToExcel(mappedData, columns, percentColumns, `${previewFundType} base data ${fmtDateValue(reportId)}.xlsx`);
 	};
 
+	const fetchColumnComparisonAndSetState = async (file, fund_type) => {
+		try {
+			const response = await compareAddSecurities(file, fund_type);
 
+			const { extra_columns_in_file, missing_columns_in_file } = response?.data?.result;
+
+			setExcelColumns(extra_columns_in_file || []);
+			setSystemColumns(missing_columns_in_file || []);
+
+			if (missing_columns_in_file && missing_columns_in_file?.length > 0) {
+				setShowMappingModal(true);
+				return false;
+			}
+
+			return true;
+		} catch (error) {
+			console.error("Error in column comparison:", error);
+			showToast("error", "An error occurred while comparing columns.");
+			return false;
+		}
+	};
 
 	return (
 		<>
 			<Modal
-				title={<ModalComponents.Title title='Update Securities Data' showDescription={true} description="Edit existing securities data or add more securities data which are not present in the extracted base data" />}
+				title={<ModalComponents.Title title='Bulk Update Securities Data' showDescription={true} description="Edit existing securities data or add more securities data which are not present in the extracted base data" />}
 				open={isOpenFileUpload}
 				onCancel={handleCancel}
 				footer={null}
@@ -355,9 +417,21 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				/>
 				<div className={styles.buttonContainer}>
 					<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
-					<CustomButton isFilled={true} text="Save" onClick={handleSave} />
+					<CustomButton isFilled={true} loading={isSaving} btnDisabled={isSaving} loadingText='Saving...' text="Save" onClick={handleSave} />
 				</div>
 			</Modal>
+
+			<ColumnMappingModal
+				visible={showMappingModal}
+				onClose={() => setShowMappingModal(false)}
+				excelUnmappedColumns={excelColumns}
+				systemUnmappedColumns={systemColumns}
+				handleSave ={handleSave}
+				onSubmit={() => {
+					setShowMappingModal(false);
+				}}
+			/>
+
 
 			{validationModal &&
 				<SrcFileValidationErrorModal isModalOpen={validationModal} setIsModalOpen={setValidationModal} validationInfoData={validationInfo} />

@@ -19,7 +19,7 @@ export const AddAssetDynamicTable = ({data, columns, selectedAssets, setSelected
 		const newValues = [...selectedAssets];
 		newValues[index] = !newValues[index];
 
-		setSelectedAssets(newValues)
+		setSelectedAssets(newValues);
 		setIsAllSelected(newValues.every(asset => asset));
 	};
 
@@ -37,7 +37,7 @@ export const AddAssetDynamicTable = ({data, columns, selectedAssets, setSelected
 		const modifiedData = generateAssetFormData(data);
 		setCreateAssetFormData(modifiedData);
 		setCreateAssetModalOpen(true);
-	}
+	};
 
 
 
@@ -65,7 +65,7 @@ export const AddAssetDynamicTable = ({data, columns, selectedAssets, setSelected
 							</td>
 							{columns.map((col) => (
 								<td key={col?.key} className={StylesTable.td}>
-									{row && typeof(row[col?.key]) == 'number' ? formatNumber(row[col?.key]) : row[col?.key]}
+									{row && typeof (row[col?.key]) == 'number' ? formatNumber(row[col?.key]) : row[col?.key]}
 								</td>
 							))}
 							<td className={`${StylesTable.td} ${StylesTable.lastCol}`} >

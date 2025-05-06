@@ -6,7 +6,7 @@ import pandas as pd
 from datetime import datetime
 import pytz
 # import azure.functions as func
-from sqlalchemy import text, join, select, func
+from sqlalchemy import text, join, select, func, bindparam
 import threading
 import numpy as np
 from numerize import numerize
@@ -36,19 +36,17 @@ from source.services.diServices.helper_functions import store_sheet_data, check_
 pfltDashboardService = PfltDashboardService()
 
 def upload_src_file_to_az_storage(files, report_date, fund_type):
-    if len(files) == 0:
-        return ServiceResponse.error(message = "Please select files.", status_code = 400)
-    if not fund_type:
-        return ServiceResponse.error(message = "Please select Fund.", status_code = 400)
-    
-    blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
-    company_name = "Pennant"
-    fund_names = fund_type
-    report_date = datetime.strptime(report_date, "%Y-%m-%d").date()
-    source_files_list = []
-
-
     try:
+        if len(files) == 0:
+            return ServiceResponse.error(message = "Please select files.", status_code = 400)
+        if not fund_type:
+            return ServiceResponse.error(message = "Please select Fund.", status_code = 400)
+        
+        blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
+        company_name = "Pennant"
+        fund_names = fund_type
+        report_date = datetime.strptime(report_date, "%Y-%m-%d").date()
+        source_files_list = []
         for file in files:
             print(file.filename)
             blob_name = f"{company_name}/{file.filename}"
@@ -457,6 +455,55 @@ def extract_base_data(file_ids, fund_type):
             extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
+        return ServiceResponse.error()
+
+def persist_old_base_data(fund_type):
+    try:
+        # 1. get last base data and previous base data
+        extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(fund_type = fund_type, status = 'Completed').order_by(ExtractedBaseDataInfo.id.desc()).limit(2).all()
+        # if no previous base data then return
+        if len(extracted_base_data_info) < 2:
+            return ServiceResponse.error(message='No older base data present.')
+        base_data_table = None
+        unique_identifier = []
+        match fund_type:
+            case "PFLT":
+                base_data_table = PfltBaseData
+                unique_identifier = ['obligor_name', 'security_name', 'loan_type']
+            case "PCOF":
+                base_data_table = PcofBaseData
+                unique_identifier = ['investment_name', 'issuer']
+            case "PSSL":
+                base_data_table = PsslBaseData
+                unique_identifier = ['borrower', 'loan_type']
+        current_base_data = base_data_table.query.filter(base_data_table.base_data_info_id == extracted_base_data_info[0].id).order_by(base_data_table.id).all()
+        previous_base_data = base_data_table.query.filter(base_data_table.base_data_info_id == extracted_base_data_info[1].id).order_by(base_data_table.id).all()
+        column_keys = [column.name for column in PsslBaseData.__table__.columns]
+        for data in current_base_data:
+            for prev_data in previous_base_data:
+                data_prev_record = None
+                for column in unique_identifier:
+                    # if getattr(data, column) is None or getattr(prev_data, column) is None:
+                    #     data_prev_record = None
+                    #     break
+                    if getattr(data, column) != getattr(prev_data, column):
+                        data_prev_record = None
+                        break
+                    else:
+                        data_prev_record = prev_data
+                if data_prev_record is not None:
+                    break
+            if data_prev_record is not None:
+                for column in column_keys:
+                    value = getattr(data, column)
+                    temp = value
+                    if value is None:
+                        if getattr(data_prev_record, column) is not None:
+                            temp = getattr(data_prev_record, column)
+                    setattr(data, column, temp)
+        db.session.commit()
+        return ServiceResponse.success(message="Base data updated")
+    except Exception as e:
         raise Exception(e)
 
 
@@ -1369,21 +1416,19 @@ def extract_validate_store_update(source_file):
 
             validation_status = None
 
-            sheet_validation_list = ["US Bank Holdings", "Client Holdings", "Borrower Stats"]
 
             mismatched_data = []
             for sheet_tuple in sheets:
                 sheet = sheet_tuple[0]
                 if sheet in extraction_response.get("data"):
-                    if sheet in sheet_validation_list:
-                        extracted_df = extraction_response.get("data").get(sheet)
-                        validation_res = validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
-        
-                        validation_status = validation_res.get('success')
-                        if validation_status == False:
-                            break
-                        validated_df = validation_res.get('data')
-                        extraction_response.get("data")[sheet] = validated_df
+                    extracted_df = extraction_response.get("data").get(sheet)
+                    validation_res = validate_uploaded_file(extracted_df, sheet_name=sheet, mismatched_data=mismatched_data)
+    
+                    validation_status = validation_res.get('success')
+                    if validation_status == False:
+                        break
+                    validated_df = validation_res.get('data')
+                    extraction_response.get("data")[sheet] = validated_df
                 else:
                     mismatched_data.append({'sheet_name': sheet, 'is_sheet_available': False})
                         
@@ -1630,7 +1675,7 @@ def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, re
                     bd_column_lookup = base_data_mapping.get(bd_column_name).get('bd_column_lookup')
                     bd_column_datatype = base_data_mapping.get(bd_column_name).get('bd_column_datatype')
                     if bd_column_datatype == "datetime":
-                        if value == '':
+                        if value == '' or value is None:
                             value = None
                         else:
                             value = datetime.strptime(value, "%m-%d-%Y")
@@ -1643,9 +1688,9 @@ def add_to_base_data_table(records, fund_type, base_data_info_id, company_id, re
             setattr(bd_table_obj, 'base_data_info_id', base_data_info_id)
             setattr(bd_table_obj, 'company_id', company_id)
             setattr(bd_table_obj, 'report_date', report_date)
-            setattr(bd_table_obj, 'is_manually_added', True)
 
             if record.get('action') == 'add':
+                setattr(bd_table_obj, 'is_manually_added', True)
                 db.session.add(bd_table_obj)
 
         db.session.commit()
@@ -1835,6 +1880,139 @@ def validate_other_info_sheet(fund_type, other_data):
         
         return ServiceResponse.info(data=mismatched_data)       
 
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
+    
+def compare_columns(file, fund_type, company_id, file_type):
+    try:
+        
+        match fund_type:
+            case "PCOF":
+                sheet_name = "PL BB Build"
+                fund_id = 1
+            case "PFLT":
+                sheet_name = "Loan List"
+                fund_id = 2
+            case "PSSL":
+                sheet_name = "Portfolio"
+                fund_id = 3
+
+        engine = db.get_engine()
+
+        with engine.connect() as connection:
+            # action -> addsecurit. (type of FMM), fund, comapnyId, column_id need to add
+            columns_tuple = connection.execute(text(f"""
+                select cmm.column_name, cmm.column_aliases, cmm.cmm_id
+                from column_metadata_master cmm 
+                join sheet_metadata_master smm on cmm.sheet_id = smm.smm_id 
+                join file_metadata_master fmm on fmm.id = smm.file_id 
+                where smm."name" = '{sheet_name}' and fmm.company_id = {company_id} and fmm.type = '{file_type}' and cmm.fund_id = {fund_id}
+            """)).fetchall()
+
+        df = pd.read_excel(file)
+        file_columns = set(col.strip() for col in df.columns)
+
+        db_column_names = set()
+        db_aliases = set()
+        colname_to_cmmid = dict()
+        colname_to_aliases = dict()
+
+        for col_name, aliases, cmm_id in columns_tuple:
+            col_name = col_name.strip()
+            db_column_names.add(col_name)
+            colname_to_cmmid[col_name] = cmm_id
+
+            alias_set = set()
+            if aliases:
+                for alias in aliases:
+                    alias = alias.strip()
+                    if alias:
+                        db_aliases.add(alias)
+                        alias_set.add(alias)
+                        colname_to_cmmid[alias] = cmm_id
+
+            colname_to_aliases[col_name] = alias_set
+
+        all_known_columns = db_column_names.union(db_aliases)
+        extra_in_file = [col for col in file_columns if col not in all_known_columns]
+        
+        file_columns_set = set(file_columns)
+        missing_columns = []
+
+        for col_name in db_column_names:
+            aliases = colname_to_aliases.get(col_name, set())
+            if col_name not in file_columns_set and not aliases.intersection(file_columns_set):
+                missing_columns.append(col_name)
+
+        missing_columns = sorted(missing_columns)
+        extra_in_file = sorted(extra_in_file)
+        
+        missing_in_file = [
+            {"column_name": col, "id": colname_to_cmmid.get(col)}
+            for col in missing_columns
+        ]
+
+        data = {
+            "missing_columns_in_file": missing_in_file,
+            "extra_columns_in_file": extra_in_file
+        }
+
+        return ServiceResponse.success(data=data)
+    
+    except Exception as e:
+        print(e)
+        return ServiceResponse.error()
+    
+
+def save_columns(ids_list, mapped_columns):
+    try: 
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            result = connection.execute(
+                text("""
+                    SELECT cmm_id, column_aliases 
+                    FROM column_metadata_master 
+                    WHERE cmm_id IN :ids_list
+                """).bindparams(bindparam("ids_list", expanding=True)),
+                {"ids_list": ids_list}
+            ).fetchall()
+
+            alias_dict = {row[0]: (None if row[1] == ['NULL'] else row[1]) for row in result}
+
+            updates_column_aliases = [] 
+            for updated_column in mapped_columns:
+                cmm_id = updated_column.get('id')
+                column_name = updated_column.get('column_name')
+                existing_aliases = alias_dict.get(cmm_id)
+                
+                if not existing_aliases:
+                    alias_set = set()
+                else:
+                    alias_set = set(existing_aliases)
+                
+                alias_set.add(column_name)
+                new_aliases = list(alias_set)
+
+                updates_column_aliases.append({
+                    "cmm_id": cmm_id,
+                    "new_aliases": new_aliases
+                })
+
+            for column_aliases in updates_column_aliases:
+                connection.execute(
+                    text("""
+                        UPDATE column_metadata_master
+                        SET column_aliases = :new_aliases
+                        WHERE cmm_id = :cmm_id
+                    """),
+                    {"new_aliases": column_aliases["new_aliases"], "cmm_id": column_aliases["cmm_id"]}
+                )
+            
+            connection.commit()
+
+        return ServiceResponse.success()
+    
     except Exception as e:
         print(e)
         return ServiceResponse.error()
