@@ -16,6 +16,7 @@ import pickle
 import json
 from datetime import datetime
 from werkzeug.datastructures import FileStorage
+import time
 
 from source.services.commons import commonServices
 from source.app_configs import azureConfig
@@ -478,7 +479,7 @@ def persist_old_base_data(fund_type):
                 unique_identifier = ['borrower', 'loan_type']
         current_base_data = base_data_table.query.filter(base_data_table.base_data_info_id == extracted_base_data_info[0].id).order_by(base_data_table.id).all()
         previous_base_data = base_data_table.query.filter(base_data_table.base_data_info_id == extracted_base_data_info[1].id).order_by(base_data_table.id).all()
-        column_keys = [column.name for column in PsslBaseData.__table__.columns]
+        column_keys = [column.name for column in base_data_table.__table__.columns]
         for data in current_base_data:
             for prev_data in previous_base_data:
                 data_prev_record = None
@@ -952,6 +953,7 @@ def get_source_file_data(file_id, file_type, sheet_name):
 
 def get_source_file_data_detail(ebd_id, column_key, data_id):
     try:
+        start = time.time()
         extract_base_data_info = ExtractedBaseDataInfo.query.filter_by(id = ebd_id).first()
         fund_type = extract_base_data_info.fund_type
  
@@ -997,6 +999,9 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
                 if df_dict[0]['sf_column_categories'] is not None:
                     sd_col_name = df_dict[0]['sf_column_categories'][0] + " " + sd_col_name
                 sd_col_name = alias + "." + '"' + sd_col_name + '"'
+                elapsed = time.time() - start
+                print(f"Elapsed time 1: {elapsed:.2f} seconds")
+                print(df_dict[0]['id'])
                 with engine.connect() as connection:
                     sd_df = pd.DataFrame(connection.execute(text(f'''select distinct {identifier_col_name}, usbh."LoanX ID", {sd_col_name} from sf_sheet_us_bank_holdings usbh
                     left join sf_sheet_client_holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
@@ -1005,6 +1010,8 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
                     left join sf_sheet_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
                     left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name" where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name and ((usbh.source_file_id = :sf_id and ch.source_file_id = :sf_id) or (ss.source_file_id = :sf_id and pbb.source_file_id = :sf_id and bs.source_file_id = :sf_id))'''), {'obligor_name': bd_df['obligor_name'][0], 'security_name': bd_df['security_name'][0], 'sf_id': df_dict[0]['id']}).fetchall())
                 sd_df_dict = sd_df.to_dict(orient='records')
+                elapsed = time.time() - start
+                print(f"Elapsed time 2: {elapsed:.2f} seconds")
         except Exception as e:
             print(str(e)[:150])
         if len(bd_df.columns) > 0 and bd_df['is_manually_added'][0]:
