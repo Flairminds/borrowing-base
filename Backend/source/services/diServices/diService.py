@@ -970,7 +970,7 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
                 history_table_name = "pssl_base_data_history"
         engine = db.get_engine()
         with engine.connect() as connection:
-            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key and pbdm.fund_type = ebdi.fund_type'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
+            df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula, ebdi.files from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key and pbdm.fund_type = ebdi.fund_type'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
             bd_df = pd.DataFrame(connection.execute(text(f'select * from {table_name} where id = :data_id'), {'data_id': data_id}).fetchall())
         
         df = df.replace({np.nan: None})
@@ -999,19 +999,20 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
                 if df_dict[0]['sf_column_categories'] is not None:
                     sd_col_name = df_dict[0]['sf_column_categories'][0] + " " + sd_col_name
                 sd_col_name = alias + "." + '"' + sd_col_name + '"'
-                elapsed = time.time() - start
-                print(f"Elapsed time 1: {elapsed:.2f} seconds")
-                print(df_dict[0]['id'])
                 with engine.connect() as connection:
-                    sd_df = pd.DataFrame(connection.execute(text(f'''select distinct {identifier_col_name}, usbh."LoanX ID", {sd_col_name} from sf_sheet_us_bank_holdings usbh
-                    left join sf_sheet_client_holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
+                    sd_df = pd.DataFrame(connection.execute(text(f'''WITH usbh_filtered AS (SELECT * FROM sf_sheet_us_bank_holdings WHERE source_file_id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id)),
+                    ch_filtered AS (SELECT * FROM sf_sheet_client_holdings WHERE source_file_id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id)),
+                    ss_filtered AS (SELECT * FROM sf_sheet_securities_stats WHERE source_file_id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id)),
+                    pbb_filtered AS (SELECT * FROM sf_sheet_pflt_borrowing_base WHERE source_file_id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id)),
+                    bs_filtered AS (SELECT * FROM sf_sheet_borrower_stats WHERE source_file_id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id))
+                    select distinct {identifier_col_name}, usbh."LoanX ID", {sd_col_name} from usbh_filtered usbh
+                    left join ch_filtered ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name" and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
                     left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
-                    left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
-                    left join sf_sheet_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
-                    left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name" where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name and ((usbh.source_file_id = :sf_id and ch.source_file_id = :sf_id) or (ss.source_file_id = :sf_id and pbb.source_file_id = :sf_id and bs.source_file_id = :sf_id))'''), {'obligor_name': bd_df['obligor_name'][0], 'security_name': bd_df['security_name'][0], 'sf_id': df_dict[0]['id']}).fetchall())
+                    left join ss_filtered ss on ss."Security" = sm.master_comp_security_name
+                    left join pbb_filtered pbb on pbb."Security" = ss."Security"
+                    left join bs_filtered bs on bs."Company" = ss."Family Name"
+                    where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name'''), {'obligor_name': bd_df['obligor_name'][0], 'security_name': bd_df['security_name'][0], 'ebd_id': ebd_id}).fetchall())
                 sd_df_dict = sd_df.to_dict(orient='records')
-                elapsed = time.time() - start
-                print(f"Elapsed time 2: {elapsed:.2f} seconds")
         except Exception as e:
             print(str(e)[:150])
         if len(bd_df.columns) > 0 and bd_df['is_manually_added'][0]:
