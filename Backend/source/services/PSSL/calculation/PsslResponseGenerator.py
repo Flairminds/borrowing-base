@@ -23,7 +23,7 @@ class PsslResponseGenerator:
         segmentation_overview_df.rename(columns={"Approved Industry": "Industry", "Adjusted Borrowing Value": "Borrowing Base"}, inplace=True)
         segmentation_overview_df = segmentation_overview_df.groupby("Industry")["Borrowing Base"].sum().reset_index()
         total_bb = segmentation_overview_df["Borrowing Base"].sum()
-        segmentation_overview_df["% Borrowing Base"] = segmentation_overview_df["Borrowing Base"] / total_bb * 100
+        segmentation_overview_df["% Borrowing Base"] = segmentation_overview_df["Borrowing Base"] / total_bb
         segmentation_overview_df = segmentation_overview_df.sort_values("Borrowing Base", ascending=False)
         total_percent_bb = segmentation_overview_df["% Borrowing Base"].sum()
 
@@ -38,7 +38,7 @@ class PsslResponseGenerator:
                 if column == "Borrowing Base":
                     value = numerize.numerize(value)
                 if column == "% Borrowing Base":
-                    value = "{:.2f}%".format(value)
+                    value = "{:.2f}%".format(value * 100)
                     
                 segmentation_overview_data[column].append({"data": value})
         
