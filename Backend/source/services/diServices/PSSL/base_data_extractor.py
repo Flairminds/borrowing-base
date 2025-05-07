@@ -67,7 +67,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     null as initial_annualized_recurring_revenue,
                     null as annualized_recurring_revenue,
                     'No' as revolver,
-                    ch."LoanX ID" as "loanx_id"
+                    STRING_AGG(ch."LoanX ID", ', ') AS loanx_id
                 from sf_sheet_us_bank_holdings usbh
                 left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
                     and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled" 
@@ -85,7 +85,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     usbh."Issuer/Borrower Name", 
                     ss."[SI] Credit Facility Lien Type", 
                     sspibb."RCF Exposure Type", 
-                    ch."LoanX ID",
+                    --ch."LoanX ID",
                     sspibb."RCF Commitment Amount",
                     sspibb."[IDI$AM] Initial Unrestricted Cash",
                     sspibb."[IDI$AM] Initial Senior Debt",
@@ -124,9 +124,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     sspibb."[VAE] (f) Failure to Deliver Financial Reports",
                     sspibb."[VAE] (e) Obligor Insolvency Event",
                     bs."[CM] [CS] Updated as of",
-                    usbh."Original Purchase Price",
-                    usbh."Settle Date",
-                    usbh."Purchase Date"
+                    usbh."Original Purchase Price"
                 order by 
                     usbh."Issuer/Borrower Name"
             '''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id}))
