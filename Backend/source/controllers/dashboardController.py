@@ -110,9 +110,14 @@ def get_card_overview_data():
             card_overview_response = pcofDashboardService.get_card_overview(
                 base_data_file, card_name, what_if_analysis
             )
-        else:
+        if base_data_file.fund_type == "PFLT":
             pfltDashbardService = PfltDashboardService()
             card_overview_response = pfltDashbardService.get_card_overview(
+                base_data_file, card_name, what_if_analysis
+            )
+        if base_data_file.fund_type == "PSSL":
+            psslDashbardService = PsslDashboardService()
+            card_overview_response = psslDashbardService.get_card_overview(
                 base_data_file, card_name, what_if_analysis
             )
 

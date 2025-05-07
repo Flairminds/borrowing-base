@@ -1,6 +1,8 @@
 from numerize import numerize
+import re
 
 from source.concentration_test_application import ConcentraionTestFormatter
+from source.utility.Util import currency_to_float_to_numerize_to_currency
 class PsslResponseGenerator:
 
     def __init__(self, calculator_info):
@@ -129,9 +131,15 @@ class PsslResponseGenerator:
     def get_card_data(self):
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         total_bb = portfolio_df["Adjusted Borrowing Value"].sum()
-        ordered_card_names = ["Borrowing Base"]
+
+        availability_df = self.calculator_info.intermediate_calculation_dict['Availability']
+        current_advances_outstanding_data = availability_df.loc[availability_df["Terms"] == "Current Advances Outstanding", "Values"].values[0]
+
+
+        ordered_card_names = ["Borrowing Base","Current Advances Outstanding"]
         card_data = {
-            "Borrowing Base": [{"data": total_bb}],
+            "Borrowing Base": [{"data": currency_to_float_to_numerize_to_currency(total_bb)}],
+            "Current Advances Outstanding": [{"data": currency_to_float_to_numerize_to_currency(current_advances_outstanding_data)}],
             "ordered_card_names": ordered_card_names
         }
         return card_data

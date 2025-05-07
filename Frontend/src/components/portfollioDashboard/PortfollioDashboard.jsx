@@ -35,7 +35,9 @@ export const PortfollioDashboard = ({
 		"Advance Outstandings": { dashColor: '#1FBDD0', imgSrc: TotalBB, title: 'Advance Outstandings'},
 		"Borrowing Base": { dashColor: '#6554C0', imgSrc: LeverageBB, title: 'Borrowing Base' },
 		"Maximum Available Amount": {dashColor: '#6554C0', imgSrc: Subscription, title: 'Maximum Available Amount'},
-		"Total Credit Facility Balance": { dashColor: '#1781CE', imgSrc: Subscription, title: 'Total Credit Facility Balance'}
+		"Total Credit Facility Balance": { dashColor: '#1781CE', imgSrc: Subscription, title: 'Total Credit Facility Balance'},
+		// duplicate img
+		"Current Advances Outstanding": { dashColor: '#1781CE', imgSrc: Subscription, title: 'Current Advances Outstanding'}
 	};
 	const names = Object.keys(tabConfig);
 
