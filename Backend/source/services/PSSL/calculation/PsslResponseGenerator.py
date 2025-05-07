@@ -76,7 +76,7 @@ class PsslResponseGenerator:
         security_df.rename(columns={"Adjusted Borrowing Value": "Borrowing Base"}, inplace=True)
         security_df = security_df.groupby("Loan Type")["Borrowing Base"].sum().reset_index()
         total_bb = security_df["Borrowing Base"].sum()
-        security_df["% Borrowing Base"] = security_df["Borrowing Base"] / total_bb * 100
+        security_df["% Borrowing Base"] = security_df["Borrowing Base"] / total_bb
         security_df = security_df.sort_values("Borrowing Base", ascending=False)
         total_percent_bb = security_df["% Borrowing Base"].sum()
 
@@ -90,7 +90,7 @@ class PsslResponseGenerator:
                 if column == "Borrowing Base":
                     value = numerize.numerize(value)
                 if column == "% Borrowing Base":
-                    value = "{:.2f}%".format(value)
+                    value = "{:.2f}%".format(value * 100)
                 
                 security_data[column].append({"data": [value]})
         
