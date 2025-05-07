@@ -600,7 +600,7 @@ class ConcentrationTestExecutor:
         #     result = "Pass"
         # else:
         #     result = "Fail"
-        actual = total_bb
+        actual = (total_bb - total_exess) / total_bb
         rounded_actual = round(actual, 3)
         row_data = {
             "Concentration Tests": [test_name],
@@ -627,7 +627,7 @@ class ConcentrationTestExecutor:
         else:
             result = "Pass"
 
-        actual = total_bb
+        actual = (total_bb - total_exess) / total_bb
         
         rounded_actual = round(actual, 3)
         row_data = {
@@ -649,7 +649,7 @@ class ConcentrationTestExecutor:
         else:
             result = "Pass"
 
-        actual = total_bb
+        actual = (total_bb - total_exess) / total_bb
         
         rounded_actual = round(actual, 3)
         row_data = {
@@ -671,7 +671,7 @@ class ConcentrationTestExecutor:
         else:
             result = "Pass"
 
-        actual = total_bb
+        actual = (total_bb - total_exess) / total_bb
         
         rounded_actual = round(actual, 3)
         row_data = {
@@ -688,26 +688,39 @@ class ConcentrationTestExecutor:
     def largest_industry(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
         test_required_col_df = test_required_col_df.sort_values(by='Borrowing Base', ascending=False)
         total_bb = test_required_col_df["Borrowing Base"].sum()
-        total_exess = test_required_col_df["Excess"].sum()
-        test_required_col_df = test_required_col_df.iloc[3:]
+        # total_exess = test_required_col_df["Excess"].sum()
+        # test_required_col_df = test_required_col_df.iloc[3:]
         applicable_test_limit = max(self.limit_percent * total_bb, self.min_limit)
 
         # test_passed = (test_required_col_df['Borrowing Base'] <= applicable_test_limit).all()
 
-        if total_exess > 0:
+        test_required_col_df = (
+            test_required_col_df.groupby("Industry")
+            .agg({"Borrowing Base": "sum"})
+            .reset_index()
+        )
+        # test_required_col_df["Percetage Borrowing Base"] = (
+        #     test_required_col_df["Borrowing Base"] / BB_sum
+        # )
+
+        # check after demo
+        if test_required_col_df.empty:
+            return concentration_test_df
+        actual = self.get_kth_largest_BB(test_required_col_df, 1) # largest borrowing base value for an industry
+
+        if actual > applicable_test_limit:
             result = "Fail"
         else:
             result = "Pass"
 
-        actual = total_bb
-        
-        rounded_actual = round(actual, 3)
         row_data = {
             "Concentration Tests": [test_name],
-            "Concentration Limit": [self.limit_percent],
-            "Actual": [rounded_actual],
+            "Concentration Limit": [applicable_test_limit],
+            "Actual": [actual],
             "Result": [result],
-            "Show on dashboard": [show_on_dashboard]
+            "Show on dashboard": [show_on_dashboard],
+            "Absolute Limit": [self.min_limit],
+            "Percent Limit": [self.limit_percent]
         }
         row_df = pd.DataFrame(row_data)
         concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
@@ -721,7 +734,7 @@ class ConcentrationTestExecutor:
         else:
             result = "Pass"
 
-        actual = total_bb
+        actual = (total_bb - total_exess) / total_bb
         
         rounded_actual = round(actual, 3)
         row_data = {

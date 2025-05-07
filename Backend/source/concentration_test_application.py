@@ -630,6 +630,7 @@ class ConcentraionTestFormatter:
             "Number of Issuers",
             "Max. Weighted Average Maturity (Years)",
             "Max. Weighted Average Leverage thru Borrower",
+            "Largest Industry"
         ]
         concentration_tests = []
         concentration_limits = []
@@ -648,8 +649,8 @@ class ConcentraionTestFormatter:
         for index, row in self.concentration_test_df.iterrows():
             concentration_tests.append({"data": row["Concentration Tests"]})
             if row["Concentration Tests"] in rows_to_keep:
-                concentration_limits.append({"data": row["Concentration Limit"]})
-                actuals.append({"data": row["Actual"]})
+                concentration_limits.append({"data": numerize.numerize(row["Concentration Limit"]) if row["Concentration Limit"] is not None else "0"})
+                actuals.append({"data": numerize.numerize(row["Actual"]) if row["Actual"] is not None else "0"})
             else:
                 concentration_limits.append(
                     {"data": "{:,.01f}%".format(row["Concentration Limit"] * 100)}
