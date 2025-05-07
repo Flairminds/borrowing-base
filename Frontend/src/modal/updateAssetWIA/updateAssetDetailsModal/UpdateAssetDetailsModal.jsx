@@ -1,16 +1,14 @@
-import {MoreOutlined} from '@ant-design/icons';
-import { Button, Modal, Popover, Tooltip, Switch } from 'antd';
-import { saveAs } from "file-saver";
+import { Modal, Popover, Switch } from 'antd';
 import { useEffect, useRef, useState } from 'preact/hooks';
 import React from 'react';
-import * as XLSX from "xlsx";
 import AddIcon from '../../../assets/AddIcon.svg';
 import CrossIcon from '../../../assets/CrossIcon.svg';
 import DeleteIcon from '../../../assets/DeleteIcon.svg';
 import RightIcon from '../../../assets/RightIcon.svg';
 import DuplicateAssetIcon from '../../../assets/updateAssetIcons/DuplicateAssetIcon.svg';
 import MoreOptionsIcon from '../../../assets/updateAssetIcons/MoreOptionsIcon.svg';
-import ButtonStyles from '../../../components/uiComponents/Button/ButtonStyle.module.css';
+// import ButtonStyles from '../../../components/uiComponents/Button/ButtonStyle.module.css';
+import { ModalComponents } from '../../../components/modalComponents';
 import { CustomButton } from '../../../components/uiComponents/Button/CustomButton';
 import { getUpdateAssetData, updateModifiedAssets, updateSheetValues } from '../../../services/api';
 import { updateAssetDefaultColumnsData, updateAssetModalData } from '../../../utils/constants/constants';
@@ -20,7 +18,6 @@ import { AddAssetDetailsModal } from '../addAssetDetailsModal/AddAssetDetailsMod
 import { ExportAssetFileModal } from '../exportAssetFileModal/ExportAssetFileModal';
 import { ImportAssetFIleModal } from '../importAssetFIleModal/ImportAssetFIleModal';
 import Styles from './UpdateAssetDetailsModal.module.css';
-import { ModalComponents } from '../../../components/modalComponents';
 
 export const UpdateAssetDetailsModal = ({
 	isupdateAssetModalOpen,
@@ -80,8 +77,8 @@ export const UpdateAssetDetailsModal = ({
 		setSelectedSheetNumber(updateAssetModalData(fundType));
 	};
 
-	const handleInputFocus = (investment_name, colName) => {
-		setSelectedCellData({investment_name: investment_name, colName: colName});
+	const handleInputFocus = (investmentName, colName) => {
+		setSelectedCellData({investment_name: investmentName, colName: colName});
 		setUpdateAssetInputText('');
 	};
 
@@ -89,12 +86,12 @@ export const UpdateAssetDetailsModal = ({
 		setUpdateAssetInputText(e.target.value);
 	};
 
-	const handleCommitChange = (e, investment_name, colKey, colName, currValue) => {
+	const handleCommitChange = (e, investmentName, colKey, colName, currValue) => {
 		setIsButtonDisabled(false);
 		e.stopPropagation();
-		updateDataAfterChange(updateAssetTableData, investment_name, colKey, selectedSheetNumber, updateAssetInputText);
+		updateDataAfterChange(updateAssetTableData, investmentName, colKey, selectedSheetNumber, updateAssetInputText);
 		const currentChanges = {
-			row_name: investment_name,
+			row_name: investmentName,
 			column_name: colName,
 			updated_value: updateAssetInputText,
 			prev_value: currValue
@@ -168,8 +165,6 @@ export const UpdateAssetDetailsModal = ({
 	};
 
 	const updateAssetApply = async() => {
-
-		console.log(updateAssetTableData);
 		setLoading(true);
 		let currentAnalysisId = undefined;
 		const totalChangesOnSheet = {

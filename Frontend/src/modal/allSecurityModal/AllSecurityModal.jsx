@@ -1,7 +1,7 @@
 import { Modal, Input } from "antd";
 import React, { useState, useEffect } from "react";
 import { CustomButton } from "../../components/uiComponents/Button/CustomButton";
-import { editPfltSecMapping, postAddSecurityMapping } from "../../services/dataIngestionApi";
+import { editPfltSecMapping } from "../../services/dataIngestionApi";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import styles from './AllSecurityModal.module.css';
 

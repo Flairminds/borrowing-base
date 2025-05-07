@@ -33,7 +33,6 @@ export const Dashboard = ({
 
 	const [trendGraphData, setTrendGraphData] = useState([]);
 	// const [assetSelectionData, setAssetSelectionData] = useState([]);
-	
 	// const [selectedAssets, setSelectedAssets] = useState(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
 	const [whatIfAnalysisListData, setWhatIfAnalysisListData ] = useState([]);
 
@@ -42,7 +41,7 @@ export const Dashboard = ({
 		if (!tablesData) {
 			getLandingPageData();
 		}
-	}, [fundType,tablesData]);
+	}, [fundType, tablesData]);
 
 
 	const getTrendGraphData = async(fund) => {

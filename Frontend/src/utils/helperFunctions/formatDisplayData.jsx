@@ -1,4 +1,4 @@
-function isDateValid(dateStr) {
+export function isDateValid(dateStr) {
 	const startsWithAlphabet = /^[a-zA-Z]/.test(dateStr);
 	const isPercentage = /%{1}$/.test(dateStr);
 

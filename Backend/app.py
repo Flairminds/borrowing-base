@@ -312,6 +312,12 @@ def save_what_if_analysis():
 # def apply_concentration_test():
 #     return concentration_test_application.apply_concentration_test_function()
 
+@app.route('/try')
+def trial():
+    query = request.args.get('q')
+    print(query)
+    return {"A": 10}
+
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")

@@ -12,9 +12,9 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 	const [selectedFiles, setSelectedFiles] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [reportDate, setReportDate] = useState();
+	const [reportDateStr, setReportDateStr] = useState();
 	const [selectedOptions, setSelectedOptions] = useState([]);
 
-	
 	const handleCancel = () => {
 		setSelectedFiles([]);
 		setSelectedOptions([]);
@@ -23,8 +23,9 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 	};
 
 
-	const handleDateChange = (date, dateString) => {
-		setReportDate(dateString);
+	const handleDateChange = (date, dateStr) => {
+		setReportDate(date);
+		setReportDateStr(dateStr);
 	};
 
 	const handleFileUpload = async() => {
@@ -38,7 +39,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 		setLoading(true);
 		try {
 			const selectedFunds = selectedOptions;
-			const uploadresponse = await uploadNewFile(selectedFiles, reportDate, selectedFunds);
+			await uploadNewFile(selectedFiles, reportDateStr, selectedFunds);
 
 			// await blobFilesList(selectedOptions);
 			showToast('success', "File upload and extraction is in progress, it may take few minutes");
@@ -77,6 +78,7 @@ export const UploadExtractionFiles = ({uploadFilesPopupOpen, setUploadFilesPopup
 								placeholder='Report Date'
 								onChange={handleDateChange}
 								allowClear={true}
+								value={reportDate}
 							/>
 							<div style={{ marginTop: '20px', marginBottom: '20px'}}>
 								<Checkbox.Group

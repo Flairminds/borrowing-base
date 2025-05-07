@@ -1,19 +1,20 @@
 from numerize import numerize
+import re
 
+from source.concentration_test_application import ConcentraionTestFormatter
+from source.utility.Util import currency_to_float_to_numerize_to_currency
 class PsslResponseGenerator:
 
     def __init__(self, calculator_info):
         self.calculator_info = calculator_info
 
     def get_concentration_test_data(self):
-        conc_test_data = {
-            "Actual": [],
-            "Concentration Limit": [],
-            "Concentration Test": [],
-            "Result": [],
-            "columns": [{"data": ["Concentration Test", "Concentration Limit", "Actual", "Result"]}]
-        }
-        return conc_test_data
+        concentration_test_df = self.calculator_info.intermediate_calculation_dict['Concentration Test']
+        concentraion_test_formatter = ConcentraionTestFormatter(concentration_test_df)
+        concentration_test_data = (
+            concentraion_test_formatter.convert_to_std_table_format()
+        )
+        return concentration_test_data
 
     def get_segmentation_overview_data(self):
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
@@ -24,7 +25,7 @@ class PsslResponseGenerator:
         segmentation_overview_df.rename(columns={"Approved Industry": "Industry", "Adjusted Borrowing Value": "Borrowing Base"}, inplace=True)
         segmentation_overview_df = segmentation_overview_df.groupby("Industry")["Borrowing Base"].sum().reset_index()
         total_bb = segmentation_overview_df["Borrowing Base"].sum()
-        segmentation_overview_df["% Borrowing Base"] = segmentation_overview_df["Borrowing Base"] / total_bb * 100
+        segmentation_overview_df["% Borrowing Base"] = segmentation_overview_df["Borrowing Base"] / total_bb
         segmentation_overview_df = segmentation_overview_df.sort_values("Borrowing Base", ascending=False)
         total_percent_bb = segmentation_overview_df["% Borrowing Base"].sum()
 
@@ -39,7 +40,7 @@ class PsslResponseGenerator:
                 if column == "Borrowing Base":
                     value = numerize.numerize(value)
                 if column == "% Borrowing Base":
-                    value = "{:.2f}%".format(value)
+                    value = "{:.2f}%".format(value * 100)
                     
                 segmentation_overview_data[column].append({"data": value})
         
@@ -75,7 +76,7 @@ class PsslResponseGenerator:
         security_df.rename(columns={"Adjusted Borrowing Value": "Borrowing Base"}, inplace=True)
         security_df = security_df.groupby("Loan Type")["Borrowing Base"].sum().reset_index()
         total_bb = security_df["Borrowing Base"].sum()
-        security_df["% Borrowing Base"] = security_df["Borrowing Base"] / total_bb * 100
+        security_df["% Borrowing Base"] = security_df["Borrowing Base"] / total_bb
         security_df = security_df.sort_values("Borrowing Base", ascending=False)
         total_percent_bb = security_df["% Borrowing Base"].sum()
 
@@ -89,7 +90,7 @@ class PsslResponseGenerator:
                 if column == "Borrowing Base":
                     value = numerize.numerize(value)
                 if column == "% Borrowing Base":
-                    value = "{:.2f}%".format(value)
+                    value = "{:.2f}%".format(value * 100)
                 
                 security_data[column].append({"data": [value]})
         
@@ -130,9 +131,15 @@ class PsslResponseGenerator:
     def get_card_data(self):
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         total_bb = portfolio_df["Adjusted Borrowing Value"].sum()
-        ordered_card_names = ["Borrowing Base"]
+
+        availability_df = self.calculator_info.intermediate_calculation_dict['Availability']
+        current_advances_outstanding_data = availability_df.loc[availability_df["Terms"] == "Current Advances Outstanding", "Values"].values[0]
+
+
+        ordered_card_names = ["Borrowing Base","Current Advances Outstanding"]
         card_data = {
-            "Borrowing Base": [{"data": total_bb}],
+            "Borrowing Base": [{"data": currency_to_float_to_numerize_to_currency(total_bb)}],
+            "Current Advances Outstanding": [{"data": currency_to_float_to_numerize_to_currency(current_advances_outstanding_data)}],
             "ordered_card_names": ordered_card_names
         }
         return card_data

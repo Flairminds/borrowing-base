@@ -33,7 +33,8 @@ export const DynamicTableComponents = ({
 	refreshDataFunction,
 	previewFundType,
 	filterSelections,
-	visibleSortHeader = false
+	visibleSortHeader = false,
+	showFilter = true
 }) => {
 
 	const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
@@ -73,10 +74,10 @@ export const DynamicTableComponents = ({
 						...row[col.key],
 						isEditable: enableColumnEditing && col.isEditable,
 						cellDisplayValue: cellDV,
-						cellActualValue: cellAV,
+						cellActualValue: cellAV && !isNaN(cellAV) ? parseFloat(cellAV) : cellAV,
 						cellTitleValue: row[col.key] && row[col.key]['meta_info'] ? row[col.key]['title'] : row[col.key],
-						cellOldValue: row[col.key] && row[col.key]['meta_info'] ? row[col.key]['old_value'] : row[col.key],
-						isManuallyAdded: row["is_manually_added"]?.value === true,
+						cellOldValue: row[col.key] && row[col.key]['meta_info'] ? (row[col.key]['old_value'] && !isNaN(row[col.key]['old_value']) ? parseFloat(row[col.key]['old_value']) : row[col.key]['old_value']) : (!isNaN(row[col.key]) ? parseFloat(row[col.key]) : row[col.key]),
+						isManuallyAdded: row["is_manually_added"].value,
 						isValueEmpty: enableColumnEditing && col.isEditable && !cellDV,
 						InputChnageFun: col.datatype == 'date' ? handleDateChange : handleInputChange
 					} : row[col.key];
@@ -149,9 +150,9 @@ export const DynamicTableComponents = ({
 		}
 	};
 
-	const handleCellClick = (rowIndex, columnKey, columnName, cellValue) => {
+	const handleCellClick = (rowId, columnKey, columnName, cellValue) => {
 		if (showCellDetailsModal) {
-			getCellDetailFunc(rowIndex, columnKey, columnName, cellValue);
+			getCellDetailFunc(rowId, columnKey, columnName, cellValue);
 			setModalVisible(true);
 		}
 	};
@@ -269,7 +270,7 @@ export const DynamicTableComponents = ({
 							{(showCellDetailsModal && enableColumnEditing) &&
 								<>
 									<div style={{ display: 'inline-block', margin: '5px 15px' }}>
-										<FilterOutlined size={30} onClick={(e) => handleOpenFilter(e)} className={`${tableStyles.tableIcons} ${showFilterDiv ? tableStyles.tableIconsActive : ''}`} title='Filter data' />
+										{showFilter && <FilterOutlined size={30} onClick={(e) => handleOpenFilter(e)} className={`${tableStyles.tableIcons} ${showFilterDiv ? tableStyles.tableIconsActive : ''}`} title='Filter data' />}
 										<SettingOutlined size={30} onClick={(e) => handleOpenSettings(e)} className={`${tableStyles.tableIcons} ${showSettingsDiv ? tableStyles.tableIconsActive : ''}`} title='Select/Unselect columns' />
 										<Popover trigger={'click'} placement="bottomRight" className={`${tableStyles.tableIcons}`} title={"Reorder Columns"} content={<BaseFilePreviewReorder selectedColumns={selectedColumns} totalColumnsData={columns} refreshDataFunction={refreshDataFunction} />}>
 											<TbReorder size={30} title='Reorder columns' />
@@ -391,7 +392,7 @@ export const DynamicTableComponents = ({
 										if (selectedColumns.includes(col.label)) {
 											return (
 												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td} ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''} ${row[col.key]?.isManuallyAdded && tableStyles.isManuallyAdd} ${(isInUpdateMode && col.isEditable) && tableStyles.isEdited}`}
-													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(rowIndex, col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
+													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(row['id']['value'], col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
 													{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 														(
 															<div className={tableStyles.editIconsContainer}>

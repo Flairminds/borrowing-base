@@ -12,9 +12,9 @@ export const CardTable = ({title, overviewTableData, setActiveComponent}) => {
 			</div>
 			<div style={{padding: "1%"}}>
 				<TableComponent
-					showObligationTotal={title == 'Obligors Net Capital' ? false : true}  
-					data={overviewTableData ? overviewTableData : null} 
-					columns={overviewTableData ? overviewTableData.columns[0]?.data : null} 
+					showObligationTotal={title == 'Obligors Net Capital' ? false : true}
+					data={overviewTableData ? overviewTableData : null}
+					columns={overviewTableData ? overviewTableData.columns[0]?.data : null}
 				/>
 			</div>
 		</div>
