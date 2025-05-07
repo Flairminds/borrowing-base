@@ -1,4 +1,4 @@
-from flask import request
+from flask import request, jsonify
 
 from source.services import fundSetupService
 from source.utility.HTTPResponse import HTTPResponse
@@ -9,7 +9,8 @@ def get_concentration_tests():
     try:
         req_body = request.get_json()
         fund_name = req_body.get("fund_name")
-        return fundSetupService.get_concentration_tests(fund_name)
+        res = fundSetupService.get_concentration_tests(fund_name)
+        return (jsonify(res), 200)
     except Exception as e:
         return {
             "error": str(e),

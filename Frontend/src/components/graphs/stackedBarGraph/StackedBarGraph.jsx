@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart, Bar, Rectangle, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Cell } from 'recharts';
 import { formatNumber } from '../../../utils/helperFunctions/numberFormatting';
 
 
@@ -7,7 +7,7 @@ export const StackedBarGraph = ({StackedGraphData}) => {
 
 	// const COLORS = {
 	const BB = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF6666', '#6699FF'];
-	const Updated_BB = ['#FF8042', '#AF19FF', '#FFBB28', '#FF6666', '#6699FF', '#0088FE', '#00C49F'];
+	// const Updated_BB = ['#FF8042', '#AF19FF', '#FFBB28', '#FF6666', '#6699FF', '#0088FE', '#00C49F'];
 	//   };
 
 	return (

@@ -14,6 +14,8 @@ import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
 import { PAGE_ROUTES } from '../../utils/constants/constants';
 import { UIComponents } from '../../components/uiComponents';
 import { ShowEmptyBasedDataValues } from '../../modal/showEmptyBasedDataValues/ShowEmptyBasedDataValues';
+import { PersistBaseDataModal } from '../../modal/PresistBaseData/PresistBaseDataModal';
+
 
 
 export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setPreviewFundType, setTablesData, setPreviewPageId, getborrowingbasedata}) => {
@@ -32,6 +34,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [isOpenFileUpload, setIsOpenFileUpload] = useState(false);
 	const [addsecFiles, setAddsecFiles] = useState([]);
 	const [loading, setLoading] = useState(false);
+	const [isPresistBaseModalVisible, setIsPresistBaseModalVisible] = useState(false);
+
 
 	const {infoId} = useParams();
 
@@ -68,7 +72,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		setMapping(col);
 	}, [baseFilePreviewData]);
 
-	const getCellDetail = async (rowIndex, columnKey, columnName, cellValue) => {
+	const getCellDetail = async (rowId, columnKey, columnName, cellValue) => {
 		const temp = {
 			"title": columnName,
 			"data": {
@@ -81,7 +85,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			}
 		};
 		try {
-			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId || infoId, 'column_key': columnKey, 'data_id': baseFilePreviewData?.baseData?.data[rowIndex]['id']['value'] });
+			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId || infoId, 'column_key': columnKey, 'data_id': rowId });
 			const detail = response?.data?.result;
 			const mappingData = detail?.mapping_data;
 			let t = {
@@ -258,7 +262,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							</div>
 						</div>
 						<div>
-							<UIComponents.Button onClick={showModal} isFilled={true} text='Update Securities Data' btnDisabled={previewFundType == 'PSSL' ? true : false} title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />
+							<UIComponents.Button onClick={showModal} isFilled={true} text='Bulk Update' btnDisabled={previewFundType == 'PSSL' ? false : false} title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />
+							{/* <UIComponents.Button onClick={() => setIsPresistBaseModalVisible(true)} isFilled={true} text='Compare And Update Previous Base Data'/> */}
 							<UIComponents.Button onClick={() => setIsShowEmptyBaseDataModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PSSL' ? true : false} />
 						</div>
 					</div>
@@ -276,6 +281,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							refreshDataFunction={handleBaseDataPreview}
 							previewFundType={previewFundType}
 							filterSelections={filterSelections[baseFilePreviewData.fundType]}
+							showFilter={previewFundType == 'PFLT'}
 						/>
 					</div>
 				</div>}
@@ -314,6 +320,10 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				previewFundType={previewFundType}
 				onConfirm={handleConfirmEmptyBaseModal}
 				onCancel={handleCancelEmptyBaseModal}
+			/>
+			<PersistBaseDataModal
+				visible={isPresistBaseModalVisible}
+				onClose={() => setIsPresistBaseModalVisible(false)}
 			/>
 		</div>
 		// <div>

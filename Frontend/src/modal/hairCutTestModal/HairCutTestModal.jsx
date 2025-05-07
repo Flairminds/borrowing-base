@@ -1,13 +1,13 @@
-import { Button, Modal, Switch } from 'antd';
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { Modal, Switch } from 'antd';
+import { useRef, useState } from 'preact/hooks';
 import React from 'react';
 import CrossIcon from '../../assets/CrossIcon.svg';
 import RightIcon from '../../assets/RightIcon.svg';
-import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
+// import ButtonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
+import { ModalComponents } from '../../components/modalComponents';
 import { getConenctrationAnalysis } from '../../services/api';
 import { getLatestEntryOfModification } from '../../utils/helperFunctions/hairCutModifications';
 import Styles from './HairCutTestModal.module.css';
-import { ModalComponents } from '../../components/modalComponents';
 
 export const HairCutTestModal = (
 	{ isHairCutTestModalOpen,

@@ -1,5 +1,6 @@
 from flask import jsonify
 import pickle
+from sqlalchemy import text
 
 from models import Fund, ConcentrationTest, FundConcentrationTest, db, BaseDataFile
 from source.config import Config
@@ -20,6 +21,7 @@ def get_concentration_tests(fund_name):
             ConcentrationTest.unit,
             ConcentrationTest.data_type,
             FundConcentrationTest.limit_percentage,
+            FundConcentrationTest.min_limit,
             FundConcentrationTest.show_on_dashboard,
             # FundConcentrationTest.id,
         )
@@ -35,6 +37,11 @@ def get_concentration_tests(fund_name):
             limit_percentage = test.limit_percentage * 100
         if limit_percentage == 0:
             limit_percentage = ""
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            applicable_funds_tuple = connection.execute(text(f"select f.fund_name from fund f join fund_concentration_test fct on f.id = fct.fund_id where fct.test_id = (select id from concentration_test ct where ct.test_name = '{test.test_name}')")).fetchall()
+
+            applicable_funds = [fund_tuple[0] for fund_tuple in applicable_funds_tuple]
         test_list.append(
             {
                 "test_id": test.id,
@@ -46,10 +53,9 @@ def get_concentration_tests(fund_name):
                 "unit": test.unit,
                 "data_type": test.data_type,
                 "limit_percentage": limit_percentage,
+                "min_limit": test.min_limit,
                 "show_on_dashboard": test.show_on_dashboard,
-                "eligible_funds": list(
-                    Config().data["fund_std_col_map"][test.test_name].keys()
-                ),
+                "eligible_funds": applicable_funds,
             }
         )
 
@@ -57,22 +63,18 @@ def get_concentration_tests(fund_name):
         {"key": "test_name", "title": "Concentration Test"},
         {"key": "description", "title": "Description "},
         {"key": "mathematical_formula", "title": "Mathematical Formula"},
-        # {"key": "columns", "title": "Columns"},
+        {"key": "min_limit", "title": "min_limit"},
         {"key": "limit_percentage", "title": "Concentration Limit"},
         {"key": "eligible_funds", "title": "Applicable Funds"},
         {"key": "show_on_dashboard", "title": "Show On Dashboard"},
     ]
 
-    return (
-        jsonify(
-            {
-                "error_status": False,
-                "columns": columns,
-                "data": test_list,
-            }
-        ),
-        200,
-    )
+    return {
+        "error_status": False,
+        "success": True,
+        "columns": columns,
+        "data": test_list
+    }
 
 
 def update_limit(test_changes):

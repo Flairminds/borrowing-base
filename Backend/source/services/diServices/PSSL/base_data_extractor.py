@@ -13,13 +13,13 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."[SI] Credit Facility Lien Type" as loan_type, -- check this
                     sspibb."RCF Exposure Type" as rcf_exposure_type,
                     sspibb."RCF Commitment Amount" as "rcf_commitment_amount",
-                    case when sspibb."RCF Exposure Type" = 'ABL - Working Capital Facility' or sspibb."RCF Exposure Type" = 'Cash Flow Priority Revolver' then sspibb."RCF Commitment Amount" else null end as rcf_outstanding_amountd,
+                    case when sspibb."RCF Exposure Type" = 'ABL - Working Capital Facility' or sspibb."RCF Exposure Type" = 'Cash Flow Priority Revolver' then sspibb."RCF Commitment Amount" else null end as rcf_outstanding_amount,
                     (date_trunc('month', CURRENT_DATE) - interval '1 day')::date as rcf_update_date,
-                    sspibb."Borrower Outstanding Principal Balance" as "borrower_outstanding_principal_balance",
-                    sspibb."Borrower Facility Commitment" as "borrower_facility_commitment",
-                    sspibb."[IDI$AM] Initial Unrestricted Cash" as initial_unrestricted_cash,
-                    sspibb."[IDI$AM] Initial Senior Debt" as "initial_gross_senior_debt",
-                    sspibb."[IDI$AM] Initial Total Debt" as "initial_gross_total_debt",
+                    sum(ch."Principal Balance (Deal Currency)"::float) as "borrower_outstanding_principal_balance",
+                    sum(ch."Par Amount (Deal Currency)"::float) as "borrower_facility_commitment",
+                    --sspibb."[IDI$AM] Initial Unrestricted Cash" as initial_unrestricted_cash,
+                    --sspibb."[IDI$AM] Initial Senior Debt" as "initial_gross_senior_debt",
+                    --sspibb."[IDI$AM] Initial Total Debt" as "initial_gross_total_debt",
                     sspibb."[CDI$AM] Current Unrestricted Cash" as "current_unrestricted_cash",
                     sspibb."[CDI$AM] Current Senior Debt" as "current_gross_senior_debt",
                     sspibb."[CDI$AM] Current Total Debt" as "current_gross_total_debt",
@@ -43,7 +43,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     sspibb."[IE] Initial Adjusted TTM EBITDA" as "initial_ttm_adjusted_ebitda",
                     sspibb."[IE] Initial Initial EBITDA Addbacks" as "add_backs",
                     bs."[CM] [CS] Updated as of" as relevent_test_period,
-                    sspibb."[CU] Current Adjusted TTM EBITDA" as "adjusted_ttm_ebiteda",
+                    sspibb."[CE] Current Adjusted TTM EBITDA" as "adjusted_ttm_ebiteda",
                     sspibb."[VAE] Obligor Payment Default"  as "obligor_payment_default",
                     sspibb."[VAE] Exercise of Rights and Remedies" as "exercise_rights_and_remedies",
                     sspibb."[VAE] (a) Reduces/waives Principal" as "reduces_waives_principal",
@@ -54,9 +54,9 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     sspibb."[VAE] (f) Amends Covenants" as "amends_covenants",
                     sspibb."[VAE] (f) Failure to Deliver Financial Reports" as "reporting_failure_event",
                     sspibb."[VAE] (e) Obligor Insolvency Event"  as "insolvency_event",
-                    null as acquisition_price,
-                    null as acquisition_date,
-                    null as origination_date,
+                    usbh."Original Purchase Price"::float / 100 as acquisition_price,
+                    --usbh."Settle Date" as acquisition_date,
+                    --usbh."Purchase Date" as origination_date,
                     'No' as amends_definitions,
                     'No' as waives_or_extends_due_date_of_financial_reports,
                     'No' as ddtl,
@@ -67,7 +67,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     null as initial_annualized_recurring_revenue,
                     null as annualized_recurring_revenue,
                     'No' as revolver,
-                    ch."LoanX ID" as "loanx_id"
+                    STRING_AGG(ch."LoanX ID", ', ') AS loanx_id
                 from sf_sheet_us_bank_holdings usbh
                 left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
                     and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled" 
@@ -85,10 +85,8 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     usbh."Issuer/Borrower Name", 
                     ss."[SI] Credit Facility Lien Type", 
                     sspibb."RCF Exposure Type", 
-                    ch."LoanX ID",
+                    --ch."LoanX ID",
                     sspibb."RCF Commitment Amount",
-                    sspibb."Borrower Outstanding Principal Balance",
-                    sspibb."Borrower Facility Commitment",
                     sspibb."[IDI$AM] Initial Unrestricted Cash",
                     sspibb."[IDI$AM] Initial Senior Debt",
                     sspibb."[IDI$AM] Initial Total Debt",
@@ -114,7 +112,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     sspibb."[IE] Initial Date of TTM Financials",
                     sspibb."[IE] Initial Adjusted TTM EBITDA",
                     sspibb."[IE] Initial Initial EBITDA Addbacks",
-                    sspibb."[CU] Current Adjusted TTM EBITDA",
+                    sspibb."[CE] Current Adjusted TTM EBITDA",
                     sspibb."[VAE] Obligor Payment Default",
                     sspibb."[VAE] Exercise of Rights and Remedies",
                     sspibb."[VAE] (a) Reduces/waives Principal",
@@ -125,7 +123,8 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     sspibb."[VAE] (f) Amends Covenants",
                     sspibb."[VAE] (f) Failure to Deliver Financial Reports",
                     sspibb."[VAE] (e) Obligor Insolvency Event",
-                    bs."[CM] [CS] Updated as of"
+                    bs."[CM] [CS] Updated as of",
+                    usbh."Original Purchase Price"
                 order by 
                     usbh."Issuer/Borrower Name"
             '''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id}))
@@ -140,8 +139,8 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
         
         return ServiceResponse.success(message=f"Successfully stored base data from pcof for extracted_base_data_info.id {extracted_base_data_info.id}")
     except Exception as e:
-        Log.func_error(e=e)
         print(f"Could not map and store data from sheet table for extracted_base_data_info.id {extracted_base_data_info.id}")
-        ServiceResponse.error(message=f"Could not map and store data from sheet table for extraction_info_id {extracted_base_data_info.id}")
+        print(str(e)[:150])
+        raise Exception(e)
 
 

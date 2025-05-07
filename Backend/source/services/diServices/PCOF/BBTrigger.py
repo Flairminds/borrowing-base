@@ -120,6 +120,8 @@ def trigger_pcof_bb(bdi_id):
 
     
         df_subscription_bb = pd.DataFrame(subscription_bb_data)
+        df_subscription_bb["Commitment"] = pd.to_numeric(df_subscription_bb["Commitment"], errors='coerce')
+        df_subscription_bb["Capital Called"] = pd.to_numeric(df_subscription_bb["Capital Called"], errors='coerce')
         df_subscription_bb["Uncalled Capital"] = (df_subscription_bb["Commitment"] - df_subscription_bb["Capital Called"])
         total_capitalCalled = df_subscription_bb["Capital Called"].sum()
         total_uncalled_Capital = df_subscription_bb["Uncalled Capital"].sum()
