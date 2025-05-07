@@ -192,6 +192,9 @@ fund_std_col_map:
       Obligor:
         Sheet Name: Portfolio
         Column Name: Borrower
+      Revised Value:
+        Sheet Name: Portfolio
+        Column Name: First Lien Last Out, Second Lien Loan not in Top Three Obligors Revised Value
   Third Largest Industry:
     PSSL:
       Borrowing Base:
@@ -236,3 +239,39 @@ fund_std_col_map:
       Excess:
         Sheet Name: Portfolio
         Column Name: Second Largest Industry Excess
+  EBITDA < $10MM:
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Revised Value:
+        Sheet Name: Portfolio
+        Column Name: Other Industries Revised Value
+      Permitted TTM EBITDA (USD):
+        Sheet Name: Portfolio
+        Column Name: Permitted TTM EBITDA (USD) at relevant test period
+  DIP Loans:
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Revised Value:
+        Sheet Name: Portfolio
+        Column Name: EBITDA Less Than $10MM Revised Value
+      DIP Loan:
+        Sheet Name: Portfolio
+        Column Name: DIP Loan
+  DDTL and Revolving Loans:
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Revolver:
+        Sheet Name: Portfolio
+        Column Name: Revolver
+      DDTL:
+        Sheet Name: Portfolio
+        Column Name: DDTL
+      Revised Value:
+        Sheet Name: Portfolio
+        Column Name: DIP Loans Revised Value

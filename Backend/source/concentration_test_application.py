@@ -630,7 +630,14 @@ class ConcentraionTestFormatter:
             "Number of Issuers",
             "Max. Weighted Average Maturity (Years)",
             "Max. Weighted Average Leverage thru Borrower",
-            "Largest Industry"
+            "Largest Industry",
+            "Second Largest Industry",
+            "Third Largest Industry",
+            "EBITDA < $10MM",
+            "Other Obligors",
+            "Other Industry",
+            "DIP Loans",
+            "DDTL and Revolving Loans",
         ]
         concentration_tests = []
         concentration_limits = []

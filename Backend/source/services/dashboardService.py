@@ -181,7 +181,7 @@ def get_sorted_base_data_closing_date(user_id, start_date, end_date, fund_type):
             BaseDataFile.query.filter(
                 BaseDataFile.user_id == user_id, BaseDataFile.response != None
             )
-            .order_by(BaseDataFile.closing_date.desc())
+            .order_by(BaseDataFile.closing_date.desc(), BaseDataFile.id.desc())
             .first()
         )
         fund_type = latest_base_data_file.fund_type

@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 class ExcessConcTest:
     def __init__(self, calculator_info):
@@ -464,6 +465,126 @@ class ExcessConcTest:
         portfolio_df["EBITDA Less Than $10MM Max"] = applicable_limit
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
+    def ebitda_less_than_10mm_qualifies(self):
+        # =IF(CZ11<10000000,"Yes", "No")
+        def ebitda_less_than_10mm_qualifies_helper(row):
+            cz = row['Permitted TTM EBITDA in Local Currency at relevant test period']
+            if cz is None or pd.isna(cz):
+                return "No"
+            if cz < 10000000:
+                return "Yes"
+            else:
+                return "No"
+
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["EBITDA Less Than $10MM Qualifies?"] = portfolio_df.apply(ebitda_less_than_10mm_qualifies_helper, axis=1)
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def ebitda_less_than_10mm_loan_limit(self):
+        # =IF(GE11="Yes",SUMIF(GE:GE,"Yes",GC:GC),0)
+        def ebitda_less_than_10mm_loan_limit_helper(row):
+            if row["EBITDA Less Than $10MM Qualifies?"] == "Yes":
+                return portfolio_df.loc[portfolio_df['EBITDA Less Than $10MM Qualifies?'] == "Yes", 'Other Industries Revised Value'].sum()
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["EBITDA Less Than $10MM Loan Limit"] = portfolio_df.apply(ebitda_less_than_10mm_loan_limit_helper, axis=1)
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def ebitda_less_than_10mm_excess(self):
+        def ebitda_less_than_10mm_excess_helper(row):
+            try:
+                if row['EBITDA Less Than $10MM Loan Limit'] > row['EBITDA Less Than $10MM Max']:
+                    return (row['EBITDA Less Than $10MM Loan Limit'] - row['EBITDA Less Than $10MM Max']) * (row['Other Industries Revised Value'] / total_gc_yes)
+                else:
+                    return 0
+            except:
+                return 0
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        total_gc_yes = portfolio_df.loc[portfolio_df['EBITDA Less Than $10MM Qualifies?'] == "Yes", 'Other Industries Revised Value'].sum()
+        portfolio_df["EBITDA Less Than $10MM Excess"] = portfolio_df.apply(ebitda_less_than_10mm_excess_helper, axis=1)
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def ebitda_less_than_10mm_revised_value(self):
+        # =MAX(0,GC11-GG11)
+        def ebitda_less_than_10mm_revised_value_helper(row):
+            try:
+                return max(0, row['Other Industries Revised Value'] - row['EBITDA Less Than $10MM Excess'])
+            except Exception as e:
+                return 0
+            
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["EBITDA Less Than $10MM Revised Value"] = portfolio_df.apply(ebitda_less_than_10mm_revised_value_helper, axis=1)
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def dip_loans_max(self):
+        conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+
+        applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'DIP Loans', 'Applicable Limit'].iloc[0]
+        portfolio_df["DIP Loans Max"] = applicable_limit
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def dip_loans_qualifies(self):
+        # =BO11
+        portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        portfolio_df["DIP Loans Qualifies?"] = portfolio_df["DIP Loan"]
+        self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def dip_loans_loan_limit(self):
+        # =IF(GJ11="Yes",SUMIF(GJ:GJ,"Yes",GH:GH),0)
+        try:
+            def dip_loans_loan_limit_helper(row):
+                if row['DIP Loans Qualifies?'] == 'Yes':
+                    return portfolio_df.loc[portfolio_df['DIP Loans Qualifies?'] == 'Yes', 'EBITDA Less Than $10MM Revised Value'].sum()
+                else:
+                    return 0
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["DIP Loans Loan Limit"] = portfolio_df.apply(dip_loans_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+
+    def dip_loans_excess(self):
+        # =IF(GK11>GI11,(GK11-GI11)*(GH11/SUMIF(GJ:GJ,"Yes",GH:GH)),0)
+        try:
+            def dip_loans_excess_helper(row):
+                if row['DIP Loans Loan Limit'] > row['DIP Loans Max']:
+                    gh_sum = portfolio_df.loc[portfolio_df['DIP Loans Qualifies?'] == 'Yes', 'EBITDA Less Than $10MM Revised Value'].sum()
+                    if gh_sum != 0:
+                        return (row['DIP Loans Loan Limit'] - row['DIP Loans Max']) * (row['EBITDA Less Than $10MM Revised Value'] / gh_sum)
+                return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["DIP Loans Excess"] = portfolio_df.apply(dip_loans_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+    
+    def dip_loans_revised_value(self):
+        # =MAX(0,GH11-GL11)
+        try:
+            def dip_loans_revised_value_helper(row):
+                try:
+                    return max(0, row['EBITDA Less Than $10MM Revised Value'] - row['DIP Loans Excess'])
+                except Exception as e:
+                    return 0
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["DIP Loans Revised Value"] = portfolio_df.apply(dip_loans_revised_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+
+    def ddtl_and_revolving_loans_max(self):
+        # ='Concentration Limits'!$J$48
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'DDTL and Revolving Loans', 'Applicable Limit'].iloc[0]
+            portfolio_df["DIP Loans Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+
     def calculate_excess_concentrations(self):
         self.pre_excess_concentration_adjusted_borrowing_value() # column 'ES'
         # First Lien Last Out, Second Lien Loan not in Top Three Obligors
@@ -514,3 +635,19 @@ class ExcessConcTest:
         self.other_industry_excess() # column 'GB'
         self.other_industries_revised_value() # column 'GC'
 
+        # (e) EBITDA < $10MM
+        self.ebitda_less_than_10mm_max() # coluumn 'GD'
+        self.ebitda_less_than_10mm_qualifies() # column 'GE'
+        self.ebitda_less_than_10mm_loan_limit() # column 'GF'
+        self.ebitda_less_than_10mm_excess() # column 'GG'
+        self.ebitda_less_than_10mm_revised_value() # column 'GH'
+
+        # (f) DIP Loans
+        self.dip_loans_max() # column 'GI'
+        self.dip_loans_qualifies() # column 'GJ'
+        self.dip_loans_loan_limit() # column 'GK'
+        self.dip_loans_excess() # column 'GL'
+        self.dip_loans_revised_value() # column 'GM'
+
+        # (g) DDTL and Revolving Loans
+        self.ddtl_and_revolving_loans_max() # column 'GN'
