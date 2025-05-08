@@ -505,6 +505,18 @@ class Others:
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Adjusted Borrowing Value"] = portfolio_df["First Lien Value"] + portfolio_df["Leverage Metrics 2nd Lien Value"] + portfolio_df["FLLO Value"] + portfolio_df["2nd Lien Value"] + portfolio_df["Recurring Revenue Value"]
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    # def tier(self):
+        # =IF(IF(T11="First Lien",IF(DD11<Tier_1_1L,Tier_1_ApplicableValue,IF(DD11<Tier_2_1L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(OR(T11="Second Lien",T11="Last Out"),IF(DE11<Tier_1_2L,Tier_1_ApplicableValue,IF(DE11<Tier_2_2L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(T11="Recurring Revenue",IF(DL11<Tier_1_RR,Tier_1_ApplicableValue,IF(DL11<Tier_2_RR,Tier_2_ApplicableValue,Tier_3_ApplicableValue)))))=100%,"Tier 1",IF(IF(T11="First Lien",IF(DD11<Tier_1_1L,Tier_1_ApplicableValue,IF(DD11<Tier_2_1L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(OR(T11="Second Lien",T11="Last Out"),IF(DE11<Tier_1_2L,Tier_1_ApplicableValue,IF(DE11<Tier_2_2L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(T11="Recurring Revenue",IF(DL11<Tier_1_RR,Tier_1_ApplicableValue,IF(DL11<Tier_2_RR,Tier_2_ApplicableValue,Tier_3_ApplicableValue)))))=92.5%,"Tier 2",IF(IF(T11="First Lien",IF(DD11<Tier_1_1L,Tier_1_ApplicableValue,IF(DD11<Tier_2_1L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(OR(T11="Second Lien",T11="Last Out"),IF(DE11<Tier_1_2L,Tier_1_ApplicableValue,IF(DE11<Tier_2_2L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(T11="Recurring Revenue",IF(DL11<Tier_1_RR,Tier_1_ApplicableValue,IF(DL11<Tier_2_RR,Tier_2_ApplicableValue,Tier_3_ApplicableValue)))))=85%,"Tier 3","na")))
+        
+        # try:
+        #     def tier_helper(row):
+
+        #     portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+        #     portfolio_df["Recurring Revenue Amount"] = portfolio_df.apply(tier_helper, axis=1)
+        #     self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        # except Exception as e:
+        #     raise Exception()
     
     def calculate_others(self):
         self.advance_rate_definition() # column 'U'
@@ -534,3 +546,4 @@ class Others:
         self.recurring_revenue_amount() # column 'BC'
         self.recurring_evenue_value() # column 'BD'
         self.adjusted_borrowing_value() # column 'W'
+        # self.tier() # column 'BY'
