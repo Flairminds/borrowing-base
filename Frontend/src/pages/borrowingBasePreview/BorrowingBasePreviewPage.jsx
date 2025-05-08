@@ -26,8 +26,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [isAddFieldModalOpen, setIsAddFieldModalOpen] = useState(false);
 	const [isShowEmptyBaseDataModalOpen, setIsShowEmptyBaseDataModalOpen] = useState(false);
 	// const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
-	const [obligorFliteredValue, setObligorFliteredValue] = useState([]);
-	const [securityFilteredValue, setSecurityFilteredValue] = useState([]);
+	const [col1FilteredValue, setCol1FilteredValue] = useState([]);
+	const [col2FilteredValue, setCol2FilteredValue] = useState([]);
 	const [triggerBBCalculation, setTriggerBBCalculation] = useState(false);
 	const [filteredData, setFilteredData] = useState(baseFilePreviewData?.baseData?.data);
 	const [selectedFiles, setSelectedFiles] = useState([]);
@@ -210,29 +210,46 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	// 	}
 	// };
 
-	const handleObligorChange = (value) => {
-		setObligorFliteredValue(value);
-		const obligorFilterData = filterPreviewTable(baseFilePreviewData?.baseData?.data, value, securityFilteredValue);
-		setFilteredData(obligorFilterData);
+	const handleCol1Change = (value) => {
+		setCol1FilteredValue(value);
+		const col1FilterData = filterPreviewTable(baseFilePreviewData?.baseData?.data, value, col2FilteredValue, previewFundType);
+		setFilteredData(col1FilterData);
 	};
 
-	const handleSecurityChange = (value) => {
-		setSecurityFilteredValue(value);
-		const securityFilterData = filterPreviewTable(baseFilePreviewData?.baseData?.data, obligorFliteredValue, value );
+	const handleCol2Change = (value) => {
+		setCol2FilteredValue(value);
+		const securityFilterData = filterPreviewTable(baseFilePreviewData?.baseData?.data, col1FilteredValue, value, previewFundType);
 		setFilteredData(securityFilterData);
 	};
 
 	const filterSelections = {
 		'PFLT': [{
 			placeholder: "Filter by Obligor Name(s)",
-			onChange: handleObligorChange,
+			onChange: handleCol1Change,
 			options: baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'obligor_name'),
-			value: obligorFliteredValue
+			value: col1FilteredValue
 		}, {
 			placeholder: "Filter by Security Name(s)",
-			onChange: handleSecurityChange,
+			onChange: handleCol2Change,
 			options: baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'security_name'),
-			value: securityFilteredValue
+			value: col2FilteredValue
+		}],
+		'PCOF': [{
+			placeholder: "Filter by Investment Name(s)",
+			onChange: handleCol1Change,
+			options: baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'investment_name'),
+			value: col1FilteredValue
+		}, {
+			placeholder: "Filter by Issuer(s)",
+			onChange: handleCol2Change,
+			options: baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'issuer'),
+			value: col2FilteredValue
+		}],
+		'PSSL': [{
+			placeholder: "Filter by Borrower(s)",
+			onChange: handleCol1Change,
+			options: baseFilePreviewData?.baseData?.data && filterPreviewData(baseFilePreviewData?.baseData?.data, 'borrower'),
+			value: col1FilteredValue
 		}]
 	};
 
@@ -281,7 +298,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							refreshDataFunction={handleBaseDataPreview}
 							previewFundType={previewFundType}
 							filterSelections={filterSelections[baseFilePreviewData.fundType]}
-							showFilter={previewFundType == 'PFLT'}
+							showFilter={true}
 						/>
 					</div>
 				</div>}

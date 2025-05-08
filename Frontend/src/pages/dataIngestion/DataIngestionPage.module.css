@@ -1,13 +1,10 @@
 
-.ingestionPageContainer
-{
+.ingestionPageContainer {
   display: flex;
   justify-content: center;
-  padding: 1rem;
 }
 
-.ingestionPage
-{
+.ingestionPage {
   width: 100%;
 }
 
@@ -19,8 +16,6 @@
 .buttonsContainer {
 	display: flex;
 	justify-content: space-between;
-	margin: 1px 0;
-  padding: 0;
   align-items: center;
 }
 
@@ -40,7 +35,7 @@
 
 .extractDataBtn
 {
-  margin: 1rem 0rem;
+  /* margin: 1rem 0rem; */
   text-align: left;
 }
 

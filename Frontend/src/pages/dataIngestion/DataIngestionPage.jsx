@@ -14,6 +14,7 @@ import { fundMap, fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/co
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import styles from './DataIngestionPage.module.css';
+import { Icons } from '../../components/icons';
 
 export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
@@ -33,6 +34,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [extractionInProgress, setExtractionInProgress] = useState(false);
 	const [showErrorsModal, setShowErrorsModal] = useState(false);
 	const [validationInfoData, setValidationInfoData] = useState([]);
+	const [filesSelected, setFilesSelected] = useState(0);
 
 	const navigate = useNavigate();
 	let extractionInterval;
@@ -154,9 +156,11 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 		if (selectedIds?.current.indexOf(fileId) === -1) {
 			// setSelectedIds([...selectedIds, fileId]);
 			selectedIds.current = [...selectedIds.current, fileId];
+			setFilesSelected(selectedIds.current.length);
 			// setSelectedIds([...selectedIds, fileId]);
 		} else {
 			selectedIds.current = selectedIds?.current.filter(id => id !== fileId);
+			setFilesSelected(selectedIds.current.length);
 			// setSelectedIds(selectedIds.filter(id => id !== fileId));
 		}
 		console.info('sel ids', selectedIds);
@@ -309,31 +313,40 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			<div className={styles.ingestionPageContainer}>
 				<div className={styles.ingestionPage}>
 					<div className={styles.topBar}>
-						<BackOption onClick={() => navigate(PAGE_ROUTES.BASE_DATA_LIST.url)}
-							text={`<- Base Data`} />
-						<div className={styles.buttonsContainer}>
-							<div className={styles.backOptionContainer}>
-								<div style={{ display: 'flex', flexDirection: 'row', alignItems: 'baseline' }}>
-								</div>
+						<div style={{display: 'flex', alignItems: 'center'}}>
+							<BackOption onClick={() => navigate(PAGE_ROUTES.BASE_DATA_LIST.url)} text={`<- Back`} />
+							{!archiveToggle ? <><Select
+								defaultValue={selectedFundType}
+								style={{ width: 140, borderRadius: '8px', margin: '0rem 0.5rem' }}
+								options={fundOptionsArray}
+								onChange={handleDropdownChange}
+							/>
+							<div>
+								<Calender availableClosingDates={reportDates} onDateChange={filterByDate} fileUpload={true} />
 							</div>
-							<div className={styles.uploadFileBtnContainer}>
-								{/* <div style={{ textAlign: 'left' }}> */}
-								{!archiveToggle ? <><Select
-									defaultValue={selectedFundType}
-									style={{ width: 140, borderRadius: '8px', margin: '0rem 0.5rem' }}
-									options={fundOptionsArray}
-									onChange={handleDropdownChange}
-								/>
-								<div>
-									<Calender availableClosingDates={reportDates} onDateChange={filterByDate} fileUpload={true} />
-								</div></> : <></>}
-								{/* </div> */}
+							</> : <></>}
+							{filesSelected > 0 &&
+							<>
+								{!isbuttonDisable && (
+									<UIComponents.Button
+										loading={extractionInProgress}
+										loadingText='Extracting...'
+										isFilled={true}
+										onClick={handleFileExtraction}
+										text='Extract Base Data'
+									// loading={fileExtractionLoading}
+									/>
+								)}
+								<CustomButton isFilled={true} onClick={updateFilesArchiveStatus} text={archiveToggle ? 'Unarchive' : 'Add to Archives'} /></>}
+						</div>
+						<div className={styles.buttonsContainer}>
+							<div className={styles.extractDataBtn}>
 								<DynamicSwitchComponent switchOnText="Archives" switchOffText="Source Files" switchOnChange={toggleArchiveFiles} />
-								<CustomButton isFilled={true} onClick={updateFilesArchiveStatus} text={archiveToggle ? 'Unarchive' : 'Add to Archives'} />
 								<CustomButton isFilled={true} onClick={() => setUploadFilesPopupOpen(true)} text='+ Upload Files' />
 							</div>
 						</div>
 					</div>
+					<div><Icons.InfoIcon title={``} />{selectedFundType === 0 ? 'Select a fund type' : selectedFundType == 3 ? 'Select a cashfile and mastercomp file for base data extraction' : 'Select a cashfile, mastercomp file and a marketvalue file for base data extraction'}</div>
 
 					{/* <div className={styles.buttonsContainer}>
 							<div className={styles.uploadFileBtnContainer}>
@@ -360,19 +373,6 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 									:
 									<DynamicTableComponents data={filteredData} columns={dataIngestionFileListColumns} />
 							}
-						</div>
-
-						<div className={styles.extractDataBtn}>
-							{!isbuttonDisable && (
-								<UIComponents.Button
-									loading={extractionInProgress}
-									loadingText='Extracting...'
-									isFilled={true}
-									onClick={handleFileExtraction}
-									text='Extract Base Data'
-									// loading={fileExtractionLoading}
-								/>
-							)}
 						</div>
 						</>}
 				</div>
