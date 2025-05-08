@@ -74,11 +74,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                 left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
                 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
                 left join sf_sheet_pssl_ii_borrowing_base sspibb on sspibb."Security" = ss."Security"
-                left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
-                left join loan_type_mapping loan_mapping on loan_mapping.loan_type = ch."Issue Name" and (loan_mapping.is_deleted = false or loan_mapping.is_deleted is null)
-                left join loan_type_master loan_master on loan_master.id = loan_mapping.master_loan_type_id
-                left join lien_type_mapping lien_mapping on lien_mapping.lien_type = ss."[SI] Credit Facility Lien Type" and (lien_mapping.is_deleted = false or lien_mapping.is_deleted is null)
-                left join lien_type_master lien_master on lien_master.id = lien_mapping.master_lien_type_id  
+                left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"  
                 where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id) and
                 ((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND (sspibb.source_file_id = :master_comp_file_id or sspibb.source_file_id is null) AND bs.source_file_id= :master_comp_file_id) or sm.id is null)
                 group by 
