@@ -126,19 +126,12 @@ export const AddAdditionalInformationModal = (
 			break;
 
 		case "PSSL":
-			formData["effective_date"] = uploadedData?.effective_date ? dayjs(uploadedData.effective_date) : data?.other_data?.availability?.effective_date ? dayjs(data.other_data.effective_date) : null;
-			formData["scheduled_revolving_period_end_date"] = uploadedData?.scheduled_revolving_period_end_date ? dayjs(uploadedData.scheduled_revolving_period_end_date) : data?.other_data?.scheduled_revolving_period_end_date ? dayjs(data.other_data.scheduled_revolving_period_end_date) : null;
-			formData["termination_date"] = uploadedData?.termination_date ? dayjs(uploadedData.termination_date) : data?.other_data?.termination_date ? dayjs(data.other_data.termination_date) : null;
 			formData["determination_date"] = uploadedData?.determination_date ? dayjs(uploadedData.determination_date) : data?.other_data?.determination_date ? dayjs(data.other_data.determination_date) : null;
-			formData["payment_date"] = uploadedData?.payment_date ? dayjs(uploadedData.payment_date) : data?.other_data?.payment_date ? dayjs(data.other_data.payment_date) : null;
-			formData["reporting_date"] = uploadedData?.reporting_date ? dayjs(uploadedData.reporting_date) : data?.other_data?.reporting_date ? dayjs(data.other_data.reporting_date) : null;
-			formData["advance_date"] = uploadedData?.advance_date ? dayjs(uploadedData.advance_date) : data?.other_data?.advance_date ? dayjs(data.other_data.advance_date) : null;
 			formData["measurement_date"] = uploadedData?.measurement_date ? dayjs(uploadedData.measurement_date) : data?.other_data?.measurement_date ? dayjs(data.other_data.measurement_date) : null;
 			formData["facility_amount"] = uploadedData?.facility_amount ? uploadedData.facility_amount : data?.other_data?.facility_amount ? data.other_data.facility_amount : null;
 			formData["on_deposit_in_unfunded_exposure_account"] = uploadedData?.on_deposit_in_unfunded_exposure_account ? uploadedData.on_deposit_in_unfunded_exposure_account : data?.other_data?.on_deposit_in_unfunded_exposure_account ? data.other_data.on_deposit_in_unfunded_exposure_account : null;
 			formData["cash_on_deposit_in_principal_collections_account"] = uploadedData?.cash_on_deposit_in_principal_collections_account ? uploadedData.cash_on_deposit_in_principal_collections_account : data?.other_data?.cash_on_deposit_in_principal_collections_account ? data.other_data.cash_on_deposit_in_principal_collections_account : null;
 			formData["foreign_currency_hedged_by_borrower"] = uploadedData?.foreign_currency_hedged_by_borrower ? uploadedData.foreign_currency_hedged_by_borrower : data?.other_data?.foreign_currency_hedged_by_borrower ? data.other_data.foreign_currency_hedged_by_borrower : null;
-			formData["cash_on_deposit_in_principal_collections_account"] = uploadedData?.cash_on_deposit_in_principal_collections_account ? uploadedData.cash_on_deposit_in_principal_collections_account : data?.other_data?.cash_on_deposit_in_principal_collections_account ? data.other_data.cash_on_deposit_in_principal_collections_account : null;
 			formData["current_advances_outstanding"] = uploadedData?.current_advances_outstanding ? uploadedData.current_advances_outstanding : data?.other_data?.current_advances_outstanding ? data.other_data.current_advances_outstanding : null;
 			formData["advances_repaid"] = uploadedData?.advances_repaid ? uploadedData.advances_repaid : data?.other_data?.advances_repaid ? data.other_data.current_advances_outstanding : null;
 			formData["advances_requested"] = uploadedData?.advances_requested ? uploadedData.advances_requested : data?.other_data?.advances_requested ? data.other_data.current_advances_outstanding : null;
@@ -298,13 +291,7 @@ export const AddAdditionalInformationModal = (
 					"exchange_rates": values["exchange_rates"],
 					"obligor_tiers": values["obligor_tiers"],
 					"availability": {
-						"effective_date": values.effective_date,
-						"scheduled_revolving_period_end_date": values.scheduled_revolving_period_end_date,
-						"termination_date": values.termination_date,
 						"determination_date": values.determination_date,
-						"payment_date": values.payment_date,
-						"reporting_date": values.reporting_date,
-						"advance_date": values.reporting_date,
 						"measurement_date": values.measurement_date,
 						"facility_amount": `${values["facility_amount"]}`,
 						"on_deposit_in_unfunded_exposure_account": values.on_deposit_in_unfunded_exposure_account,
@@ -384,7 +371,7 @@ export const AddAdditionalInformationModal = (
 			if (row.length > 0) {
 				const record = {};
 				row.forEach((value, index) => {
-					record[header[index].toLowerCase().replace(/ /g, "_")] = value;
+					record[header[index].toLowerCase().replace(/[\s/]+/g, '_')] = value;
 				});
 				temp.push(record);
 			}
@@ -623,7 +610,7 @@ export const AddAdditionalInformationModal = (
 													label={header.label + (header.unit && header.unit == 'percent' ? ' (%)' : '')}
 													name={header.name}
 													rules={[{ required: true, message: `Please enter ${header.label.toLowerCase()}!` }]}
-													style={{ display: "inline-block", width: "25%", margin: "0 1rem 1rem 1rem" }}
+													style={{ display: "inline-block", width: "29%", margin: "0 1rem 1rem 1rem" }}
 												>
 													{header.type === "datePicker" ? (
 														<DatePicker style={{ width: "100%" }} format="MM-DD-YYYY"/>

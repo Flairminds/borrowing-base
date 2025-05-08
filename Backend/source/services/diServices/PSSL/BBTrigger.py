@@ -7,7 +7,7 @@ from sqlalchemy import text
 from models import db, BaseDataFile
 from source.services.PSSL.pssl_calculation_initiator import PsslCalculationInitiator
 from source.utility.ServiceResponse import ServiceResponse
-from models import db, ExtractedBaseDataInfo
+from models import db, ExtractedBaseDataInfo, BaseDataOtherInfo
 from source.utility.Log import Log
 pssl_calculation_initiator = PsslCalculationInitiator()
 
@@ -15,6 +15,7 @@ def trigger_pssl_bb(bdi_id):
     try:
         engine = db.get_engine()
         extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(id=bdi_id).first()
+        base_data_other_info = BaseDataOtherInfo.query.filter_by(extraction_info_id=bdi_id).first()
         with engine.connect() as connection:
             base_data_df = pd.DataFrame(connection.execute(text(f"select * from pssl_base_data where base_data_info_id = :ebd_id"), {'ebd_id': bdi_id}).fetchall())
             base_data_mapping_df = pd.DataFrame(connection.execute(text("""select bd_sheet_name, bd_column_name, bd_column_lookup from base_data_mapping bdm where fund_type = 'PSSL' and bd_sheet_name = 'Portfolio'""")))
@@ -34,9 +35,43 @@ def trigger_pssl_bb(bdi_id):
         base_data_df["RCF Update Date"] = pd.to_datetime(base_data_df["RCF Update Date"])
         base_data_df['Borrower Outstanding Principal Balance'] = pd.to_numeric(base_data_df['Borrower Outstanding Principal Balance'], errors='coerce')
 
+        availability_data = [
+            {"Terms": "Determination Date", "Values": datetime.strptime(base_data_other_info.other_info_list.get('availability').get('determination_date')[:-5], "%Y-%m-%dT%H:%M:%S")},
+            {"Terms": "Measurement Date:", "Values": datetime.strptime(base_data_other_info.other_info_list.get('availability').get('measurement_date')[:-5], "%Y-%m-%dT%H:%M:%S")},
+            {"Terms": "Facility Amount ($)", "Values": float(base_data_other_info.other_info_list.get('availability').get('facility_amount'))},
+            {"Terms": "On Deposit in Unfunded Exposure Account", "Values": base_data_other_info.other_info_list.get('availability').get('on_deposit_in_unfunded_exposure_account')},
+            {"Terms": "Foreign Currency hedged by Borrower", "Values":  base_data_other_info.other_info_list.get('availability').get('foreign_currency_hedged_by_borrower')},
+            {"Terms": "Current Advances Outstanding", "Values":  float(base_data_other_info.other_info_list.get('availability').get('current_advances_outstanding'))},
+            {"Terms": "Advances Repaid", "Values":  float(base_data_other_info.other_info_list.get('availability').get('advances_repaid'))},
+            {"Terms": "Advances Requested", "Values":  float(base_data_other_info.other_info_list.get('availability').get('advances_requested'))},
+            {"Terms": "Cash on deposit in Principal Collections Account ($)", "Values":  float(base_data_other_info.other_info_list.get('availability').get('cash_on_deposit_in_principal_collections_account'))}
+        ]
+        availability_df = pd.DataFrame(availability_data)
+
+        exchange_rates_data = [
+            {
+                "Currency": exchange_rates_value.get('currency'),
+                "Exchange Rate": float(exchange_rates_value.get('exchange_rates')),
+            } for exchange_rates_value in base_data_other_info.other_info_list.get('exchange_rates')]
+        exchange_rates_df = pd.DataFrame(exchange_rates_data)
+
+        obligor_tiers_data = [
+            {
+                "Obligor": obligor_tiers_value.get('obligor'),
+                "First Lien Loans": float(obligor_tiers_value.get('first_lien_loans')),
+                "FLLO/2nd Lien Loans": float(obligor_tiers_value.get('fllo_2nd_lien_loans')),
+                "Recurring Revenue": float(obligor_tiers_value.get('recurring_revenue')),
+                "Applicable Collateral Value": float(obligor_tiers_value.get('applicable_collateral_value')),
+            } for obligor_tiers_value in base_data_other_info.other_info_list.get('obligor_tiers')]
+        obligor_tiers_df = pd.DataFrame(obligor_tiers_data)
+
         path1 = 'PSSL_Base_Data.xlsx'
         base_data_dict = pd.read_excel(path1, sheet_name=None)
         base_data_dict["Portfolio"] = base_data_df
+        base_data_dict["Availability"] = availability_df
+        base_data_dict["Exchange Rates"] = exchange_rates_df
+        base_data_dict["Obligor Tiers"] = obligor_tiers_df
+
 
         user_id = 1, 
         file_name = path1, 
