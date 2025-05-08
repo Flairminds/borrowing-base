@@ -638,6 +638,10 @@ class ConcentraionTestFormatter:
             "Other Industry",
             "DIP Loans",
             "DDTL and Revolving Loans",
+            "Pay Less Frequently than Quarterly",
+            "Loans denominated in Approved Foreign Currency",
+            "Loans to Obligors domiciled in Approved Foreign Country",
+            "Cov-Lite",
         ]
         concentration_tests = []
         concentration_limits = []
