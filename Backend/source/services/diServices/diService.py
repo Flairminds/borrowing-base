@@ -998,6 +998,9 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
             elif table_name == 'sf_sheet_pflt_borrowing_base':
                 identifier_col_name = 'pbb."Security"'
                 alias = "pbb"
+            elif table_name == 'sf_sheet_marketbook_1':
+                identifier_col_name = 'ssm."Issuer_Name"'
+                alias = "ssm"
             sd_df_dict = None
             if identifier_col_name is not None:
                 if df_dict[0]['sf_column_categories'] is not None and len(df_dict[0]['sf_column_categories']) > 0:
@@ -1015,6 +1018,14 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
                     left join ss_filtered ss on ss."Security" = sm.master_comp_security_name
                     left join pbb_filtered pbb on pbb."Security" = ss."Security"
                     left join bs_filtered bs on bs."Company" = ss."Family Name"
+                    left join (select loan_mapping_cashfile.loan_type, loan_master_cashfile.loan_type as master_loan_type from loan_type_mapping loan_mapping_cashfile
+		                left join loan_type_master loan_master_cashfile on loan_master_cashfile.id = loan_mapping_cashfile.master_loan_type_id
+		                where (loan_mapping_cashfile.is_deleted = false or loan_mapping_cashfile.is_deleted is null) and loan_master_cashfile.fund_type = '{fund_type}')
+                    as t2 on t2.loan_type = ch."Issue Name"
+                    left join (select *, loan_master_marketbook.loan_type as master_loan_type from sf_sheet_marketbook_1 ssm 
+			            left join loan_type_mapping loan_mapping_marketbook on loan_mapping_marketbook.loan_type = ssm."Asset_Name" and (loan_mapping_marketbook.is_deleted = false or loan_mapping_marketbook.is_deleted is null)
+			            left join loan_type_master loan_master_marketbook on loan_master_marketbook.id = loan_mapping_marketbook.master_loan_type_id and loan_master_marketbook.fund_type = '{fund_type}'
+			            where ssm.source_file_id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id)) as ssm on lower(regexp_replace(ch."Issuer/Borrower Name", '[^a-zA-Z0-9]','', 'g')) = lower(regexp_replace(ssm."Issuer_Name", '[^a-zA-Z0-9]','', 'g')) and t2.master_loan_type = ssm.master_loan_type
                     where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name'''), {'obligor_name': bd_df[obligor_name][0], 'security_name': bd_df[security_name][0], 'ebd_id': ebd_id}).fetchall())
                 sd_df_dict = sd_df.to_dict(orient='records')
         except Exception as e:

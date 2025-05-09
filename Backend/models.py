@@ -559,6 +559,7 @@ class PcofBaseData(db.Model):
     borrowing_base_comment = db.Column(db.String)
     is_eligible_issuer = db.Column(db.String)
     is_manually_added = db.Column(db.Boolean, default=False)
+    loanx_id = db.Column(db.String)
 
 class PcofBaseDataHistory(db.Model):
     operation = db.Column(db.String)
@@ -580,7 +581,6 @@ class PcofBaseDataHistory(db.Model):
     classifications_warehouse_asset_expected_rating = db.Column(db.String)
     classifications_approved_foreign_jurisdiction = db.Column(db.String)
     classifications_ltv_transaction = db.Column(db.String)
-    Classifications_noteless_assigned_loan = db.Column(db.String)
     classifications_undelivered_note = db.Column(db.String)
     classifications_structured_finance_obligation = db.Column(db.String)
     classifications_third_party_finance_company = db.Column(db.String)
@@ -618,6 +618,7 @@ class PcofBaseDataHistory(db.Model):
     borrowing_base_comment = db.Column(db.String)
     is_eligible_issuer = db.Column(db.String)
     is_manually_added = db.Column(db.Boolean, default=False)
+    loanx_id = db.Column(db.String)
 
 class LoanTypeMaster(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)

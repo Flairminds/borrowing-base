@@ -20,7 +20,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
 					as "investment_investment_type",
                     bs."[ACM] [COI/LC] PNNT Industry" as "investment_industry",
                     bs."[ACM] [COI/LC] Closing Date" as "investment_closing_date",
-                    ss."[SI] Maturity" as "investment_maturity",
+                    case when ss."[SI] Maturity" is not null and ss."[SI] Maturity" != 'NM' then ss."[SI] Maturity" else null end as "investment_maturity",
                 --    sum(usbh."P. Lot Current Par Amount (Deal Currency)"::float) as "investment_par", -- selecting this column for now
                     ssm."Commitment" as "investment_par",
                 --    sum(ssmb."Book Value"::float)  as "investment_cost", -- could not map -- considering null for now
@@ -56,7 +56,8 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     end as "leverage_pcof_iv_leverage",
                     ss."[PSM] Capitalization Multiple" as "leverage_total_capitalization",
                     ss."LTV" as "leverage_ltv_thru_pcof_iv", -- was from PCOF IV, Now taking from security stats (BU)
-                    'Yes' as "is_eligible_issuer" -- could not map
+                    'Yes' as "is_eligible_issuer", -- could not map
+                    STRING_AGG(ch."LoanX ID", ', ') AS loanx_id
                 from sf_sheet_us_bank_holdings usbh
                 left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
                     and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
