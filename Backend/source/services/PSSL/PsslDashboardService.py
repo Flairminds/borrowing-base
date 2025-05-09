@@ -3,13 +3,29 @@ import pickle
 from flask import jsonify
 from numerize import numerize
 import re
+import pandas as pd
 
 from source.services.PSSL import pssl_calculation_initiator
 from models import BaseDataOtherInfo
+from source.utility.Util import currency_to_float_to_numerize_to_currency
 
 class PsslDashboardService:
     def get_bb_calculation(self, base_data_file, selected_assets, user_id):
         pssl_calculation_initiator.get_bb_calculation(base_data_file, selected_assets, user_id)
+
+    def convert_to_card_table(self, availability_df, search_values):
+        matched_rows = []
+        for value in search_values:
+            row_data = availability_df[availability_df["Terms"] == value]
+            if not row_data.empty:
+                row_values = row_data.values.tolist()
+                matched_rows.extend(row_values)
+        card_table = {
+            "columns": [{"data": ["Term", "Value"]}],
+            "Term": [{"data": row[0]} for row in matched_rows],
+            "Value": [{"data": currency_to_float_to_numerize_to_currency(row[1])} for row in matched_rows],
+        }
+        return card_table
 
     def get_trend_graph(self, base_data_file_sorted, closing_date):
         pssl_trend_graph_response = {
@@ -33,30 +49,13 @@ class PsslDashboardService:
         # pflt_trnd_graph_response["x-axis"] = selected_rows_BB_df.columns.tolist()
         return jsonify(pssl_trend_graph_response), 200
     
-    def get_borrowing_base_value(self, portfolio_df):
-        total_bb = portfolio_df["Adjusted Borrowing Value"].sum()
+    def get_borrowing_base_value(self, availability_df):
 
-        card_table = {
-            "Term": [
-                {
-                    "data": "Borrowing Base"
-                }
-            ],
-            "Value": [
-                {
-                    "data": numerize.numerize(total_bb)
-                }
-            ],
-            "columns": [
-                {
-                    "data": [
-                        "Term",
-                        "Value"
-                    ]
-                }
-            ]
-        }
-        return card_table
+        search_values = [
+            "Adjusted Borrowing Value"
+        ]
+
+        return self.convert_to_card_table(availability_df, search_values)
     
     def get_availibilty(self):
         selected_keys = [
@@ -115,6 +114,15 @@ class PsslDashboardService:
         }
         return card_table
     
+    def get_pro_forma_advances_outstanding_value(self, availability_df):
+        search_values = [
+            "Current Advances Outstanding",
+            "Advances Repaid",
+            "Advances Requested"
+        ]
+        return self.convert_to_card_table(availability_df, search_values)
+    
+    
     def get_card_overview(self, base_data_file, card_name, what_if_analysis):
         if what_if_analysis:
             intermediate_calculation = pickle.loads(what_if_analysis.intermediate_calculation)
@@ -126,12 +134,15 @@ class PsslDashboardService:
         facility_df = intermediate_calculation["Availability"]     
  
         if card_name == "Borrowing Base":
-            card_table = PsslDashboardService.get_borrowing_base_value(self, portfolio_df)
-        if card_name == "Availability":
-            card_table = PsslDashboardService.get_availibilty(self)
+            card_table = self.get_borrowing_base_value(availability_df)
+        # if card_name == "Availability":
+        #     card_table = self.get_availibilty()
         
         if card_name == "Current Advances Outstanding":
-            card_table = PsslDashboardService.get_current_advances_outstanding_value(self, availability_df)
+            card_table = self.get_current_advances_outstanding_value(availability_df)
+
+        if card_name == "Pro Forma Advances Outstanding":
+            card_table = self.get_pro_forma_advances_outstanding_value(availability_df)
         
 
         return jsonify(card_table), 200
