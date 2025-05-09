@@ -319,4 +319,29 @@ fund_std_col_map:
       Cov-Lite:
         Sheet Name: Portfolio
         Column Name: Cov-Lite
+  Tier 3 Obligors (Measured at Inclusion):
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Eligibility Check:
+        Sheet Name: Portfolio
+        Column Name: Eligibility Check
+      Tier:
+        Sheet Name: Portfolio
+        Column Name: Tier
+      Revised Value:
+        Sheet Name: Portfolio
+        Column Name: Cov-Lite Revised Value
+  Second Lien Loans:
+    PSSL:
+      Borrowing Base:
+        Sheet Name: Portfolio
+        Column Name: Adjusted Borrowing Value
+      Loan Type:
+        Sheet Name: Portfolio
+        Column Name: Calculated Loan Type post AA Discretion
+      Revised Value:
+        Sheet Name: Portfolio
+        Column Name: Tier 3 Obligors (Measured at Inclusion) Revised Value
       

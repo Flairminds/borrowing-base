@@ -931,23 +931,139 @@ class ExcessConcTest:
         except Exception as e:
             raise Exception()
         
-    # def tier_3_obligors_qualifies(self):
-    #     # =IFERROR(IF(AND(BK11="Yes",BY11="Tier 3"),"Yes", "No"),0)
-    #     try:
-    #         def tier_3_obligors_qualifies_helper(row):
-    #             try:
-    #                 if row['Eligibility Check'] == 'Yes' and row['BY'] == 'Tier 3':
-    #                     return 'Yes'
-    #                 else:
-    #                     return 'No'
-    #             except:
-    #                 return 0
+    def tier_3_obligors_qualifies(self):
+        # =IFERROR(IF(AND(BK11="Yes",BY11="Tier 3"),"Yes", "No"),0)
+        try:
+            def tier_3_obligors_qualifies_helper(row):
+                try:
+                    if row['Eligibility Check'] == 'Yes' and row['Tier'] == 'Tier 3':
+                        return 'Yes'
+                    else:
+                        return 'No'
+                except:
+                    return 0
                 
-    #         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
-    #         portfolio_df["Tier 3 Obligors (Measured at Inclusion) Qualifies?"] = portfolio_df.apply(tier_3_obligors_qualifies_helper, axis=1)
-    #         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
-    #     except Exception as e:
-    #         raise Exception()  
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Tier 3 Obligors (Measured at Inclusion) Qualifies?"] = portfolio_df.apply(tier_3_obligors_qualifies_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+
+    def tier_3_obligors_loan_limit(self):
+        # =IF(HN11="Yes",SUMIF(HN:HN,"Yes",HL:HL),0)
+        try:
+            def tier_3_obligors_loan_limit(row):
+                try:
+                    if row['Tier 3 Obligors (Measured at Inclusion) Qualifies?'] == "Yes":
+                        total = portfolio_df.loc[portfolio_df['Tier 3 Obligors (Measured at Inclusion) Qualifies?'] == 'Yes', 'Cov-Lite Revised Value'].sum()
+                        return total
+                    return 0
+                except:
+                    return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Tier 3 Obligors (Measured at Inclusion) Loan Limit"] = portfolio_df.apply(tier_3_obligors_loan_limit, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+            
+    def tier_3_obligors_excess(self):
+        # =IF(HO11>HM11, (HO11-HM11) * (HL11 / SUMIF(HN:HN, "Yes", HL:HL)), 0)
+        try:
+            def tier_3_obligors_excess_helper(row):
+                if row['Tier 3 Obligors (Measured at Inclusion) Loan Limit'] > row['Tier 3 Obligors (Measured at Inclusion) Max']:
+                    return (row['Tier 3 Obligors (Measured at Inclusion) Loan Limit'] - row['Tier 3 Obligors (Measured at Inclusion) Qualifies?']) * (row['Cov-Lite Revised Value'] / yes_sum)
+                else:
+                    return 0
+                
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            yes_sum = portfolio_df.loc[portfolio_df['Tier 3 Obligors (Measured at Inclusion) Qualifies?'] == 'Yes', 'Cov-Lite Revised Value'].sum()
+            portfolio_df["Tier 3 Obligors (Measured at Inclusion) Excess"] = portfolio_df.apply(tier_3_obligors_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+        
+    def tier_3_obligors_revised_value(self):
+        # =MAX(0,HL11-HP11)
+        try:
+            def tier_3_obligors_revised_value_helper(row):
+                return max(0, row['Cov-Lite Revised Value'] - row['Tier 3 Obligors (Measured at Inclusion) Excess'])
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Tier 3 Obligors (Measured at Inclusion) Revised Value"] = portfolio_df.apply(tier_3_obligors_revised_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+
+    def second_lien_loans_max(self):
+        # ='Concentration Limits'!$J$54
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Second Lien Loans', 'Applicable Limit'].iloc[0]
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Second Lien Loans Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+
+    def second_lien_loans_qualify(self):
+        # =IF(T11="Second Lien","Yes","No")
+        try:
+            def second_lien_loans_qualify_helper(row):
+                if row["Calculated Loan Type post AA Discretion"] == "Second Lien":
+                    return "Yes"
+                else:
+                    return "No"
+                
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Second Lien Loans Qualifies?"] = portfolio_df.apply(second_lien_loans_qualify_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+
+    def second_lien_loans_loan_limit(self):
+        # =IF(HS11="Yes",SUMIF(HS:HS,"Yes",HQ:HQ),0)
+        try:
+            def second_lien_loans_loan_limit_helper(row):
+                try:
+                    if row['Second Lien Loans Qualifies?'] == "Yes":
+                        total = portfolio_df.loc[portfolio_df['Second Lien Loans Qualifies?'] == 'Yes', 'Tier 3 Obligors (Measured at Inclusion) Revised Value'].sum()
+                        return total
+                    return 0
+                except:
+                    return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Second Lien Loans Loan Limit"] = portfolio_df.apply(second_lien_loans_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+        
+    def second_lien_loans_excess(self):
+        # =IF(HT11>HR11,(HT11-HR11)*(HQ11/SUMIF(HS:HS,"Yes",HQ:HQ)),0)
+        try:
+            def second_lien_loans_excess_helper(row):
+                if row['Second Lien Loans Loan Limit'] > row['Second Lien Loans Max']:
+                    return (row['Second Lien Loans Loan Limit'] - row['Second Lien Loans Max']) * (row['Tier 3 Obligors (Measured at Inclusion) Revised Value'] / sum_if_yes)
+                return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            sum_if_yes = portfolio_df.loc[portfolio_df['Second Lien Loans Qualifies?'] == 'Yes', 'Tier 3 Obligors (Measured at Inclusion) Revised Value'].sum()
+            portfolio_df["Second Lien Loans Excess"] = portfolio_df.apply(second_lien_loans_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+
+    def second_lien_loans_revisd_value(self):
+        # =MAX(0,HQ11-HU11)
+        try:
+            def second_lien_loans_revisd_value_helper(row):
+                return max(0, row['Tier 3 Obligors (Measured at Inclusion) Revised Value'] - row['Second Lien Loans Excess'])
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Second Lien Loans Revised Value"] = portfolio_df.apply(second_lien_loans_revisd_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
 
     def calculate_excess_concentrations(self):
         self.pre_excess_concentration_adjusted_borrowing_value() # column 'ES'
@@ -1050,6 +1166,13 @@ class ExcessConcTest:
 
         # (l) Tier 3 Obligors (Measured at Inclusion)
         self.tier_3_obligors_max() # column 'HM'
-        # self.tier_3_obligors_qualifies() # column 'HN'
+        self.tier_3_obligors_qualifies() # column 'HN'
+        self.tier_3_obligors_loan_limit() # column 'HO'
+        self.tier_3_obligors_excess() # 'column HP'
+        self.tier_3_obligors_revised_value() # column 'HQ'
 
-
+        # Second Lien Loans
+        self.second_lien_loans_max() # column 'HR'
+        self.second_lien_loans_qualify() # column 'HS'
+        self.second_lien_loans_loan_limit() # column 'HT'
+        self.second_lien_loans_excess() # column 'HU'
