@@ -191,7 +191,13 @@ class ConcentrationTestExecutor:
             "Second Largest Industry": self.second_largest_industry,
             "EBITDA < $10MM": self.ebitda_less_than_10MM,
             "DIP Loans": self.dip_loans,
-            "DDTL and Revolving Loans": self.ddtl_revolving_loans
+            "DDTL and Revolving Loans": self.ddtl_revolving_loans,
+            "Pay Less Frequently than Quarterly": self.pay_less_frequently_than_quarterly,
+            "Loans denominated in Approved Foreign Currency": self.loans_denominated_in_approved_foreign_currency,
+            "Loans to Obligors domiciled in Approved Foreign Country": self.loans_to_obligors_domiciled_in_approved_foreign_country,
+            "Cov-Lite": self.cov_lite,
+            "Tier 3 Obligors (Measured at Inclusion)": self.tier_3_obligors_measured_at_inclusion,
+            "Second Lien Loans": self.second_lien_loans,
         }
 
     def update_conc_test_df(self, test_name, test_required_col_df, actual, show_on_dashboard, concentration_test_df):
@@ -852,10 +858,45 @@ class ConcentrationTestExecutor:
         return concentration_test_df
     
     def ddtl_revolving_loans(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
-        actual = test_required_col_df[(test_required_col_df['Revolver'] == 'Yes') & (test_required_col_df['DDTL'] == 'Yes')]['Revised Value'].sum()
+        actual = test_required_col_df[(test_required_col_df['Revolver'] == 'Yes') | (test_required_col_df['DDTL'] == 'Yes')]['Revised Value'].sum()
 
         concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
 
+        return concentration_test_df
+
+    def pay_less_frequently_than_quarterly(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        actual = test_required_col_df[test_required_col_df['Paid Less than Qtrly'] == 'Yes']['Revised Value'].sum()
+
+        concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+        return concentration_test_df
+    
+    def loans_denominated_in_approved_foreign_currency(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        actual = test_required_col_df[test_required_col_df['Approved Currency'] != 'USD']['Revised Value'].sum()
+
+        concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+        return concentration_test_df
+    
+    def loans_to_obligors_domiciled_in_approved_foreign_country(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        actual = test_required_col_df[test_required_col_df['Approved Country'] != "United States"]['Revised Value'].sum()
+
+        concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+        return concentration_test_df
+    
+    def cov_lite(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        actual = test_required_col_df[test_required_col_df['Cov-Lite'] == "Yes"]['Revised Value'].sum()
+
+        concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+        return concentration_test_df
+    
+    def tier_3_obligors_measured_at_inclusion(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        actual = test_required_col_df[(test_required_col_df['Eligibility Check'] == 'Yes') & (test_required_col_df['Tier'] == 'Tier 3')]['Revised Value'].sum()
+
+        concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+        return concentration_test_df
+
+    def second_lien_loans(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        actual = test_required_col_df[test_required_col_df['Loan Type'] == 'Second Lien']['Revised Value'].sum()
+        concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
         return concentration_test_df
 
     def executeConentrationTest(self):
