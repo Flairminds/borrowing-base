@@ -9,7 +9,7 @@ class EbitdaNetAtDateInclussion:
         # =IF((CI11-CJ11)<0,"N/A",IF(CJ11=0,0,CJ11/(CI11-CJ11)))
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Add-Back Cap (%)"] = portfolio_df.apply(
-            lambda row: "N/A" if (row["Initial TTM Adjusted EBITDA"] - row["Add-Backs"]) < 0 else (0 if row["Add-Backs"] == 0 else row["Add-Backs"] / (row["Initial TTM Adjusted EBITDA"] - row["Add-Backs"])), axis=1
+            lambda row: "N/A" if pd.isnull(row["Add-Backs"]) or pd.isnull(row["Initial TTM Adjusted EBITDA"]) else ("N/A" if (row["Initial TTM Adjusted EBITDA"] - row["Add-Backs"]) < 0 else (0 if row["Add-Backs"] == 0 else row["Add-Backs"] / (row["Initial TTM Adjusted EBITDA"] - row["Add-Backs"]))), axis=1
         )
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
@@ -17,9 +17,10 @@ class EbitdaNetAtDateInclussion:
         # =IF(CI11-CJ11<0,"na",IF(AND(CF11="Yes",CI11-CJ11>=50000000),"Uncapped",35%))
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Capped Add-Back %"] = portfolio_df.apply(
-            lambda row: "na" if (row["Initial TTM Adjusted EBITDA"] - row["Add-Backs"]) < 0
+            lambda row: "na" if pd.isnull(row["Add-Backs"]) or pd.isnull(row["Initial TTM Adjusted EBITDA"])
+            else ("na" if (row["Initial TTM Adjusted EBITDA"] - row["Add-Backs"]) < 0
             else (np.nan if row["Rated B- or Better"] == "Yes" and (row["Initial TTM Adjusted EBITDA"] - row["Add-Backs"]) >= 50000000
-                else 0.35),
+                else 0.35)),
             axis=1
         )
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
