@@ -1,4 +1,4 @@
-import { Select } from 'antd';
+import { Modal, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
@@ -24,6 +24,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 	const [reportDates, setReportDates] = useState([]);
 	const [filteredData, setFilteredData] = useState([]);
 	const [filterDate, setFilterDate] = useState(null);
+	const [showInfoModal, setShowInfoModal] = useState(false);
 
 	const navigate = useNavigate();
 
@@ -209,7 +210,9 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 				<div className={styles.headerContainer}>
 					<div className={styles.tableHeading}>
 						Extracted Base Data
-						<Icons.InfoIcon title={'Viewing list of extracted base data. You can preview the base data from here.'} />
+						<span onClick={() => setShowInfoModal(true)}>
+							<Icons.InfoIcon title={'Viewing list of extracted base data. You can preview the base data from here.'} />
+						</span>
 					</div>
 					<div className={styles.buttonsContainer}>
 						<div style={{margin: 'auto'}}>
@@ -238,6 +241,35 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 				onClose={() => setIsPopupOpen(false)}
 				fileDetails={popupContent}
 			/>
+			<Modal
+				title="Details on Base data extraction process"
+				open={showInfoModal}
+				onCancel={() => setShowInfoModal(false)}
+				// footer={[
+				//     <Button
+				//         key="cancel"
+				//         onClick={onClose}
+				//         className={styles.outlinedBtn}
+				//     >
+				//         Cancel
+				//     </Button>
+				// ]}
+				footer={null}
+				width={'50%'}
+				style={{height: '85vh'}}
+				centered
+			>
+				<div>1. Base data is extracted from uploaded source files -</div>
+				<div style={{marginLeft: '1rem'}}>
+					<div>a. For PCOF - mastercomp file, cashfile, and marketvalue file</div>
+					<div>b. For PFLT - mastercomp file, cashfile, and marketvalue file</div>
+					<div>c. For PSSL - mastercomp file and cashfile</div>
+				</div>
+				<div>2. View extracted base data by clicking on Preview option in this screen</div>
+				<div>3. Go to 'Extract New Base Data' to select fund and files to extracted new base data</div>
+				<div>4. It is important to have proper mapping of securities in the Configuration screen to be able to join the data across multiple files accurately</div>
+				<div>5. Proper loan type mapping is required to be done in the Configuration screen for accurate results</div>
+			</Modal>
 		</div>
 	);
 };

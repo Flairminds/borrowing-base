@@ -953,21 +953,25 @@ def get_source_file_data(file_id, file_type, sheet_name):
 
 def get_source_file_data_detail(ebd_id, column_key, data_id):
     try:
-        start = time.time()
         extract_base_data_info = ExtractedBaseDataInfo.query.filter_by(id = ebd_id).first()
         fund_type = extract_base_data_info.fund_type
- 
+        obligor_name = None
+        security_name = None
         match fund_type:
             case "PCOF":
                 table_name = "pcof_base_data"
                 history_table_name = "pcof_base_data_history"
+                obligor_name = "issuer"
+                security_name = "investment_name"
             case "PFLT":
                 table_name = "pflt_base_data"
                 history_table_name = "pflt_base_data_history"
-               
+                obligor_name = "obligor_name"
+                security_name = "security_name"
             case "PSSL":
                 table_name = "pssl_base_data"
                 history_table_name = "pssl_base_data_history"
+                obligor_name = "borrower"
         engine = db.get_engine()
         with engine.connect() as connection:
             df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula, ebdi.files from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key and pbdm.fund_type = ebdi.fund_type'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
@@ -996,7 +1000,7 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
                 alias = "pbb"
             sd_df_dict = None
             if identifier_col_name is not None:
-                if df_dict[0]['sf_column_categories'] is not None:
+                if df_dict[0]['sf_column_categories'] is not None and len(df_dict[0]['sf_column_categories']) > 0:
                     sd_col_name = df_dict[0]['sf_column_categories'][0] + " " + sd_col_name
                 sd_col_name = alias + "." + '"' + sd_col_name + '"'
                 with engine.connect() as connection:
@@ -1011,10 +1015,11 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
                     left join ss_filtered ss on ss."Security" = sm.master_comp_security_name
                     left join pbb_filtered pbb on pbb."Security" = ss."Security"
                     left join bs_filtered bs on bs."Company" = ss."Family Name"
-                    where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name'''), {'obligor_name': bd_df['obligor_name'][0], 'security_name': bd_df['security_name'][0], 'ebd_id': ebd_id}).fetchall())
+                    where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name'''), {'obligor_name': bd_df[obligor_name][0], 'security_name': bd_df[security_name][0], 'ebd_id': ebd_id}).fetchall())
                 sd_df_dict = sd_df.to_dict(orient='records')
         except Exception as e:
             print(str(e)[:150])
+            Log.func_error(e=e)
         if len(bd_df.columns) > 0 and bd_df['is_manually_added'][0]:
             result = {
                 'mapping_data': df_dict[0],
