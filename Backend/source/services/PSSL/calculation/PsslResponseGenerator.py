@@ -133,13 +133,13 @@ class PsslResponseGenerator:
         total_bb = portfolio_df["Adjusted Borrowing Value"].sum()
 
         availability_df = self.calculator_info.intermediate_calculation_dict['Availability']
-        current_advances_outstanding_data = availability_df.loc[availability_df["Terms"] == "Current Advances Outstanding", "Values"].values[0]
+        pro_forma_advances_outstanding = availability_df.loc[availability_df["Terms"] == "Pro Forma Advances Outstanding", "Values"].values[0]
 
 
-        ordered_card_names = ["Borrowing Base","Current Advances Outstanding"]
+        ordered_card_names = ["Borrowing Base","Pro Forma Advances Outstanding"]
         card_data = {
             "Borrowing Base": [{"data": currency_to_float_to_numerize_to_currency(total_bb)}],
-            "Current Advances Outstanding": [{"data": currency_to_float_to_numerize_to_currency(current_advances_outstanding_data)}],
+            "Pro Forma Advances Outstanding": [{"data": currency_to_float_to_numerize_to_currency(pro_forma_advances_outstanding)}],
             "ordered_card_names": ordered_card_names
         }
         return card_data
