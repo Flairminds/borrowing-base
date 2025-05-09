@@ -957,26 +957,31 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
         fund_type = extract_base_data_info.fund_type
         obligor_name = None
         security_name = None
+        additional_column_condition = ''
         match fund_type:
             case "PCOF":
                 table_name = "pcof_base_data"
                 history_table_name = "pcof_base_data_history"
-                obligor_name = "issuer"
-                security_name = "investment_name"
             case "PFLT":
                 table_name = "pflt_base_data"
                 history_table_name = "pflt_base_data_history"
-                obligor_name = "obligor_name"
-                security_name = "security_name"
             case "PSSL":
                 table_name = "pssl_base_data"
                 history_table_name = "pssl_base_data_history"
-                obligor_name = "borrower"
         engine = db.get_engine()
         with engine.connect() as connection:
             df = pd.DataFrame(connection.execute(text(f'select sf.id, sf.file_type, sf.file_name, sf."extension", pbdm.bd_column_name, pbdm.bd_column_lookup, pbdm.sf_sheet_name, pbdm.sf_column_name, pbdm.sd_ref_table_name, case when pbdm.sf_column_lookup is null then pbdm.sf_column_name else pbdm.sf_column_lookup end as sf_column_lookup, sf_column_categories, formula, ebdi.files from extracted_base_data_info ebdi join source_files sf on sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id) join base_data_mapping pbdm on pbdm.sf_file_type = sf.file_type where ebdi.id = :ebd_id and pbdm.bd_column_lookup = :column_key and pbdm.fund_type = ebdi.fund_type'), {'ebd_id': ebd_id, 'column_key': column_key}).fetchall())
             bd_df = pd.DataFrame(connection.execute(text(f'select * from {table_name} where id = :data_id'), {'data_id': data_id}).fetchall())
-        
+        condition_values = None
+        match fund_type:
+            case "PCOF":
+                additional_column_condition = 'and ss."Security" = :security_name'
+                condition_values = {'obligor_name': bd_df["issuer"][0], 'security_name': bd_df["investment_name"][0], 'ebd_id': ebd_id}
+            case "PFLT":
+                additional_column_condition = 'and ss."Security" = :security_name'
+                condition_values = {'obligor_name': bd_df["obligor_name"][0], 'security_name': bd_df["security_name"][0], 'ebd_id': ebd_id}
+            case "PSSL":
+                condition_values = {'obligor_name': bd_df["borrower"][0], 'ebd_id': ebd_id}
         df = df.replace({np.nan: None})
         df_dict = df.to_dict(orient='records')
         try:
@@ -1026,7 +1031,7 @@ def get_source_file_data_detail(ebd_id, column_key, data_id):
 			            left join loan_type_mapping loan_mapping_marketbook on loan_mapping_marketbook.loan_type = ssm."Asset_Name" and (loan_mapping_marketbook.is_deleted = false or loan_mapping_marketbook.is_deleted is null)
 			            left join loan_type_master loan_master_marketbook on loan_master_marketbook.id = loan_mapping_marketbook.master_loan_type_id and loan_master_marketbook.fund_type = '{fund_type}'
 			            where ssm.source_file_id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :ebd_id)) as ssm on lower(regexp_replace(ch."Issuer/Borrower Name", '[^a-zA-Z0-9]','', 'g')) = lower(regexp_replace(ssm."Issuer_Name", '[^a-zA-Z0-9]','', 'g')) and t2.master_loan_type = ssm.master_loan_type
-                    where usbh."Issuer/Borrower Name" = :obligor_name and ss."Security" = :security_name'''), {'obligor_name': bd_df[obligor_name][0], 'security_name': bd_df[security_name][0], 'ebd_id': ebd_id}).fetchall())
+                    where usbh."Issuer/Borrower Name" = :obligor_name {additional_column_condition}'''), condition_values).fetchall())
                 sd_df_dict = sd_df.to_dict(orient='records')
         except Exception as e:
             print(str(e)[:150])
