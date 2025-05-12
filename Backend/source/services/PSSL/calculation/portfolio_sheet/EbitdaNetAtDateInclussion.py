@@ -29,8 +29,8 @@ class EbitdaNetAtDateInclussion:
         # =IF((CI11-CJ11)<0,CJ11,IF(CK11>CL11,(CJ11-(CI11-CJ11)*CL11),0))
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Excess Add-Backs"] = portfolio_df.apply(
-            lambda row: row["Add-Backs"] if (row["Initial TTM Adjusted EBITDA"] - row["Add-Backs"]) < 0
-                else (row["Add-Backs"] - (row["Initial TTM Adjusted EBITDA"] - row["Add-Backs"]) * row["Capped Add-Back %"] if row["Add-Back Cap (%)"] > row["Capped Add-Back %"] else 0),
+            lambda row: np.nan if pd.isnull(row["Add-Backs"]) or pd.isnull(row["Initial TTM Adjusted EBITDA"]) else (row["Add-Backs"] if (row["Initial TTM Adjusted EBITDA"] - row["Add-Backs"]) < 0
+                else (row["Add-Backs"] - (row["Initial TTM Adjusted EBITDA"] - row["Add-Backs"]) * row["Capped Add-Back %"] if row["Add-Back Cap (%)"] > row["Capped Add-Back %"] else 0)),
             axis=1
         )
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
@@ -45,7 +45,7 @@ class EbitdaNetAtDateInclussion:
         # =MAX(0,(1-CP11/CI11))
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["EBITDA Haircut"] = portfolio_df.apply(
-            lambda row: max(0, 1 - row["Permitted TTM EBITDA in Local Currency"] / row["Initial TTM Adjusted EBITDA"]) if row["Initial TTM Adjusted EBITDA"] != 0 else 0,
+            lambda row: np.nan if pd.isnull(row["Initial TTM Adjusted EBITDA"]) else (max(0, 1 - row["Permitted TTM EBITDA in Local Currency"] / row["Initial TTM Adjusted EBITDA"]) if row["Initial TTM Adjusted EBITDA"] != 0 else 0),
             axis=1
         )
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
@@ -82,7 +82,7 @@ class EbitdaNetAtDateInclussion:
         exchange_rate_map = self.calculator_info.intermediate_calculation_dict['exchange_rate_map']
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Initial Gross Senior Debt"] = portfolio_df.apply(
-            lambda row: exchange_rate_map.get(row["Approved Currency"], np.nan) * row["Initial Gross Senior Debt (Local Currency)"] if pd.notna(exchange_rate_map.get(row["Approved Currency"], np.nan)) else np.nan,
+            lambda row: np.nan if pd.isnull(row["Initial Gross Senior Debt (Local Currency)"]) else (exchange_rate_map.get(row["Approved Currency"], np.nan) * row["Initial Gross Senior Debt (Local Currency)"] if pd.notna(exchange_rate_map.get(row["Approved Currency"], np.nan)) else np.nan),
             axis=1
         )
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
@@ -92,7 +92,7 @@ class EbitdaNetAtDateInclussion:
         exchange_rate_map = self.calculator_info.intermediate_calculation_dict['exchange_rate_map']
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Initial Gross Total Debt"] = portfolio_df.apply(
-            lambda row: exchange_rate_map.get(row["Approved Currency"], np.nan) * row["Initial Gross Total Debt (Local Currency)"] if pd.notna(exchange_rate_map.get(row["Approved Currency"], np.nan)) else np.nan,
+            lambda row: np.nan if pd.isnull(row["Initial Gross Total Debt (Local Currency)"]) else (exchange_rate_map.get(row["Approved Currency"], np.nan) * row["Initial Gross Total Debt (Local Currency)"] if pd.notna(exchange_rate_map.get(row["Approved Currency"], np.nan)) else np.nan),
             axis=1
         )
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df

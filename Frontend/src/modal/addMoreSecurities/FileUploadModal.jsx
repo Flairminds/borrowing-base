@@ -245,8 +245,8 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		try {
 			setIsSaving(true);
 			const file = addsecFiles[0];
-			const proceed = await fetchColumnComparisonAndSetState(file, previewFundType);
-			if (!proceed) return;
+			// const proceed = await fetchColumnComparisonAndSetState(file, previewFundType);
+			// if (!proceed) return;
 			const sheetData = await readExcelFile(file);
 
 			if (!sheetData || sheetData.length < 2) {
