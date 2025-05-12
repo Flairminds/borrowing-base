@@ -33,7 +33,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."[SI] Currency" as "approved_currency",
                     bs."[ACM] [COI/LC] S&P Industry"  as "approved_industry",
                     case when ss."[SI] Type of Rate" like 'Fixed Rate%' then 'Yes' else 'No' end as is_fixed_rate,
-                    case when ch."Payment Period" = '3 Months' then 'Quarterly' when ch."Payment Period" = '1 Month' then 'Quarterly' when ch."Payment Period" = '6 Months' then 'Half-Yearly' else null end as interest_paid,
+                    case when ch."Payment Period" = '3 Months' then 'Qtrly' when ch."Payment Period" = '1 Month' then 'Qtrly' when ch."Payment Period" = '6 Months' then 'Mthly' else null end as interest_paid,
                     'No' as paid_less_than_qtrly,
                     ch."Deal Issue (Derived) Rating - S&P" as "sp_rating",
                     ch."Deal Issue (Derived) Rating - Moody's" as "moodys_rating",
