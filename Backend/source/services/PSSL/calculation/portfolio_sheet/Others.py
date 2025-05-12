@@ -300,19 +300,23 @@ class Others:
 
         def assigned_value_helper(row):
             try:
-                aj_value = row['Acquisition Price']
-                aj_check = aj_value if aj_value < 0.95 else 1.0  # 100% as 1.0 in Python
-                min_value = min(aj_check, row['Applicable Collateral Value'])
+                aj = row['Acquisition Price']
+                al = row['VAE (Recorded on VAE Tab)']
+                ao = row['Agent Assigned Value']
+                ap = row['Applicable Collateral Value']
+                ar = row['Failure to Deliver Financials Factor']
+                el = row['Reporting Failure Event']
 
-                if row['VAE (Recorded on VAE Tab)'] == 'Yes':
-                    inner_min = min(row['Agent Assigned Value'], min_value)
+                aj_val = aj if aj < 0.95 else 1.0  # 100% = 1.0 in Python
+                penalty = ar if el == 'Yes' else 0
+
+                if al == 'Yes':
+                    val = min(ao, aj_val, ap) - penalty
                 else:
-                    inner_min = min_value
+                    val = min(aj_val, ap) - penalty
 
-                subtractor = row['Failure to Deliver Financials Factor'] if row['Reporting Failure Event'] == 'Yes' else 0
-                result = inner_min - subtractor
+                return max(0, val)
 
-                return max(0, result)
             except:
                 return np.nan
 
@@ -505,6 +509,107 @@ class Others:
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Adjusted Borrowing Value"] = portfolio_df["First Lien Value"] + portfolio_df["Leverage Metrics 2nd Lien Value"] + portfolio_df["FLLO Value"] + portfolio_df["2nd Lien Value"] + portfolio_df["Recurring Revenue Value"]
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+
+    def tier(self):
+        # =IF(IF(T11="First Lien",IF(DD11<Tier_1_1L,Tier_1_ApplicableValue,IF(DD11<Tier_2_1L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(OR(T11="Second Lien",T11="Last Out"),IF(DE11<Tier_1_2L,Tier_1_ApplicableValue,IF(DE11<Tier_2_2L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(T11="Recurring Revenue",IF(DL11<Tier_1_RR,Tier_1_ApplicableValue,IF(DL11<Tier_2_RR,Tier_2_ApplicableValue,Tier_3_ApplicableValue)))))=100%,"Tier 1",IF(IF(T11="First Lien",IF(DD11<Tier_1_1L,Tier_1_ApplicableValue,IF(DD11<Tier_2_1L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(OR(T11="Second Lien",T11="Last Out"),IF(DE11<Tier_1_2L,Tier_1_ApplicableValue,IF(DE11<Tier_2_2L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(T11="Recurring Revenue",IF(DL11<Tier_1_RR,Tier_1_ApplicableValue,IF(DL11<Tier_2_RR,Tier_2_ApplicableValue,Tier_3_ApplicableValue)))))=92.5%,"Tier 2",IF(IF(T11="First Lien",IF(DD11<Tier_1_1L,Tier_1_ApplicableValue,IF(DD11<Tier_2_1L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(OR(T11="Second Lien",T11="Last Out"),IF(DE11<Tier_1_2L,Tier_1_ApplicableValue,IF(DE11<Tier_2_2L,Tier_2_ApplicableValue,Tier_3_ApplicableValue)),IF(T11="Recurring Revenue",IF(DL11<Tier_1_RR,Tier_1_ApplicableValue,IF(DL11<Tier_2_RR,Tier_2_ApplicableValue,Tier_3_ApplicableValue)))))=85%,"Tier 3","na")))
+        
+        try:
+            def tier_helper(row):
+                loan_type = row['Calculated Loan Type post AA Discretion']
+    
+                if loan_type == "First Lien":
+                    value = row['Initial Net Senior']
+                    if value < Tier_1_1L:
+                        applicable_value = Tier_1_ApplicableValue
+                    elif value < Tier_2_1L:
+                        applicable_value = Tier_2_ApplicableValue
+                    else:
+                        applicable_value = Tier_3_ApplicableValue
+
+                elif loan_type in ["Second Lien", "Last Out"]:
+                    value = row['Initial Net Total']
+                    if value < Tier_1_2L:
+                        applicable_value = Tier_1_ApplicableValue
+                    elif value < Tier_2_2L:
+                        applicable_value = Tier_2_ApplicableValue
+                    else:
+                        applicable_value = Tier_3_ApplicableValue
+
+                elif loan_type == "Recurring Revenue":
+                    value = row['Initial Multiple']
+                    if value < Tier_1_RR:
+                        applicable_value = Tier_1_ApplicableValue
+                    elif value < Tier_2_RR:
+                        applicable_value = Tier_2_ApplicableValue
+                    else:
+                        applicable_value = Tier_3_ApplicableValue
+                else:
+                    return "na"
+
+                if applicable_value == 1.00:
+                    return "Tier 1"
+                elif applicable_value == 0.925:
+                    return "Tier 2"
+                elif applicable_value == 0.85:
+                    return "Tier 3"
+                else:
+                    return "na"
+                
+            obligor_tiers_map = self.calculator_info.intermediate_calculation_dict['obligor_tiers_map']
+            Tier_1_ApplicableValue = obligor_tiers_map.get('tier_1_applicable_value')
+            Tier_2_ApplicableValue = obligor_tiers_map.get('tier_2_applicable_value')
+            Tier_3_ApplicableValue = obligor_tiers_map.get('tier_3_applicable_value')
+            Tier_1_1L = obligor_tiers_map.get('tier_1_1l')
+            Tier_1_2L = obligor_tiers_map.get('tier_1_2l')
+            Tier_2_1L = obligor_tiers_map.get('tier_2_1l')
+            Tier_2_2L = obligor_tiers_map.get('tier_2_2l')
+            Tier_1_RR = obligor_tiers_map.get('tier_1_rr')
+            Tier_2_RR = obligor_tiers_map.get('tier_2_rr')
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Tier"] = portfolio_df.apply(tier_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+        
+    def days_since_close(self):
+        # =(Availability!$F$12-Portfolio!BG11)
+        try:
+            def days_since_close_helper(row):
+                if row['Acquisition Date'] == None:
+                    acquisition_date = row['Origination Date']
+                else:
+                    acquisition_date = row['Acquisition Date']
+
+                if acquisition_date == None: # TODO: Check this again
+                    return 0
+                return measurement_date - acquisition_date
+            
+            availability_df = self.calculator_info.intermediate_calculation_dict['Availability']
+            measurement_date = availability_df.query("Terms == 'Measurement Date:'")["Values"].iloc[0].date()
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Days since Close"] = portfolio_df.apply(days_since_close_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+        
+    def remaining_term(self):
+        # =ROUND(YEARFRAC(BG11,BH11,1),2)
+        try:
+            def remaining_term_helper(row):
+                start_date = row['Acquisition Date']
+                end_date = row['Maturity Date']
+                if start_date == None:
+                    start_date = end_date
+                days_in_year = 365.25
+                if start_date is None or end_date is None:
+                    return 0
+                return round((end_date - start_date).days / days_in_year, 2)
+            
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Remaining Term"] = portfolio_df.apply(remaining_term_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
     
     def calculate_others(self):
         self.advance_rate_definition() # column 'U'
@@ -534,3 +639,6 @@ class Others:
         self.recurring_revenue_amount() # column 'BC'
         self.recurring_evenue_value() # column 'BD'
         self.adjusted_borrowing_value() # column 'W'
+        self.tier() # column 'BY'
+        self.days_since_close() # column 'BI'
+        self.remaining_term() # column 'BJ'

@@ -541,7 +541,7 @@ class ExcessConcTest:
             portfolio_df["DIP Loans Loan Limit"] = portfolio_df.apply(dip_loans_loan_limit_helper, axis=1)
             self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
         except Exception as e:
-            raise Exception()
+            raise Exception(e)
 
     def dip_loans_excess(self):
         # =IF(GK11>GI11,(GK11-GI11)*(GH11/SUMIF(GJ:GJ,"Yes",GH:GH)),0)
@@ -557,7 +557,7 @@ class ExcessConcTest:
             portfolio_df["DIP Loans Excess"] = portfolio_df.apply(dip_loans_excess_helper, axis=1)
             self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
         except Exception as e:
-            raise Exception()
+            raise Exception(e)
     
     def dip_loans_revised_value(self):
         # =MAX(0,GH11-GL11)
@@ -571,7 +571,7 @@ class ExcessConcTest:
             portfolio_df["DIP Loans Revised Value"] = portfolio_df.apply(dip_loans_revised_value_helper, axis=1)
             self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
         except Exception as e:
-            raise Exception()
+            raise Exception(e)
 
     def ddtl_and_revolving_loans_max(self):
         # ='Concentration Limits'!$J$48
@@ -580,10 +580,758 @@ class ExcessConcTest:
             portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
 
             applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'DDTL and Revolving Loans', 'Applicable Limit'].iloc[0]
-            portfolio_df["DIP Loans Max"] = applicable_limit
+            portfolio_df["DDTL and Revolving Loans Max"] = applicable_limit
             self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
         except Exception as e:
-            raise Exception()
+            raise Exception(e)
+
+    def ddtl_and_revolving_loans_qualifies(self):
+        # =IF(OR($BP11="Yes",$BQ11="Yes"), "Yes", "No")
+        try:
+            def ddtl_and_revolving_loans_qualifies_helper(row):
+                if row["DDTL"] == "Yes" or row["Revolver"] == "Yes":
+                    return "Yes"
+                else:
+                    return "No"
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["DDTL and Revolving Loans Qualifies?"] = portfolio_df.apply(ddtl_and_revolving_loans_qualifies_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def ddtl_and_revolving_loans_loan_limit(self):
+        # =IF(GO11="Yes",SUM(SUMIF(BP:BP,"Yes",GM:GM),SUMIF(BQ:BQ,"Yes",AH:AH)),0)
+        try:
+            def ddtl_and_revolving_loans_loan_limit_helper(row):
+                if row['DDTL and Revolving Loans Qualifies?'] == 'Yes':
+                    sum1 = portfolio_df.loc[portfolio_df['DDTL'] == 'Yes', 'DIP Loans Revised Value'].sum()
+                    sum2 = portfolio_df.loc[portfolio_df['Revolver'] == 'Yes', 'Borrowing Unfunded Amount (USD)'].sum()
+                    result = sum1 + sum2
+                    return result
+                else:
+                    result = 0
+                    return result
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["DDTL and Revolving Loans Loan Limit"] = portfolio_df.apply(ddtl_and_revolving_loans_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def ddtl_and_revolving_loans_excess(self):
+        # =IF(GP11>GN11,(GP11-GN11)*(GM11/SUMIF(GO:GO,"Yes",GM:GM)),0)
+        try:
+            def ddtl_and_revolving_loans_excess_helper(row):
+                if row['DDTL and Revolving Loans Loan Limit'] > row['DDTL and Revolving Loans Max']:
+                    return (row['DDTL and Revolving Loans Loan Limit'] - row['DDTL and Revolving Loans Max']) * (row['DIP Loans Revised Value'] / total_gm_yes)
+                else:
+                    return 0
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            total_gm_yes = portfolio_df.loc[portfolio_df['DDTL and Revolving Loans Qualifies?'] == 'Yes', 'DIP Loans Revised Value'].sum()
+            portfolio_df["DDTL and Revolving Loans Excess"] = portfolio_df.apply(ddtl_and_revolving_loans_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def ddtl_and_revolving_loans_revised_value(self):
+        # =MAX(0,GM11-GQ11)
+        try:
+            def ddtl_and_revolving_loans_revised_value_helper(row):
+                return max(0, row['DIP Loans Revised Value'] - row['DDTL and Revolving Loans Excess'])
+            
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["DDTL and Revolving Loans Revised Value"] = portfolio_df.apply(ddtl_and_revolving_loans_revised_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def pay_less_frequently_than_quarterly_max(self):
+        # ='Concentration Limits'!$J$49
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Pay Less Frequently than Quarterly', 'Applicable Limit'].iloc[0]
+            portfolio_df["Pay Less Frequently than Quarterly Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def pay_less_frequently_than_quarterly_qualifies(self):
+        # =IF($CC11="Yes", "Yes", "No")
+        try:
+            def pay_less_frequently_than_quarterly_qualifies_helper(row):
+                if row["Paid Less than Qtrly"] == "Yes":
+                    return "Yes"
+                else:
+                    return "No"
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Pay Less Frequently than Quarterly Qualifies?"] = portfolio_df.apply(pay_less_frequently_than_quarterly_qualifies_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df  
+        except Exception as e:
+            raise Exception(e)
+        
+    def pay_less_frequently_than_quarterly_loan_limit(self):
+        # =IF(GT11="Yes",SUMIF(GT:GT,"Yes",GR:GR),0)
+        try:
+            def pay_less_frequently_than_quarterly_loan_limit_helper(row):
+                if row["Pay Less Frequently than Quarterly Qualifies?"] == "Yes":
+                    return portfolio_df.loc[portfolio_df["Pay Less Frequently than Quarterly Qualifies?"] == "Yes", "DDTL and Revolving Loans Revised Value"].sum()
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Pay Less Frequently than Quarterly Loan Limit"] = portfolio_df.apply(pay_less_frequently_than_quarterly_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def pay_less_frequently_than_quarterly_excess(self):
+        # =IF(GU11>GS11,(GU11-GS11)*(GR11/SUMIF(GT:GT,"Yes",GR:GR)),0)
+        try:
+            def pay_less_frequently_than_quarterly_excess_helper(row):
+                if row['Pay Less Frequently than Quarterly Loan Limit'] > row['Pay Less Frequently than Quarterly Max']:
+                    sum_gr = portfolio_df.loc[portfolio_df['Pay Less Frequently than Quarterly Qualifies?'] == "Yes", 'DDTL and Revolving Loans Revised Value'].sum()
+                    if sum_gr != 0:
+                        return (row['Pay Less Frequently than Quarterly Loan Limit'] - row['Pay Less Frequently than Quarterly Max']) * (row['DDTL and Revolving Loans Revised Value'] / sum_gr)
+                return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df[["Pay Less Frequently than Quarterly Loan Limit"]] = portfolio_df[["Pay Less Frequently than Quarterly Loan Limit"]].fillna(0.0)
+            portfolio_df["Pay Less Frequently than Quarterly Excess"] = portfolio_df.apply(pay_less_frequently_than_quarterly_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def pay_less_frequently_than_quarterly_revised_value(self):
+        # =MAX(0,GR11-GV11)
+        try:
+            def pay_less_frequently_than_quarterly_revised_value_helper(row):
+                return max(0, row['DDTL and Revolving Loans Revised Value'] - row['Pay Less Frequently than Quarterly Excess'])
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Pay Less Frequently than Quarterly Revised Value"] = portfolio_df.apply(pay_less_frequently_than_quarterly_revised_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def approved_foreign_currency_max(self):
+        # ='Concentration Limits'!$J$50
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Loans denominated in Approved Foreign Currency', 'Applicable Limit'].iloc[0]
+            portfolio_df["Pay Less Frequently than Quarterly Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def approved_foreign_currency_qualifies(self):
+        # =IF(BT11<>"USD","Yes", "No")
+        try:
+            def approved_foreign_currency_qualifies_helper(row):
+                if row["Approved Currency"] != "USD":
+                    return "Yes"
+                else:
+                    return "No"
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Approved Foreign Currency Qualifies?"] = portfolio_df.apply(approved_foreign_currency_qualifies_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def approved_foreign_currency_loan_limit(self):
+        # =IF(GY11="Yes",SUMIF(GY:GY,"Yes",GW:GW),0)
+        try:
+            def  approved_foreign_currency_loan_limit_helper(row):
+                if row["Approved Foreign Currency Qualifies?"] == "Yes":
+                    return portfolio_df.loc[portfolio_df["Approved Foreign Currency Qualifies?"] == "Yes", "Pay Less Frequently than Quarterly Revised Value"].sum()
+                else:
+                    return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Approved Foreign Currency Loan Limit"] = portfolio_df.apply(approved_foreign_currency_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def approved_foreign_currency_excess(self):
+        # =IF(GZ11>GX11,(GZ11-GX11)*(GW11/SUMIF(GY:GY,"Yes",GW:GW)),0)
+        try:
+            def approved_foreign_currency_excess_helper(row):
+                if row['Approved Foreign Currency Loan Limit'] > row['Pay Less Frequently than Quarterly Max']:
+                    yes_sum = portfolio_df.loc[portfolio_df['Approved Foreign Currency Qualifies?'] == 'Yes', 'Pay Less Frequently than Quarterly Revised Value'].sum()
+                    return (row['Approved Foreign Currency Loan Limit'] - row['Pay Less Frequently than Quarterly Max']) * (row['Pay Less Frequently than Quarterly Revised Value'] / yes_sum) if yes_sum != 0 else 0
+                return 0
+            
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Approved Foreign Currency Excess"] = portfolio_df.apply(approved_foreign_currency_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def approved_foreign_currency_revised_value(self):
+        # =MAX(0,GW11-HA11)
+        try:
+            def approved_foreign_currency_revised_value_helper(row):
+                return max(0, row['Pay Less Frequently than Quarterly Revised Value'] - row['Approved Foreign Currency Excess'])
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Approved Foreign Currency Revised Value"] = portfolio_df.apply(approved_foreign_currency_revised_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def approved_foreign_country_max(self):
+        # ='Concentration Limits'!$J$51
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Loans to Obligors domiciled in Approved Foreign Country', 'Applicable Limit'].iloc[0]
+            portfolio_df["Approved Foreign Country Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def approved_foreign_country_qualifies(self):
+        # =IF(BS11<>"United States","Yes", "No")
+        try:
+            def approved_foreign_country_qualifies_helper(row):
+                if row["Approved Country"] != "United States":
+                    return "Yes"
+                else:
+                    return "No"
+                
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Approved Foreign Country Qualifies?"] = portfolio_df.apply(approved_foreign_country_qualifies_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def approved_foreign_country_loan_limit(self):
+        # =IF(HD11="Yes",SUMIF(HD:HD,"Yes",HB:HB),0)
+        try:
+            def approved_foreign_country_loan_limit_helper(row):
+                if row["Approved Foreign Country Qualifies?"] == "Yes":
+                    return portfolio_df.loc[portfolio_df["Approved Foreign Country Qualifies?"] == "Yes", "Approved Foreign Currency Revised Value"].sum()
+                else:
+                    return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Approved Foreign Country Loan Limit"] = portfolio_df.apply(approved_foreign_country_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def approved_foreign_country_excess(self):
+        # =IF(HE11>HC11,(HE11-HC11)*(HB11/SUMIF(HD:HD,"Yes",HB:HB)),0)
+        try:
+            def approved_foreign_country_excess_helper(row):
+                try:
+                    if row['Approved Foreign Country Loan Limit'] > row['Approved Foreign Country Max']:
+                        total = portfolio_df.loc[portfolio_df['Approved Foreign Country Qualifies?'] == 'Yes', 'Approved Foreign Currency Revised Value'].sum()
+                        return (row['Approved Foreign Country Loan Limit'] - row['Approved Foreign Country Max']) * (row['Approved Foreign Currency Revised Value'] / total) if total != 0 else 0
+                    return 0
+                except:
+                    return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Approved Foreign Country Excess"] = portfolio_df.apply(approved_foreign_country_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def approved_foreign_country_revised_value(self):
+        # =MAX(0,HB11-HF11)
+        try:
+            def approved_foreign_country_revised_value_hrlper(row):
+                return max(0, row['Approved Foreign Currency Revised Value'] - row['Approved Foreign Country Excess'])
+            
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Approved Foreign Country Revised Value"] = portfolio_df.apply(approved_foreign_country_revised_value_hrlper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def cov_lite_max(self):
+        # ='Concentration Limits'!$J$52
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Cov-Lite', 'Applicable Limit'].iloc[0]
+            
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Cov-Lite Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def cov_lite_qualifies(self):
+        # =BM11
+        try:
+            def cov_lite_qualifies_helper(row):
+                return row["Cov-Lite"]
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Cov-Lite Qualifies?"] = portfolio_df.apply(cov_lite_qualifies_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+    
+    def cov_lite_loan_limit(self):
+        # =IF(HI11="Yes",SUMIF(HI:HI,"Yes",HG:HG),0)
+        try:
+            def cov_lite_loan_limit_helper(row):
+                if row["Cov-Lite Qualifies?"] == "Yes":
+                    return portfolio_df.loc[portfolio_df["Cov-Lite Qualifies?"] == "Yes", "Approved Foreign Country Revised Value"].sum()
+                else:
+                    return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Cov-Lite Loan Limit"] = portfolio_df.apply(cov_lite_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def cov_lite_excess(self):
+        # =IF(HJ11>HH11,(HJ11-HH11)*(HG11/SUMIF(HI:HI,"Yes",HG:HG)),0)
+        try:
+            def cov_lite_excess_helper(row):
+                try:
+                    if row['Cov-Lite Loan Limit'] > row['Cov-Lite Max']:
+                        total = portfolio_df.loc[portfolio_df['Cov-Lite Qualifies?'] == 'Yes', 'Approved Foreign Country Revised Value'].sum()
+                        return (row['Cov-Lite Loan Limit'] - row['Cov-Lite Max']) * (row['Approved Foreign Country Revised Value'] / total) if total != 0 else 0
+                    return 0
+                except:
+                    return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Cov-Lite Excess"] = portfolio_df.apply(cov_lite_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def cov_lite_revised_value(self):
+        # =MAX(0,HG11-HK11)
+        try:
+            def cov_lite_revised_value_helper(row):
+                return max(0, row['Approved Foreign Country Revised Value'] - row['Cov-Lite Excess'])
+                
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Cov-Lite Revised Value"] = portfolio_df.apply(cov_lite_revised_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def tier_3_obligors_max(self):
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Tier 3 Obligors (Measured at Inclusion)', 'Applicable Limit'].iloc[0]
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Tier 3 Obligors (Measured at Inclusion) Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def tier_3_obligors_qualifies(self):
+        # =IFERROR(IF(AND(BK11="Yes",BY11="Tier 3"),"Yes", "No"),0)
+        try:
+            def tier_3_obligors_qualifies_helper(row):
+                try:
+                    if row['Eligibility Check'] == 'Yes' and row['Tier'] == 'Tier 3':
+                        return 'Yes'
+                    else:
+                        return 'No'
+                except:
+                    return 0
+                
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Tier 3 Obligors (Measured at Inclusion) Qualifies?"] = portfolio_df.apply(tier_3_obligors_qualifies_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def tier_3_obligors_loan_limit(self):
+        # =IF(HN11="Yes",SUMIF(HN:HN,"Yes",HL:HL),0)
+        try:
+            def tier_3_obligors_loan_limit(row):
+                try:
+                    if row['Tier 3 Obligors (Measured at Inclusion) Qualifies?'] == "Yes":
+                        total = portfolio_df.loc[portfolio_df['Tier 3 Obligors (Measured at Inclusion) Qualifies?'] == 'Yes', 'Cov-Lite Revised Value'].sum()
+                        return total
+                    return 0
+                except:
+                    return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Tier 3 Obligors (Measured at Inclusion) Loan Limit"] = portfolio_df.apply(tier_3_obligors_loan_limit, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+            
+    def tier_3_obligors_excess(self):
+        # =IF(HO11>HM11, (HO11-HM11) * (HL11 / SUMIF(HN:HN, "Yes", HL:HL)), 0)
+        try:
+            def tier_3_obligors_excess_helper(row):
+                if row['Tier 3 Obligors (Measured at Inclusion) Loan Limit'] > row['Tier 3 Obligors (Measured at Inclusion) Max']:
+                    return (row['Tier 3 Obligors (Measured at Inclusion) Loan Limit'] - row['Tier 3 Obligors (Measured at Inclusion) Qualifies?']) * (row['Cov-Lite Revised Value'] / yes_sum)
+                else:
+                    return 0
+                
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            yes_sum = portfolio_df.loc[portfolio_df['Tier 3 Obligors (Measured at Inclusion) Qualifies?'] == 'Yes', 'Cov-Lite Revised Value'].sum()
+            portfolio_df["Tier 3 Obligors (Measured at Inclusion) Excess"] = portfolio_df.apply(tier_3_obligors_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def tier_3_obligors_revised_value(self):
+        # =MAX(0,HL11-HP11)
+        try:
+            def tier_3_obligors_revised_value_helper(row):
+                return max(0, row['Cov-Lite Revised Value'] - row['Tier 3 Obligors (Measured at Inclusion) Excess'])
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Tier 3 Obligors (Measured at Inclusion) Revised Value"] = portfolio_df.apply(tier_3_obligors_revised_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def second_lien_loans_max(self):
+        # ='Concentration Limits'!$J$54
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Second Lien Loans', 'Applicable Limit'].iloc[0]
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Second Lien Loans Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def second_lien_loans_qualify(self):
+        # =IF(T11="Second Lien","Yes","No")
+        try:
+            def second_lien_loans_qualify_helper(row):
+                if row["Calculated Loan Type post AA Discretion"] == "Second Lien":
+                    return "Yes"
+                else:
+                    return "No"
+                
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Second Lien Loans Qualifies?"] = portfolio_df.apply(second_lien_loans_qualify_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def second_lien_loans_loan_limit(self):
+        # =IF(HS11="Yes",SUMIF(HS:HS,"Yes",HQ:HQ),0)
+        try:
+            def second_lien_loans_loan_limit_helper(row):
+                try:
+                    if row['Second Lien Loans Qualifies?'] == "Yes":
+                        total = portfolio_df.loc[portfolio_df['Second Lien Loans Qualifies?'] == 'Yes', 'Tier 3 Obligors (Measured at Inclusion) Revised Value'].sum()
+                        return total
+                    return 0
+                except:
+                    return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Second Lien Loans Loan Limit"] = portfolio_df.apply(second_lien_loans_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def second_lien_loans_excess(self):
+        # =IF(HT11>HR11,(HT11-HR11)*(HQ11/SUMIF(HS:HS,"Yes",HQ:HQ)),0)
+        try:
+            def second_lien_loans_excess_helper(row):
+                if row['Second Lien Loans Loan Limit'] > row['Second Lien Loans Max']:
+                    return (row['Second Lien Loans Loan Limit'] - row['Second Lien Loans Max']) * (row['Tier 3 Obligors (Measured at Inclusion) Revised Value'] / sum_if_yes)
+                return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            sum_if_yes = portfolio_df.loc[portfolio_df['Second Lien Loans Qualifies?'] == 'Yes', 'Tier 3 Obligors (Measured at Inclusion) Revised Value'].sum()
+            portfolio_df["Second Lien Loans Excess"] = portfolio_df.apply(second_lien_loans_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def second_lien_loans_revisd_value(self):
+        # =MAX(0,HQ11-HU11)
+        try:
+            def second_lien_loans_revisd_value_helper(row):
+                return max(0, row['Tier 3 Obligors (Measured at Inclusion) Revised Value'] - row['Second Lien Loans Excess'])
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Second Lien Loans Revised Value"] = portfolio_df.apply(second_lien_loans_revisd_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def first_lien_last_out_max(self):
+        # ='Concentration Limits'!$J$55
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Second Lien Loans', 'Applicable Limit'].iloc[0]
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["First Lien Last Out Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def first_lien_last_out_qualify(self):
+        # =IF(T11="Last Out","Yes","No")
+        try:
+            def first_lien_last_out_qualify_helper(row):
+                if row["Calculated Loan Type post AA Discretion"] == "Last Out":
+                    return "Yes"
+                else:
+                    return "No"
+                
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["First Lien Last Out Qualifies?"] = portfolio_df.apply(first_lien_last_out_qualify_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+    
+    def first_lien_last_out_loan_limit(self):
+        # =IF(HX11="Yes",SUMIF(HX:HX,"Yes",HV:HV),0)
+        try:
+            def first_lien_last_out_loan_limit_helper(row):
+                if row['First Lien Last Out Qualifies?'] == 'Yes':
+                    return portfolio_df.loc[portfolio_df['First Lien Last Out Qualifies?'] == 'Yes', 'First Lien Last Out Max'].sum()
+                return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["First Lien Last Out Loan Limit"] = portfolio_df.apply(first_lien_last_out_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def first_lien_last_out_excess(self):
+        # =IF(HY11>HW11,(HY11-HW11)*(HV11/SUMIF(HX:HX,"Yes",HV:HV)),0)
+        try:
+            def first_lien_last_out_excess_helper(row):
+                if row['First Lien Last Out Loan Limit'] > row['First Lien Last Out Max']:
+                    sum_hv = portfolio_df.loc[portfolio_df['First Lien Last Out Qualifies?'] == 'Yes', 'Second Lien Loans Revised Value'].sum()
+                    if sum_hv != 0:
+                        return (row['First Lien Last Out Loan Limit'] - row['First Lien Last Out Max']) * (row['Second Lien Loans Revised Value'] / sum_hv)
+                return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["First Lien Last Out Excess"] = portfolio_df.apply(first_lien_last_out_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def first_lien_last_out_revised_value(self):
+        # =MAX(0,HV11-HZ11)
+        try:
+            def first_lien_last_out_revised_value_helper(row):
+                return max(0, row['Second Lien Loans Revised Value'] - row['First Lien Last Out Excess'])
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["First Lien Last Out Revised Value"] = portfolio_df.apply(first_lien_last_out_revised_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    
+    def loans_with_remaining_maturity_gt_6_years_max(self):
+        # ='Concentration Limits'!$J$56
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Loans with Remaining Maturity > 6 Years', 'Applicable Limit'].iloc[0]
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Loans with Remaining Maturity > 6 Years Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def loans_with_remaining_maturity_gt_6_years_qualifies(self):
+        # =IF(BJ11>6,"Yes", "No")
+        try:
+            def loans_with_remaining_maturity_gt_6_years_qualifies_helper(row):
+                if row["Remaining Term"] > 6:
+                    return "Yes"
+                else:
+                    return "No"
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Loans with Remaining Maturity > 6 Years Qualifies?"] = portfolio_df.apply(loans_with_remaining_maturity_gt_6_years_qualifies_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def loans_with_remaining_maturity_gt_6_years_loan_limit(self):
+        # =IF(IC11="Yes",SUMIF(IC:IC,"Yes",IA:IA),0)
+        try:
+            def loans_with_remaining_maturity_gt_6_years_loan_limit_helper(row):
+                if row['Loans with Remaining Maturity > 6 Years Qualifies?'] == 'Yes':
+                    return portfolio_df.loc[portfolio_df['Loans with Remaining Maturity > 6 Years Qualifies?'] == 'Yes', 'Second Lien Loans Revised Value'].sum()
+                return 0
+            
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Loans with Remaining Maturity > 6 Years Loan Limit"] = portfolio_df.apply(loans_with_remaining_maturity_gt_6_years_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def loans_with_remaining_maturity_gt_6_years_excess(self):
+        # =IF(ID11>IB11,(ID11-IB11)*(IA11/SUMIF(IC:IC,"Yes",IA:IA)),0)
+        try:
+            def loans_with_remaining_maturity_gt_6_years_excess(row):
+                if row['Loans with Remaining Maturity > 6 Years Loan Limit'] > row['Loans with Remaining Maturity > 6 Years Max']:
+                    denominator = portfolio_df.loc[portfolio_df['Loans with Remaining Maturity > 6 Years Qualifies?'] == "Yes", 'First Lien Last Out Revised Value'].sum()
+                    if denominator != 0:
+                        return (row['Loans with Remaining Maturity > 6 Years Loan Limit'] - row['Loans with Remaining Maturity > 6 Years Max']) * (row['First Lien Last Out Revised Value'] / denominator)
+                return 0
+            
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Loans with Remaining Maturity > 6 Years Excess"] = portfolio_df.apply(loans_with_remaining_maturity_gt_6_years_excess, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def loans_with_remaining_maturity_gt_6_years_revised_value(self):
+        # =MAX(0,IA11-IE11)
+        try:
+            def loans_with_remaining_maturity_gt_6_years_revised_value_helper(row):
+                return max(0, row['First Lien Last Out Revised Value'] - row['Loans with Remaining Maturity > 6 Years Excess'])
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Loans with Remaining Maturity > 6 Years Revised Value"] = portfolio_df.apply(loans_with_remaining_maturity_gt_6_years_revised_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def recurring_revenue_max(self):
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Recurring Revenue Loans', 'Applicable Limit'].iloc[0]
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Recurring Revenue Loans Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def recurring_revenue_qualifies(self):
+        # =IF(T11="Recurring Revenue","Yes","No")
+        try:
+            def recurring_revenue_qualifies_helper(row):
+                if row["Calculated Loan Type post AA Discretion"] == "Recurring Revenue":
+                    return "Yes"
+                else:
+                    return "No"
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Recurring Revenue Loans Qualifies?"] = portfolio_df.apply(recurring_revenue_qualifies_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def recurring_revenue_loan_limit(self):
+        # =IF(IH11="Yes",SUMIF(IH:IH,"Yes",IF:IF),0)
+        try:
+            def recurring_revenue_loan_limit_helper(row):
+                if row['Recurring Revenue Loans Qualifies?'] == "Yes":
+                    return portfolio_df.loc[portfolio_df['Recurring Revenue Loans Qualifies?'] == 'Yes', 'Loans with Remaining Maturity > 6 Years Revised Value'].sum()
+                else:
+                    return 0
+                
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Recurring Revenue Loans Loan Limit"] = portfolio_df.apply(recurring_revenue_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+    
+    def recurring_revenue_excess(self):
+        # =IF(II11>IG11,(II11-IG11)*(IF11/SUMIF(IH:IH,"Yes",IF:IF)),0)
+        try:
+            def recurring_revenue_excess_helper(row):
+                if row['Recurring Revenue Loans Loan Limit'] > row['Recurring Revenue Loans Max']:
+                    sum_if = portfolio_df.loc[portfolio_df['Recurring Revenue Loans Qualifies?'] == "Yes", 'Loans with Remaining Maturity > 6 Years Revised Value'].sum()
+                    if sum_if != 0:
+                        return (row['Recurring Revenue Loans Loan Limit'] - row['Recurring Revenue Loans Max']) * (row['Loans with Remaining Maturity > 6 Years Revised Value'] / sum_if)
+                return 0
+            
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Recurring Revenue Loans Excess"] = portfolio_df.apply(recurring_revenue_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def recurring_revenue_revised_value(self):
+        # =MAX(0,IF11-IJ11)
+        try:
+            def recurring_revenue_revised_value_helper(row):
+                return max(0, row['Loans with Remaining Maturity > 6 Years Revised Value'] - row['Recurring Revenue Loans Excess'])
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Recurring Revenue Loans Revised Value"] = portfolio_df.apply(recurring_revenue_revised_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def fixed_rate_loans_max(self):
+        # ='Concentration Limits'!$J$58
+        try:
+            conc_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+            applicable_limit = conc_limit_df.loc[conc_limit_df['test_name'] == 'Fixed Rate Loans', 'Applicable Limit'].iloc[0]
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Fixed Rate Loans Max"] = applicable_limit
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def fixed_rate_loans_qualifies(self):
+        # =CA11
+        try:
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Fixed Rate Loans Qualifies?"] = portfolio_df["Is Fixed Rate"]
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+        
+    def fixed_rate_loans_loan_limit(self):
+        # =IF(IM11="Yes",SUMIF(IM:IM,"Yes",IK:IK),0)
+        try:
+            def fixed_rate_loans_loan_limit_helper(row):
+                if row["Fixed Rate Loans Qualifies?"] == "Yes":
+                    portfolio_df.loc[portfolio_df["Fixed Rate Loans Qualifies?"] == "Yes", "Recurring Revenue Loans Revised Value"].sum()
+                else:
+                    return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Fixed Rate Loans Loan Limit"] = portfolio_df.apply(fixed_rate_loans_loan_limit_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def fixed_rate_loans_excess(self):
+        # =IF(IN11>IL11,(IN11-IL11)*(IK11/SUMIF(IM:IM,"Yes",IK:IK)),0)
+        try:
+            def fixed_rate_loans_excess_helper(row):
+                if row['Fixed Rate Loans Loan Limit'] > row['Fixed Rate Loans Max']:
+                    denominator = portfolio_df.loc[portfolio_df['Fixed Rate Loans Qualifies?'] == 'Yes', 'Recurring Revenue Loans Revised Value'].sum()
+                    if denominator != 0:
+                        return (row['Fixed Rate Loans Loan Limit'] - row['Fixed Rate Loans Max']) * (row['Recurring Revenue Loans Revised Value'] / denominator)
+                return 0
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Fixed Rate Loans Excess"] = portfolio_df.apply(fixed_rate_loans_excess_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
+
+    def fixed_rate_loans_revised_value(self):
+        # =MAX(0,IK11-IO11)
+        try:
+            def fixed_rate_loans_revised_value_helper(row):
+                return max(0, row['Fixed Rate Loans Excess'] - row['Fixed Rate Loans Excess'])
+
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Fixed Rate Loans Revised Value"] = portfolio_df.apply(fixed_rate_loans_revised_value_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception(e)
 
     def calculate_excess_concentrations(self):
         self.pre_excess_concentration_adjusted_borrowing_value() # column 'ES'
@@ -651,3 +1399,77 @@ class ExcessConcTest:
 
         # (g) DDTL and Revolving Loans
         self.ddtl_and_revolving_loans_max() # column 'GN'
+        self.ddtl_and_revolving_loans_qualifies() # column 'GO'
+        self.ddtl_and_revolving_loans_loan_limit() # column 'GP'
+        self.ddtl_and_revolving_loans_excess() # column 'GQ'
+        self.ddtl_and_revolving_loans_revised_value() # column 'GR'
+
+        # (h) Pay Less Frequently than Quarterly
+        self.pay_less_frequently_than_quarterly_max() # column 'GS'
+        self.pay_less_frequently_than_quarterly_qualifies() # column 'GT'
+        self.pay_less_frequently_than_quarterly_loan_limit() # column 'GU'
+        self.pay_less_frequently_than_quarterly_excess() # column 'GV'
+        self.pay_less_frequently_than_quarterly_revised_value() # column 'GW'
+
+        # (i) Approved Foreign Currency
+        self.approved_foreign_currency_max() # column 'GX'
+        self.approved_foreign_currency_qualifies() # column 'GY'
+        self.approved_foreign_currency_loan_limit() # column 'GZ'
+        self.approved_foreign_currency_excess() # colum 'HA'
+        self.approved_foreign_currency_revised_value() # column 'HB'
+
+        # (j) Approved Foreign Country
+        self.approved_foreign_country_max() # column 'HC'
+        self.approved_foreign_country_qualifies() # column 'HD'
+        self.approved_foreign_country_loan_limit() # column 'HE'
+        self.approved_foreign_country_excess() # column 'HF'
+        self.approved_foreign_country_revised_value() # column 'HG'
+
+        # (k) Cov-Lite
+        self.cov_lite_max() # column 'HH'
+        self.cov_lite_qualifies() # column 'HI'
+        self.cov_lite_loan_limit() # column 'HJ'
+        self.cov_lite_excess() # column 'HK'
+        self.cov_lite_revised_value()  # column 'HL'
+
+        # (l) Tier 3 Obligors (Measured at Inclusion)
+        self.tier_3_obligors_max() # column 'HM'
+        self.tier_3_obligors_qualifies() # column 'HN'
+        self.tier_3_obligors_loan_limit() # column 'HO'
+        self.tier_3_obligors_excess() # 'column HP'
+        self.tier_3_obligors_revised_value() # column 'HQ'
+
+        # Second Lien Loans
+        self.second_lien_loans_max() # column 'HR'
+        self.second_lien_loans_qualify() # column 'HS'
+        self.second_lien_loans_loan_limit() # column 'HT'
+        self.second_lien_loans_excess() # column 'HU'
+        self.second_lien_loans_revisd_value() # column 'HV'
+
+        # (n) First Lien Last Out
+        self.first_lien_last_out_max() # column 'HW'
+        self.first_lien_last_out_qualify() # column 'HX'
+        self.first_lien_last_out_loan_limit() # column 'HY'
+        self.first_lien_last_out_excess() # column 'HZ'
+        self.first_lien_last_out_revised_value() # column 'IA'
+
+        # (o) Loans with Remaining Maturity > 6 Years
+        self.loans_with_remaining_maturity_gt_6_years_max() # column 'IB'
+        self.loans_with_remaining_maturity_gt_6_years_qualifies() # column 'IC'
+        self.loans_with_remaining_maturity_gt_6_years_loan_limit() # column 'ID'
+        self.loans_with_remaining_maturity_gt_6_years_excess() # column 'IE'
+        self.loans_with_remaining_maturity_gt_6_years_revised_value() # column 'IF'
+        
+        # (p) Recurring Revenue
+        self.recurring_revenue_max() # column 'IG'
+        self.recurring_revenue_qualifies() # column 'IH'
+        self.recurring_revenue_loan_limit() # column 'II'
+        self.recurring_revenue_excess() # column 'IJ'
+        self.recurring_revenue_revised_value() # column 'IK'
+
+        # (q) Fixed Rate Loans
+        self.fixed_rate_loans_max() # column 'IL'
+        self.fixed_rate_loans_qualifies() # column 'IM'
+        self.fixed_rate_loans_loan_limit() # column 'IN'
+        self.fixed_rate_loans_excess() # column 'IO'
+        self.fixed_rate_loans_revised_value() # column 'IP'

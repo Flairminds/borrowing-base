@@ -374,38 +374,8 @@ export const PSSLData = {
 	availability: {
 		Header: [
 			{
-				name: "effective_date",
-				label: "Effective Date",
-				type: "datePicker"
-			},
-			{
-				name: "scheduled_revolving_period_end_date",
-				label: "Scheduled Revolving Period End Date",
-				type: "datePicker"
-			},
-			{
-				name: "termination_date",
-				label: "Termination Date:",
-				type: "datePicker"
-			},
-			{
 				name: "determination_date",
 				label: "Determination Date",
-				type: "datePicker"
-			},
-			{
-				name: "payment_date",
-				label: "Payment Date",
-				type: "datePicker"
-			},
-			{
-				name: "reporting_date",
-				label: "Reporting Date",
-				type: "datePicker"
-			},
-			{
-				name: "advance_date",
-				label: "Advance Date",
 				type: "datePicker"
 			},
 			{
@@ -421,11 +391,6 @@ export const PSSLData = {
 			{
 				name: "on_deposit_in_unfunded_exposure_account",
 				label: "On Deposit in Unfunded Exposure Account",
-				type: "text"
-			},
-			{
-				name: "cash_on_deposit_in_principal_collections_account",
-				label: "Cash on deposit in Principal Collections Account ($)",
 				type: "text"
 			},
 			{
@@ -447,7 +412,12 @@ export const PSSLData = {
 				name: "advances_requested",
 				label: "Advances Requested",
 				type: "text"
-			}
+			},
+			{
+				name: "cash_on_deposit_in_principal_collections_account",
+				label: "Cash on deposit in Principal Collections Account ($)",
+				type: "text"
+			},
 		]
 	},
 	exchange_rates: {
@@ -477,7 +447,7 @@ export const PSSLData = {
 				type: "float"
 			},
 			{
-				name: "fllo/2nd_lien_loans",
+				name: "fllo_2nd_lien_loans",
 				label: "FLLO/2nd Lien Loans",
 				type: "float"
 			},
@@ -859,7 +829,7 @@ export const PSSL_COLUMNS_NAME = {
 				"display_name": "First Lien Loans"
 			},
 			{
-				"col_name": "fllo/2nd_lien_loans",
+				"col_name": "fllo_2nd_lien_loans",
 				"sequence": 3,
 				"display_name": "FLLO/2nd Lien Loans"
 			},

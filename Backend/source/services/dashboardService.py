@@ -1,7 +1,9 @@
-from flask import jsonify
+from flask import jsonify, make_response, send_file
 import pickle
 from datetime import date, datetime, timezone
 import json
+from io import BytesIO
+import pandas as pd
 
 from models import db, BaseDataFile, WhatIfAnalysis
 from Exceptions.StdFileFormatException import StdFileFormatException
@@ -278,3 +280,56 @@ def get_closing_dates_list():
     base_data_files = BaseDataFile.query.filter_by(user_id=user_id).all()
     closing_dates = [base_data_file.closing_date.strftime("%Y-%m-%d") for base_data_file in base_data_files]
     return closing_dates
+
+
+def download_calculated_df(base_data_file):
+    try:
+        intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
+        if base_data_file.fund_type == "PCOF":  
+            downloadable_sheets = ["df_PL_BB_Build", "df_Inputs_Other_Metrics", "df_Availability_Borrower", "df_PL_BB_Results", "df_subscriptionBB", "df_security", "df_industry", "df_Input_pricing", "df_Inputs_Portfolio_LeverageBorrowingBase", "df_Obligors_Net_Capital", "df_Inputs_Advance_Rates", "df_Inputs_Concentration_limit", "df_principle_obligations", "df_segmentation_overview", "df_PL_BB_Output"]
+        
+        if base_data_file.fund_type == "PFLT":
+            downloadable_sheets = ["Loan List", "Inputs", "Exchange Rates", "Haircut", "Industry", "Cash Balance Projections", "Credit Balance Projection", "Borrowing Base", "Concentration Test"]
+
+        if base_data_file.fund_type == "PSSL":
+            downloadable_sheets = ["Portfolio", "VAE", "Concentration Limits", "Exchange Rates", "Availability", "Obligor Tiers"]
+
+        sheet_dfs = {}
+        for sheet in downloadable_sheets:
+            sheet_dfs[sheet] = intermediate_calculation[sheet]
+        
+        excel_data = BytesIO()
+        with pd.ExcelWriter(excel_data, engine="openpyxl") as writer:
+            for dataframe_name, dataframe in sheet_dfs.items():
+                for col in dataframe.select_dtypes(include=['datetimetz']).columns:
+                    dataframe[col] = dataframe[col].dt.tz_localize(None)
+
+                dataframe.to_excel(writer, sheet_name=dataframe_name, index=False)
+
+        # Set the BytesIO stream position to the beginning
+        excel_data.seek(0)
+
+        response = make_response(
+            send_file(
+                excel_data,
+                as_attachment=True,
+                download_name="output.xlsx",
+                mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            )
+        )
+
+        response.headers["Content-Disposition"] = "attachment; filename=output.xlsx"
+
+        return response
+
+    except Exception as e:
+        return (
+            jsonify(
+                {
+                    "error": str(e),
+                    "error_type": str(type(e).__name__),
+                    "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
+                }
+            ),
+            500,
+        )

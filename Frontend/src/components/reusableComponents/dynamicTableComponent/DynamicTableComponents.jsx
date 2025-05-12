@@ -66,7 +66,7 @@ export const DynamicTableComponents = ({
 					let cellDV = row[col.key] && row[col.key]['meta_info'] ? row[col.key]['display_value'] : row[col.key];
 					switch (col.unit) {
 					case 'percent': cellDV = `${(cellAV * 100).toFixed(2)}%`; break;
-					case 'date': cellDV = `${((new Date(cellAV)).toLocaleDateString("en-US"))}`; break;
+					// case 'date': cellDV = `${((new Date(cellAV)).toLocaleDateString("en-US"))}`; break;
 					default:
 						break;
 					}
