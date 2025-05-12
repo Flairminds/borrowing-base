@@ -291,7 +291,7 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
                 extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
             else:
                 raise Exception(service_response.get("message"))
-        if fund_name == 'PSSL':
+        elif fund_name == 'PSSL':
             if cash_file_details == None or master_comp_file_details == None:
                 raise Exception('Proper files not selected.')
             service_response = pssl_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
