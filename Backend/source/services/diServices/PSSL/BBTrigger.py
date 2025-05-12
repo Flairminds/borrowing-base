@@ -42,10 +42,12 @@ def trigger_pssl_bb(bdi_id):
         base_data_df["Admin Agent Approved Add-Backs"] = 0
         base_data_df["Date of Financial Delivery VAE"] = None
         base_data_df["Date Financials Provided to Ally"] = None
-        base_data_df["Current Cash Interest Expense"] = 1
+        # base_data_df["Current Cash Interest Expense"] = 1
         # datatype of following columns should get handled in query itself
         base_data_df["RCF Update Date"] = pd.to_datetime(base_data_df["RCF Update Date"])
         base_data_df['Borrower Outstanding Principal Balance'] = pd.to_numeric(base_data_df['Borrower Outstanding Principal Balance'], errors='coerce')
+        base_data_df["Initial Unrestricted Cash (Local Currency)"] = pd.to_numeric(base_data_df["Initial Unrestricted Cash (Local Currency)"], errors='coerce')
+        base_data_df["Borrower Facility Commitment"] = pd.to_numeric(base_data_df["Borrower Facility Commitment"], errors='coerce')
         # base_data_df["Acquisition Date"] = datetime(2023, 7, 28)
         # base_data_df["Maturity Date"] = datetime(2028, 4, 21)
 
