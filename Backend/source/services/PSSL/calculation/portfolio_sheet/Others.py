@@ -300,19 +300,23 @@ class Others:
 
         def assigned_value_helper(row):
             try:
-                aj_value = row['Acquisition Price']
-                aj_check = aj_value if aj_value < 0.95 else 1.0  # 100% as 1.0 in Python
-                min_value = min(aj_check, row['Applicable Collateral Value'])
+                aj = row['Acquisition Price']
+                al = row['VAE (Recorded on VAE Tab)']
+                ao = row['Agent Assigned Value']
+                ap = row['Applicable Collateral Value']
+                ar = row['Failure to Deliver Financials Factor']
+                el = row['Reporting Failure Event']
 
-                if row['VAE (Recorded on VAE Tab)'] == 'Yes':
-                    inner_min = min(row['Agent Assigned Value'], min_value)
+                aj_val = aj if aj < 0.95 else 1.0  # 100% = 1.0 in Python
+                penalty = ar if el == 'Yes' else 0
+
+                if al == 'Yes':
+                    val = min(ao, aj_val, ap) - penalty
                 else:
-                    inner_min = min_value
+                    val = min(aj_val, ap) - penalty
 
-                subtractor = row['Failure to Deliver Financials Factor'] if row['Reporting Failure Event'] == 'Yes' else 0
-                result = inner_min - subtractor
+                return max(0, val)
 
-                return max(0, result)
             except:
                 return np.nan
 
