@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from datetime import datetime
 import pickle
 import json
@@ -20,6 +21,17 @@ def trigger_pssl_bb(bdi_id):
             base_data_df = pd.DataFrame(connection.execute(text(f"select * from pssl_base_data where base_data_info_id = :ebd_id"), {'ebd_id': bdi_id}).fetchall())
             base_data_mapping_df = pd.DataFrame(connection.execute(text("""select bd_sheet_name, bd_column_name, bd_column_lookup from base_data_mapping bdm where fund_type = 'PSSL' and bd_sheet_name = 'Portfolio'""")))
 
+        base_data_df = base_data_df.replace({np.nan: None})
+        report_date = base_data_df['report_date'][0].strftime("%Y-%m-%d")
+        base_data_df = base_data_df.drop('report_date', axis=1)
+        base_data_df = base_data_df.drop('created_at', axis=1)
+        base_data_df = base_data_df.drop('base_data_info_id', axis=1)
+        base_data_df = base_data_df.drop('id', axis=1)
+        base_data_df = base_data_df.drop('company_id', axis=1)
+        base_data_df = base_data_df.drop('created_by', axis=1)
+        base_data_df = base_data_df.drop('modified_by', axis=1)
+        base_data_df = base_data_df.drop('modified_at', axis=1)
+        
         rename_df_col = {}
         for index, row in base_data_mapping_df.iterrows():
             rename_df_col[row['bd_column_lookup']] = row['bd_column_name']
