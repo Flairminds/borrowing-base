@@ -49,7 +49,7 @@ class PsslDashboardService:
         # pflt_trnd_graph_response["x-axis"] = selected_rows_BB_df.columns.tolist()
         return jsonify(pssl_trend_graph_response), 200
     
-    def get_borrowing_base_value(self, availability_df):
+    def get_adjusted_borrowing_value(self, availability_df):
 
         search_values = [
             "Adjusted Borrowing Value"
@@ -122,6 +122,14 @@ class PsslDashboardService:
         ]
         return self.convert_to_card_table(availability_df, search_values)
     
+    def get_borrowing_value(self, availability_df):
+        search_values = [
+            "Adjusted Borrowing Value",
+            "Excess Concentration Amount",
+            "Approved Foreign Currency Reserve"
+        ]
+        return self.convert_to_card_table(availability_df, search_values)
+    
     
     def get_card_overview(self, base_data_file, card_name, what_if_analysis):
         if what_if_analysis:
@@ -133,16 +141,19 @@ class PsslDashboardService:
         availability_df = intermediate_calculation["Availability"]     
         facility_df = intermediate_calculation["Availability"]     
  
-        if card_name == "Borrowing Base":
-            card_table = self.get_borrowing_base_value(availability_df)
+        # if card_name == "Adjusted Borrowing Value":
+        #     card_table = self.get_adjusted_borrowing_value(availability_df)
         # if card_name == "Availability":
         #     card_table = self.get_availibilty()
         
-        if card_name == "Current Advances Outstanding":
-            card_table = self.get_current_advances_outstanding_value(availability_df)
+        # if card_name == "Current Advances Outstanding":
+        #     card_table = self.get_current_advances_outstanding_value(availability_df)
 
         if card_name == "Pro Forma Advances Outstanding":
             card_table = self.get_pro_forma_advances_outstanding_value(availability_df)
+
+        if card_name == "Borrowing Base":
+            card_table = self.get_borrowing_value(availability_df)
         
 
         return jsonify(card_table), 200
