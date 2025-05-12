@@ -113,7 +113,7 @@ class RecurringRevenueInterestCoverage:
         # =CZ11/DS11
         
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
-        portfolio_df["Current Interest Coverage Ratio"] = portfolio_df.apply(lambda row: np.nan if pd.isnull(row["Current Cash Interest Expense"]) else row["Permitted TTM EBITDA (USD) at relevant test period"] / row["Current Cash Interest Expense"], axis=1)
+        portfolio_df["Current Interest Coverage Ratio"] = portfolio_df.apply(lambda row: np.nan if pd.isnull(row["Current Cash Interest Expense"]) or row["Current Cash Interest Expense"] == 0 else row["Permitted TTM EBITDA (USD) at relevant test period"] / row["Current Cash Interest Expense"], axis=1)
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
 
