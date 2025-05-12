@@ -178,7 +178,7 @@ export const downLoadReportSheet = (base_data_file_id, user_id) => {
 		user_id: user_id
 	};
 
-	const res = axios.post(`${ApiURL}/download_excel`, reportSheetData, {
+	const res = axios.post(`${ApiURL}/dashboard/download_excel`, reportSheetData, {
 		responseType: 'blob',
 		headers: {
 			"Content-Type": 'application/json'
