@@ -19,7 +19,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
 					end
 					as "investment_investment_type",
                     bs."[ACM] [COI/LC] PNNT Industry" as "investment_industry",
-                    bs."[ACM] [COI/LC] Closing Date" as "investment_closing_date",
+                    bs."[ACM] [COI/LC] Closing Date"::date as "investment_closing_date",
                     case when ss."[SI] Maturity" is not null and ss."[SI] Maturity" != 'NM' then ss."[SI] Maturity" else null end as "investment_maturity",
                 --    sum(usbh."P. Lot Current Par Amount (Deal Currency)"::float) as "investment_par", -- selecting this column for now
                     ssm."Commitment" as "investment_par",
