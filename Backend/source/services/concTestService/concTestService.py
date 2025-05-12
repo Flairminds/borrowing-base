@@ -198,6 +198,10 @@ class ConcentrationTestExecutor:
             "Cov-Lite": self.cov_lite,
             "Tier 3 Obligors (Measured at Inclusion)": self.tier_3_obligors_measured_at_inclusion,
             "Second Lien Loans": self.second_lien_loans,
+            "First Lien Last Out": self.first_lien_last_out,
+            "Loans with Remaining Maturity > 6 Years": self.loans_with_remaining_maturity_gt_6_years,
+            "Recurring Revenue Loans": self.recurring_revenue_loans,
+            "Fixed Rate Loans": self.fixed_rate_loans
         }
 
     def update_conc_test_df(self, test_name, test_required_col_df, actual, show_on_dashboard, concentration_test_df):
@@ -649,7 +653,7 @@ class ConcentrationTestExecutor:
         test_required_col_df = test_required_col_df.sort_values(by='Borrowing Base', ascending=False)
         total_bb = test_required_col_df["Borrowing Base"].sum()
         total_exess = test_required_col_df["Excess"].sum()
-        test_required_col_df = test_required_col_df.iloc[3:]
+        test_required_col_df = test_required_col_df.iloc[3:4]
         applicable_test_limit = max(self.limit_percent * total_bb, self.min_limit)
         actual = test_required_col_df["Revised Value"].sum()
 
@@ -717,10 +721,25 @@ class ConcentrationTestExecutor:
     def other_industry(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
         test_required_col_df = test_required_col_df.sort_values(by='Borrowing Base', ascending=False)
         total_bb = test_required_col_df["Borrowing Base"].sum()
-        test_required_col_df = (test_required_col_df.groupby("Industry").agg({"Borrowing Base": "sum"}).reset_index())
-        actual = test_required_col_df['Borrowing Base'].iloc[3:].sum()
-
+        # total_exess = test_required_col_df["Excess"].sum()
+        # test_required_col_df = test_required_col_df.iloc[3:]
         applicable_test_limit = max(self.limit_percent * total_bb, self.min_limit)
+
+        # test_passed = (test_required_col_df['Borrowing Base'] <= applicable_test_limit).all()
+
+        test_required_col_df = (
+            test_required_col_df.groupby("Industry")
+            .agg({"Borrowing Base": "sum"})
+            .reset_index()
+        )
+        # test_required_col_df["Percetage Borrowing Base"] = (
+        #     test_required_col_df["Borrowing Base"] / BB_sum
+        # )
+
+        # check after demo
+        if test_required_col_df.empty:
+            return concentration_test_df
+        actual = self.get_kth_largest_BB(test_required_col_df, 4) # all other than top 3 industries as df is sorted (desc) order of bb value.
 
         if actual > applicable_test_limit:
             result = "Fail"
@@ -896,6 +915,26 @@ class ConcentrationTestExecutor:
 
     def second_lien_loans(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
         actual = test_required_col_df[test_required_col_df['Loan Type'] == 'Second Lien']['Revised Value'].sum()
+        concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+        return concentration_test_df
+    
+    def first_lien_last_out(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        actual = test_required_col_df[test_required_col_df['Loan Type'] == 'Last Out']['Revised Value'].sum()
+        concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+        return concentration_test_df
+    
+    def loans_with_remaining_maturity_gt_6_years(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        actual = test_required_col_df[test_required_col_df['Remaining Term'] > 6]['Revised Value'].sum()
+        concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+        return concentration_test_df
+
+    def recurring_revenue_loans(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        actual = test_required_col_df[test_required_col_df['Loan Type'] == "Recurring Revenue"]['Revised Value'].sum()
+        concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+        return concentration_test_df
+    
+    def fixed_rate_loans(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        actual = test_required_col_df[test_required_col_df['Is Fixed Rate'] == "Yes"]['Revised Value'].sum()
         concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
         return concentration_test_df
 

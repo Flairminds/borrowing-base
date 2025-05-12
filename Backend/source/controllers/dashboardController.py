@@ -293,3 +293,8 @@ def get_mathematical_formula():
     except Exception as e:
         return HTTPResponse.error(message="Internal Server Error")
     
+def download_calculated_df():
+    request_body = request.get_json()
+    base_data_file_id = request_body["base_data_file_id"]
+    base_data_file = commonServices.get_base_data_file(base_data_file_id=base_data_file_id)
+    return dashboardService.download_calculated_df(base_data_file)
