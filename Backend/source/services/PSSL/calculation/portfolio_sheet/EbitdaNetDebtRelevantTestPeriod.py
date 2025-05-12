@@ -48,7 +48,7 @@ class EbitdaNetDebtRelevantTestPeriod:
         exchange_rate_map = self.calculator_info.intermediate_calculation_dict['exchange_rate_map']
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Current Unrestricted Cash"] = portfolio_df.apply(
-            lambda row: exchange_rate_map.get(row["Approved Currency"], np.nan) * row["Current Unrestricted Cash (Local Currency)"] if pd.notna(exchange_rate_map.get(row["Approved Currency"], np.nan)) else np.nan,
+            lambda row: np.nan if row["Approved Currency"] is None or row["Current Unrestricted Cash (Local Currency)"] is None else (exchange_rate_map.get(row["Approved Currency"], np.nan) * row["Current Unrestricted Cash (Local Currency)"] if pd.notna(exchange_rate_map.get(row["Approved Currency"], np.nan)) else np.nan),
             axis=1
         )
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
