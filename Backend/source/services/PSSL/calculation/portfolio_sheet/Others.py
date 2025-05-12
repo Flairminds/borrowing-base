@@ -566,6 +566,46 @@ class Others:
             self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
         except Exception as e:
             raise Exception()
+        
+    def days_since_close(self):
+        # =(Availability!$F$12-Portfolio!BG11)
+        try:
+            def days_since_close_helper(row):
+                if row['Acquisition Date'] == None:
+                    acquisition_date = row['Origination Date']
+                else:
+                    acquisition_date = row['Acquisition Date']
+
+                if acquisition_date == None: # TODO: Check this again
+                    return 0
+                return measurement_date - acquisition_date
+            
+            availability_df = self.calculator_info.intermediate_calculation_dict['Availability']
+            measurement_date = availability_df.query("Terms == 'Measurement Date:'")["Values"].iloc[0].date()
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Days since Close"] = portfolio_df.apply(days_since_close_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
+        
+    def remaining_term(self):
+        # =ROUND(YEARFRAC(BG11,BH11,1),2)
+        try:
+            def remaining_term_helper(row):
+                start_date = row['Acquisition Date']
+                end_date = row['Maturity Date']
+                if start_date == None:
+                    start_date = end_date
+                days_in_year = 365.25
+                if start_date is None or end_date is None:
+                    return 0
+                return round((end_date - start_date).days / days_in_year, 2)
+            
+            portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
+            portfolio_df["Remaining Term"] = portfolio_df.apply(remaining_term_helper, axis=1)
+            self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
+        except Exception as e:
+            raise Exception()
     
     def calculate_others(self):
         self.advance_rate_definition() # column 'U'
@@ -596,3 +636,5 @@ class Others:
         self.recurring_evenue_value() # column 'BD'
         self.adjusted_borrowing_value() # column 'W'
         self.tier() # column 'BY'
+        self.days_since_close() # column 'BI'
+        self.remaining_term() # column 'BJ'
