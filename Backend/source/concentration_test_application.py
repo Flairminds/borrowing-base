@@ -643,7 +643,11 @@ class ConcentraionTestFormatter:
             "Loans to Obligors domiciled in Approved Foreign Country",
             "Cov-Lite",
             "Tier 3 Obligors (Measured at Inclusion)",
-            "Second Lien Loans"
+            "Second Lien Loans",
+            "First Lien Last Out",
+            "Loans with Remaining Maturity > 6 Years",
+            "Recurring Revenue Loans",
+            "Fixed Rate Loans"
         ]
         concentration_tests = []
         concentration_limits = []

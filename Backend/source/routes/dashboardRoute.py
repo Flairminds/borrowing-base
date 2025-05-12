@@ -52,3 +52,7 @@ def get_intermediate_metrics():
 @dashboard_blueprint.route("/get_mathematical_formula", methods=["POST"])
 def get_mathematical_formula():
     return dashboardController.get_mathematical_formula()
+
+@dashboard_blueprint.route("/download_excel", methods=["POST"])
+def download_excel():
+    return dashboardController.download_calculated_df()
