@@ -105,7 +105,7 @@ export const ShowEmptyBasedDataValues = ({ visible, data, columnNames, onConfirm
 					}
 				}
 				if (colValueEmpty) {
-					emptyColumns.push(columnNames?.find(col => col.key === cols[j])?.label);
+					emptyColumns.push(columnNames?.find(col => col.key === cols[j]));
 				}
 			}
 			setEmptyColumnsList(emptyColumns);
@@ -136,7 +136,7 @@ export const ShowEmptyBasedDataValues = ({ visible, data, columnNames, onConfirm
 						{emptyColumnsList.map((e, i) => {
 							return (
 								<div key={i}>
-									{i + 1}. {e}
+									{i + 1}. {e.label} <span style={{color: '#0067e3'}}>{e.bd_column_is_required ? '[Required]' : ''} {e.is_one_time_input ? '[One-time input]' : ''} {e.is_on_going_input_rarely_updated ? '[On-going input]' : ''} {e.is_on_going_input ? '[On-going input]' : ''} {e.description ? `[${e.description}]` : ''}</span>
 								</div>
 							);
 						})}

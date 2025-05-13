@@ -367,7 +367,7 @@ export const DynamicTableComponents = ({
 							{updatedColumnsData?.map((col, index) => {
 								if (selectedColumns.includes(col.label)) {
 									return (
-										<th key={index} className={enableStickyColumns && index < 3 ? tableStyles.stickyColTh : tableStyles.th} title={col.label}>
+										<th key={index} className={enableStickyColumns && index < 3 ? tableStyles.stickyColTh : tableStyles.th} title={col.description ? col.description : col.label}>
 											{col.label}
 											{visibleSortHeader && col.label !== '' && col.key !== '' && (
 												selectedSort.name === col.key && selectedSort.type === 'asc' ? (

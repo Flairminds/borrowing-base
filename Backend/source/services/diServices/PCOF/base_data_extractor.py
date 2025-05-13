@@ -57,7 +57,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."[PSM] Capitalization Multiple" as "leverage_total_capitalization",
                     ss."LTV" as "leverage_ltv_thru_pcof_iv", -- was from PCOF IV, Now taking from security stats (BU)
                     'Yes' as "is_eligible_issuer", -- could not map
-                    STRING_AGG(ch."LoanX ID", ', ') AS loanx_id
+                    STRING_AGG(distinct ch."LoanX ID", ', ') AS loanx_id
                 from sf_sheet_us_bank_holdings usbh
                 left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
                     and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
@@ -76,7 +76,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
 			            left join loan_type_mapping loan_mapping_marketbook on loan_mapping_marketbook.loan_type = ssm."Asset_Name" and (loan_mapping_marketbook.is_deleted = false or loan_mapping_marketbook.is_deleted is null)
 			            left join loan_type_master loan_master_marketbook on loan_master_marketbook.id = loan_mapping_marketbook.master_loan_type_id and loan_master_marketbook.fund_type = 'PCOF'
 			            where ssm.source_file_id = :market_book_file_id)
-                    as ssm on lower(regexp_replace(ch."Issuer/Borrower Name", '[^a-zA-Z0-9]','', 'g')) = lower(regexp_replace(ssm."Issuer_Name", '[^a-zA-Z0-9]','', 'g')) and t2.master_loan_type = ssm.master_loan_type
+                    as ssm on lower(regexp_replace(ch."Issuer/Borrower Name", '[^a-zA-Z0-9]','', 'g')) = lower(regexp_replace(ssm."Issuer_Name", '[^a-zA-Z0-9]','', 'g')) and t2.master_loan_type = ssm.master_loan_type-- and ssm."Asset_Primary IDAssetID_Name" = ch."LoanX ID"
                 where (usbh.source_file_id = :cash_file_id AND ch.source_file_id = :cash_file_id and (ssm.source_file_id is null or ssm.source_file_id = :market_book_file_id)) and
                 ((sm.id is not null AND ss.source_file_id = :master_comp_file_id AND bs.source_file_id = :master_comp_file_id) or sm.id is null)
                 group by sm.id, ss."Security", usbh."Security/Facility Name", usbh."Issuer/Borrower Name", ss."[SI] Credit Facility Lien Type", bs."[ACM] [COI/LC] PNNT Industry",
