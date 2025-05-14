@@ -10,7 +10,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
             pssl_base_data = pd.DataFrame(connection.execute(text(f'''
                 select td.borrower, td.acquisition_price, td.loan_type, td.maturity_date, td.origination_date, td.date_of_ttm_financials, td.current_cash_interest_expense,
                     td.current_unrestricted_cash, td.current_gross_senior_debt, td.current_gross_total_debt, td.cov_lite, td.spread, td.approved_country, td.approved_currency,
-                    td.approved_industry, td.is_fixed_rate, td.interest_paid, td.paid_less_than_qtrly, td.sp_rating, td.moodys_rating, td.adjusted_ttm_ebiteda, td.rcf_update_date, td.relevent_test_period,
+                    td.approved_industry, td.is_fixed_rate, td.interest_paid, td.paid_less_than_qtrly, td.sp_rating, td.moodys_rating, td.adjusted_ttm_ebiteda, td.rcf_update_date, td.relevent_test_period, td.rcf_commitment_amount, td.two_market_quotes, td.dip_loan,
                     sum(borrower_outstanding_principal_balance) as borrower_outstanding_principal_balance, sum(borrower_facility_commitment) as borrower_facility_commitment, min(acquisition_date) as acquisition_date, STRING_AGG(distinct td.loanx_id, ', ') AS loanx_id
                 from (select distinct
                     usbh."Issuer/Borrower Name" as borrower,
@@ -34,23 +34,27 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ch."Deal Issue (Derived) Rating - Moody's" as "moodys_rating",
                     bs."[CM] [CS] Updated as of" as date_of_ttm_financials,
                     bs."[CM] [CS] Updated as of" as relevent_test_period,
+                    case when ss_revolver."[SI] Issue Size" = 'NM' then null else (ss_revolver."[SI] Issue Size"::float) * 1000000 end as rcf_commitment_amount,
                     case when bs."[CM] [R] LTM EBITDA" = 'NM' then null else (bs."[CM] [R] LTM EBITDA"::float)*1000000 end as adjusted_ttm_ebiteda,
                     case when bs."[CM] [R] LTM Cash Interest" = 'NM' then null else (bs."[CM] [R] LTM Cash Interest"::float)*1000000 end as current_cash_interest_expense,
                     case when ss."[SI] Blended Purchase Price" is not null and ss."[SI] Blended Purchase Price" != 'NA' and ss."[SI] Blended Purchase Price" != 'NM' then ss."[SI] Blended Purchase Price"::float else null end as acquisition_price,
                     usbh."Settle Date"::date as acquisition_date,
                     case when ss."[SI] Investment Dates" is not null and ss."[SI] Investment Dates" != 'NA' and ss."[SI] Investment Dates" != 'NM' and STRPOS(ss."[SI] Investment Dates", ',') = 0 and STRPOS(ss."[SI] Investment Dates", ';') = 0 then ss."[SI] Investment Dates" else null end as "origination_date",
+                    'No' as two_market_quotes,
+                    'No' as dip_loan,
                     ch."LoanX ID" AS loanx_id
                 from sf_sheet_us_bank_holdings usbh
                 left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
                     and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled" 
                 left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
                 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
+                left join sf_sheet_securities_stats ss_revolver on ss."Family Name" = ss_revolver."Family Name" and ss_revolver."[SI] Security Name" = 'Revolver'
                 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"  
                 where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id) and
                 ((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND bs.source_file_id= :master_comp_file_id) or sm.id is null)) as td
                 group by td.borrower, td.acquisition_price, td.loan_type, td.maturity_date,
                     td.origination_date, td.date_of_ttm_financials, td.current_cash_interest_expense,
-                    td.current_unrestricted_cash, td.current_gross_senior_debt, td.current_gross_total_debt, td.cov_lite,
+                    td.current_unrestricted_cash, td.current_gross_senior_debt, td.current_gross_total_debt, td.cov_lite, td.rcf_commitment_amount, td.two_market_quotes, td.dip_loan,
                     td.spread, td.approved_country, td.approved_currency,
                     td.approved_industry, td.is_fixed_rate, td.interest_paid, td.paid_less_than_qtrly, td.sp_rating,
                     td.moodys_rating, td.adjusted_ttm_ebiteda, td.rcf_update_date, td.relevent_test_period

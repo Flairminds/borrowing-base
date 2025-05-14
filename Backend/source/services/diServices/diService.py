@@ -533,6 +533,8 @@ def get_base_data(info_id):
             BaseDataMapping.is_on_going_input,
             BaseDataMapping.description,
             BaseDataMapping.is_editable,
+            BaseDataMapping.sf_sheet_name,
+            BaseDataMapping.sf_column_name,
             BaseDataMappingColumnInfo.sequence,
             BaseDataMappingColumnInfo.is_selected
         ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type, BaseDataMapping.bd_sheet_name == sheet_name).order_by(BaseDataMappingColumnInfo.sequence).all()
@@ -644,7 +646,9 @@ def get_base_data(info_id):
                 "is_on_going_input_rarely_updated": column.is_on_going_input_rarely_updated,
                 "is_on_going_input": column.is_on_going_input,
                 "description": column.description,
-                "bd_column_is_required": column.bd_column_is_required
+                "bd_column_is_required": column.bd_column_is_required,
+                "sf_sheet_name": column.sf_sheet_name,
+                "sf_column_name": column.sf_column_name
             } for column in base_data_mapping],
             "data": temp
         }
