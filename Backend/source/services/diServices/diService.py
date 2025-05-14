@@ -601,7 +601,7 @@ def get_base_data(info_id):
         for b in base_data:
             t = b.__dict__
             del t['_sa_instance_state']
-            old_data = HistoryData.query.filter_by(id = b.id).order_by(HistoryData.done_at.desc()).offset(1).limit(1).first()
+            old_data = HistoryData.query.filter_by(id = b.id).order_by(HistoryData.done_at.asc()).limit(1).first()
             t1 = None
             if old_data:
                 t1 = old_data.__dict__
