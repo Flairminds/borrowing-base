@@ -647,7 +647,8 @@ class ConcentraionTestFormatter:
             "First Lien Last Out",
             "Loans with Remaining Maturity > 6 Years",
             "Recurring Revenue Loans",
-            "Fixed Rate Loans"
+            "Fixed Rate Loans",
+            "Max. Weighted Average Leverage thru Borrower",
         ]
         concentration_tests = []
         concentration_limits = []
