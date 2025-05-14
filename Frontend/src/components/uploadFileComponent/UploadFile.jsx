@@ -1,4 +1,4 @@
-import { Modal, Button, Select, Popover } from 'antd';
+import { Modal, Select, Popover } from 'antd';
 import Radio from 'antd/es/radio/radio';
 import { useEffect } from 'preact/hooks';
 import React, { useState } from 'react';
@@ -14,15 +14,14 @@ import { ErrorMessage } from '../../modal/errorMessageModal/ErrorMessage';
 import { OverWriteDataModal } from '../../modal/overWriteDataModal/OverWriteDataModal';
 import { uploadedFileList, validateInitialFile, assetSelectionList } from '../../services/api';
 import { fundOptionsArray } from '../../utils/constants/constants';
-import { getFileListColumns } from "../../utils/get_fileList";
 import { fundOptionValueToFundName } from '../../utils/helperFunctions/borrowing_base_functions';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { Calender } from '../calender/Calender';
 import { ModalComponents } from '../modalComponents';
 import { ProgressBar } from '../progressBar/ProgressBar';
+import { DynamicTableComponents } from '../reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { UIComponents } from '../uiComponents';
 import stylesUload from './UploadFile.module.css';
-import { DynamicTableComponents } from '../reusableComponents/dynamicTableComponent/DynamicTableComponents';
 
 
 export const UploadFile = ({
@@ -56,6 +55,17 @@ export const UploadFile = ({
 	const [selectedTab, setSelectedTab] = useState('existing');
 	const [filterDate, setFilterDate] = useState(null);
 	const navigate = useNavigate();
+
+	const getFileListColumns = [{
+		key: "file_name",
+		label: "Base File Name"
+	}, {
+		key: "closing_date",
+		label: "Report Date"
+	}, {
+		key: "fund_type",
+		label: "Fund"
+	}];
 
 	useEffect(() => {
 		if (isModalVisible) {

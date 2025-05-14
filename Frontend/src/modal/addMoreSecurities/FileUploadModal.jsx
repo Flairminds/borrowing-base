@@ -22,6 +22,9 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 	const [isSaving, setIsSaving] = useState(false);
 	const [excelColumns, setExcelColumns] = useState([]);
 	const [systemColumns, setSystemColumns] = useState([]);
+	const [showColumnsToExport, setShowColumnsToExport] = useState(false);
+	const [selectedColumns, setSelectedColumns] = useState([]);
+	const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
 
 	useEffect(() => {
 		if (!isOpenFileUpload) {
@@ -29,6 +32,23 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		}
 	}, [isOpenFileUpload]);
 
+	const DEFAULT_EXPORT_COLUMNS = {
+		PFLT: ["Obligor Name", "Security Name", "Loan Type"],
+		PCOF: ["Investment Name", "Issuer"],
+		PSSL: ["Borrower", "Loan Type"]
+	};
+
+	useEffect(() => {
+		resetColumnSelection();
+	}, [columns]);
+
+	const resetColumnSelection = () => {
+		if (columns && columns?.length > 0) {
+			const temp = [...columns];
+			setUpdatedColumnsData(temp.sort((a, b) => a.label < b.label ? -1 : 1));
+			setSelectedColumns([...selectedColumns, ...DEFAULT_EXPORT_COLUMNS[previewFundType]]);
+		}
+	};
 
 	const EXCEL_COLUMNS = {
 		PFLT: ["obligor name", "security name", "loan type"],
@@ -170,13 +190,19 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 			const lower = h?.toString()?.trim();
 			return columnMap.find((col, i) => lower.includes(EXCEL_COLUMNS[previewFundType][i])) || lower;
 		});
-		return sheetData?.slice(1)?.map((row) => {
+		let temp = sheetData?.slice(1)?.map((row) => {
 			const rowData = {};
 			headers.forEach((header, index) => {
 				rowData[header] = row[index] != 0 ? (!row[index] ? null : isNaN(row[index]) ? row[index]?.toString().trim() || null : parseFloat(row[index])) : 0;
 			});
 			return rowData;
 		}).filter((row) => Object.values(row).some((value) => value !== ""));
+		temp = temp.filter(t => {
+			for (const c of DEFAULT_EXPORT_COLUMNS[previewFundType]) {
+				if (t[c]) return t;
+			}
+		});
+		return temp;
 	};
 
 	const checkForDuplicates = (processedRows, data, previewFundType) => {
@@ -353,20 +379,22 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 
 
 	const handleExport = () => {
-		const mappedData = getMappedExportData(columns, data);
+		const columnsToExport = columns.filter(c => selectedColumns.includes(c.label));
+		const mappedData = getMappedExportData(columnsToExport, data);
 		const percentColumns = [];
-		columns.map(c => {
+		columnsToExport.map(c => {
 			if (c.unit == 'percent') {
 				percentColumns.push(c.label);
 			}
 		});
 		const dateColumns = [];
-		columns.map(c => {
+		columnsToExport.map(c => {
 			if (c.unit == 'date') {
 				dateColumns.push(c.label);
 			}
 		});
-		exportToExcel(mappedData, columns, percentColumns, `${previewFundType} base data ${fmtDateValue(reportId)}.xlsx`);
+		exportToExcel(mappedData, columnsToExport, percentColumns, `${previewFundType} base data ${fmtDateValue(reportId)}.xlsx`);
+		setShowColumnsToExport(false);
 	};
 
 	const fetchColumnComparisonAndSetState = async (file, fund_type) => {
@@ -391,6 +419,28 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 		}
 	};
 
+	const handleCheckboxClick = (e, val) => {
+		if (val == 'Select All') {
+			if (selectedColumns.length == updatedColumnsData.length) {
+				setSelectedColumns([]);
+			} else {
+				setSelectedColumns(updatedColumnsData.map(item => item.label));
+			}
+			return;
+		}
+		const selectedColumnsArray = [...selectedColumns];
+		const index = selectedColumnsArray.indexOf(val);
+		if (index > -1) {
+			setSelectedColumns(selectedColumns?.filter((col) => col != val));
+		} else {
+			setSelectedColumns([...selectedColumns, val]);
+		}
+	};
+
+	const handleBackOfExport = () => {
+		setShowColumnsToExport(false);
+	};
+
 	return (
 		<>
 			<Modal
@@ -400,25 +450,59 @@ export const FileUploadModal = ({ isOpenFileUpload, handleCancel, addsecFiles, s
 				footer={null}
 				width={700}
 			>
-				<div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "8px" }}>
-					<a
-						className="downloadLink"
-						onClick={handleExport}
-					>
-						Export extracted base data
-					</a>
-				</div>
-				<DynamicFileUploadComponent
-					uploadedFiles={addsecFiles}
-					setUploadedFiles={setAddsecFiles}
-					supportedFormats={['csv', 'xlsx']}
-					fundType={previewFundType}
-					showDownload={false}
-				/>
-				<div className={styles.buttonContainer}>
-					<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
-					<CustomButton isFilled={true} loading={isSaving} btnDisabled={isSaving} loadingText='Saving...' text="Save" onClick={handleSave} />
-				</div>
+				{!showColumnsToExport ?
+					<div>
+						<div style={{ display: "flex", justifyContent: "flex-end", marginBottom: "8px" }}>
+							<a className="downloadLink" onClick={() => setShowColumnsToExport(true)}>
+								Export extracted base data
+							</a>
+						</div>
+						<DynamicFileUploadComponent
+							uploadedFiles={addsecFiles}
+							setUploadedFiles={setAddsecFiles}
+							supportedFormats={['csv', 'xlsx']}
+							fundType={previewFundType}
+							showDownload={false}
+						/>
+						<div className={styles.buttonContainer}>
+							<CustomButton isFilled={false} text="Cancel" onClick={handleCancel} />
+							<CustomButton isFilled={true} loading={isSaving} btnDisabled={isSaving} loadingText='Saving...' text="Save" onClick={handleSave} />
+						</div>
+					</div>
+					:
+					<div>
+						Select columns to export
+						<div>
+							<input className={styles.checkbox} type="checkbox" id={'Select All'} name={'Select All'} value={'Select All'} onClick={(e) => handleCheckboxClick(e, 'Select All')} checked={selectedColumns.length == updatedColumnsData.length} />
+							<label htmlFor={'Select All'}>{'Select All'}</label>
+						</div>
+						<div style={{display: ' flex'}}>
+							<div>
+								{updatedColumnsData.slice(0, (updatedColumnsData.length / 2) + 1).map((col, i) => {
+									return (
+										<div key={i}>
+											<input className={styles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)} />
+											<label htmlFor={col.key}>{col.label}</label>
+										</div>
+									);
+								})}
+							</div>
+							<div>
+								{updatedColumnsData.slice((updatedColumnsData.length / 2) + 1).map((col, i) => {
+									return (
+										<div key={i}>
+											<input className={styles.checkbox} type="checkbox" id={col.key} name={col.key} value={col.key} onClick={(e) => handleCheckboxClick(e, col.label)} checked={selectedColumns.includes(col.label)} />
+											<label htmlFor={col.key}>{col.label}</label>
+										</div>
+									);
+								})}
+							</div>
+						</div>
+						<div className={styles.buttonContainer}>
+							<CustomButton isFilled={false} text="Back" onClick={handleBackOfExport} />
+							<CustomButton isFilled={true} text="Export" onClick={handleExport} />
+						</div>
+					</div>}
 			</Modal>
 
 			<ColumnMappingModal
