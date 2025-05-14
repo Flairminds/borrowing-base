@@ -1,5 +1,5 @@
 import { Tooltip } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import MenuIcon from '../../assets/sideBarIcons/MenuIcon.svg';
 import { sidebarItemsArray } from '../../utils/constants/constants';
@@ -15,9 +15,19 @@ export const Sidebar = () => {
 		navigate(route);
 	};
 
+	useEffect(() => {
+		const isCollapsed = localStorage.getItem('sidebar-collapsed');
+		if (isCollapsed) {
+			setCollapseSidebar(JSON.parse(isCollapsed) ? true : false);
+		}
+	}, []);
+
 	return (
 		<div className={`px-1 ${Styles.sidebarContainer}`} onMouseLeave={() => setActive(-1)}>
-			<div className={`p-2 mb-4 rounded-3`} onClick={() => setCollapseSidebar(!collapseSidebar)}>
+			<div className={`p-2 mb-4 rounded-3`} onClick={() => {
+				setCollapseSidebar(!collapseSidebar);
+				localStorage.setItem('sidebar-collapsed', !collapseSidebar);
+			}}>
 				<img src={MenuIcon} alt={"Menu"} />
 			</div>
 			{sidebarItemsArray?.map((item, index) => (
