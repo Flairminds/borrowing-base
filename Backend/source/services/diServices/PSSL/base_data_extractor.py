@@ -29,7 +29,6 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     bs."[ACM] [COI/LC] S&P Industry"  as "approved_industry",
                     case when ss."[SI] Type of Rate" like 'Fixed Rate%' then 'Yes' else 'No' end as is_fixed_rate,
                     case when ch."Payment Period" = '3 Months' then 'Qtrly' when ch."Payment Period" = '1 Month' then 'Qtrly' when ch."Payment Period" = '6 Months' then 'Mthly' else null end as interest_paid,
-                    'No' as paid_less_than_qtrly,
                     ch."Deal Issue (Derived) Rating - S&P" as "sp_rating",
                     ch."Deal Issue (Derived) Rating - Moody's" as "moodys_rating",
                     bs."[CM] [CS] Updated as of" as date_of_ttm_financials,
@@ -40,8 +39,6 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     case when ss."[SI] Blended Purchase Price" is not null and ss."[SI] Blended Purchase Price" != 'NA' and ss."[SI] Blended Purchase Price" != 'NM' then ss."[SI] Blended Purchase Price"::float else null end as acquisition_price,
                     usbh."Settle Date"::date as acquisition_date,
                     case when ss."[SI] Investment Dates" is not null and ss."[SI] Investment Dates" != 'NA' and ss."[SI] Investment Dates" != 'NM' and STRPOS(ss."[SI] Investment Dates", ',') = 0 and STRPOS(ss."[SI] Investment Dates", ';') = 0 then ss."[SI] Investment Dates" else null end as "origination_date",
-                    'No' as two_market_quotes,
-                    'No' as dip_loan,
                     ch."LoanX ID" AS loanx_id
                 from sf_sheet_us_bank_holdings usbh
                 left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
@@ -51,7 +48,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                 left join sf_sheet_securities_stats ss_revolver on ss."Family Name" = ss_revolver."Family Name" and ss_revolver."[SI] Security Name" = 'Revolver'
                 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"  
                 where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id) and
-                ((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND bs.source_file_id= :master_comp_file_id) or sm.id is null)) as td
+                ((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND ((ss_revolver.source_file_id is not null and ss_revolver.source_file_id = :master_comp_file_id) or ss_revolver.source_file_id is null) AND bs.source_file_id= :master_comp_file_id) or sm.id is null)) as td
                 group by td.borrower, td.acquisition_price, td.loan_type, td.maturity_date,
                     td.origination_date, td.date_of_ttm_financials, td.current_cash_interest_expense,
                     td.current_unrestricted_cash, td.current_gross_senior_debt, td.current_gross_total_debt, td.cov_lite, td.rcf_commitment_amount, td.two_market_quotes, td.dip_loan,
