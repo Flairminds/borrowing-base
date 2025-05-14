@@ -195,33 +195,9 @@ def trigger_pcof_bb(bdi_id):
 
         obligors_net_capital_data =[
             {
-                "Obligors' Net Capital": "Equity Paid in Capital",
-                "Values": 125000000
-            },
-            {
-                "Obligors' Net Capital": "Distributions",
-                "Values": None
-            },
-            {
-                "Obligors' Net Capital": "Retained Earnings",
-                "Values": 11666422
-            },
-            {
-                "Obligors' Net Capital": "(a) Partners' Capital",
-                "Values": 136666422
-            },
-            {
-                "Obligors' Net Capital": "(b) Uncalled Capital Commitments (excl. Defaulting Investors)",
-                "Values": 178914408
-            },
-            {
-                "Obligors' Net Capital": "Obligors' Net Capital ((a) + (b))",
-                "Values": 315580830
-            },
-            {
-                "Obligors' Net Capital": "Debt / Equity",
-                "Values": 1.65
-            }
+                "Obligors' Net Capital": onc.get("obligors_net_capital"),
+                "Values": onc.get("capital")
+            }  for onc in base_data_other_info.other_info_list.get('obligors_net_capital')
         ]
         df_Obligors_Net_Capital = pd.DataFrame(obligors_net_capital_data)
 

@@ -117,6 +117,7 @@ export const AddAdditionalInformationModal = (
 			formData["concentration_test_threshold_2"] = uploadedData["concentration_test_threshold_2"] || data?.other_data?.["concentration_test_threshold_2"] || null;
 			formData["threshold_1_advance_rate"] = uploadedData["threshold_1_advance_rate"] || data?.other_data?.["threshold_1_advance_rate"] || null;
 			formData["threshold_2_advance_rate"] = uploadedData["threshold_2_advance_rate"] || data?.other_data?.["threshold_2_advance_rate"] || null;
+			formData["obligors_net_capital"] = uploadedData["obligors_net_capital"] || data?.other_data?.["obligors_net_capital"] || null;
 			break;
 
 		case "PFLT":

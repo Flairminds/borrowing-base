@@ -304,6 +304,20 @@ export const PCOFData = {
 			}
 		]
 	},
+	obligors_net_capital: {
+		Column: [
+			{
+				name: "obligors_net_capital",
+				label: "Obligors Net Capital",
+				type: "text"
+			},
+			{
+				name: "capital",
+				label: "Capital",
+				type: "float"
+			}
+		]
+	},
 	other_metrics: {
 		Header: [
 			{
@@ -946,6 +960,20 @@ export const PCOF_COLUMNS_NAME = {
 				"col_name": "concentration_limit",
 				"sequence": 3,
 				"display_name": "Concentration Limit"
+			}
+		]
+	},
+	"obligors_net_capital": {
+		"columns_info": [
+			{
+				"col_name": "obligors_net_capital",
+				"sequence": 1,
+				"display_name": "Obligors Net Capital"
+			},
+			{
+				"col_name": "capital",
+				"sequence": 2,
+				"display_name": "Capital"
 			}
 		]
 	},
