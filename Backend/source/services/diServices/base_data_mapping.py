@@ -44,74 +44,46 @@ def base_data_mapping(cf, engine, bs = None):
 def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details):
     try:
         with engine.connect() as connection:
-            cash_file = pd.DataFrame(connection.execute(text('''select distinct
+            cash_file = pd.DataFrame(connection.execute(text('''select td.obligor_name, td.security_name, td.purchase_price, td.stretch_senior_loan, td.loan_type, td.current_moodys_rating,
+	td.current_sp_rating, td.initial_fixed_charge_coverage_ratio, td.market_value, td.current_fixed_charge_coverage_ratio, td.current_interest_coverage_ratio,
+	td.initial_debt_to_capitalization_ratio, td.initial_senior_debt_ebitda, td.initial_total_debt_ebitda, td.current_senior_debt_ebitda, td.current_total_debt_ebitda,
+	td.initial_ttm_ebitda, td.current_ttm_ebitda, td.current_as_of_date, td.maturity_date, td.lien_type, td.fixed_rate, td.floor_obligation, td.floor, td.spread_incl_pik_pikable,
+	td.interest_paid, td.obligor_industry, td.currency, td.obligor_country, sum(total_commitment) as total_commitment, sum(outstanding_principal) as outstanding_principal,
+	STRING_AGG(distinct td.loanx_id, ', ') AS loanx_id
+	from (select distinct
 	usbh."Issuer/Borrower Name" as obligor_name,
-	--usbh."Security/Facility Name" as security_name,
 	ss."Security" as security_name,
-	--usbh."Purchase Date"::date as purchase_date,
-	sum(ch."Par Amount (Deal Currency)"::float) as total_commitment,
-	sum(ch."Principal Balance (Deal Currency)"::float) as outstanding_principal,
-	case when pbb."Defaulted Collateral Loan at Acquisition" = 0 then 'No' when pbb."Defaulted Collateral Loan at Acquisition" = 1 then 'Yes' else null end as defaulted_collateral_loan,
-	case when pbb."Credit Improved Loan" = 0 then 'No' when pbb."Credit Improved Loan" = 1 then 'Yes' else null end as credit_improved_loan,
-	case when avg(usbh."Original Purchase Price"::float) is not null then avg(usbh."Original Purchase Price"::float) else null end as purchase_price,
-	pbb."Stretch Senior (Y/N)" as stretch_senior_loan,
-	case 
-		when t2.master_loan_type is null then ch."Issue Name"
-		else t2.master_loan_type
-	end
-	as loan_type,
+	ch."Par Amount (Deal Currency)"::float as total_commitment,
+	ch."Principal Balance (Deal Currency)"::float as outstanding_principal,
+	case when ss."[SI] Blended Purchase Price" is not null and ss."[SI] Blended Purchase Price" != 'NA' and ss."[SI] Blended Purchase Price" != 'NM' then ss."[SI] Blended Purchase Price"::float else null end as purchase_price,
+	case when ss."[SI] Stretch Senior (Y/N)" = 'Y' then 'Yes' else 'No' end as stretch_senior_loan,
+	case when t2.master_loan_type is null then ch."Issue Name" else t2.master_loan_type end as loan_type,
 	ch."Deal Issue (Derived) Rating - Moody's" as current_moodys_rating,
 	ch."Deal Issue (Derived) Rating - S&P" as current_sp_rating,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as initial_fixed_charge_coverage_ratio,
-	null as date_of_default,
-	avg(ssm."MarkPrice_MarkPrice"::float) as market_value,
+	ssm."MarkPrice_MarkPrice"::float as market_value,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as current_fixed_charge_coverage_ratio,
 	bs."[CM] [CLSO] EBITDA / Cash Interest" as current_interest_coverage_ratio,
 	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization" as initial_debt_to_capitalization_ratio,
 	bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA" as initial_senior_debt_ebitda,
 	bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA" as initial_total_debt_ebitda,
-	pbb."Senior Debt"::float / pbb."LTM EBITDA"::float as current_senior_debt_ebitda,
-	pbb."Total Debt"::float / pbb."LTM EBITDA"::float as current_total_debt_ebitda,
-	pbb."Closing LTM EBITDA"::float * 1000000 as initial_ttm_ebitda,
-	pbb."Current LTM EBITDA"::float * 1000000 as current_ttm_ebitda,
+	case when bs."First Lien Debt" = 'NM' or bs."First Lien Debt" is null or bs."[CM] [R] LTM EBITDA" = 'NM' or bs."[CM] [R] LTM EBITDA" is null
+	then null else (bs."First Lien Debt"::float/bs."[CM] [R] LTM EBITDA"::float) end as current_senior_debt_ebitda,
+	case when bs."Total Debt" = 'NM' or bs."Total Debt" is null or bs."[CM] [R] LTM EBITDA" = 'NM' or bs."[CM] [R] LTM EBITDA" is null
+	then null else (bs."Total Debt"::float/bs."[CM] [R] LTM EBITDA"::float) end as current_total_debt_ebitda,
+	case when bs."[ACM] [C-ACM(AC] LTM EBITDA" = 'NM' then null else (bs."[ACM] [C-ACM(AC] LTM EBITDA"::float)*1000000 end as initial_ttm_ebitda,
+	case when bs."[CM] [R] LTM EBITDA" = 'NM' then null else (bs."[CM] [R] LTM EBITDA"::float)*1000000 end as current_ttm_ebitda,
 	bs."[CM] [CS] Updated as of" as current_as_of_date,
-	usbh."Maturity Date" as maturity_date,
-	case
-		when lien_master.lien_type is null then ss."[SI] Credit Facility Lien Type"
-		else lien_master.lien_type
-	end
-	as lien_type,
-	case when pbb."Eligible Covie Lite (1L, Issue > $250mm, B3 / B-)" = 0 then 'No' when pbb."Eligible Covie Lite (1L, Issue > $250mm, B3 / B-)" = 1 then 'Yes' else null end as eligible_covenant_lite,
+	case when ss."[SI] Maturity" is not null and ss."[SI] Maturity" != 'NA' and ss."[SI] Maturity" != 'NM' then ss."[SI] Maturity" else null end as maturity_date,
+	case when lien_master.lien_type is null then ss."[SI] Credit Facility Lien Type" else lien_master.lien_type end as lien_type,
 	case when ss."[SI] Type of Rate" like 'Fixed Rate%' then 'Yes' else 'No' end as fixed_rate,
-	0 as coupon_incl_pik_pikable,
 	case when ss."[SI] LIBOR Floor" is not null then 'Yes' else 'No' end as floor_obligation,
 	case when ss."[SI] LIBOR Floor" != 'NM' then ss."[SI] LIBOR Floor"::float else null end as floor,
 	case when ss."[SI] Cash Spread to LIBOR" != 'NM' and ss."[SI] Cash Spread to LIBOR" is not null and ss."[SI] PIK Coupon" != 'NM' then ss."[SI] Cash Spread to LIBOR"::float + coalesce(ss."[SI] PIK Coupon"::float, 0)::float else 0 end as spread_incl_pik_pikable,
-	0 as base_rate,
-	0 as for_unused_fee,
-	0 as pik_pikable_for_floating_rate_loans,
-	0 as pik_pikable_for_fixed_rate_loans,
-	case when ch."Payment Period" = '3 Months' then 'Quarterly' when  ch."Payment Period" = '1 Month' then 'Monthly' when ch."Payment Period" = '6 Months' then 'Half-Yearly' else null end as interest_paid,
+	case when ch."Payment Period" = '3 Months' then 'Quarterly' when  ch."Payment Period" = '1 Month' then 'Quarterly' when ch."Payment Period" = '6 Months' then 'Half-Yearly' else null end as interest_paid,
 	bs."[ACM] [COI/LC] S&P Industry" as obligor_industry,
 	ss."[SI] Currency" as currency,
 	ss."[SI] Obligor Country" as obligor_country,
-	case when pbb."DIP Loans" = 0 then 'No' when pbb."DIP Loans" = 1 then 'Yes' else null end as dip_loan,
-	case when pbb."Obligations w/ Warrants attached" = 0 then 'No' when pbb."Obligations w/ Warrants attached" = 1 then 'Yes' else null end as warrants_to_purchase_equity,
-	case when pbb."Participations" = 0 then 'No' when pbb."Participations" = 1 then 'Yes' else null end as participation,
-	case when pbb."Convertible into Equity" = 0 then 'No' when pbb."Convertible into Equity" = 1 then 'Yes' else null end as convertible_to_equity,
-	case when pbb."Equity Security" = 0 then 'No' when pbb."Equity Security" = 1 then 'Yes' else null end as equity_security,
-	case when pbb."Subject of an Offer or Called for Redemption" = 0 then 'No' when pbb."Subject of an Offer or Called for Redemption" = 1 then 'Yes' else null end as at_acquisition_offer_or_redemption,
-	case when pbb."Margin Stock" = 0 then 'No' when pbb."Margin Stock" = 1 then 'Yes' else null end as margin_stock,
-	case when pbb."Subject to Withholding Tax" = 0 then 'No' when pbb."Subject to Withholding Tax" = 1 then 'Yes' else null end as subject_to_withholding_tax,
-	case when pbb."Defaulted Collateral Loan at Acquisition" = 0 then 'No' when pbb."Defaulted Collateral Loan at Acquisition" = 1 then 'Yes' else null end as at_acquisition_defaulted_loan,
-	case when pbb."Zero Coupon Obligation" = 0 then 'No' when pbb."Zero Coupon Obligation" = 1 then 'Yes' else null end as zero_coupon_obligation,
-	case when pbb."Covenant Lite" = 0 then 'No' when pbb."Covenant Lite" = 1 then 'Yes' else null end as covenant_lite,
-	case when pbb."Structured Finance Obligation / finance lease" = 0 then 'No' when pbb."Structured Finance Obligation / finance lease" = 1 then 'Yes' else null end as structured_finance_obligation,
-	case when pbb."Material Non-Credit Related Risk" = 0 then 'No' when pbb."Material Non-Credit Related Risk" = 1 then 'Yes' else null end as material_non_credit_related_risk,
-	case when pbb."Primarily Secured by Real Estate" = 0 then 'No' when pbb."Primarily Secured by Real Estate" = 1 then 'Yes' else null end as primarily_secured_by_real_estate_or_loan,
-	case when pbb."Interest Only Security" = 0 then 'No' when pbb."Interest Only Security" = 1 then 'Yes' else null end as interest_only_security,
-	case when pbb."Satisfies Other Criteria(1)" = 0 then 'No' when pbb."Satisfies Other Criteria(1)" = 1 then 'Yes' else null end as satisfies_all_other_eligibility_criteria,
-	null as excess_concentration_amount,
 	ch."LoanX ID" as "loanx_id"
 from sf_sheet_us_bank_holdings usbh
 left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
@@ -126,7 +98,7 @@ left join
 		left join loan_type_mapping loan_mapping_marketbook on loan_mapping_marketbook.loan_type = ssm."Asset_Name" and (loan_mapping_marketbook.is_deleted = false or loan_mapping_marketbook.is_deleted is null)
 		left join loan_type_master loan_master_marketbook on loan_master_marketbook.id = loan_mapping_marketbook.master_loan_type_id and loan_master_marketbook.fund_type = 'PFLT'
 		where ssm.source_file_id = :market_book_file_id)
-	as ssm on lower(regexp_replace(ch."Issuer/Borrower Name", '[^a-zA-Z0-9]','', 'g')) = lower(regexp_replace(ssm."Issuer_Name", '[^a-zA-Z0-9]','', 'g')) and t2.master_loan_type = ssm.master_loan_type
+	as ssm on lower(regexp_replace(ch."Issuer/Borrower Name", '[^a-zA-Z0-9]','', 'g')) = lower(regexp_replace(ssm."Issuer_Name", '[^a-zA-Z0-9]','', 'g')) and t2.master_loan_type = ssm.master_loan_type-- and ssm."Asset_Primary IDAssetID_Name" = ch."LoanX ID"
 left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
 left join sf_sheet_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
@@ -134,20 +106,13 @@ left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
 left join lien_type_mapping lien_mapping on lien_mapping.lien_type = ss."[SI] Credit Facility Lien Type" and (lien_mapping.is_deleted = false or lien_mapping.is_deleted is null)
 left join lien_type_master lien_master on lien_master.id = lien_mapping.master_lien_type_id  
 where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AND (ssm.source_file_id is null or ssm.source_file_id = :market_book_file_id)) and
-((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND (pbb.source_file_id = :master_comp_file_id or pbb.source_file_id is null) AND bs.source_file_id= :master_comp_file_id) or sm.id is null)
-    group by usbh."Issuer/Borrower Name", usbh."Security/Facility Name", pbb."Defaulted Collateral Loan at Acquisition",
-	ss."Security", pbb."Credit Improved Loan", pbb."Stretch Senior (Y/N)", ch."Issue Name", 
-	ch."Deal Issue (Derived) Rating - Moody's", ch."Payment Period", ch."Deal Issue (Derived) Rating - S&P", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio",
-	bs."[ACM] [C-ACM(AC] Closing Debt to Capitalization", pbb."Senior Debt", pbb."LTM EBITDA", pbb."Total Debt",
-	pbb."Closing LTM EBITDA", pbb."Current LTM EBITDA", ch."As Of Date", usbh."Maturity Date", ss."[SI] Type of Rate", usbh."Market Value Indenture",
-	ss."[SI] LIBOR Floor", bs."[ACM] [COI/LC] S&P Industry", ss."[SI] Credit Facility Lien Type", ss."[SI] Currency", ss."[SI] Obligor Country",
-	pbb."DIP Loans", pbb."Obligations w/ Warrants attached", pbb."Participations", pbb."Convertible into Equity", pbb."Eligible Covie Lite (1L, Issue > $250mm, B3 / B-)",
-	pbb."Equity Security", pbb."Subject of an Offer or Called for Redemption", pbb."Margin Stock", pbb."Subject to Withholding Tax", pbb."Zero Coupon Obligation",
-	pbb."Covenant Lite", pbb."Structured Finance Obligation / finance lease", pbb."Material Non-Credit Related Risk", pbb."Primarily Secured by Real Estate",
-	pbb."Interest Only Security", pbb."Satisfies Other Criteria(1)", bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio", bs."[ACM] [C-ACM(AC] 1st Lien Net Debt / EBITDA",
-	bs."[CM] [CLSO] 1st Lien Net Debt / EBITDA", bs."[ACM] [C-ACM(AC] HoldCo Net Debt / EBITDA", ss."[SI] Cash Spread to LIBOR", ss."[SI] PIK Coupon", ch."LoanX ID",
-	lien_master.lien_type, bs."[CM] [CLSO] EBITDA / Cash Interest", bs."[CM] [CS] Updated as of", t2.master_loan_type
-	order by security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}).fetchall())
+((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND bs.source_file_id= :master_comp_file_id) or sm.id is null)) as td
+    group by td.obligor_name, td.security_name, td.purchase_price, td.stretch_senior_loan, td.loan_type, td.current_moodys_rating,
+	td.current_sp_rating, td.initial_fixed_charge_coverage_ratio, td.market_value, td.current_fixed_charge_coverage_ratio, td.current_interest_coverage_ratio,
+	td.initial_debt_to_capitalization_ratio, td.initial_senior_debt_ebitda, td.initial_total_debt_ebitda, td.current_senior_debt_ebitda, td.current_total_debt_ebitda,
+	td.initial_ttm_ebitda, td.current_ttm_ebitda, td.current_as_of_date, td.maturity_date, td.lien_type, td.fixed_rate, td.floor_obligation, td.floor, td.spread_incl_pik_pikable,
+	td.interest_paid, td.obligor_industry, td.currency, td.obligor_country
+	order by td.security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}).fetchall())
             df = cash_file
             if df.empty:
                 raise Exception('Base data is empty')

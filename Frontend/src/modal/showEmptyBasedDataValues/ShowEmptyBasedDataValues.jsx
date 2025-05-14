@@ -105,7 +105,7 @@ export const ShowEmptyBasedDataValues = ({ visible, data, columnNames, onConfirm
 					}
 				}
 				if (colValueEmpty) {
-					emptyColumns.push(columnNames?.find(col => col.key === cols[j])?.label);
+					emptyColumns.push(columnNames?.find(col => col.key === cols[j]));
 				}
 			}
 			setEmptyColumnsList(emptyColumns);
@@ -136,7 +136,12 @@ export const ShowEmptyBasedDataValues = ({ visible, data, columnNames, onConfirm
 						{emptyColumnsList.map((e, i) => {
 							return (
 								<div key={i}>
-									{i + 1}. {e}
+									<span>{i + 1}. {e.label} </span>
+									<span style={{color: '#ff0c0c'}}>{e.bd_column_is_required ? '[Required] ' : ''}</span>
+									<span style={{color: '#0067e3'}}>{e.is_one_time_input ? '[One-time input] ' : ''}</span>
+									<span style={{color: '#ff890c'}}>{e.is_on_going_input_rarely_updated || e.is_on_going_input ? '[On-going input] ' : ''}</span>
+									<span style={{color: '#4278ff'}}>{e.description ? `[${e.description}] ` : ''}</span>
+									<span style={{color: '#2ca835'}}>{e.sf_sheet_name ? `[Mapped to '${e.sf_column_name}' in ${e.sf_sheet_name}] ` : ''}</span>
 								</div>
 							);
 						})}

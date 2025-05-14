@@ -129,6 +129,7 @@ export const DynamicTableComponents = ({
 		if (showSettingsDiv) {
 			updateVisibleColumns();
 		}
+		setColumnSearch('');
 		setShowSettingsDiv(!showSettingsDiv);
 	};
 
@@ -287,7 +288,7 @@ export const DynamicTableComponents = ({
 							}
 						</div>
 						{showSettingsDiv &&
-							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: '#F6F8FB', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px', minWidth: '1400px' }}>
+							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: '#F6F8FB', textAlign: 'left', padding: '1%', border: '1px solid #DCDEDE', borderRadius: '6px', minWidth: '700px' }}>
 								<div style={{ display: 'flex', margin: '5px 0', justifyContent: 'space-between', alignItems: 'center' }}>
 									<div>
 										<Icons.InfoIcon style={{ margin: '0 5px 0 0' }} />
@@ -367,7 +368,7 @@ export const DynamicTableComponents = ({
 							{updatedColumnsData?.map((col, index) => {
 								if (selectedColumns.includes(col.label)) {
 									return (
-										<th key={index} className={enableStickyColumns && index < 3 ? tableStyles.stickyColTh : tableStyles.th} title={col.label}>
+										<th key={index} className={enableStickyColumns && index < 3 ? tableStyles.stickyColTh : tableStyles.th} title={col.description ? col.description : col.label}>
 											{col.label}
 											{visibleSortHeader && col.label !== '' && col.key !== '' && (
 												selectedSort.name === col.key && selectedSort.type === 'asc' ? (

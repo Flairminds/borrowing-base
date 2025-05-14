@@ -456,7 +456,7 @@ def extract_base_data(file_ids, fund_type):
             extracted_base_data_info.failure_comments = str(e)
             db.session.add(extracted_base_data_info)
             db.session.commit()
-        return ServiceResponse.error()
+        return ServiceResponse.error(message=str(e))
 
 def persist_old_base_data(fund_type):
     try:
@@ -527,7 +527,14 @@ def get_base_data(info_id):
             BaseDataMapping.bd_column_name,
             BaseDataMapping.bd_column_datatype,
             BaseDataMapping.bd_column_unit,
+            BaseDataMapping.bd_column_is_required,
+            BaseDataMapping.is_one_time_input,
+            BaseDataMapping.is_on_going_input_rarely_updated,
+            BaseDataMapping.is_on_going_input,
+            BaseDataMapping.description,
             BaseDataMapping.is_editable,
+            BaseDataMapping.sf_sheet_name,
+            BaseDataMapping.sf_column_name,
             BaseDataMappingColumnInfo.sequence,
             BaseDataMappingColumnInfo.is_selected
         ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type, BaseDataMapping.bd_sheet_name == sheet_name).order_by(BaseDataMappingColumnInfo.sequence).all()
@@ -626,7 +633,6 @@ def get_base_data(info_id):
             # t['report_date'] = t['report_date'].strftime("%Y-%m-%d")
             # t['created_at'] = t['created_at'].strftime("%Y-%m-%d")
             temp.append(t)
-        # print(temp[0])
         base_data_table = {
             "columns": [{
                 "key": column.bd_column_lookup,
@@ -635,7 +641,14 @@ def get_base_data(info_id):
                 "unit": column.bd_column_unit,
                 "isEditable": column.is_editable,
                 "bdm_id": column.bdm_id,
-                "is_selected": column.is_selected
+                "is_selected": column.is_selected,
+                "is_one_time_input": column.is_one_time_input,
+                "is_on_going_input_rarely_updated": column.is_on_going_input_rarely_updated,
+                "is_on_going_input": column.is_on_going_input,
+                "description": column.description,
+                "bd_column_is_required": column.bd_column_is_required,
+                "sf_sheet_name": column.sf_sheet_name,
+                "sf_column_name": column.sf_column_name
             } for column in base_data_mapping],
             "data": temp
         }
