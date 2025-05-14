@@ -137,6 +137,29 @@ export const AddAdditionalInformationModal = (
 			formData["advances_requested"] = uploadedData?.advances_requested ? uploadedData.advances_requested : data?.other_data?.advances_requested ? data.other_data.current_advances_outstanding : null;
 			formData["exchange_rates"] = uploadedData?.exchange_rates?.length > 0 ? uploadedData.exchange_rates : data?.other_data?.exchange_rates?.length > 0 ? data.other_data.exchange_rates : null;
 			formData["obligor_tiers"] = uploadedData?.obligor_tiers?.length > 0 ? uploadedData.obligor_tiers : data?.other_data?.obligor_tiers?.length > 0 ? data.other_data.obligor_tiers : null;
+
+			formData["obligor_tiers_ebitda"] = uploadedData?.obligor_tiers_ebitda?.length > 0 ? uploadedData.obligor_tiers_ebitda : data?.other_data?.obligor_tiers_ebitda?.length > 0 ? data.other_data.obligor_tiers_ebitda : null;
+
+			formData["first_lien_10mm"] = uploadedData?.first_lien_10mm ? uploadedData.first_lien_10mm : data?.other_data?.first_lien_10mm ? data.other_data.first_lien_10mm : null;
+			formData["first_lien_10mm_senior_leverage_in_excess_of_6_5x"] = uploadedData?.first_lien_10mm_senior_leverage_in_excess_of_6_5x ? uploadedData.first_lien_10mm_senior_leverage_in_excess_of_6_5x : data?.other_data?.first_lien_10mm_senior_leverage_in_excess_of_6_5x ? data.other_data.first_lien_10mm_senior_leverage_in_excess_of_6_5x : null;
+			formData["first_lien_10mm_senior_leverage_in_excess_of_7_5x"] = uploadedData?.first_lien_10mm_senior_leverage_in_excess_of_7_5x ? uploadedData.first_lien_10mm_senior_leverage_in_excess_of_7_5x : data?.other_data?.first_lien_10mm_senior_leverage_in_excess_of_7_5x ? data.other_data.first_lien_10mm_senior_leverage_in_excess_of_7_5x : null;
+
+			formData["first_lien_10mm_and_50mm"] = uploadedData?.first_lien_10mm_and_50mm ? uploadedData.first_lien_10mm_and_50mm : data?.other_data?.first_lien_10mm_and_50mm ? data.other_data.first_lien_10mm_and_50mm : null;
+			formData["first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x"] = uploadedData?.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x ? uploadedData.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x : data?.other_data?.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x ? data.other_data.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x : null;
+			formData["first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x"] = uploadedData?.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x ? uploadedData.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x : data?.other_data?.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x ? data.other_data.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x : null;
+
+			formData["first_lien_50mm_unrated"] = uploadedData?.first_lien_50mm_unrated ? uploadedData.first_lien_50mm_unrated : data?.other_data?.first_lien_50mm_unrated ? data.other_data.first_lien_50mm_unrated : null;
+			formData["first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x"] = uploadedData?.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x ? uploadedData.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x : data?.other_data?.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x ? data.other_data.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x : null;
+			formData["first_lien_50mm_unrated_senior_leverage_in_excess_of_7_5x"] = uploadedData?.first_lien_50mm_unrated_senior_leverage_in_excess_of_7_5x ? uploadedData.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x : data?.other_data?.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x ? data.other_data.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x : null;
+
+			formData["first_lien_50mm_b_or_better"] = uploadedData?.first_lien_50mm_b_or_better ? uploadedData.first_lien_50mm_b_or_better : data?.other_data?.first_lien_50mm_b_or_better ? data.other_data.first_lien_50mm_b_or_better : null;
+			formData["first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x"] = uploadedData?.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x ? uploadedData.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x : data?.other_data?.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x ? data.other_data.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x : null;
+			formData["first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x"] = uploadedData?.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x ? uploadedData.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x : data?.other_data?.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x ? data.other_data.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x : null;
+
+			formData["last_out"] = uploadedData?.last_out ? uploadedData.last_out : data?.other_data?.last_out ? data.other_data.last_out : null;
+			formData["recurring_revenue"] = uploadedData?.recurring_revenue ? uploadedData.recurring_revenue : data?.other_data?.recurring_revenue ? data.other_data.recurring_revenue : null;
+			formData["second_lien"] = uploadedData?.second_lien ? uploadedData.second_lien : data?.other_data?.second_lien ? data.other_data.second_lien : null;
+			formData["ineligible"] = uploadedData?.ineligible ?? data?.other_data?.ineligible ?? null;
 			break;
 		}
 		setInitialFormData(formData);
@@ -290,6 +313,7 @@ export const AddAdditionalInformationModal = (
 					...values,
 					"exchange_rates": values["exchange_rates"],
 					"obligor_tiers": values["obligor_tiers"],
+					"obligor_tiers_ebitda": values["obligor_tiers_ebitda"],
 					"availability": {
 						"determination_date": values.determination_date,
 						"measurement_date": values.measurement_date,
@@ -300,6 +324,31 @@ export const AddAdditionalInformationModal = (
 						"current_advances_outstanding": `${values["current_advances_outstanding"]}`,
 						"advances_repaid": values.advances_repaid,
 						"advances_requested": values.advances_requested
+					},
+					"obligor_outstandings": {
+						"first_lien_10mm":	values.first_lien_10mm,
+						"first_lien_10mm_senior_leverage_in_excess_of_6_5x": values.first_lien_10mm_senior_leverage_in_excess_of_6_5x,
+						"first_lien_10mm_senior_leverage_in_excess_of_7_5x": values.first_lien_10mm_senior_leverage_in_excess_of_7_5x,
+
+						"first_lien_10mm_and_50mm": values.first_lien_10mm_and_50mm,
+						"first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x": values.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x,
+						"first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x": values.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x,
+
+						"first_lien_50mm_unrated": values.first_lien_50mm_unrated,
+						"first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x": values.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x,
+						"first_lien_50mm_unrated_senior_leverage_in_excess_of_7_5x": values.first_lien_50mm_unrated_senior_leverage_in_excess_of_7_5x,
+
+						"first_lien_50mm_b_or_better": values.first_lien_50mm_b_or_better,
+						"first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x": values.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x,
+						"first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x": values.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x,
+
+						"last_out": values.last_out,
+						"last_out_total_leverage_in_excess_of_7_5_x": values.last_out_total_leverage_in_excess_of_7_5_x,
+						"second_lien": values.second_lien,
+						"second_lien_total_leverage_in_excess_of_7_5_x": values.second_lien_total_leverage_in_excess_of_7_5_x,
+						"recurring_revenue": values.recurring_revenue,
+						"recurring_revenue_amounts_above_2_5_x": values.recurring_revenue_amounts_above_2_5_x,
+						"ineligible": values.ineligible
 					}
 				};
 
@@ -371,7 +420,7 @@ export const AddAdditionalInformationModal = (
 			if (row.length > 0) {
 				const record = {};
 				row.forEach((value, index) => {
-					record[header[index].toLowerCase().replace(/[\s/]+/g, '_')] = value;
+					record[header[index].toLowerCase().replace(/[^a-z0-9]+/g, '_')] = value;
 				});
 				temp.push(record);
 			}
@@ -458,18 +507,19 @@ export const AddAdditionalInformationModal = (
 					sheet.sheetName.toLocaleLowerCase() === "availability borrower" ||
 					sheet.sheetName.toLocaleLowerCase() === "other metrics" ||
 					sheet.sheetName.toLocaleLowerCase() === "input" ||
-					sheet.sheetName.toLocaleLowerCase() === "availability"
+					sheet.sheetName.toLocaleLowerCase() === "availability" ||
+					sheet.sheetName.toLocaleLowerCase() === "obligor outstandings"
 				) {
-					const data = Object.fromEntries(sheet?.data?.slice(1).filter(row => row.length === 2));
+					const data = Object.fromEntries(sheet?.data?.slice(1).filter(row => Array.isArray(row) && row.length === 2));
 					const transformedData = Object.fromEntries(
 						Object.entries(data).map(([key, value]) => {
-							const transformedKey = key.toLowerCase().replace(/\s+/g, '_');
+							const transformedKey = key.toLowerCase().replace(/[^a-z0-9]+/g, '_');
 							return [transformedKey, value];
 						})
 					);
 					uploadedDataValues = { ...uploadedDataValues, ...transformedData };
 				} else {
-					uploadedDataValues[sheet.sheetName.toLowerCase().replace(/\s+/g, '_')] = mapDataToPrincipalObligations(sheet.data);
+					uploadedDataValues[sheet.sheetName.toLowerCase().replace(/[^a-z0-9]+/g, '_') ] = mapDataToPrincipalObligations(sheet.data);
 				}
 			});
 
@@ -510,7 +560,7 @@ export const AddAdditionalInformationModal = (
 				rows.push(headerRow);
 			}
 
-			if (["input", "availability_borrower", "other_metrics", "availability"].includes(sheetName) ) {
+			if (["input", "availability_borrower", "other_metrics", "availability", "obligor_outstandings"].includes(sheetName) ) {
 				for (const key in obj) {
 					let formattedValue = fmtDateValue(obj[key]);
 					if ((key.includes("threshold") || key.includes("ltv")) && key !== "") {
@@ -520,7 +570,7 @@ export const AddAdditionalInformationModal = (
 				}
 			} else {
 				obj.forEach((item) => {
-					const row = columnSequence.map((col) => {
+					const row = columnSequence?.map((col) => {
 						const columnDetail = columnDetails.find((detail) => detail.name === col.col_name);
 						const value = item[col.col_name] || "";
 
@@ -639,8 +689,8 @@ export const AddAdditionalInformationModal = (
 															</div>
 
 															<div className={styles.rowContainer}>
-																{fields?.map((field, index) => (
-																	<div key={index} className={styles.row}
+																{fields?.map((field, ind) => (
+																	<div key={ind} className={styles.row}
 																		style={{
 																			display: "grid",
 																			gridTemplateColumns: `repeat(${selectedData[sheet]?.Column.length}, 1fr)`, // Dynamic grid
@@ -648,36 +698,42 @@ export const AddAdditionalInformationModal = (
 																			padding: "10px"
 																		}}
 																	>
-																		{selectedData[sheet]?.Column?.map((inputField, index) => (
-																			<Form.Item
-																				key={index}
-																				name={[field.name, inputField.name]}
-																				noStyle
-																			>
-																				{inputField.type === "datePicker" ? (
-																					<DatePicker
-																						placeholder={inputField.label}
-																						format="MM-DD-YYYY"
-																						style={{
-																							width: "100%",
-																							padding: "4px",
-																							borderRadius: "8px",
-																							border: "1px solid rgba(201, 196, 196, 0.6)"
-																						}}
-																					/>
-																				) : (
-																					<Input
-																						placeholder={inputField.label}
-																						style={{
-																							width: "100%",
-																							padding: "4px",
-																							borderRadius: "8px",
-																							border: "1px solid rgba(201, 196, 196, 0.6)"
-																						}}
-																					/>
-																				)}
-																			</Form.Item>
-																		))}
+																		{selectedData[sheet]?.Column?.map((inputField, index) => {
+																			const defaultValue = selectedData[sheet]?.defaultData?.[ind]?.[inputField.name];
+																			return (
+																				<Form.Item
+																					key={index}
+																					name={[field.name, inputField.name]}
+																					noStyle
+																					initialValue= {defaultValue}
+																				>
+																					{inputField.type === "datePicker" ? (
+																						<DatePicker
+																							placeholder={inputField.label}
+																							format="MM-DD-YYYY"
+																							style={{
+																								width: "100%",
+																								padding: "4px",
+																								borderRadius: "8px",
+																								border: "1px solid rgba(201, 196, 196, 0.6)"
+																							}}
+																							disabled= {inputField?.isNotEditable}
+																						/>
+																					) : (
+																						<Input
+																							placeholder={inputField.label}
+																							style={{
+																								width: "100%",
+																								padding: "4px",
+																								borderRadius: "8px",
+																								border: "1px solid rgba(201, 196, 196, 0.6)"
+																							}}
+																							disabled= {inputField?.isNotEditable}
+																						/>
+																					)}
+																				</Form.Item>
+																			);
+																		})}
 																	</div>
 																))}
 															</div>
