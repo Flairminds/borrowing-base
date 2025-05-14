@@ -15,6 +15,7 @@ import { PAGE_ROUTES } from '../../utils/constants/constants';
 import { UIComponents } from '../../components/uiComponents';
 import { ShowEmptyBasedDataValues } from '../../modal/showEmptyBasedDataValues/ShowEmptyBasedDataValues';
 import { PersistBaseDataModal } from '../../modal/PresistBaseData/PresistBaseDataModal';
+import { VAEModal } from '../../modal/VAEModal/VAEModal';
 
 
 
@@ -35,6 +36,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [addsecFiles, setAddsecFiles] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [isPresistBaseModalVisible, setIsPresistBaseModalVisible] = useState(false);
+	const [showVAEModal, setShowVAEModal] = useState(false);
 
 
 	const {infoId} = useParams();
@@ -280,6 +282,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						</div>
 						<div>
 							<UIComponents.Button onClick={showModal} isFilled={true} text='Bulk Update' btnDisabled={previewFundType == 'PSSL' ? false : false} title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />
+							{/* {previewFundType == 'PSSL' && <UIComponents.Button onClick={() => setShowVAEModal(true)} isFilled={true} text='VAE' title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />} */}
 							{/* <UIComponents.Button onClick={() => setIsPresistBaseModalVisible(true)} isFilled={true} text='Compare And Update Previous Base Data'/> */}
 							<UIComponents.Button onClick={() => setIsShowEmptyBaseDataModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PSSL' ? false : false} />
 						</div>
@@ -342,6 +345,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				visible={isPresistBaseModalVisible}
 				onClose={() => setIsPresistBaseModalVisible(false)}
 			/>
+			{previewFundType == 'PSSL' && <VAEModal visible={showVAEModal} onCancel={() => setShowVAEModal(false)} />}
 		</div>
 		// <div>
 		//     {Object.keys(mapping)?.map(m => {

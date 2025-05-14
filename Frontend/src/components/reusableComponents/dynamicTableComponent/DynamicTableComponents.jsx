@@ -129,6 +129,7 @@ export const DynamicTableComponents = ({
 		if (showSettingsDiv) {
 			updateVisibleColumns();
 		}
+		setColumnSearch('');
 		setShowSettingsDiv(!showSettingsDiv);
 	};
 
@@ -287,7 +288,7 @@ export const DynamicTableComponents = ({
 							}
 						</div>
 						{showSettingsDiv &&
-							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: '#F6F8FB', textAlign: 'left', padding: '5px', border: '1px solid #DCDEDE', borderRadius: '6px', minWidth: '1400px' }}>
+							<div style={{ position: 'absolute', zIndex: '500', top: '50', right: '0', backgroundColor: '#F6F8FB', textAlign: 'left', padding: '1%', border: '1px solid #DCDEDE', borderRadius: '6px', minWidth: '700px' }}>
 								<div style={{ display: 'flex', margin: '5px 0', justifyContent: 'space-between', alignItems: 'center' }}>
 									<div>
 										<Icons.InfoIcon style={{ margin: '0 5px 0 0' }} />
@@ -367,7 +368,7 @@ export const DynamicTableComponents = ({
 							{updatedColumnsData?.map((col, index) => {
 								if (selectedColumns.includes(col.label)) {
 									return (
-										<th key={index} className={enableStickyColumns && index < 3 ? tableStyles.stickyColTh : tableStyles.th} title={col.label}>
+										<th key={index} className={enableStickyColumns && index < 3 ? tableStyles.stickyColTh : tableStyles.th} title={col.description ? col.description : col.label}>
 											{col.label}
 											{visibleSortHeader && col.label !== '' && col.key !== '' && (
 												selectedSort.name === col.key && selectedSort.type === 'asc' ? (
@@ -392,7 +393,7 @@ export const DynamicTableComponents = ({
 										if (selectedColumns.includes(col.label)) {
 											return (
 												<td key={col.key} className={`${enableStickyColumns && colIndex < 3 ? tableStyles.stickyColTd : row[col.key]?.isValueEmpty ? tableStyles.emptyValue : tableStyles.td} ${activeRowIndex == rowIndex ? tableStyles.activeCell : ''}  ${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? tableStyles.editedCell : ''} ${row[col.key]?.isManuallyAdded && tableStyles.isManuallyAdd} ${(isInUpdateMode && col.isEditable) && tableStyles.isEdited}`}
-													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(row['id']['value'], col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nPrevious: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
+													onClick={showCellDetailsModal && !isInUpdateMode ? () => handleCellClick(row['id']['value'], col.key, col.label, row[col.key]?.cellActualValue) : row[col.key]?.isEditable ? () => handleCellEdit(rowIndex, col.key, row[col.key]?.cellActualValue, col.datatype, row.id, col.unit) : () => col.clickHandler && col.clickHandler(row[col.key]?.cellActualValue, row)} title={`${row[col.key]?.cellActualValue != row[col.key]?.cellOldValue ? 'Updated: ' + fmtDisplayVal(row[col.key]?.cellActualValue, 3) + '\nOriginal: ' + fmtDisplayVal(row[col.key]?.cellOldValue, 3) : fmtDisplayVal(row[col.key]?.cellTitleValue, 3)}`}>
 													{enableColumnEditing && editingCell?.rowIndex === rowIndex && editingCell?.columnkey === col.key ?
 														(
 															<div className={tableStyles.editIconsContainer}>
