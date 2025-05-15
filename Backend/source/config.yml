@@ -388,7 +388,39 @@ fund_std_col_map:
       Is Fixed Rate:
         Sheet Name: Portfolio
         Column Name: Is Fixed Rate
-      
-
-      
+  Max. Weighted Average Leverage thru Borrower:
+    PCOF:
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+      Leverage:
+        Sheet Name: PL BB Build
+        Column Name: Leverage PCOF IV Leverage
+      Percent Adj. Elig. Amount:
+        Sheet Name: PL BB Build
+        Column Name: Concentration % Adj. Elig. Amount (excluding cash)
+  Min. Cash, First Lien, and Cov-Lite:
+    PCOF:
+      Investment Type:
+        Sheet Name: PL BB Build
+        Column Name: Investment Investment Type
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+  Min. Senior Secured:
+    PCOF:
+      Investment Type:
+        Sheet Name: PL BB Build
+        Column Name: Investment Investment Type
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+  Min. Weighted Average Cash Fixed Coupon:
+    PCOF:
+      Weighted Fixed:
+        Sheet Name: PL BB Build
+        Column Name: Weighted Fixed
+      Investment Name:
+        Sheet Name: PL BB Build
+        Column Name: Investment Name
       

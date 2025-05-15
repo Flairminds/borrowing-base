@@ -201,7 +201,11 @@ class ConcentrationTestExecutor:
             "First Lien Last Out": self.first_lien_last_out,
             "Loans with Remaining Maturity > 6 Years": self.loans_with_remaining_maturity_gt_6_years,
             "Recurring Revenue Loans": self.recurring_revenue_loans,
-            "Fixed Rate Loans": self.fixed_rate_loans
+            "Fixed Rate Loans": self.fixed_rate_loans,
+            "Max. Weighted Average Leverage thru Borrower": self.max_weighted_average_leverage_thru_borrower,
+            "Min. Cash, First Lien, and Cov-Lite": self.min_cash_first_lien_cov_lite,
+            "Min. Senior Secured": self.min_senior_secured,
+            "Min. Weighted Average Cash Fixed Coupon": self.min_weighted_average_cash_fixed_coupon,
         }
 
     def update_conc_test_df(self, test_name, test_required_col_df, actual, show_on_dashboard, concentration_test_df):
@@ -937,6 +941,110 @@ class ConcentrationTestExecutor:
         actual = test_required_col_df[test_required_col_df['Is Fixed Rate'] == "Yes"]['Revised Value'].sum()
         concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
         return concentration_test_df
+
+    def max_weighted_average_leverage_thru_borrower(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            test_required_col_df["Product"] = test_required_col_df["Leverage"] * test_required_col_df["Percent Adj. Elig. Amount"]
+            sum_product = test_required_col_df["Product"].sum()
+            actual = sum_product
+            test_required_col_df.drop(labels='Product', axis=1, inplace=True)
+            if actual < self.limit_percent:
+                result = "Pass"
+            else:
+                result = "Fail"
+            row_data = {
+                "Concentration Tests": [test_name],
+                "Concentration Limit": [self.limit_percent],
+                "Actual": [actual],
+                "Result": [result],
+                "Show on dashboard": [show_on_dashboard],
+                "Absolute Limit": [self.min_limit],
+                "Percent Limit": [self.limit_percent]
+            }
+            row_df = pd.DataFrame(row_data)
+            concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
+
+    def min_cash_first_lien_cov_lite(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            total_bb = test_required_col_df["Borrowing Base"].sum()
+            test_required_col_df = test_required_col_df[test_required_col_df["Investment Type"].isin(["Cash", "First Lien", "Cov-Lite", "Warehouse First Lien"])]
+            group_total = test_required_col_df["Borrowing Base"].sum()
+
+            actual = group_total / total_bb
+
+            if actual > self.limit_percent:
+                result = "Pass"
+            else:
+                result = "Fail"
+            row_data = {
+                "Concentration Tests": [test_name],
+                "Concentration Limit": [self.limit_percent],
+                "Actual": [actual],
+                "Result": [result],
+                "Show on dashboard": [show_on_dashboard],
+                "Absolute Limit": [self.min_limit],
+                "Percent Limit": [self.limit_percent]
+            }
+            row_df = pd.DataFrame(row_data)
+            concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+            return concentration_test_df            
+        except Exception as e:
+            raise Exception(e)
+
+    def min_senior_secured(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            total_bb = test_required_col_df["Borrowing Base"].sum()
+            test_required_col_df = test_required_col_df[test_required_col_df["Investment Type"].isin(["Cash", "First Lien", "Last Out", "Second Lien", "Cov-Lite", "Warehouse First Lien"])]
+            group_total = test_required_col_df["Borrowing Base"].sum()
+
+            actual = group_total / total_bb
+
+            if actual > self.limit_percent:
+                result = "Pass"
+            else:
+                result = "Fail"
+            row_data = {
+                "Concentration Tests": [test_name],
+                "Concentration Limit": [self.limit_percent],
+                "Actual": [actual],
+                "Result": [result],
+                "Show on dashboard": [show_on_dashboard],
+                "Absolute Limit": [self.min_limit],
+                "Percent Limit": [self.limit_percent]
+            }
+            row_df = pd.DataFrame(row_data)
+            concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+            return concentration_test_df            
+        except Exception as e:
+            raise Exception(e)
+
+    def min_weighted_average_cash_fixed_coupon(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df[test_required_col_df["Investment Name"] != "Cash"]["Weighted Fixed"].sum()
+
+            if actual > self.limit_percent:
+                result = "Pass"
+            else:
+                result = "Fail"
+
+            row_data = {
+                "Concentration Tests": [test_name],
+                "Concentration Limit": [self.limit_percent],
+                "Actual": [actual],
+                "Result": [result],
+                "Show on dashboard": [show_on_dashboard],
+                "Absolute Limit": [self.min_limit],
+                "Percent Limit": [self.limit_percent]
+            }
+            row_df = pd.DataFrame(row_data)
+            concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+            return concentration_test_df            
+        except Exception as e:
+            raise Exception(e)
+        
 
     def executeConentrationTest(self):
 
