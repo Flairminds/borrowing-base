@@ -423,4 +423,52 @@ fund_std_col_map:
       Investment Name:
         Sheet Name: PL BB Build
         Column Name: Investment Name
-      
+  Min. Weighted Average Cash Floating Coupon:
+    PCOF:
+      Weighted Floating:
+        Sheet Name: PL BB Build
+        Column Name: Weighted Floating
+      Investment Name:
+        Sheet Name: PL BB Build
+        Column Name: Investment Name
+  Max. Third Party Finance Companies:
+    PCOF:
+      LTV Transaction:
+        Sheet Name: PL BB Build
+        Column Name: Classifications LTV Transaction
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+  Max. Affiliate Investments:
+    PCOF:
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+      Affiliate Investment:
+        Sheet Name: PL BB Build
+        Column Name: Classifications Affiliate Investment
+  Max. PIK, DIP:
+    PCOF:
+      Adjusted Type:
+        Sheet Name: PL BB Build
+        Column Name: Classification Adj. Adjusted Type
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+  Max. Issuer Concentration (% BB):
+    PCOF:
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+      Issuer Concentration:
+        Sheet Name: PL BB Build
+        Column Name: ONW Adjustments Adj. Contr. % (issuer)
+  Max. Weighted Average Maturity (Years):
+    PCOF:
+      Tenor:
+        Sheet Name: PL BB Build
+        Column Name: Investment Tenor
+      Concentration % Adj. Elig. Amount (excluding cash):
+        Sheet Name: PL BB Build
+        Column Name: Concentration % Adj. Elig. Amount (excluding cash)
+
