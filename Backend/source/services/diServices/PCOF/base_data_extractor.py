@@ -103,6 +103,15 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
 
         if pcof_base_data.empty:
                 raise Exception('Base data is empty')
+        
+        cash_row = {
+            "investment_name": "Cash",
+            "issuer": "Cash",
+            "investment_type": "Cash",
+            "industry": "Cash",
+        }
+
+        pcof_base_data = pcof_base_data.append(cash_row, ignore_index=True)
         pcof_base_data["base_data_info_id"] = extracted_base_data_info.id
         pcof_base_data["company_id"] = master_comp_file_details.company_id
         pcof_base_data["report_date"] = master_comp_file_details.report_date

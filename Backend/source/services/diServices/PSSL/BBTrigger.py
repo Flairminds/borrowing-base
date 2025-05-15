@@ -81,6 +81,38 @@ def trigger_pssl_bb(bdi_id):
         #     } for obligor_tiers_value in base_data_other_info.other_info_list.get('obligor_tiers')]
         # obligor_tiers_df = pd.DataFrame(obligor_tiers_data)
 
+        obligor_understandings = [
+            {"Terms": "First Lien < $10MM", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_10mm')},
+            {"Terms": "First Lien < $10MM, Senior Leverage in excess of 6.5x", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_10mm_senior_leverage_in_excess_of_6_5x')},
+            {"Terms": "First Lien < $10MM, Senior Leverage in excess of 7.5x", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_10mm_senior_leverage_in_excess_of_7_5x')},
+            {"Terms": "First Lien ≥ $10MM and < $50MM", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_10mm_and_50mm')},
+            {"Terms": "First Lien ≥ $10MM and < $50MM, Senior Leverage in excess of 6.5x", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x')},
+            {"Terms": "First Lien ≥ $10MM and < $50MM, Senior Leverage in excess of 7.5x", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x')},
+            {"Terms": "First Lien ≥ $50MM & Unrated", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_50mm_unrated')},
+            {"Terms": "First Lien ≥ $50MM & Unrated, Senior Leverage in excess of 6.5x", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x')},
+            {"Terms": "First Lien ≥ $50MM & Unrated, Senior Leverage in excess of 7.5x", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_50mm_unrated_senior_leverage_in_excess_of_7_5x')},
+            {"Terms": "First Lien ≥ $50MM & B- or better", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_50mm_b_or_better')},
+            {"Terms": "First Lien ≥ $50MM & B- or better, Senior Leverage in excess of 6.5x", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x')},
+            {"Terms": "First Lien ≥ $50MM & B- or better, Senior Leverage in excess of 7.5x", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x')},
+            {"Terms": "Last Out", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('last_out')},
+            {"Terms": "Last Out Total Leverage in excess of 7.5x", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('last_out_total_leverage_in_excess_of_7_5_x')},
+            {"Terms": "Second Lien", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('second_lien')},
+            {"Terms": "Second Lien Total Leverage in excess of 7.5x", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('second_lien_total_leverage_in_excess_of_7_5_x')},
+            {"Terms": "Recurring Revenue", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('recurring_revenue')},
+            {"Terms": "Recurring Revenue, Amounts above 2.5x", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('recurring_revenue_amounts_above_2_5_x')},
+            {"Terms": "Ineligible", "Values": base_data_other_info.other_info_list.get('obligor_outstandings').get('ineligible')},
+        ]
+        obligor_understandings_df = pd.DataFrame(obligor_understandings)
+
+        # obligor_tiers_ebitda = [
+        #     {
+        #         "EBITDA": obligor_tiers_ebitda_value.get('ebitda'),
+        #         "Absolute Value": float(obligor_tiers_ebitda_value.get('absolute_value')) if obligor_tiers_ebitda_value.get('absolute_value') is not None else None,
+        #         "Debt-to-Cash Capitalization Ratio": float(obligor_tiers_ebitda_value.get('debt_to_cash_capitalization_ratio')),
+        #         "Permitted Add-Backs": float(obligor_tiers_ebitda_value.get('permitted_add_backs')),
+        #     } for obligor_tiers_ebitda_value in base_data_other_info.other_info_list.get('obligor_tiers_ebitda')]
+        # obligor_tiers_ebitda_df = pd.DataFrame(obligor_tiers_ebitda)
+
         path1 = 'PSSL_Base_Data.xlsx'
         base_data_dict = pd.read_excel(path1, sheet_name=None)
         base_data_dict["Portfolio"] = base_data_df
