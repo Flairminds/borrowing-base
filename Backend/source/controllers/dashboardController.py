@@ -246,10 +246,10 @@ def calculate_bb():
             for base_data_file in base_data_files
         ]
 
-        if base_data_file.fund_type == "PCOF":
-            response = pcofDashboardService.calculate_bb(base_data_file, selected_assets, user_id)
-        else:
-            response = pfltDashboardService.calculate_bb(base_data_file, selected_assets, user_id)
+        match base_data_file.fund_type:
+            case 'PCOF': response = pcofDashboardService.calculate_bb(base_data_file, selected_assets, user_id)
+            case 'PFLT': response = pfltDashboardService.calculate_bb(base_data_file, selected_assets, user_id)
+            case 'PSSL': response = pssl_dashboard_service.get_bb_calculation(base_data_file, selected_assets, user_id)
 
         response["closing_dates"] = closing_dates
 

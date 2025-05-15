@@ -459,6 +459,7 @@ export const AddAdditionalInformationModal = (
 					if (header && (header.toLowerCase().includes("percentage") ||
 						header.toLowerCase().includes("percent") ||
 						header.toLowerCase().includes("unquoted") ||
+						header.toLowerCase().includes("quoted") ||
 						header.toLowerCase().includes("advance rate") ||
 						header.toLowerCase().includes("concentration limit") ||
 						header.toLowerCase().includes("applicable collateral value")

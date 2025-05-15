@@ -80,12 +80,6 @@ def trigger_pcof_bb(bdi_id):
         xl_df_map = {}
         xl_df_map['PL BB Build'] = base_data_df
 
-        book = openpyxl.load_workbook(file_name)
-        writer = pd.ExcelWriter(file_name, engine="openpyxl")
-        writer.book = book
-        # base_data_df.to_excel(writer, sheet_name="PL BB Build", index=False, header=True)
-        # writer.save()
-
         base_data_other_info = BaseDataOtherInfo.query.filter_by(extraction_info_id=bdi_id).first()
 
         # availability_borrower_data = [
@@ -196,7 +190,7 @@ def trigger_pcof_bb(bdi_id):
         obligors_net_capital_data =[
             {
                 "Obligors' Net Capital": onc.get("obligors_net_capital"),
-                "Values": onc.get("capital")
+                "Values": onc.get("values")
             }  for onc in base_data_other_info.other_info_list.get('obligors_net_capital')
         ]
         df_Obligors_Net_Capital = pd.DataFrame(obligors_net_capital_data)
@@ -224,61 +218,6 @@ def trigger_pcof_bb(bdi_id):
         pricing_df = pd.DataFrame(pricing_data)     
 
         df_PL_BB_Build = base_data_df.copy()
-
-        # for now, hardcodedly adding cash row
-        cash_row_data = {
-            'Investment Name': ['Cash'], 
-            'Issuer': ['Cash'], 
-            'Investment Investment Type': ['Cash'],
-            'Investment Industry': ['Cash'], 
-            'Investment Closing Date': [None], 
-            'Investment Maturity': [None],
-            'Investment Par': [7489255], 
-            'Investment Cost': [7489255], 
-            'Investment External Valuation': [7489255],
-            'Investment Internal Valuation': [7489255], 
-            'Rates Fixed Coupon': [None],
-            'Rates Floating Cash Spread': [None], 
-            'Rates Current LIBOR/Floor': [None], 
-            'Rates PIK': [None],
-            'Rates Fixed / Floating': ['Floating'], 
-            'Classifications Quoted / Unquoted': ['Quoted'],
-            'Classifications Warehouse Asset': ['No'],
-            'Classifications Warehouse Asset Inclusion Date': [pd.NaT],
-            'Classifications Warehouse Asset Expected Rating': [None],
-            'Classifications Approved Foreign Jurisdiction': ['NA'],
-            'Classifications LTV Transaction': ['No'],
-            'Classifications Noteless Assigned Loan': ['No'],
-            'Classifications Undelivered Note': ['No'],
-            'Classifications Structured Finance Obligation': ['No'],
-            'Classifications Third Party Finance Company': ['No'],
-            'Classifications Affiliate Investment': ['No'],
-            'Classifications Defaulted / Restructured': ['No'],
-            'Financials LTM Revenue ($MMs)': [None], 
-            'Financials LTM EBITDA ($MMs)': [None],
-            'Leverage Revolver Commitment': [None], 
-            'Leverage Total Enterprise Value': [None],
-            'Leverage Total Leverage': [None], 
-            'Leverage PCOF IV Leverage': [None],
-            'Leverage Attachment Point': [None], 
-            'Leverage Total Capitalization': [None],
-            'Leverage LTV Thru PCOF IV': [None], 
-            'Final Eligibility Override': [None],
-            'Final Comment': [None], 
-            'Concentration Adjustment': [None], 
-            'Concentration Comment': [None],
-            'Borrowing Base Other Adjustment': [None],
-            'Borrowing Base Industry Concentration': [None], 
-            'Borrowing Base Comment': [None],
-            'Is Eligible Issuer': ['Yes']
-        }
-        
-        cash_row_df = pd.DataFrame(cash_row_data)
-
-        cash_row_df = cash_row_df.reindex(columns=df_PL_BB_Build.columns)
-        # Concatenate df_PL_BB_Build and uploaded_df
-        df_PL_BB_Build = pd.concat([df_PL_BB_Build, cash_row_df], ignore_index=True)
-        df_PL_BB_Build.reset_index(drop=True, inplace=True)
 
         df_PL_BB_Build[["Classifications Structured Finance Obligation", 
                         "Classifications Third Party Finance Company", 
@@ -318,32 +257,22 @@ def trigger_pcof_bb(bdi_id):
         #     df_Obligors_Net_Capital
         # ) # For now, checking PL BB Build
 
-        df_PL_BB_Build.to_excel(writer, sheet_name="PL BB Build", index=False, header=True)
-        writer.save()
-        df_Inputs_Other_Metrics.to_excel(writer, sheet_name="Other Metrics", index=False, header=True)
-        writer.save()
-        df_Availability_Borrower.to_excel(writer, sheet_name="Availability Borrower", index=False, header=True)
-        writer.save()
-        df_Inputs_Portfolio_LeverageBorrowingBase.to_excel(writer, sheet_name="Portfolio LeverageBorrowingBase", index=False, header=True)
-        writer.save()
-        df_Obligors_Net_Capital.to_excel(writer, sheet_name="Obligors' Net Capital", index=False, header=True)
-        writer.save()
-        pl_bb_results.to_excel(writer, sheet_name="PL BB Results", index=False, header=True)
-        writer.save()
-        df_subscription_bb.to_excel(writer, sheet_name="Subscription BB", index=False, header=True)
-        writer.save()
-        pl_bb_result_security_df.to_excel(writer, sheet_name="PL_BB_Results_Security", index=False, header=True)
-        writer.save()
-        input_industries_df.to_excel(writer, sheet_name="Inputs Industries", index=False, header=True)
-        writer.save()
-        advance_rates_df.to_excel(writer, sheet_name="Advance Rates", index=False, header=True)
-        writer.save()
-        concentration_limits_df.to_excel(writer, sheet_name="Concentration Limits", index=False, header=True)
-        writer.save()
-        principle_obligation_df.to_excel(writer, sheet_name="Principle Obligations", index=False, header=True)
-        writer.save()
-        pricing_df.to_excel(writer, sheet_name="Pricing", index=False, header=True)
-        writer.save()
+        # base_data_df.to_excel(writer, sheet_name="PL BB Build", index=False, header=True)
+        # writer.save()
+        with pd.ExcelWriter(file_name, engine="openpyxl") as writer:
+            df_PL_BB_Build.to_excel(writer, sheet_name="PL BB Build", index=False, header=True)
+            df_Inputs_Other_Metrics.to_excel(writer, sheet_name="Other Metrics", index=False, header=True)
+            df_Availability_Borrower.to_excel(writer, sheet_name="Availability Borrower", index=False, header=True)
+            df_Inputs_Portfolio_LeverageBorrowingBase.to_excel(writer, sheet_name="Portfolio LeverageBorrowingBase", index=False, header=True)
+            df_Obligors_Net_Capital.to_excel(writer, sheet_name="Obligors' Net Capital", index=False, header=True)
+            pl_bb_results.to_excel(writer, sheet_name="PL BB Results", index=False, header=True)
+            df_subscription_bb.to_excel(writer, sheet_name="Subscription BB", index=False, header=True)
+            pl_bb_result_security_df.to_excel(writer, sheet_name="PL_BB_Results_Security", index=False, header=True)
+            input_industries_df.to_excel(writer, sheet_name="Inputs Industries", index=False, header=True)
+            advance_rates_df.to_excel(writer, sheet_name="Advance Rates", index=False, header=True)
+            concentration_limits_df.to_excel(writer, sheet_name="Concentration Limits", index=False, header=True)
+            principle_obligation_df.to_excel(writer, sheet_name="Principle Obligations", index=False, header=True)
+            pricing_df.to_excel(writer, sheet_name="Pricing", index=False, header=True)
 
         xl_df_map = pd.read_excel(file_name, sheet_name=["PL BB Build", "Other Metrics", "Availability Borrower", "Portfolio LeverageBorrowingBase", "Obligors' Net Capital", "PL BB Results", "Subscription BB", "PL_BB_Results_Security", "Inputs Industries", "Advance Rates", "Concentration Limits", "Principle Obligations", "Pricing"])
         # xl_df_map = {
@@ -384,7 +313,6 @@ def trigger_pcof_bb(bdi_id):
 
         bb_response["base_data_file_id"] = base_data_file.id
         wb2.close()
-        writer.close()
         os.remove(file_name)
 
         return ServiceResponse.success(message="Successfully processed calculation.", data=bb_response)
