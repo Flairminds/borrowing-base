@@ -316,6 +316,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				selectedFiles={selectedFiles}
 				setSelectedFiles={setSelectedFiles}
 				baseFilePreviewData= {baseFilePreviewData}
+				setBaseFilePreviewData={setBaseFilePreviewData}
 				previewPageId= {previewPageId}
 				setTablesData= {setTablesData}
 				getborrowingbasedata= {getborrowingbasedata}

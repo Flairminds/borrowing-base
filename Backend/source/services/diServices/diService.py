@@ -22,7 +22,7 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, PsslBaseData, PsslBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, PsslBaseData, PsslBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster, VaeData
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
@@ -2016,3 +2016,29 @@ def save_columns(ids_list, mapped_columns):
     except Exception as e:
         print(e)
         return ServiceResponse.error()
+
+def add_vae_data(vae_data):
+    company_id = 1
+
+    pfltSecurityMapping = VaeData(obligor=vae_data['obligor'],
+    # event_type TEXT NOT NULL,
+    # material_modification TEXT,
+    # vae_decision_date DATE,
+    # financials_date DATE,
+    # ttm_ebitda NUMERIC,
+    # senior_debt NUMERIC,
+    # total_debt NUMERIC,
+    # unrestricted_cash NUMERIC,
+    # net_senior_leverage NUMERIC,
+    # net_total_leverage NUMERIC,
+    # interest_coverage NUMERIC,
+    # recurring_revenue NUMERIC,
+    # debt_to_recurring_revenue_ratio NUMERIC,
+    # liquidity NUMERIC,
+    # assigned_value numeric,
+    created_by=1)
+
+    db.session.add(pfltSecurityMapping)
+    db.session.commit()
+    
+    return ServiceResponse.success(message="PFLT security mapping added successfully")

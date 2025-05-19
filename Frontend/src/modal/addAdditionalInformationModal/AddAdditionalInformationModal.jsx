@@ -37,7 +37,8 @@ export const AddAdditionalInformationModal = (
 		baseFilePreviewData,
 		previewPageId,
 		getborrowingbasedata,
-		setLoading
+		setLoading,
+		setBaseFilePreviewData
 	}
 ) => {
 	const [form] = Form.useForm();
@@ -129,13 +130,13 @@ export const AddAdditionalInformationModal = (
 		case "PSSL":
 			formData["determination_date"] = uploadedData?.determination_date ? dayjs(uploadedData.determination_date) : data?.other_data?.determination_date ? dayjs(data.other_data.determination_date) : null;
 			formData["measurement_date"] = uploadedData?.measurement_date ? dayjs(uploadedData.measurement_date) : data?.other_data?.measurement_date ? dayjs(data.other_data.measurement_date) : null;
-			formData["facility_amount"] = uploadedData?.facility_amount ? uploadedData.facility_amount : data?.other_data?.facility_amount ? data.other_data.facility_amount : null;
-			formData["on_deposit_in_unfunded_exposure_account"] = uploadedData?.on_deposit_in_unfunded_exposure_account ? uploadedData.on_deposit_in_unfunded_exposure_account : data?.other_data?.on_deposit_in_unfunded_exposure_account ? data.other_data.on_deposit_in_unfunded_exposure_account : null;
-			formData["cash_on_deposit_in_principal_collections_account"] = uploadedData?.cash_on_deposit_in_principal_collections_account ? uploadedData.cash_on_deposit_in_principal_collections_account : data?.other_data?.cash_on_deposit_in_principal_collections_account ? data.other_data.cash_on_deposit_in_principal_collections_account : null;
-			formData["foreign_currency_hedged_by_borrower"] = uploadedData?.foreign_currency_hedged_by_borrower ? uploadedData.foreign_currency_hedged_by_borrower : data?.other_data?.foreign_currency_hedged_by_borrower ? data.other_data.foreign_currency_hedged_by_borrower : null;
-			formData["current_advances_outstanding"] = uploadedData?.current_advances_outstanding ? uploadedData.current_advances_outstanding : data?.other_data?.current_advances_outstanding ? data.other_data.current_advances_outstanding : null;
-			formData["advances_repaid"] = uploadedData?.advances_repaid ? uploadedData.advances_repaid : data?.other_data?.advances_repaid ? data.other_data.current_advances_outstanding : null;
-			formData["advances_requested"] = uploadedData?.advances_requested ? uploadedData.advances_requested : data?.other_data?.advances_requested ? data.other_data.current_advances_outstanding : null;
+			formData["facility_amount"] = uploadedData?.facility_amount ? uploadedData.facility_amount : data?.other_data?.facility_amount ? data.other_data.facility_amount : 0;
+			formData["on_deposit_in_unfunded_exposure_account"] = uploadedData?.on_deposit_in_unfunded_exposure_account ? uploadedData.on_deposit_in_unfunded_exposure_account : data?.other_data?.on_deposit_in_unfunded_exposure_account ? data.other_data.on_deposit_in_unfunded_exposure_account : 0;
+			formData["cash_on_deposit_in_principal_collections_account"] = uploadedData?.cash_on_deposit_in_principal_collections_account ? uploadedData.cash_on_deposit_in_principal_collections_account : data?.other_data?.cash_on_deposit_in_principal_collections_account ? data.other_data.cash_on_deposit_in_principal_collections_account : 0;
+			formData["foreign_currency_hedged_by_borrower"] = uploadedData?.foreign_currency_hedged_by_borrower ? uploadedData.foreign_currency_hedged_by_borrower : data?.other_data?.foreign_currency_hedged_by_borrower ? data.other_data.foreign_currency_hedged_by_borrower : 0;
+			formData["current_advances_outstanding"] = uploadedData?.current_advances_outstanding ? uploadedData.current_advances_outstanding : data?.other_data?.current_advances_outstanding ? data.other_data.current_advances_outstanding : 0;
+			formData["advances_repaid"] = uploadedData?.advances_repaid ? uploadedData.advances_repaid : data?.other_data?.advances_repaid ? data?.other_data?.advances_repaid : 0;
+			formData["advances_requested"] = uploadedData?.advances_requested ? uploadedData.advances_requested : data?.other_data?.advances_requested ? data?.other_data?.advances_requested : 0;
 			formData["exchange_rates"] = uploadedData?.exchange_rates?.length > 0 ? uploadedData.exchange_rates : data?.other_data?.exchange_rates?.length > 0 ? data.other_data.exchange_rates : null;
 			formData["obligor_tiers"] = uploadedData?.obligor_tiers?.length > 0 ? uploadedData.obligor_tiers : data?.other_data?.obligor_tiers?.length > 0 ? data.other_data.obligor_tiers : null;
 
@@ -398,6 +399,7 @@ export const AddAdditionalInformationModal = (
 				showToast("success", response?.message);
 				form.resetFields();
 				onClose();
+				setBaseFilePreviewData(response.result.other_info);
 			}
 			if (isTriggerCalled && response?.["success"]) {
 				generateBaseData();
@@ -462,7 +464,8 @@ export const AddAdditionalInformationModal = (
 						header.toLowerCase().includes("quoted") ||
 						header.toLowerCase().includes("advance rate") ||
 						header.toLowerCase().includes("concentration limit") ||
-						header.toLowerCase().includes("applicable collateral value")
+						header.toLowerCase().includes("applicable collateral value") ||
+						header.toLowerCase().includes("permitted add backs")
 					)) {
 						isPercentageColumn = true;
 					}

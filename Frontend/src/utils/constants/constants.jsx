@@ -1085,7 +1085,7 @@ export const PSSL_COLUMNS_NAME = {
 			{
 				"col_name": "advance_rate",
 				"sequence": 2,
-				"display_name": "Advance Rate"
+				"display_name": "Advance Rate (%)"
 			}
 		]
 	}

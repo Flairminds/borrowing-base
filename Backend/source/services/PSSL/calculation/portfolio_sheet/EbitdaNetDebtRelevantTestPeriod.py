@@ -29,17 +29,13 @@ class EbitdaNetDebtRelevantTestPeriod:
 
     def permitted_ttm_ebitda_usd_at_relevant_test_period(self):
         # =ARRAY_CONSTRAIN(ARRAYFORMULA(IFERROR(VLOOKUP(INDEX(Portfolio!BT:BT,MATCH(G11,Portfolio!G:G,0),0),Availability!$B$68:$L$72,11,0)*CY11,"-")), 1, 1)
-
-        def permitted_ttm_ebitda_usd_at_relevant_test_period_helper(row):
-            exchange_rate = exchange_rate_map.get(row["Approved Currency"])
-            if exchange_rate:
-                return exchange_rate * row["Permitted TTM EBITDA in Local Currency at relevant test period"]
-            else:
-                return np.nan
-    
+        
         exchange_rate_map = self.calculator_info.intermediate_calculation_dict['exchange_rate_map']
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
-        portfolio_df["Permitted TTM EBITDA (USD) at relevant test period"] = portfolio_df.apply(permitted_ttm_ebitda_usd_at_relevant_test_period_helper, axis=1)
+        portfolio_df["Permitted TTM EBITDA (USD) at relevant test period"] = portfolio_df.apply(
+            lambda row: exchange_rate_map.get(row["Approved Currency"], np.nan) * row["Permitted TTM EBITDA in Local Currency at relevant test period"] if pd.notna(exchange_rate_map.get(row["Approved Currency"], np.nan)) else np.nan,
+            axis=1
+        )
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
 
     def current_unrestricted_cash(self):
@@ -48,7 +44,7 @@ class EbitdaNetDebtRelevantTestPeriod:
         exchange_rate_map = self.calculator_info.intermediate_calculation_dict['exchange_rate_map']
         portfolio_df = self.calculator_info.intermediate_calculation_dict['Portfolio']
         portfolio_df["Current Unrestricted Cash"] = portfolio_df.apply(
-            lambda row: np.nan if row["Approved Currency"] is None or row["Current Unrestricted Cash (Local Currency)"] is None else (exchange_rate_map.get(row["Approved Currency"], np.nan) * row["Current Unrestricted Cash (Local Currency)"] if pd.notna(exchange_rate_map.get(row["Approved Currency"], np.nan)) else np.nan),
+            lambda row: exchange_rate_map.get(row["Approved Currency"], np.nan) * row["Current Unrestricted Cash (Local Currency)"] if pd.notna(exchange_rate_map.get(row["Approved Currency"], np.nan)) else np.nan,
             axis=1
         )
         self.calculator_info.intermediate_calculation_dict['Portfolio'] = portfolio_df
