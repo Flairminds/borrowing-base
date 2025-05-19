@@ -536,3 +536,22 @@ CREATE TABLE public.sf_sheet_pssl_ii_borrowing_base (
 	"[CU] Current Adjusted TTM EBITDA" float8 NULL,
 	"[CU] Current Current EBITDA Addbacks" varchar NULL
 );
+
+CREATE TABLE public.sf_sheet_master_ratings (
+	"[BN] Master Comps" varchar NULL,
+	"[RD(] [M] Rating" varchar NULL,
+	"[RD(] [S] Rating" varchar NULL,
+	nan varchar NULL,
+	"[RD(] [M] Rating Type" varchar NULL,
+	"[RD(] nan" varchar NULL,
+	"[RD(] [S] Rating Type" varchar NULL,
+	"[RD(] [S] Recovery Rating" varchar NULL,
+	"[RD(] [S] Recovery %" varchar NULL,
+	"[RD(] nan_1" varchar NULL,
+	"[RD(] [F] Rating" varchar NULL,
+	"[RD(] [F] Rating Type" varchar NULL,
+	"[RD(] nan_2" varchar NULL,
+	"[RD(] [DE] S&P" varchar NULL,
+	"[RD(] [DE] Fitch" varchar NULL,
+	source_file_id int8 NULL,
+);

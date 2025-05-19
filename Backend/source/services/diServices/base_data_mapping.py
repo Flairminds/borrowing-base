@@ -41,7 +41,7 @@ def base_data_mapping(cf, engine, bs = None):
                     "error_file_details": f"error on line {e.__traceback__.tb_lineno} inside {__file__}",
                 })
 
-def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details):
+def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details, master_rating_details):
     try:
         with engine.connect() as connection:
             cash_file = pd.DataFrame(connection.execute(text('''select td.obligor_name, td.security_name, td.purchase_price, td.stretch_senior_loan, td.loan_type, td.current_moodys_rating,
@@ -58,8 +58,8 @@ def soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash
 	case when ss."[SI] Blended Purchase Price" is not null and ss."[SI] Blended Purchase Price" != 'NA' and ss."[SI] Blended Purchase Price" != 'NM' then ss."[SI] Blended Purchase Price"::float else null end as purchase_price,
 	case when ss."[SI] Stretch Senior (Y/N)" = 'Y' then 'Yes' else 'No' end as stretch_senior_loan,
 	case when t2.master_loan_type is null then ch."Issue Name" else t2.master_loan_type end as loan_type,
-	ch."Deal Issue (Derived) Rating - Moody's" as current_moodys_rating,
-	ch."Deal Issue (Derived) Rating - S&P" as current_sp_rating,
+	ssmr."[RD(] [M] Rating" as current_moodys_rating,
+	ssmr."[RD(] [S] Rating" as current_sp_rating,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as initial_fixed_charge_coverage_ratio,
 	ssm."MarkPrice_MarkPrice"::float as market_value,
 	bs."[ACM] [C-ACM(AC] Closing Fixed Charge Coverage Ratio" as current_fixed_charge_coverage_ratio,
@@ -104,15 +104,16 @@ left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_securit
 left join sf_sheet_pflt_borrowing_base pbb on pbb."Security" = ss."Security"
 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
 left join lien_type_mapping lien_mapping on lien_mapping.lien_type = ss."[SI] Credit Facility Lien Type" and (lien_mapping.is_deleted = false or lien_mapping.is_deleted is null)
-left join lien_type_master lien_master on lien_master.id = lien_mapping.master_lien_type_id  
+left join lien_type_master lien_master on lien_master.id = lien_mapping.master_lien_type_id 
+left join sf_sheet_master_ratings ssmr on ss."Family Name" = ssmr."[BN] Master Comps"
 where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id AND (ssm.source_file_id is null or ssm.source_file_id = :market_book_file_id)) and
-((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND bs.source_file_id= :master_comp_file_id) or sm.id is null)) as td
+((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND bs.source_file_id= :master_comp_file_id) or sm.id is null) and (ssmr.source_file_id = :master_rating_id or ssmr.source_file_id is null)) as td
     group by td.obligor_name, td.security_name, td.purchase_price, td.stretch_senior_loan, td.loan_type, td.current_moodys_rating,
 	td.current_sp_rating, td.initial_fixed_charge_coverage_ratio, td.market_value, td.current_fixed_charge_coverage_ratio, td.current_interest_coverage_ratio,
 	td.initial_debt_to_capitalization_ratio, td.initial_senior_debt_ebitda, td.initial_total_debt_ebitda, td.current_senior_debt_ebitda, td.current_total_debt_ebitda,
 	td.initial_ttm_ebitda, td.current_ttm_ebitda, td.current_as_of_date, td.maturity_date, td.lien_type, td.fixed_rate, td.floor_obligation, td.floor, td.spread_incl_pik_pikable,
 	td.interest_paid, td.obligor_industry, td.currency, td.obligor_country
-	order by td.security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}).fetchall())
+	order by td.security_name'''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id, "master_rating_id": master_rating_details.id}).fetchall())
             df = cash_file
             if df.empty:
                 raise Exception('Base data is empty')
