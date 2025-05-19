@@ -104,6 +104,10 @@ def compare_file_columns():
 def save_mapped_columns():
     return diController.save_mapped_columns()
 
-@di_blueprint.route('/add_vae_data', methods=["PATCH"])
+@di_blueprint.route('/add_vae_data', methods=["POST"])
 def add_vae_data():
     return diController.add_vae_data()
+
+@di_blueprint.route('/get_vae_data', methods=["GET"])
+def get_vae_data():
+    return diController.get_vae_data()

@@ -468,11 +468,21 @@ def save_mapped_columns():
 def add_vae_data():
     try:
         req_body = flask.request.get_json()
-        vae_data = req_body.get('vae_data')
+        vae_data = req_body.get('vaeData')
         response = diService.add_vae_data(vae_data)
         if not response.get('success'):
             return HTTPResponse.error(message="Something went wrong.")
         return HTTPResponse.success(message="Saved successfully.")
+    except Exception as e:
+        Log.func_error(e=e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def get_vae_data():
+    try:
+        response = diService.get_vae_data()
+        if not response.get('success'):
+            return HTTPResponse.error(message="Something went wrong.")
+        return HTTPResponse.success(message="Success", result=response['data'])
     except Exception as e:
         Log.func_error(e=e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)

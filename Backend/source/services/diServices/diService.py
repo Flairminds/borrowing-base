@@ -2018,27 +2018,56 @@ def save_columns(ids_list, mapped_columns):
         return ServiceResponse.error()
 
 def add_vae_data(vae_data):
-    company_id = 1
+    try:
+        vae_data_obj = VaeData(obligor=vae_data['obligor'],
+            event_type=vae_data['eventType'],
+            material_modification=vae_data['materialModification'],
+            vae_decision_date=vae_data['vaeDecisionDate'],
+            financials_date=vae_data['financialsDate'],
+            ttm_ebitda=vae_data['ttmEbitda'],
+            senior_debt=vae_data['seniorDebt'],
+            total_debt=vae_data['totalDebt'],
+            unrestricted_cash=vae_data['unrestrictedCash'],
+            net_senior_leverage=vae_data['netSeniorLeverage'],
+            net_total_leverage=vae_data['netTotalLeverage'],
+            interest_coverage=vae_data['interestCoverage'],
+            recurring_revenue=vae_data['recurringRevenue'],
+            debt_to_recurring_revenue_ratio=vae_data['debtToRecurringRevenueRatio'],
+            liquidity=vae_data['liquidity'],
+            assigned_value=vae_data['assignedValue'],
+            created_by=1)
 
-    pfltSecurityMapping = VaeData(obligor=vae_data['obligor'],
-    # event_type TEXT NOT NULL,
-    # material_modification TEXT,
-    # vae_decision_date DATE,
-    # financials_date DATE,
-    # ttm_ebitda NUMERIC,
-    # senior_debt NUMERIC,
-    # total_debt NUMERIC,
-    # unrestricted_cash NUMERIC,
-    # net_senior_leverage NUMERIC,
-    # net_total_leverage NUMERIC,
-    # interest_coverage NUMERIC,
-    # recurring_revenue NUMERIC,
-    # debt_to_recurring_revenue_ratio NUMERIC,
-    # liquidity NUMERIC,
-    # assigned_value numeric,
-    created_by=1)
+        db.session.add(vae_data_obj)
+        db.session.commit()
+        
+        return ServiceResponse.success(message="VAE data added successfully")
+    except Exception as e:
+        raise Exception(e)
 
-    db.session.add(pfltSecurityMapping)
-    db.session.commit()
-    
-    return ServiceResponse.success(message="PFLT security mapping added successfully")
+def get_vae_data():
+    try:
+        vae_data = VaeData.query.all()
+        result = []
+        for data in vae_data:
+            temp = {
+                'obligor': data.obligor,
+                'eventType': data.event_type,
+                'materialModification': data.material_modification,
+                'vaeDecisionDate': data.vae_decision_date,
+                'financialsDate': data.financials_date,
+                'ttmEbitda': data.ttm_ebitda,
+                'seniorDebt': data.senior_debt,
+                'totalDebt': data.total_debt,
+                'unrestrictedCash': data.unrestricted_cash,
+                'netSeniorLeverage': data.net_senior_leverage,
+                'netTotalLeverage': data.net_total_leverage,
+                'interestCoverage': data.interest_coverage,
+                'recurringRevenue': data.recurring_revenue,
+                'debtToRecurringRevenueRatio': data.debt_to_recurring_revenue_ratio,
+                'liquidity': data.liquidity,
+                'assignedValue': str(data.assigned_value * 100)+'%' if data.assigned_value is not None else None
+            }
+            result.append(temp)
+        return ServiceResponse.success(message="Success", data=result)
+    except Exception as e:
+        raise Exception(e)

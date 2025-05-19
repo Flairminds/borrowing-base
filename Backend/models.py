@@ -844,7 +844,7 @@ class VaeData(db.Model):
     vd_id = db.Column(db.Integer, primary_key=True)
     company_id = db.Column(db.Integer, db.ForeignKey("companies.company_id"), nullable=True)
     obligor = db.Column(db.Text, nullable=False)
-    event_type = db.Column(db.Text, nullable=False)
+    event_type = db.Column(db.Text)
     material_modification = db.Column(db.Text)
     vae_decision_date = db.Column(db.Date)
     financials_date = db.Column(db.Date)
