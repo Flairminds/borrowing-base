@@ -206,12 +206,36 @@ class ConcentrationTestExecutor:
             "Min. Cash, First Lien, and Cov-Lite": self.min_cash_first_lien_cov_lite,
             "Min. Senior Secured": self.min_senior_secured,
             "Min. Weighted Average Cash Fixed Coupon": self.min_weighted_average_cash_fixed_coupon,
+            "Min. Weighted Average Cash Floating Coupon": self.min_weighted_average_cash_floating_coupon,
+            "Max. Third Party Finance Companies": self.max_third_party_finance_companies,
+            "Max. Affiliate Investments": self.max_affiliate_investments,
+            "Max. PIK, DIP": self.max_pik_dip,
+            "Max. Issuer Concentration (% BB)": self.max_issuer_concentration_percent_bb,
+            "Max. Weighted Average Maturity (Years)": self.max_weighted_average_maturity_years,
+            "Partial PIK Loan": self.partial_pik_loan,
+            "Discount Collateral Loans": self.discount_collateral_loans,
+            "Credit Improved Loans": self.credit_improved_loans,
+            "Warrants to Purchase Equity Securities": self.warrants_to_purchase_equity_securities,
+            "LBO Loan": self.lbo_loan,
+            "Participation Interests": self.participation_interests,
+            "Eligible Covenant Lite Loans": self.eligible_covenant_lite_loans,
+            "Top 5 Obligors": self.top_5_bligors,
+            "LTM EBITDA < 15,000,000": self.ltm_ebitda_lt_15MM,
+            "LTM EBITDA >= 5,000,000 but < 7,500,000": self.ltm_ebitda_gt_5MM_lt_7_5MM,
+            "Leverage Limitations": self.leverage_limitations
         }
+
+    def get_applicable_limit(self, limit_percent, total_bb, min_limit):
+        if min_limit is not None:
+            applicable_test_limit = max(limit_percent * total_bb, min_limit)
+        else:
+            applicable_test_limit = limit_percent * total_bb
+        return applicable_test_limit
 
     def update_conc_test_df(self, test_name, test_required_col_df, actual, show_on_dashboard, concentration_test_df):
         total_bb = test_required_col_df["Borrowing Base"].sum()
 
-        applicable_test_limit = max(self.limit_percent * total_bb, self.min_limit)
+        applicable_test_limit = self.get_applicable_limit(limit_percent=self.limit_percent, total_bb=total_bb, min_limit=self.min_limit)
 
         if actual > applicable_test_limit:
             result = "Fail"
@@ -1044,7 +1068,244 @@ class ConcentrationTestExecutor:
             return concentration_test_df            
         except Exception as e:
             raise Exception(e)
-        
+
+    def min_weighted_average_cash_floating_coupon(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df[test_required_col_df["Investment Name"] != "Cash"]["Weighted Floating"].sum()
+
+            if actual > self.limit_percent:
+                result = "Pass"
+            else:
+                result = "Fail"
+
+            row_data = {
+                "Concentration Tests": [test_name],
+                "Concentration Limit": [self.limit_percent],
+                "Actual": [actual],
+                "Result": [result],
+                "Show on dashboard": [show_on_dashboard],
+                "Absolute Limit": [self.min_limit],
+                "Percent Limit": [self.limit_percent]
+            }
+            row_df = pd.DataFrame(row_data)
+            concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+            return concentration_test_df            
+        except Exception as e:
+            raise Exception(e)
+
+    def max_third_party_finance_companies(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df[test_required_col_df["LTV Transaction"] == "Yes"]["Borrowing Base"].sum()
+
+            if actual < self.limit_percent:
+                result = "Pass"
+            else:
+                result = "Fail"
+
+            row_data = {
+                "Concentration Tests": [test_name],
+                "Concentration Limit": [self.limit_percent],
+                "Actual": [actual],
+                "Result": [result],
+                "Show on dashboard": [show_on_dashboard],
+                "Absolute Limit": [self.min_limit],
+                "Percent Limit": [self.limit_percent]
+            }
+            row_df = pd.DataFrame(row_data)
+            concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+            return concentration_test_df            
+        except Exception as e:
+            raise Exception(e)
+
+    def max_affiliate_investments(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df[test_required_col_df["Affiliate Investment"] == "Yes"]["Borrowing Base"].sum()
+
+            if actual < self.limit_percent:
+                result = "Pass"
+            else:
+                result = "Fail"
+
+            row_data = {
+                "Concentration Tests": [test_name],
+                "Concentration Limit": [self.limit_percent],
+                "Actual": [actual],
+                "Result": [result],
+                "Show on dashboard": [show_on_dashboard],
+                "Absolute Limit": [self.min_limit],
+                "Percent Limit": [self.limit_percent]
+            }
+            row_df = pd.DataFrame(row_data)
+            concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+            return concentration_test_df            
+        except Exception as e:
+            raise Exception(e)
+
+    def max_pik_dip(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            total_bb = test_required_col_df["Borrowing Base"].sum()
+            test_required_col_df = test_required_col_df[test_required_col_df["Adjusted Type"].isin(["PIK", "DIP"])]
+            group_total = test_required_col_df["Borrowing Base"].sum()
+
+            actual = group_total / total_bb
+
+            if actual < self.limit_percent:
+                result = "Pass"
+            else:
+                result = "Fail"
+            row_data = {
+                "Concentration Tests": [test_name],
+                "Concentration Limit": [self.limit_percent],
+                "Actual": [actual],
+                "Result": [result],
+                "Show on dashboard": [show_on_dashboard],
+                "Absolute Limit": [self.min_limit],
+                "Percent Limit": [self.limit_percent]
+            }
+            row_df = pd.DataFrame(row_data)
+            concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+            return concentration_test_df            
+        except Exception as e:
+            raise Exception(e)
+
+    def max_issuer_concentration_percent_bb(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            total_bb = test_required_col_df["Borrowing Base"].sum()
+            group_total = test_required_col_df["Issuer Concentration"].sum()
+
+            actual = group_total / total_bb
+
+            if actual < self.limit_percent:
+                result = "Pass"
+            else:
+                result = "Fail"
+            row_data = {
+                "Concentration Tests": [test_name],
+                "Concentration Limit": [self.limit_percent],
+                "Actual": [actual],
+                "Result": [result],
+                "Show on dashboard": [show_on_dashboard],
+                "Absolute Limit": [self.min_limit],
+                "Percent Limit": [self.limit_percent]
+            }
+            row_df = pd.DataFrame(row_data)
+            concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+            return concentration_test_df            
+        except Exception as e:
+            raise Exception(e)
+
+    def max_weighted_average_maturity_years(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            test_required_col_df["Product"] = test_required_col_df["Tenor"] * test_required_col_df["Concentration % Adj. Elig. Amount (excluding cash)"]
+            actual = test_required_col_df["Product"].sum()
+            test_required_col_df.drop(labels='Product', axis=1, inplace=True)
+
+            if actual < self.limit_percent:
+                result = "Pass"
+            else:
+                result = "Fail"
+            row_data = {
+                "Concentration Tests": [test_name],
+                "Concentration Limit": [self.limit_percent],
+                "Actual": [actual],
+                "Result": [result],
+                "Show on dashboard": [show_on_dashboard],
+                "Absolute Limit": [self.min_limit],
+                "Percent Limit": [self.limit_percent]
+            }
+            row_df = pd.DataFrame(row_data)
+            concentration_test_df = pd.concat([concentration_test_df, row_df], ignore_index=True)
+            return concentration_test_df            
+        except Exception as e:
+            raise Exception(e)
+
+    def partial_pik_loan(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df.loc[test_required_col_df["Partial PIK Loan"] == "Yes", "Revised Value"].sum()
+            concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
+
+    def discount_collateral_loans(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df.loc[test_required_col_df["Discount Collateral Loans"] == "Yes", "Revised Value"].sum()
+            concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
+
+    def credit_improved_loans(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df.loc[test_required_col_df["Credit Improved Loans"] == "Yes", "Revised Value"].sum()
+            concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
+
+    def warrants_to_purchase_equity_securities(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df.loc[test_required_col_df["Warrants to Purchase Equity"] == "Yes", "Revised Value"].sum()
+            concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
+
+    def lbo_loan(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df.loc[test_required_col_df["LBO Loan"] == "Yes", "Revised Value"].sum()
+            concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
+
+    def participation_interests(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df.loc[test_required_col_df["Participation Interests"] == "Yes", "Revised Value"].sum()
+            concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
+
+    def eligible_covenant_lite_loans(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df.loc[test_required_col_df["Eligible Covenant Lite Loans"] == "Yes", "Revised Value"].sum()
+            concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
+
+    def top_5_bligors(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df["Revised Value"].sum()
+            concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
+
+    def ltm_ebitda_lt_15MM(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df["LTM EBITDA < 15,000,000"].sum()
+            concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
+
+    def ltm_ebitda_gt_5MM_lt_7_5MM(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df["LTM EBITDA >= 5,000,000 but < 7,500,000"].sum()
+            concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
+
+    def leverage_limitations(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard):
+        try:
+            actual = test_required_col_df["Leverage Limitations"].sum()
+            concentration_test_df = self.update_conc_test_df(actual=actual, concentration_test_df=concentration_test_df, test_name=test_name, show_on_dashboard=show_on_dashboard, test_required_col_df=test_required_col_df)
+            return concentration_test_df
+        except Exception as e:
+            raise Exception(e)
 
     def executeConentrationTest(self):
 

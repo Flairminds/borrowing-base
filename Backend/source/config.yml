@@ -275,6 +275,19 @@ fund_std_col_map:
       Revised Value:
         Sheet Name: Portfolio
         Column Name: DIP Loans Revised Value
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: Partial PIK Loan Net Loan Balance
+      Revolver:
+        Sheet Name: Loan List
+        Column Name: Revolver
+      DDTL:
+        Sheet Name: Loan List
+        Column Name: DDTL
   Pay Less Frequently than Quarterly:
     PSSL:
       Borrowing Base:
@@ -285,6 +298,16 @@ fund_std_col_map:
         Column Name: DDTL and Revolving Loans Revised Value
       Paid Less than Qtrly:
         Sheet Name: Portfolio
+        Column Name: Paid Less than Qtrly
+    PFLT:
+      Borrowing Base:
+          Sheet Name: Loan List
+          Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: Credit Improved Loans Net Loan Balance
+      Paid Less than Qtrly:
+        Sheet Name: Loan List
         Column Name: Paid Less than Qtrly
   Loans denominated in Approved Foreign Currency:
     PSSL:
@@ -297,6 +320,16 @@ fund_std_col_map:
       Approved Currency:
         Sheet Name: Portfolio
         Column Name: Approved Currency
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: Fixed Rate Loan Net Loan Balance
+      Approved Currency:
+        Sheet Name: Loan List
+        Column Name: Currency (USD / CAD / AUD / EUR)
   Loans to Obligors domiciled in Approved Foreign Country:
     PSSL:
       Borrowing Base:
@@ -308,6 +341,16 @@ fund_std_col_map:
       Approved Country:
         Sheet Name: Portfolio
         Column Name: Approved Country
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: DIP Collateral Loans Net Loan Balance
+      Approved Country:
+        Sheet Name: Loan List
+        Column Name: Obligor Country
   Cov-Lite:
     PSSL:
       Borrowing Base:
@@ -388,6 +431,16 @@ fund_std_col_map:
       Is Fixed Rate:
         Sheet Name: Portfolio
         Column Name: Is Fixed Rate
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: Eligible Covenant Lite Loans Net Loan Balance
+      Is Fixed Rate:
+        Sheet Name: Loan List
+        Column Name: Fixed Rate (Y/N)
   Max. Weighted Average Leverage thru Borrower:
     PCOF:
       Borrowing Base:
@@ -423,4 +476,162 @@ fund_std_col_map:
       Investment Name:
         Sheet Name: PL BB Build
         Column Name: Investment Name
+  Min. Weighted Average Cash Floating Coupon:
+    PCOF:
+      Weighted Floating:
+        Sheet Name: PL BB Build
+        Column Name: Weighted Floating
+      Investment Name:
+        Sheet Name: PL BB Build
+        Column Name: Investment Name
+  Max. Third Party Finance Companies:
+    PCOF:
+      LTV Transaction:
+        Sheet Name: PL BB Build
+        Column Name: Classifications LTV Transaction
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+  Max. Affiliate Investments:
+    PCOF:
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+      Affiliate Investment:
+        Sheet Name: PL BB Build
+        Column Name: Classifications Affiliate Investment
+  Max. PIK, DIP:
+    PCOF:
+      Adjusted Type:
+        Sheet Name: PL BB Build
+        Column Name: Classification Adj. Adjusted Type
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+  Max. Issuer Concentration (% BB):
+    PCOF:
+      Borrowing Base:
+        Sheet Name: PL BB Build
+        Column Name: Borrowing Base
+      Issuer Concentration:
+        Sheet Name: PL BB Build
+        Column Name: ONW Adjustments Adj. Contr. % (issuer)
+  Max. Weighted Average Maturity (Years):
+    PCOF:
+      Tenor:
+        Sheet Name: PL BB Build
+        Column Name: Investment Tenor
+      Concentration % Adj. Elig. Amount (excluding cash):
+        Sheet Name: PL BB Build
+        Column Name: Concentration % Adj. Elig. Amount (excluding cash)
+  Partial PIK Loan:
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: Eligible Foreign Country Net Loan Balance
+      Partial PIK Loan:
+        Sheet Name: Loan List
+        Column Name: Partial PIK Loan (Y/N)
+  Discount Collateral Loans:
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: Revolving / Delayed Drawdown Net Loan Balance
+      Discount Collateral Loans:
+        Sheet Name: Loan List
+        Column Name: Discount Collateral Loan (Y/N)
+  Credit Improved Loans:
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: Discount Loans Net Loan Balance
+      Credit Improved Loans:
+        Sheet Name: Loan List
+        Column Name: Credit Improved Loan (Y/N)
+  Warrants to Purchase Equity Securities:
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: Less Than Quarterly Pay Net Loan Balance
+      Warrants to Purchase Equity:
+        Sheet Name: Loan List
+        Column Name: Warrants to Purchase Equity (Y/N)
+  LBO Loan:
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: Warrants to Purchase Equity Securities Net Loan Balance
+      LBO Loan:
+        Sheet Name: Loan List
+        Column Name: LBO Loan (Y/N)
+  Participation Interests:
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: LBO Loan with Equity to Cap <25% Net Loan Balance
+      Participation Interests:
+        Sheet Name: Loan List
+        Column Name: Parti-cipation (Y/N)
+  Eligible Covenant Lite Loans:
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: Participation Interests Net Loan Balance
+      Eligible Covenant Lite Loans:
+        Sheet Name: Loan List
+        Column Name: Eligible Covenant Lite (Y/N)
+  Top 5 Obligors:
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Revised Value:
+        Sheet Name: Loan List
+        Column Name: Obligor Industry FH Net Loan Balance
+  LTM EBITDA < 15,000,000:
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      LTM EBITDA < 15,000,000:
+        Sheet Name: Loan List
+        Column Name: LTM EBITDA < 15,000,000
+  LTM EBITDA >= 5,000,000 but < 7,500,000:
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      LTM EBITDA >= 5,000,000 but < 7,500,000:
+        Sheet Name: Loan List
+        Column Name: LTM EBITDA >= 5,000,000 but < 7,500,000
+  Leverage Limitations:
+    PFLT:
+      Borrowing Base:
+        Sheet Name: Loan List
+        Column Name: Concentration Test Balance - OPB + Eligible Unfunded
+      Leverage Limitations:
+        Sheet Name: Loan List
+        Column Name: LTM Snr Debt / EBITDA
       
+
