@@ -4,6 +4,7 @@ import {toast} from 'react-toastify';
 import { StyledSelectConcTest } from '../../components/elements/styledSelectConcTest/StyledSelectConcTest';
 import { UIComponents } from '../../components/uiComponents';
 // import buttonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
+import { Loader } from '../../components/uiComponents/loader/loader';
 import { changeConcentrationTestMasterData, getConcentrationTestMasterData } from '../../services/api';
 import { defaultFund, ConctestMasterdropdownValues } from '../../utils/configurations/fundsDetails';
 import { convertToDropdownOptions, getConcTestChnages, styledDropdownOptions } from '../../utils/helperFunctions/concentrationMasterData';
@@ -20,15 +21,24 @@ export const ConcentrationTestMaster = () => {
 		hightlightIds: []
 	});
 	const [optionsArray, setoptionsArray] = useState([]);
+	const [loading, setLoading] = useState(false);
 
 	const handleDropdownChange = async(value) => {
-		const res = await getConcentrationTestMasterData(value);
-		const deepCopyData = JSON.parse(JSON.stringify(res.data));
-		setTableData(deepCopyData);
-		setDisplayTableData(deepCopyData);
+		try {
+			setLoading(true);
+			setoptionsArray([]);
+			const res = await getConcentrationTestMasterData(value);
+			const deepCopyData = JSON.parse(JSON.stringify(res.data));
+			setTableData(deepCopyData);
+			setDisplayTableData(deepCopyData);
+			setLoading(false);
+		} catch (error) {
+			toast.error("Something went wrong.");
+			setLoading(false);
+		}
 	};
 
-	const handleLimitInputChange = (e, fundId) => {
+	const handleLimitInputChange = (e, fundId, limit) => {
 		const displaydata = JSON.parse(JSON.stringify(displayTableData.data));
 		let index = -1;
 		for (let i = 0; i < displaydata.length; i++) {
@@ -37,7 +47,15 @@ export const ConcentrationTestMaster = () => {
 				break;
 			}
 		}
-		displaydata[index].limit_percentage = e.target.value;
+
+		switch (limit) {
+		case "concentration_limit":
+			displaydata[index].limit_percentage = e.target.value;
+			break;
+		case "min_limit":
+			displaydata[index].min_limit = e.target.value;
+			break;
+		}
 
 		setDisplayTableData((prevState) => ({
 			...prevState,
@@ -143,79 +161,85 @@ export const ConcentrationTestMaster = () => {
 				</div>
 			</div>
 
-
-			<div className={styles.tableContainer}>
-				<table className={styles.table}>
-					<thead className={styles.stickyHeader}>
-						<tr className={styles.headRow}>
-							{displayTableData?.columns?.map((column, index) => (
-								<th key={index} className={styles.th}>{column.title}</th>
-							))}
-						</tr>
-					</thead>
-					<tbody>
-						{sortedData?.map((row, rowIndex) => (
-							<tr
-								key={rowIndex}
-								className={
-									activeRowFundData?.hightlightIds.includes(row.test_id) ?
-										activeRowFundData?.hightlightType == 'testHightlight' ?
-											`${styles.testActiveRow} ${styles.td}`
-											:
-											`${styles.editStatusRows} ${styles.td}`
-										:
-										styles.td
-								}
-							>
-								{displayTableData?.columns.map((column, colIndex) => (
-									<>
-										<td key={colIndex} className={styles.td}>
-											{column.key == "limit_percentage" ?
-												<div className={styles.inputDiv}><input className={styles.input} value={row[column.key]} onChange={(e) => handleLimitInputChange(e, row.test_id)} /><span>{row.unit == 'percentage' ? '%' : ''}</span></div>
-												:
-												column.key == "eligible_funds" ?
-													<>
-														{row[column.key]?.map((el) => (
-															<span key={el} className={styles.fundNameTag} style={{...(FUND_BG_COLOR[el] || { backgroundColor: 'gray', color: 'white'})}}>{el}</span>
-														))}
-													</>
+			{loading ? <Loader /> :
+				<>
+					<div className={styles.tableContainer}>
+						<table className={styles.table}>
+							<thead className={styles.stickyHeader}>
+								<tr className={styles.headRow}>
+									{displayTableData?.columns?.map((column, index) => (
+										<th key={index} className={styles.th}>{column.title}</th>
+									))}
+								</tr>
+							</thead>
+							<tbody>
+								{sortedData?.map((row, rowIndex) => (
+									<tr
+										key={rowIndex}
+										className={
+											activeRowFundData?.hightlightIds.includes(row.test_id) ?
+												activeRowFundData?.hightlightType == 'testHightlight' ?
+													`${styles.testActiveRow} ${styles.td}`
 													:
-													column.key == "show_on_dashboard" ?
-														<Switch style={{zIndex: 1}} value={row[column.key]} onChange={(cheked) => onVisibilityChange(cheked, row.test_id)} disabled={row.limit_percentage === "" && true}/>
+													`${styles.editStatusRows} ${styles.td}`
+												:
+												styles.td
+										}
+									>
+										{displayTableData?.columns.map((column, colIndex) => (
+											<>
+												<td key={colIndex} className={styles.td}>
+													{column.key == "limit_percentage" ?
+														<div className={styles.inputDiv}><input className={styles.input} value={row[column.key]} onChange={(e) => handleLimitInputChange(e, row.test_id, "concentration_limit")} /><span>{row.unit == 'percentage' ? '%' : ''}</span></div>
 														:
-														<>{row[column.key]}</>
-											}
-										</td>
-									</>
+														column.key == "min_limit" ?
+															<div className={styles.inputDiv}><input className={styles.limitInput} value={row[column.key]} onChange={(e) => handleLimitInputChange(e, row.test_id, "min_limit")} /></div>
+															:
+															column.key == "eligible_funds" ?
+																<>
+																	{row[column.key]?.map((el) => (
+																		<span key={el} className={styles.fundNameTag} style={{...(FUND_BG_COLOR[el] || { backgroundColor: 'gray', color: 'white'})}}>{el}</span>
+																	))}
+																</>
+																:
+																column.key == "show_on_dashboard" ?
+																	<Switch style={{zIndex: 1}} value={row[column.key]} onChange={(cheked) => onVisibilityChange(cheked, row.test_id)} disabled={row.limit_percentage === "" && true}/>
+																	:
+																	<>{row[column.key]}</>
+													}
+												</td>
+											</>
+										))}
+									</tr>
 								))}
-							</tr>
-						))}
-						{/* {displayTableData?.data?.map((row, rowIndex) => (
-						<tr key={rowIndex} className={styles.td}>
-							{displayTableData?.columns.map((column, colIndex) => (
-							<>
-							{!row.show_on_dashboard && <td key={colIndex} className={styles.td}>
-								{column.key == "limit_percentage" ?
-								<input className={styles.input} value={row[column.key]} onChange={(e) => handleLimitInputChange(e, rowIndex)} />
-								:
-								<>
-								{row[column.key]}
-								</>
-								}
-								{column.key == "show_on_dashboard" &&
-								<Switch value={row[column.key]} onChange={(cheked) => onVisibilityChange(cheked,rowIndex)}  />}
-								</td>}
-							</>
-							))}
-						</tr>
-						))} */}
-					</tbody>
-				</table>
-			</div>
+								{/* {displayTableData?.data?.map((row, rowIndex) => (
+								<tr key={rowIndex} className={styles.td}>
+									{displayTableData?.columns.map((column, colIndex) => (
+									<>
+									{!row.show_on_dashboard && <td key={colIndex} className={styles.td}>
+										{column.key == "limit_percentage" ?
+										<input className={styles.input} value={row[column.key]} onChange={(e) => handleLimitInputChange(e, rowIndex)} />
+										:
+										<>
+										{row[column.key]}
+										</>
+										}
+										{column.key == "show_on_dashboard" &&
+										<Switch value={row[column.key]} onChange={(cheked) => onVisibilityChange(cheked,rowIndex)}  />}
+										</td>}
+									</>
+									))}
+								</tr>
+								))} */}
+							</tbody>
+						</table>
+					</div>
 
-			<div className={styles.updateBtn}>
-				<UIComponents.Button onClick={submitChnages} loading={submitBtnLoading} text={submitBtnLoading ? 'Updating' : 'Update'} />
-			</div>
+					<div className={styles.updateBtn}>
+						<UIComponents.Button onClick={submitChnages} loading={submitBtnLoading} text={submitBtnLoading ? 'Updating' : 'Update'} />
+					</div>
+				</>
+			}
 
 		</>
 	);
