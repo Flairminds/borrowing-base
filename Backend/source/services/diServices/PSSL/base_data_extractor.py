@@ -4,13 +4,17 @@ from sqlalchemy import text
 from source.utility.Log import Log
 from source.utility.ServiceResponse import ServiceResponse
 
-def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details):
+def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, master_rating_details):
     try:
         with engine.connect() as connection:
             pssl_base_data = pd.DataFrame(connection.execute(text(f'''
                 select td.borrower, td.acquisition_price, td.loan_type, td.maturity_date, td.origination_date, td.date_of_ttm_financials, td.current_cash_interest_expense,
                     td.current_unrestricted_cash, td.current_gross_senior_debt, td.current_gross_total_debt, td.cov_lite, td.spread, td.approved_country, td.approved_currency,
-                    td.approved_industry, td.is_fixed_rate, td.interest_paid, td.paid_less_than_qtrly, td.sp_rating, td.moodys_rating, td.adjusted_ttm_ebiteda, td.rcf_update_date, td.relevent_test_period, td.rcf_commitment_amount, td.two_market_quotes, td.dip_loan,
+                    td.approved_industry, td.is_fixed_rate, td.interest_paid, 
+--                    td.paid_less_than_qtrly, 
+                    td.sp_rating, td.moodys_rating, td.adjusted_ttm_ebiteda, td.rcf_update_date, td.relevent_test_period, td.rcf_commitment_amount, 
+--                    td.two_market_quotes, 
+--                    td.dip_loan,
                     sum(borrower_outstanding_principal_balance) as borrower_outstanding_principal_balance, sum(borrower_facility_commitment) as borrower_facility_commitment, min(acquisition_date) as acquisition_date, STRING_AGG(distinct td.loanx_id, ', ') AS loanx_id
                 from (select distinct
                     usbh."Issuer/Borrower Name" as borrower,
@@ -29,8 +33,8 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     bs."[ACM] [COI/LC] S&P Industry"  as "approved_industry",
                     case when ss."[SI] Type of Rate" like 'Fixed Rate%' then 'Yes' else 'No' end as is_fixed_rate,
                     case when ch."Payment Period" = '3 Months' then 'Qtrly' when ch."Payment Period" = '1 Month' then 'Qtrly' when ch."Payment Period" = '6 Months' then 'Mthly' else null end as interest_paid,
-                    ch."Deal Issue (Derived) Rating - S&P" as "sp_rating",
-                    ch."Deal Issue (Derived) Rating - Moody's" as "moodys_rating",
+                    ssmr."[RD(] [S] Rating" as "sp_rating",
+                    ssmr."[RD(] [M] Rating" as "moodys_rating",
                     bs."[CM] [CS] Updated as of" as date_of_ttm_financials,
                     bs."[CM] [CS] Updated as of" as relevent_test_period,
                     case when ss_revolver."[SI] Issue Size" = 'NM' then null else (ss_revolver."[SI] Issue Size"::float) * 1000000 end as rcf_commitment_amount,
@@ -47,16 +51,21 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
                 left join sf_sheet_securities_stats ss_revolver on ss."Family Name" = ss_revolver."Family Name" and ss_revolver."[SI] Security Name" = 'Revolver'
                 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"  
+                left join sf_sheet_master_ratings ssmr on ss."Family Name" = ssmr."[BN] Master Comps"
                 where (usbh.source_file_id= :cash_file_id AND ch.source_file_id= :cash_file_id) and
-                ((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND ((ss_revolver.source_file_id is not null and ss_revolver.source_file_id = :master_comp_file_id) or ss_revolver.source_file_id is null) AND bs.source_file_id= :master_comp_file_id) or sm.id is null)) as td
+                ((sm.id is not null AND ss.source_file_id= :master_comp_file_id AND ((ss_revolver.source_file_id is not null and ss_revolver.source_file_id = :master_comp_file_id) or ss_revolver.source_file_id is null) AND bs.source_file_id= :master_comp_file_id) or sm.id is null) and (ssmr.source_file_id = :master_rating_id or ssmr.source_file_id is null)) as td
                 group by td.borrower, td.acquisition_price, td.loan_type, td.maturity_date,
                     td.origination_date, td.date_of_ttm_financials, td.current_cash_interest_expense,
-                    td.current_unrestricted_cash, td.current_gross_senior_debt, td.current_gross_total_debt, td.cov_lite, td.rcf_commitment_amount, td.two_market_quotes, td.dip_loan,
+                    td.current_unrestricted_cash, td.current_gross_senior_debt, td.current_gross_total_debt, td.cov_lite, td.rcf_commitment_amount, 
+--                    td.two_market_quotes, 
+--                    td.dip_loan,
                     td.spread, td.approved_country, td.approved_currency,
-                    td.approved_industry, td.is_fixed_rate, td.interest_paid, td.paid_less_than_qtrly, td.sp_rating,
+                    td.approved_industry, td.is_fixed_rate, td.interest_paid, 
+--                    td.paid_less_than_qtrly, 
+                    td.sp_rating,
                     td.moodys_rating, td.adjusted_ttm_ebiteda, td.rcf_update_date, td.relevent_test_period
                 order by td.borrower
-            '''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id}))
+            '''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, "master_rating_id": master_rating_details.id}))
 
         if pssl_base_data.empty:
                 raise Exception('Base data is empty')
