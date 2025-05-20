@@ -22,7 +22,7 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, PsslBaseData, PsslBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, PsslBaseData, PsslBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster, VaeData
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
@@ -2016,3 +2016,58 @@ def save_columns(ids_list, mapped_columns):
     except Exception as e:
         print(e)
         return ServiceResponse.error()
+
+def add_vae_data(vae_data):
+    try:
+        vae_data_obj = VaeData(obligor=vae_data['obligor'],
+            event_type=vae_data['eventType'],
+            material_modification=vae_data['materialModification'],
+            vae_decision_date=vae_data['vaeDecisionDate'],
+            financials_date=vae_data['financialsDate'],
+            ttm_ebitda=vae_data['ttmEbitda'],
+            senior_debt=vae_data['seniorDebt'],
+            total_debt=vae_data['totalDebt'],
+            unrestricted_cash=vae_data['unrestrictedCash'],
+            net_senior_leverage=vae_data['netSeniorLeverage'],
+            net_total_leverage=vae_data['netTotalLeverage'],
+            interest_coverage=vae_data['interestCoverage'],
+            recurring_revenue=vae_data['recurringRevenue'],
+            debt_to_recurring_revenue_ratio=vae_data['debtToRecurringRevenueRatio'],
+            liquidity=vae_data['liquidity'],
+            assigned_value=vae_data['assignedValue'],
+            created_by=1)
+
+        db.session.add(vae_data_obj)
+        db.session.commit()
+        
+        return ServiceResponse.success(message="VAE data added successfully")
+    except Exception as e:
+        raise Exception(e)
+
+def get_vae_data():
+    try:
+        vae_data = VaeData.query.all()
+        result = []
+        for data in vae_data:
+            temp = {
+                'obligor': data.obligor,
+                'eventType': data.event_type,
+                'materialModification': data.material_modification,
+                'vaeDecisionDate': data.vae_decision_date,
+                'financialsDate': data.financials_date,
+                'ttmEbitda': data.ttm_ebitda,
+                'seniorDebt': data.senior_debt,
+                'totalDebt': data.total_debt,
+                'unrestrictedCash': data.unrestricted_cash,
+                'netSeniorLeverage': data.net_senior_leverage,
+                'netTotalLeverage': data.net_total_leverage,
+                'interestCoverage': data.interest_coverage,
+                'recurringRevenue': data.recurring_revenue,
+                'debtToRecurringRevenueRatio': data.debt_to_recurring_revenue_ratio,
+                'liquidity': data.liquidity,
+                'assignedValue': str(data.assigned_value * 100)+'%' if data.assigned_value is not None else None
+            }
+            result.append(temp)
+        return ServiceResponse.success(message="Success", data=result)
+    except Exception as e:
+        raise Exception(e)

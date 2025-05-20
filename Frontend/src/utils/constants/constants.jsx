@@ -312,8 +312,8 @@ export const PCOFData = {
 				type: "text"
 			},
 			{
-				name: "capital",
-				label: "Capital",
+				name: "values",
+				label: "Values",
 				type: "float"
 			}
 		]
@@ -837,9 +837,9 @@ export const PCOF_COLUMNS_NAME = {
 	"principle_obligations": {
 		"columns_info": [
 			{
-				"col_name": "principle_obligations",
+				"col_name": "principal_obligations",
 				"sequence": 1,
-				"display_name": "Principle Obligations"
+				"display_name": "Principal Obligations"
 			},
 			{
 				"col_name": "currency",
@@ -971,9 +971,9 @@ export const PCOF_COLUMNS_NAME = {
 				"display_name": "Obligors Net Capital"
 			},
 			{
-				"col_name": "capital",
+				"col_name": "values",
 				"sequence": 2,
-				"display_name": "Capital"
+				"display_name": "Values"
 			}
 		]
 	},
@@ -1085,7 +1085,7 @@ export const PSSL_COLUMNS_NAME = {
 			{
 				"col_name": "advance_rate",
 				"sequence": 2,
-				"display_name": "Advance Rate"
+				"display_name": "Advance Rate (%)"
 			}
 		]
 	}

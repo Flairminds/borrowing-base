@@ -222,3 +222,19 @@ export const saveMappedColumns = (data) => {
 		}
 	});
 };
+
+export const saveVAEData = (data) => {
+	return axios.post(`${ApiURL}/data_ingestion/add_vae_data`, data, {
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+};
+
+export const getVAEData = () => {
+	return axios.get(`${ApiURL}/data_ingestion/get_vae_data`, {
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+};
