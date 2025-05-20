@@ -1,4 +1,4 @@
-import { Popover } from 'antd';
+import { Popover, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {toast} from 'react-toastify';
 import about from "../../../assets/NavbarIcons/Default.svg";
@@ -28,6 +28,8 @@ import { EbitdaAnalysis, addNewAsset, changeParameter, downLoadReportSheet, down
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import Styles from './WhatIfAnalysis.module.css';
 import { Icons } from '../../../components/icons';
+import { wiaOptions } from '../../../utils/configurations/wiaOptions';
+import { fundOptionsArray } from '../../../utils/constants/constants';
 
 export const WhatIfAnalysis = ({
 	getTrendGraphData,
@@ -46,7 +48,9 @@ export const WhatIfAnalysis = ({
 	whatIfAnalysisListData,
 	setWhatIfAnalysisListData,
 	fundType,
-	setFundType
+	setFundType,
+	selectedFund,
+	setSelectedFund
 }) => {
 	const [selectedRow, setSelectedRow] = useState(null);
 	// const[isAnalysisModalOpen,setIsAnalysisModalOpen] =useState(false)
@@ -98,6 +102,7 @@ export const WhatIfAnalysis = ({
 	const [whatIfAnalysisType, setWhatIfAnalysisType] = useState();
 	const [simulationType, setSimulationType] = useState();
 	const [isAddLoadBtnDisable, setIsAddLoadBtnDisable] = useState(true);
+	
 
 	useEffect(() => {
 		if (selectedFiles.length > 0) {
@@ -353,7 +358,6 @@ export const WhatIfAnalysis = ({
 	// useEffect(() => {
 	// 	console.log(selectedOptionUpdateValue, 'selected');
 	// }, [selectedOptionUpdateValue]);
-
 	return (
 		<>
 			{saveBtn && (
@@ -362,7 +366,16 @@ export const WhatIfAnalysis = ({
 			<div style={{display: "inline-flex", flexWrap: 'wrap', width: '100%', justifyContent: 'space-between', padding: '0.5rem 1rem'}}>
 				<div style={{ display: "flex", alignItems: 'baseline'}}>
 					<h4>Borrowing Base Dashboard</h4>
-					<div style={{display: 'flex', alignItems: 'baseline', padding: '0 1rem'}}>
+					<div style={{display: 'flex', alignItems: 'baseline', padding: '0 1rem', gap:"10px"}}>
+						<Select
+							// className={ButtonStyles.filledBtn}
+								defaultValue={fundOptionsArray[0]}
+								style={{ width: 180, borderRadius: '8px', border: '1px solid #6D6E6F' }}
+								// onChange={()=>console.log("hehe")}
+								value={selectedFund}
+								onSelect={(value) => setSelectedFund(value)}
+								options={fundOptionsArray}
+							/>
 						<Calender setReportDate={setReportDate} setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} setBaseFile={setBaseFile}
 							availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData}
 						/>
