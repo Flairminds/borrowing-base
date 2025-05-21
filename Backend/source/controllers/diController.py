@@ -46,10 +46,9 @@ def get_blobs():
 def extract_base_data():
     try:
         req_body = flask.request.get_json()
-        # file_ids = req_body.get("files_list")
+        file_ids = req_body.get("files_list")
         fund_type = req_body.get("fund_type")
         # 
-        file_ids = [198, 196, 170]
         unmapped_sec = diService.get_unmapped_securities(file_ids, fund_type)
         # 
         service_response = diService.extract_base_data(file_ids, fund_type)
