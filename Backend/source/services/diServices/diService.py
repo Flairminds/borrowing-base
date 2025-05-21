@@ -310,7 +310,7 @@ def get_sheet_data(blob_data, sheet_name, output_file_name, args):
     
 def get_file_type(sheet_name_list):
     cashFileSheetList = {"US Bank Holdings", "Client Holdings"} 
-    masterCompSheetList = {"Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping", "PSSL II Borrowing Base"}
+    masterCompSheetList = {"Borrower Stats", "Securities Stats", "SOI Mapping"}
     # marketValueSheetList = {"Sheet1"}
     marketValueSheetList = {"Market and Book Value Position_"}
     masterRatingsList = {"Master Ratings"}
@@ -1444,7 +1444,8 @@ def extract_validate_store_update(source_file):
         return ServiceResponse.success()
 
     except Exception as e:
-        Log.func_error(e)
+        # Log.func_error(e)
+        print(str(e)[:200])
         return ServiceResponse.error()
 
 def get_unmapped_cash_sec():
@@ -1759,7 +1760,7 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
         return ServiceResponse.success(data=sheet_df)       
 
     except Exception as e:
-        print(e)
+        print(str(e)[:200])
         return ServiceResponse.error()
     
 

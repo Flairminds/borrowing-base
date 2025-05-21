@@ -104,12 +104,13 @@ def store_sheet_data(data_dict):
                 if column not in columns_list:
                     drop_columns.append(column)
             df=df.drop(columns=drop_columns)
+            print(f"Successfully processed sheet: {sheet_name}")
             df.to_sql(table_name, con=engine, if_exists='append', index=False, method='multi')
             print(f"Successfully stored sheet: {sheet_name}")
                 
         return ServiceResponse.success()
     except Exception as e:
-        print(str(e))
+        print(str(e)[:200])
         return ServiceResponse.error()
     
 
