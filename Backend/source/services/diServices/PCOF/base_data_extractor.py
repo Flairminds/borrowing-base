@@ -28,10 +28,9 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                 --    sum(ssmb."Market Value"::float)  as "investment_external_valuation", -- could not map -- considering null for now
                     ssm."MarketValue"  as "investment_external_valuation",
                     null as "investment_internal_valuation", -- Complete column is empty
-                    ss."[SI] PIK Coupon" as "rates_fixed_coupon",
-                    ss."[SI] Cash Spread to LIBOR" as "rates_floating_cash_spread",
-                    ss."[SI] LIBOR Floor" as "rates_current_lobor_floor",
-                    null as "rates_pik", -- Complete column is empty
+                    case when ss."[SI] PIK Coupon" = 'NM' then null else ss."[SI] PIK Coupon"::float end as "rates_fixed_coupon",
+                    case when ss."[SI] Cash Spread to LIBOR" = 'NM' then null else ss."[SI] Cash Spread to LIBOR"::float end as "rates_floating_cash_spread",
+                    case when ss."[SI] LIBOR Floor" = 'NM' then null else ss."[SI] LIBOR Floor"::float end as "rates_current_lobor_floor",
                     case
                         when ss."[SI] Type of Rate" like 'Fixed Rate%' then 'Fixed'
                         when ss."[SI] Type of Rate" like 'Floating Rate%' then 'Floating'
@@ -103,6 +102,17 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
 
         if pcof_base_data.empty:
                 raise Exception('Base data is empty')
+        
+        cash_row = {
+            "investment_name": "Cash",
+            "issuer": "Cash",
+            "investment_investment_type": "Cash",
+            "investment_industry": "Cash",
+            "is_eligible_issuer": "Yes"
+        }
+
+        # pcof_base_data = pcof_base_data.append(cash_row, ignore_index=True)
+        pcof_base_data = pd.concat([pcof_base_data, pd.DataFrame([cash_row])], ignore_index=True)
         pcof_base_data["base_data_info_id"] = extracted_base_data_info.id
         pcof_base_data["company_id"] = master_comp_file_details.company_id
         pcof_base_data["report_date"] = master_comp_file_details.report_date

@@ -29,6 +29,51 @@
 		display: flex;
 		align-items: center;
 		gap: 15px;
-		margin: 10px 5px;
 	}
+}
+
+.viewContainer {
+    /* padding: 20px; */
+}
+
+.vaeTable {
+    /* margin-top: 16px; */
+	height: 65vh;
+	overflow: auto;
+}
+
+.vaeTable :global(.ant-table-thead > tr > th) {
+    background-color: #f5f5f5;
+    font-weight: 600;
+	position: sticky;
+	top: 0;
+	z-index: 5000;
+}
+
+.vaeTable :global(.ant-table-cell) {
+    /* white-space: nowrap; */
+}
+
+.vaeTable :global(.ant-table-cell) {
+    text-align: center;
+}
+
+.vaeTable :global(.ant-table-cell:first-child) {
+    text-align: left;
+}
+
+.flexDiv {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.formItem {
+    flex: 1;
+    min-width: 200px;
+    margin-bottom: 0 !important;
+}
+
+.fullWidth {
+    width: 100%;
 }

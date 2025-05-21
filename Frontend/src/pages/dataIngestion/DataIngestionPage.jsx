@@ -15,6 +15,7 @@ import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import styles from './DataIngestionPage.module.css';
 import { Icons } from '../../components/icons';
+import { extractionFileStrings } from '../../utils/constants/constants';
 
 export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
@@ -346,7 +347,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 							</div>
 						</div>
 					</div>
-					<div><Icons.InfoIcon title={``} />{selectedFundType === 0 ? 'Select a fund type' : selectedFundType == 3 ? 'Select a cashfile and mastercomp file for base data extraction' : 'Select a cashfile, mastercomp file and a marketvalue file for base data extraction'}</div>
+					<div><Icons.InfoIcon title={``} />{selectedFundType === 0 ? 'Select a fund type' : extractionFileStrings[selectedFundType]}</div>
 
 					{/* <div className={styles.buttonsContainer}>
 							<div className={styles.uploadFileBtnContainer}>

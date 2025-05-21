@@ -27,7 +27,7 @@
   .th {
     padding: 8px;
     padding-left: 15px;
-    text-align: center;
+    text-align: left;
     border-bottom: 1px solid #DCDEDE;
     font-weight: 600;
     font-size: 14px;
@@ -81,8 +81,16 @@
   
   .input {
     border: 0px;
-    width: 80%;
+    width: 70%;
     background-color: transparent;
+  }
+  
+  .limitInput {
+    border: 0px;
+    width: 90%;
+    min-width: 95px;
+    background-color: transparent;
+
   }
   
   .input:active, input:focus {

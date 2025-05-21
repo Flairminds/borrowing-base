@@ -9,14 +9,14 @@ import styles from './StyledSelectConcTest.module.css';
 const optionRender = (option) => (
 	<div className={styles.optionParent}>
 		<div className={styles.testName}>
-			{option.data.label.length > 65 ? `${option.data.label.slice(0, 55)}...` : option.data.label }
+			{option?.data?.label?.length > 65 ? `${option?.data?.label?.slice(0, 55)}...` : option?.data?.label }
 		</div>
 		<Tooltip
-			title={option.data.description.length > 80 ? option.data.description : null }
+			title={option?.data?.description?.length > 80 ? option?.data?.description : null }
 			placement="topLeft"
 		>
 			<div className={styles.description}>
-				{option.data.description.length > 80 ? `${option.data.description.slice(0, 80)}...` : option.data.description }
+				{option?.data?.description?.length > 80 ? `${option?.data?.description?.slice(0, 80)}...` : option?.data?.description }
 			</div>
 		</Tooltip>
 	</div>
@@ -48,6 +48,7 @@ export const StyledSelectConcTest = ({optionsArray, onChange}) => {
 		if (optionsArray?.length > 0) {
 			setOptions(optionsArray);
 		}
+		setOptions([]);
 	}, [optionsArray]);
 
 	return (

@@ -22,7 +22,7 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
-from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, PsslBaseData, PsslBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster
+from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, PsslBaseData, PsslBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster, VaeData
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
 from source.services.diServices.PCOF import base_data_extractor as pcof_base_data_extractor
@@ -67,8 +67,9 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
 
 
             # upload blob in container
-            blob_client.upload_blob(name=blob_name, data=file)
-            file_url = blob_client.url + '/' + blob_name
+            # blob_client.upload_blob(name=blob_name, data=file)
+            # file_url = blob_client.url + '/' + blob_name
+            file_url = '/'
             # add details of files in db
             source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, extraction_status='In Progress', uploaded_by=uploaded_by, file_type=file_type)
 
@@ -211,78 +212,32 @@ def update_column_names(df, sheet_name, sheet_column_mapper):
 def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, fund_type):
     try:
         engine = db.get_engine()
-        # start_time = datetime.now()
-        # company_name = "Pennant"
         fund_name = fund_type
-        # FOLDER_PATH = company_name + '/'
-
-        # blob_service_client, blob_client = azureConfig.get_az_service_blob_client()
-
         start_time = datetime.now()
 
-        # company_id = None
-        # report_date = None
-        # new_source_file = False
         cash_file_details = None
         master_comp_file_details = None
         market_book_file_details = None
-        # file_sheet_map = None
+        master_rating_details = None
 
         for file_id in file_ids:
             file_details = SourceFiles.query.filter_by(id=file_id).first()
-            # company_id = file_details.company_id
-            # report_date = file_details.report_date
-            # file_name = file_details.file_name + file_details.extension
-            # file = BytesIO(blob_client.get_blob_client(FOLDER_PATH + file_name).download_blob().readall())
             file_type = file_details.file_type
             if (file_type == 'cashfile'):
                 cash_file_details = file_details
-                # file_sheet_map = {
-                #     "cash": {
-                #         "file": file,
-                #         "source_file_obj": file_details,
-                #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type), 
-                #         "is_extracted": file_details.is_extracted
-                #     }
-                # }
             elif file_type == 'master_comp':
                 master_comp_file_details = file_details
-                # file_sheet_map = {
-                #     "master_comp": {
-                #         "file": file,
-                #         "source_file_obj": file_details,
-                #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
-                #         "is_extracted": file_details.is_extracted
-                #     }
-                # }
             elif file_type == 'market_book_file':
                 market_book_file_details = file_details
-                # file_sheet_map = {
-                #     "market_book_file": {
-                #         "file": file,
-                #         "source_file_obj": file_details,
-                #         "sheets": ColumnSheetMap.get_file_sheets(fund=fund_type, file_type=file_type),
-                #         "is_extracted": file_details.is_extracted
-                #     }
-                # }
+            elif file_type == 'master_ratings':
+                master_rating_details = file_details
             print(file_type)
-            # if file_details.is_extracted:
-            #     continue
-            # args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset"]
-            # data_dict = extract(file_sheet_map, sheet_column_mapper, args)
-            # process_store_status = helper_functions.process_and_store_data(data_dict, file_id, fund_name, engine)
-            # file_details.is_extracted = True
-            # db.session.add(file_details)
-            # db.session.commit()
-            # new_source_file = True
+           
         
         
         # update security mapping table
         # helper_functions.update_security_mapping(engine)
 
-        # if new_source_file:
-        # if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
-        #     raise Exception('Proper files not selected.')
         if fund_name == "PCOF":
             if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
                 raise Exception('Proper files not selected.')
@@ -292,17 +247,17 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
             else:
                 raise Exception(service_response.get("message"))
         elif fund_name == 'PSSL':
-            if cash_file_details == None or master_comp_file_details == None:
+            if cash_file_details == None or master_comp_file_details == None or master_rating_details == None:
                 raise Exception('Proper files not selected.')
-            service_response = pssl_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details)
+            service_response = pssl_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, master_rating_details)
             if service_response["success"]:   
                 extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
             else:
                 raise Exception(service_response.get("message"))
         else:
-            if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
+            if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None or master_rating_details == None:
                 raise Exception('Proper files not selected.')
-            base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details)
+            base_data_mapping.soi_mapping(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details, master_rating_details)
             extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
         # else:
             # extracted_base_data_info.status = "repeated"
@@ -355,11 +310,14 @@ def get_sheet_data(blob_data, sheet_name, output_file_name, args):
     
 def get_file_type(sheet_name_list):
     cashFileSheetList = {"US Bank Holdings", "Client Holdings"} 
-    masterCompSheetList = {"Borrower Stats", "Securities Stats", "PFLT Borrowing Base", "PCOF III Borrrowing Base", "PCOF IV", "SOI Mapping", "PSSL II Borrowing Base"}
+    masterCompSheetList = {"Borrower Stats", "Securities Stats", "SOI Mapping"}
     # marketValueSheetList = {"Sheet1"}
     marketValueSheetList = {"Market and Book Value Position_"}
+    masterRatingsList = {"Master Ratings"}
 
-    if cashFileSheetList.issubset(set(sheet_name_list)):  
+    if any(sheet in sheet_name_list for sheet in masterRatingsList):
+        return "master_ratings", list(masterRatingsList)
+    elif cashFileSheetList.issubset(set(sheet_name_list)):  
         return "cashfile", list(cashFileSheetList)
     elif masterCompSheetList.issubset(set(sheet_name_list)): 
         return "master_comp", list(masterCompSheetList)
@@ -397,7 +355,7 @@ def extract_source_file(file_value):
     try:
         print("inside", file_value["source_file"])
         sheet_column_mapper = ColumnSheetMap.sheet_column_mapper
-        args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset", "Issuer", "MVMinusBV"]
+        args = ['Company', "Security", "CUSIP", "Asset ID", "SOI Name", "Family Name", "Asset", "Issuer", "MVMinusBV", "Master Comps"]
         updated_column_df = {}
 
         # for file_value in file_list:
@@ -1486,7 +1444,8 @@ def extract_validate_store_update(source_file):
         return ServiceResponse.success()
 
     except Exception as e:
-        Log.func_error(e)
+        # Log.func_error(e)
+        print(str(e)[:200])
         return ServiceResponse.error()
 
 def get_unmapped_cash_sec():
@@ -1801,7 +1760,7 @@ def validate_uploaded_file(sheet_df, sheet_name, mismatched_data):
         return ServiceResponse.success(data=sheet_df)       
 
     except Exception as e:
-        print(e)
+        print(str(e)[:200])
         return ServiceResponse.error()
     
 
@@ -2058,3 +2017,58 @@ def save_columns(ids_list, mapped_columns):
     except Exception as e:
         print(e)
         return ServiceResponse.error()
+
+def add_vae_data(vae_data):
+    try:
+        vae_data_obj = VaeData(obligor=vae_data['obligor'],
+            event_type=vae_data['eventType'],
+            material_modification=vae_data['materialModification'],
+            vae_decision_date=vae_data['vaeDecisionDate'],
+            financials_date=vae_data['financialsDate'],
+            ttm_ebitda=vae_data['ttmEbitda'],
+            senior_debt=vae_data['seniorDebt'],
+            total_debt=vae_data['totalDebt'],
+            unrestricted_cash=vae_data['unrestrictedCash'],
+            net_senior_leverage=vae_data['netSeniorLeverage'],
+            net_total_leverage=vae_data['netTotalLeverage'],
+            interest_coverage=vae_data['interestCoverage'],
+            recurring_revenue=vae_data['recurringRevenue'],
+            debt_to_recurring_revenue_ratio=vae_data['debtToRecurringRevenueRatio'],
+            liquidity=vae_data['liquidity'],
+            assigned_value=vae_data['assignedValue'],
+            created_by=1)
+
+        db.session.add(vae_data_obj)
+        db.session.commit()
+        
+        return ServiceResponse.success(message="VAE data added successfully")
+    except Exception as e:
+        raise Exception(e)
+
+def get_vae_data():
+    try:
+        vae_data = VaeData.query.all()
+        result = []
+        for data in vae_data:
+            temp = {
+                'obligor': data.obligor,
+                'eventType': data.event_type,
+                'materialModification': data.material_modification,
+                'vaeDecisionDate': data.vae_decision_date,
+                'financialsDate': data.financials_date,
+                'ttmEbitda': data.ttm_ebitda,
+                'seniorDebt': data.senior_debt,
+                'totalDebt': data.total_debt,
+                'unrestrictedCash': data.unrestricted_cash,
+                'netSeniorLeverage': data.net_senior_leverage,
+                'netTotalLeverage': data.net_total_leverage,
+                'interestCoverage': data.interest_coverage,
+                'recurringRevenue': data.recurring_revenue,
+                'debtToRecurringRevenueRatio': data.debt_to_recurring_revenue_ratio,
+                'liquidity': data.liquidity,
+                'assignedValue': str(data.assigned_value * 100)+'%' if data.assigned_value is not None else None
+            }
+            result.append(temp)
+        return ServiceResponse.success(message="Success", data=result)
+    except Exception as e:
+        raise Exception(e)

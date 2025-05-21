@@ -63,7 +63,7 @@ def get_concentration_tests(fund_name):
         {"key": "test_name", "title": "Concentration Test"},
         {"key": "description", "title": "Description "},
         {"key": "mathematical_formula", "title": "Mathematical Formula"},
-        {"key": "min_limit", "title": "min_limit"},
+        {"key": "min_limit", "title": "Min. Limit"},
         {"key": "limit_percentage", "title": "Concentration Limit"},
         {"key": "eligible_funds", "title": "Applicable Funds"},
         {"key": "show_on_dashboard", "title": "Show On Dashboard"},
@@ -84,9 +84,10 @@ def update_limit(test_changes):
             test_id = test["test_id"]
             fund_id = test["fund_id"]
             limit_percentage = 0 if test.get("limit_percentage") == "" else test.get("limit_percentage")
+            min_limit = 0 if test.get("min_limit") == "" else test.get("min_limit")
             show_on_dashboard = test.get("show_on_dashboard")
             
-            if limit_percentage is not None or show_on_dashboard is not None:
+            if limit_percentage is not None or show_on_dashboard is not None or min_limit is not None:
                 fund_test = FundConcentrationTest.query.filter_by(fund_id=fund_id, test_id=test_id).first()
                 # fund_tests = FundConcentrationTest.query.filter_by(test_id=fund_test.test_id)
                 # for fund_type in fund_tests:
@@ -99,6 +100,14 @@ def update_limit(test_changes):
                     if concentration_test.unit == 'percentage':
                         val /= 100
                     fund_test.limit_percentage = val
+
+                if min_limit is not None:
+                    val = float(min_limit)
+                    concentration_test = ConcentrationTest.query.filter_by(id=test_id).first()
+                    if concentration_test.data_type == 'integer' and not int(val) == val:
+                        return ServiceResponse.error(message="Integer value expected for certain tests.", status_code=400)
+
+                    fund_test.min_limit = val
 
                 if show_on_dashboard is not None:
                     fund_test.show_on_dashboard = show_on_dashboard
