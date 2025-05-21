@@ -29,7 +29,8 @@ def upload_source_files():
 
         return HTTPResponse.success(message=service_response["message"])
     except Exception as e:
-        Log.func_error(e)
+        # Log.func_error(e)
+        print(str(e)[:200])
         return HTTPResponse.error(message="Internal server error", status_code=500)
 
 def get_blobs():
