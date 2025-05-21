@@ -183,9 +183,10 @@ def get_bb_data_of_date():
     try:
         data = request.get_json()
         selected_date = data.get("closing_date")
+        fund_type = data.get("fund_type")
         user_id = data.get("user_id")
         base_data_file_id = data.get("base_data_file_id")
-        return dashboardService.get_bb_data_of_date(selected_date, user_id, base_data_file_id)
+        return dashboardService.get_bb_data_of_date(selected_date, user_id, base_data_file_id, fund_type)
     except Exception as e:
         return {
             "error": str(e),
@@ -298,3 +299,12 @@ def download_calculated_df():
     base_data_file_id = request_body["base_data_file_id"]
     base_data_file = commonServices.get_base_data_file(base_data_file_id=base_data_file_id)
     return dashboardService.download_calculated_df(base_data_file)
+
+def get_closing_dates():
+    try: 
+        data = request.get_json()
+        fund_type = data.get("fund_type")
+        closing_dates = dashboardService.get_closing_dates_list(fund_type)
+        return HTTPResponse.success(result=closing_dates)
+    except Exception as e:
+        return HTTPResponse.error(message="Internal Server Error")

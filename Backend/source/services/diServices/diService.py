@@ -2047,7 +2047,7 @@ def add_vae_data(vae_data):
 
 def get_vae_data():
     try:
-        vae_data = VaeData.query.all()
+        vae_data = VaeData.query.order_by(VaeData.vd_id.desc()).all()
         result = []
         for data in vae_data:
             temp = {
@@ -2070,5 +2070,28 @@ def get_vae_data():
             }
             result.append(temp)
         return ServiceResponse.success(message="Success", data=result)
+    except Exception as e:
+        raise Exception(e)
+    
+def get_unmapped_securities(file_ids, fund_type):
+    try:
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            result = connection.execute(
+            text("""
+                SELECT DISTINCT ssubh."Security/Facility Name"
+                FROM source_files sf
+                LEFT JOIN sf_sheet_us_bank_holdings ssubh ON ssubh.source_file_id = sf.id
+                LEFT JOIN pflt_security_mapping psm 
+                    ON psm.cashfile_security_name = ssubh."Security/Facility Name"
+                WHERE sf.id = ANY(:file_ids)
+                AND psm.id IS NULL
+                AND file_type = 'cashfile'
+            """),
+            {"file_ids": file_ids}
+        ).fetchall()
+
+        return [row[0] for row in result]
+    
     except Exception as e:
         raise Exception(e)
