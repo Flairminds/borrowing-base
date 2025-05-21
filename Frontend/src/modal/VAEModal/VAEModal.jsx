@@ -11,27 +11,29 @@ import { saveVAEData, getVAEData } from '../../services/dataIngestionApi';
 import { fmtDateValue, fmtDisplayVal } from '../../utils/helperFunctions/formatDisplayData';
 import dayjs from "dayjs";
 
+const initialFormData = {
+	obligor: '',
+	eventType: '',
+	materialModification: '',
+	vaeDecisionDate: null,
+	financialsDate: null,
+	ttmEbitda: null,
+	seniorDebt: null,
+	totalDebt: null,
+	unrestrictedCash: null,
+	netSeniorLeverage: null,
+	netTotalLeverage: null,
+	interestCoverage: null,
+	recurringRevenue: null,
+	debtToRecurringRevenueRatio: null,
+	liquidity: null,
+	assignedValue: null
+};
+
 export const VAEModal = ({ visible, data, columnNames, onCancel }) => {
 	const [vaeData, setVaeData] = useState([]);
 	const [showAdd, setShowAdd] = useState(false);
-	const [formData, setFormData] = useState({
-		obligor: '',
-		eventType: '',
-		materialModification: '',
-		vaeDecisionDate: null,
-		financialsDate: null,
-		ttmEbitda: '',
-		seniorDebt: '',
-		totalDebt: '',
-		unrestrictedCash: '',
-		netSeniorLeverage: '',
-		netTotalLeverage: '',
-		interestCoverage: '',
-		recurringRevenue: '',
-		debtToRecurringRevenueRatio: '',
-		liquidity: '',
-		assignedValue: ''
-	});
+	const [formData, setFormData] = useState(initialFormData);
 
 	const eventTypeOptions = [
 		{ value: 'credit_deterioration', label: '(a) Credit Quality Deterioration Event' },
@@ -72,7 +74,7 @@ export const VAEModal = ({ visible, data, columnNames, onCancel }) => {
 				['debtToRecurringRevenueRatio']: temp
 			}));
 		}
-	}, [formData])
+	}, [formData]);
 
 	const columns = [
 		{
@@ -218,24 +220,31 @@ export const VAEModal = ({ visible, data, columnNames, onCancel }) => {
 				eventType: formData.eventType || null,
 				materialModification: formData.materialModification || null,
 				vaeDecisionDate: formData.vaeDecisionDate ? formData.vaeDecisionDate.format("YYYY-MM-DD") : null,
-				financialsDate: formData.financialsDate || null,
-				ttmEbitda: formData.ttmEbitda || null,
-				seniorDebt: formData.seniorDebt || null,
-				totalDebt: formData.totalDebt || null,
-				unrestrictedCash: formData.unrestrictedCash || null,
-				netSeniorLeverage: formData.netSeniorLeverage || null,
-				netTotalLeverage: formData.netTotalLeverage || null,
-				interestCoverage: formData.interestCoverage || null,
-				recurringRevenue: formData.recurringRevenue || null,
-				debtToRecurringRevenueRatio: formData.debtToRecurringRevenueRatio || null,
-				liquidity: formData.liquidity || null,
-				assignedValue: formData.liquidity ? (formData.liquidity / 100) : null
+				financialsDate: formData.financialsDate ? formData.financialsDate.format("YYYY-MM-DD") : null,
+				ttmEbitda: formData.ttmEbitda != null ? parseInt(formData.ttmEbitda) : null,
+				seniorDebt: formData.seniorDebt != null ? parseInt(formData.seniorDebt) : null,
+				totalDebt: formData.totalDebt != null ? parseInt(formData.totalDebt) : null,
+				unrestrictedCash: formData.unrestrictedCash != null ? parseInt(formData.unrestrictedCash) : null,
+				netSeniorLeverage: formData.netSeniorLeverage != null ? parseInt(formData.netSeniorLeverage) : null,
+				netTotalLeverage: formData.netTotalLeverage != null ? parseInt(formData.netTotalLeverage) : null,
+				interestCoverage: formData.interestCoverage != null ? parseInt(formData.interestCoverage) : null,
+				recurringRevenue: formData.recurringRevenue != null ? parseInt(formData.recurringRevenue) : null,
+				debtToRecurringRevenueRatio: formData.debtToRecurringRevenueRatio != null ? parseInt(formData.debtToRecurringRevenueRatio) : null,
+				liquidity: formData.liquidity != null ? parseInt(formData.liquidity) : null,
+				assignedValue: formData.assignedValue != null ? parseInt(formData.assignedValue) / 100 : null
 			};
 			const response = await saveVAEData({vaeData: payload});
 			if (response.data.success) {
 				showToast('success', response.data.message);
 				fetchVAEData();
 				setShowAdd(false);
+				setFormData(initialFormData);
+				setFormData(prev => ({
+					...prev,
+					['netSeniorLeverage']: null,
+					['netTotalLeverage']: null,
+					['debtToRecurringRevenueRatio']: null
+				}));
 			} else {
 				showToast('error', response.data.message);
 			}
@@ -243,7 +252,12 @@ export const VAEModal = ({ visible, data, columnNames, onCancel }) => {
 			console.error(error.message);
 			showToast('error', 'Request failed due to internal error');
 		}
-	}
+	};
+
+	const handleCancel = () => {
+		setShowAdd(false);
+		onCancel();
+	};
 
 	return (
 		<Modal
@@ -256,7 +270,7 @@ export const VAEModal = ({ visible, data, columnNames, onCancel }) => {
 			onCancel={onCancel}
 			footer={null}
 			width={1200}
-			style={{marginTop: '-75px'}}
+			style={{marginTop: '-75px', minHeight: '300px'}}
 		>
 			<div className={styles.modalContainer}>
 				{showAdd ? (
@@ -430,7 +444,7 @@ export const VAEModal = ({ visible, data, columnNames, onCancel }) => {
 						<Table
 							columns={columns}
 							dataSource={vaeData}
-							scroll={{ x: 1500 }}
+							scroll={{ x: 1300, y: '55dvh' }}
 							pagination={false}
 							bordered
 							size="small"
@@ -441,6 +455,10 @@ export const VAEModal = ({ visible, data, columnNames, onCancel }) => {
 			</div>
 
 			<div className={styles.buttonContainer}>
+				<CustomButton
+					text={"Cancel"}
+					onClick={handleCancel}
+				/>
 				<CustomButton
 					isFilled={true}
 					text={showAdd ? "Save" : "+ Add"}

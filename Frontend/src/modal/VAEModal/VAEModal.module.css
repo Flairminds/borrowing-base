@@ -21,7 +21,7 @@
 	background-color: #fff;
 	display: flex;
 	justify-content: flex-end;
-	gap: 10px;
+	/* gap: 10px; */
 }
 
 .formContainer {
@@ -42,12 +42,15 @@
 	overflow: auto;
 }
 
-.vaeTable :global(.ant-table-thead > tr > th) {
-    background-color: #f5f5f5;
-    font-weight: 600;
-	position: sticky;
-	top: 0;
-	z-index: 5000;
+.vaeTable :global(.ant-table-thead > tr > th:not(.ant-table-cell-fix-left)) {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.vaeTable :global(.ant-table-thead > tr > th.ant-table-cell-fix-left) {
+  background-color: #f5f5f5;
+  z-index: 3;
 }
 
 .vaeTable :global(.ant-table-cell) {
