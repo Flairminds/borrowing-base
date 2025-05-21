@@ -57,6 +57,6 @@ def get_mathematical_formula():
 def download_excel():
     return dashboardController.download_calculated_df()
 
-@dashboard_blueprint.route("/get_closing_dates", methods=["POST"])
+@dashboard_blueprint.route("/get_closing_dates", methods=["GET"])
 def get_closing_dates():
     return dashboardController.get_closing_dates()

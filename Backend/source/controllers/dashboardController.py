@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import jsonify, request
+import json
 
 from models import BaseDataFile, ModifiedBaseDataFile, WhatIfAnalysis
 from source.utility.HTTPResponse import HTTPResponse
@@ -302,7 +303,7 @@ def download_calculated_df():
 
 def get_closing_dates():
     try: 
-        data = request.get_json()
+        data = json.loads(request.data)
         fund_type = data.get("fund_type")
         closing_dates = dashboardService.get_closing_dates_list(fund_type)
         return HTTPResponse.success(result=closing_dates)

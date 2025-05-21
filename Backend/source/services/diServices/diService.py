@@ -1238,6 +1238,7 @@ def trigger_bb_calculation(bdi_id):
             file_data=pickled_xl_sheet_df_map,
             file_name='Generated Data ' + dt_string,
             included_excluded_assets_map=json.dumps(included_excluded_assets_map),
+            extracted_base_data_info_id= bdi_id
         )
         print('Generated Data ' + dt_string)
         db.session.add(base_data_file)
