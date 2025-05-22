@@ -54,27 +54,34 @@ export const VAEModal = ({ visible, data, columnNames, onCancel }) => {
 
 	useEffect(() => {
 		if (formData.seniorDebt && formData.ttmEbitda) {
-			let temp = (formData.seniorDebt - (formData.unrestrictedCash || 0)) / formData.ttmEbitda
+			let temp = (formData.seniorDebt - (formData.unrestrictedCash || 0)) / formData.ttmEbitda;
 			setFormData(prev => ({
 				...prev,
-				['netSeniorLeverage']: temp
+				netSeniorLeverage: temp
 			}));
 		}
+	}, [formData.seniorDebt, formData.ttmEbitda, formData.unrestrictedCash]);
+
+	useEffect(() => {
 		if (formData.totalDebt && formData.ttmEbitda) {
-			let temp = (formData.totalDebt - (formData.unrestrictedCash || 0)) / formData.ttmEbitda
+			let temp = (formData.totalDebt - (formData.unrestrictedCash || 0)) / formData.ttmEbitda;
 			setFormData(prev => ({
 				...prev,
-				['netTotalLeverage']: temp
+				netTotalLeverage: temp
 			}));
 		}
+	}, [formData.totalDebt, formData.ttmEbitda, formData.unrestrictedCash]);
+
+	useEffect(() => {
 		if (formData.recurringRevenue && formData.ttmEbitda) {
-			let temp = (formData.ttmEbitda || 0) / formData.recurringRevenue
+			let temp = formData.ttmEbitda / formData.recurringRevenue;
 			setFormData(prev => ({
 				...prev,
-				['debtToRecurringRevenueRatio']: temp
+				debtToRecurringRevenueRatio: temp
 			}));
 		}
-	}, [formData]);
+	}, [formData.recurringRevenue, formData.ttmEbitda]);
+
 
 	const columns = [
 		{
@@ -239,12 +246,6 @@ export const VAEModal = ({ visible, data, columnNames, onCancel }) => {
 				fetchVAEData();
 				setShowAdd(false);
 				setFormData(initialFormData);
-				setFormData(prev => ({
-					...prev,
-					['netSeniorLeverage']: null,
-					['netTotalLeverage']: null,
-					['debtToRecurringRevenueRatio']: null
-				}));
 			} else {
 				showToast('error', response.data.message);
 			}
