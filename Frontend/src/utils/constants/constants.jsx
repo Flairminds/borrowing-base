@@ -1092,7 +1092,7 @@ export const PSSL_COLUMNS_NAME = {
 };
 
 export const extractionFileStrings = {
-	1: "Select a cashfile, mastercomp file and a marketvalue file for base data extraction",
+	1: "Select a mastercomp file and a marketvalue file for base data extraction",
 	2: "Select a cashfile, mastercomp file, marketvalue, master_ratings file for base data extraction",
 	3: "Select a cashfile, mastercomp, master_ratings file for base data extraction",
 }

@@ -239,10 +239,10 @@ def extract_and_store(file_ids, sheet_column_mapper, extracted_base_data_info, f
         # helper_functions.update_security_mapping(engine)
 
         if fund_name == "PCOF":
-            if cash_file_details == None or master_comp_file_details == None or market_book_file_details == None:
+            if master_comp_file_details == None or market_book_file_details == None:
                 raise Exception('Proper files not selected.')
-            service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details)
-            if service_response["success"]:   
+            service_response = pcof_base_data_extractor.map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, market_book_file_details)
+            if service_response["success"]:
                 extracted_base_data_info.status = ExtractionStatusMaster.COMPLETED.value
             else:
                 raise Exception(service_response.get("message"))

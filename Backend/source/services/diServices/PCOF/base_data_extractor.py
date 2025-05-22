@@ -4,15 +4,14 @@ from sqlalchemy import text
 from source.utility.Log import Log
 from source.utility.ServiceResponse import ServiceResponse
 
-def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, cash_file_details, market_book_file_details):
+def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_details, market_book_file_details):
     try:
         print("storing base data of pcof")
         with engine.connect() as connection:
             pcof_base_data = pd.DataFrame(connection.execute(text(f'''
                 select distinct
-                    --usbh."Security/Facility Name" as "investment_name",
                     ss."Security" as investment_name,
-                    usbh."Issuer/Borrower Name"  as "issuer",
+                    sm.family_name  as "issuer",
                     case
 						when lien_master.lien_type is null then ss."[SI] Credit Facility Lien Type"
 						else lien_master.lien_type
@@ -21,11 +20,8 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     bs."[ACM] [COI/LC] PNNT Industry" as "investment_industry",
                     bs."[ACM] [COI/LC] Closing Date"::date as "investment_closing_date",
                     case when ss."[SI] Maturity" is not null and ss."[SI] Maturity" != 'NM' then ss."[SI] Maturity" else null end as "investment_maturity",
-                --    sum(usbh."P. Lot Current Par Amount (Deal Currency)"::float) as "investment_par", -- selecting this column for now
                     ssm."Commitment" as "investment_par",
-                --    sum(ssmb."Book Value"::float)  as "investment_cost", -- could not map -- considering null for now
                     ssm."BookValue" as "investment_cost",
-                --    sum(ssmb."Market Value"::float)  as "investment_external_valuation", -- could not map -- considering null for now
                     ssm."MarketValue"  as "investment_external_valuation",
                     null as "investment_internal_valuation", -- Complete column is empty
                     case when ss."[SI] PIK Coupon" = 'NM' then null else ss."[SI] PIK Coupon"::float end as "rates_fixed_coupon",
@@ -55,31 +51,19 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     end as "leverage_pcof_iv_leverage",
                     ss."[PSM] Capitalization Multiple" as "leverage_total_capitalization",
                     ss."LTV" as "leverage_ltv_thru_pcof_iv", -- was from PCOF IV, Now taking from security stats (BU)
-                    'Yes' as "is_eligible_issuer", -- could not map
-                    STRING_AGG(distinct ch."LoanX ID", ', ') AS loanx_id
-                from sf_sheet_us_bank_holdings usbh
-                left join sf_sheet_client_Holdings ch on ch."Issuer/Borrower Name" = usbh."Issuer/Borrower Name"
-                    and ch."Current Par Amount (Issue Currency) - Settled" = usbh."Current Par Amount (Issue Currency) - Settled"
-                left join pflt_security_mapping sm on sm.cashfile_security_name = usbh."Security/Facility Name"
+                    case
+						when ss."[SI] Credit Facility Lien Type" = 'Ineligible' then 'No'
+						else 'Yes'
+					end as "is_eligible_issuer" -- could not map
+                from sf_sheet_marketbook_1 ssm
+                left join pflt_security_mapping sm on sm.marketvalue_issuer = ssm."Issuer_Name" and sm.marketvalue_asset = ssm."Asset_Name"
                 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
                 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
                 left join lien_type_mapping lien_mapping on lien_mapping.lien_type = ss."[SI] Credit Facility Lien Type" and (lien_mapping.is_deleted = false or lien_mapping.is_deleted is null)
 				left join lien_type_master lien_master on lien_master.id = lien_mapping.master_lien_type_id
-                left join 
-	                (select loan_mapping_cashfile.loan_type, loan_master_cashfile.loan_type as master_loan_type from loan_type_mapping loan_mapping_cashfile
-		                left join loan_type_master loan_master_cashfile on loan_master_cashfile.id = loan_mapping_cashfile.master_loan_type_id
-		                where (loan_mapping_cashfile.is_deleted = false or loan_mapping_cashfile.is_deleted is null) and loan_master_cashfile.fund_type = 'PCOF')
-                    as t2 on t2.loan_type = ch."Issue Name"
-                left join 
-	                (select *, loan_master_marketbook.loan_type as master_loan_type from sf_sheet_marketbook_1 ssm 
-			            left join loan_type_mapping loan_mapping_marketbook on loan_mapping_marketbook.loan_type = ssm."Asset_Name" and (loan_mapping_marketbook.is_deleted = false or loan_mapping_marketbook.is_deleted is null)
-			            left join loan_type_master loan_master_marketbook on loan_master_marketbook.id = loan_mapping_marketbook.master_loan_type_id and loan_master_marketbook.fund_type = 'PCOF'
-			            where ssm.source_file_id = :market_book_file_id)
-                    as ssm on lower(regexp_replace(ch."Issuer/Borrower Name", '[^a-zA-Z0-9]','', 'g')) = lower(regexp_replace(ssm."Issuer_Name", '[^a-zA-Z0-9]','', 'g')) and t2.master_loan_type = ssm.master_loan_type-- and ssm."Asset_Primary IDAssetID_Name" = ch."LoanX ID"
-                where (usbh.source_file_id = :cash_file_id AND ch.source_file_id = :cash_file_id and (ssm.source_file_id is null or ssm.source_file_id = :market_book_file_id)) and
+                where (ssm.source_file_id = :market_book_file_id) and
                 ((sm.id is not null AND ss.source_file_id = :master_comp_file_id AND bs.source_file_id = :master_comp_file_id) or sm.id is null)
-                group by sm.id, ss."Security", usbh."Security/Facility Name", usbh."Issuer/Borrower Name", ss."[SI] Credit Facility Lien Type", bs."[ACM] [COI/LC] PNNT Industry",
-                bs."[ACM] [COI/LC] Closing Date", ss."[SI] Maturity",
+                group by ss."Security", sm.family_name, ss."[SI] Credit Facility Lien Type", bs."[ACM] [COI/LC] PNNT Industry", bs."[ACM] [COI/LC] Closing Date", ss."[SI] Maturity",
                     ss."[SI] PIK Coupon",
                     ss."[SI] Cash Spread to LIBOR",
                     ss."[SI] LIBOR Floor",
@@ -98,7 +82,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ssm."MarketValue",
                     lien_master.lien_type
                 order by ss."Security"
-            '''), {'cash_file_id': cash_file_details.id, 'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}))
+            '''), {'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}))
 
         if pcof_base_data.empty:
                 raise Exception('Base data is empty')
