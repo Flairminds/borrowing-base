@@ -8,7 +8,7 @@ from sqlalchemy import text
 from models import db, BaseDataFile
 from source.services.PSSL.pssl_calculation_initiator import PsslCalculationInitiator
 from source.utility.ServiceResponse import ServiceResponse
-from models import db, ExtractedBaseDataInfo, BaseDataOtherInfo
+from models import db, ExtractedBaseDataInfo, BaseDataOtherInfo, VaeData
 from source.utility.Log import Log
 pssl_calculation_initiator = PsslCalculationInitiator()
 
@@ -17,6 +17,15 @@ def trigger_pssl_bb(bdi_id):
         engine = db.get_engine()
         extracted_base_data_info = ExtractedBaseDataInfo.query.filter_by(id=bdi_id).first()
         base_data_other_info = BaseDataOtherInfo.query.filter_by(extraction_info_id=bdi_id).first()
+
+        vae_info = VaeData.query.all()
+
+        vae_dicts = [row.__dict__ for row in vae_info]
+
+        for row in vae_dicts:
+            row.pop('_sa_instance_state', None)
+
+        vae_df = pd.DataFrame(vae_dicts)
         with engine.connect() as connection:
             base_data_df = pd.DataFrame(connection.execute(text(f"select * from pssl_base_data where base_data_info_id = :ebd_id"), {'ebd_id': bdi_id}).fetchall())
             base_data_mapping_df = pd.DataFrame(connection.execute(text("""select bd_sheet_name, bd_column_name, bd_column_lookup from base_data_mapping bdm where fund_type = 'PSSL' and bd_sheet_name = 'Portfolio'""")))
@@ -118,6 +127,7 @@ def trigger_pssl_bb(bdi_id):
         base_data_dict["Portfolio"] = base_data_df
         base_data_dict["Availability"] = availability_df
         base_data_dict["Exchange Rates"] = exchange_rates_df
+        base_data_dict["VAE"] = vae_df
         # base_data_dict["Obligor Tiers"] = obligor_tiers_df
 
 
