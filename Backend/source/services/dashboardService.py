@@ -115,11 +115,11 @@ def get_files_list(user_id):
     return jsonify({"error_status": False, "files_list": file_names}), 200
 
 
-def get_bb_data_of_date(selected_date, user_id, base_data_file_id, fund_type):
+def get_bb_data_of_date(selected_date, user_id, base_data_file_id):
     if base_data_file_id:
-        borrowing_base_results = BaseDataFile.query.filter_by(id=base_data_file_id, fund_type=fund_type).first()
+        borrowing_base_results = BaseDataFile.query.filter_by(id=base_data_file_id).first()
     else:
-        borrowing_base_results = BaseDataFile.query.filter_by(user_id=user_id, closing_date=selected_date, fund_type=fund_type).first()
+        borrowing_base_results = BaseDataFile.query.filter_by(user_id=user_id, closing_date=selected_date).first()
 
     if not borrowing_base_results:
         return (

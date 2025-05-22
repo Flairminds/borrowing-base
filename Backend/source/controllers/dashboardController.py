@@ -187,7 +187,7 @@ def get_bb_data_of_date():
         fund_type = data.get("fund_type")
         user_id = data.get("user_id")
         base_data_file_id = data.get("base_data_file_id")
-        return dashboardService.get_bb_data_of_date(selected_date, user_id, base_data_file_id, fund_type)
+        return dashboardService.get_bb_data_of_date(selected_date, user_id, base_data_file_id)
     except Exception as e:
         return {
             "error": str(e),

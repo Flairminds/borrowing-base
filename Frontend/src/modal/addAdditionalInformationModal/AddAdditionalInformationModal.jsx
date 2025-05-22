@@ -71,10 +71,10 @@ export const AddAdditionalInformationModal = (
 			formData["borrower"] = uploadedData["borrower"] || data?.other_data?.["borrower"] || null;
 			formData["determination_date"] = uploadedData.determination_date ? dayjs(uploadedData.determination_date) : dayjs(data?.other_data?.determination_date) || null;
 			formData["revolving_closing_date"] = uploadedData.revolving_closing_date ? dayjs(uploadedData.revolving_closing_date) : dayjs(data?.other_data?.revolving_closing_date) || null;
-			formData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] = uploadedData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || data?.other_data?.["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || null;
-			formData["(b)_facility_size"] = uploadedData["(b)_facility_size"] || data?.other_data?.["(b)_facility_size"] || null;
-			formData["loans_(cad)"] = uploadedData["loans_(cad)"] ? uploadedData["loans_(cad)"] : data?.other_data?.["loans_(cad)"] || null;
-			formData["loans_(usd)"] = uploadedData["loans_(usd)"] || data?.other_data?.["loans_(usd)"] || null;
+			formData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] = uploadedData["commitment_period_3_years_from_final_closing_date_as_defined_in_lpa_"] || data?.other_data?.["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || null;
+			formData["(b)_facility_size"] = uploadedData["_b_facility_size"] || data?.other_data?.["(b)_facility_size"] || null;
+			formData["loans_(cad)"] = uploadedData["loans_cad_"] ? uploadedData["loans_cad_"] : data?.other_data?.["loans_(cad)"] || null;
+			formData["loans_(usd)"] = uploadedData["loans_usd_"] || data?.other_data?.["loans_(usd)"] || null;
 
 			formData["principle_obligations"] = uploadedData["principle_obligations"]?.length > 0 ? uploadedData["principle_obligations"]
 				: data?.other_data?.["principle_obligations"]?.length > 0 ? data.other_data["principle_obligations"] : null;
@@ -107,11 +107,11 @@ export const AddAdditionalInformationModal = (
 					concentration_limit: item.concentration_limit ? `${(item.concentration_limit * 100)}` : null
 				})) : null;
 
-			formData["first_lien_leverage_cut-off_point"] = uploadedData["first_lien_leverage_cut-off_point"] || data?.other_data?.["first_lien_leverage_cut-off_point"] || null;
-			formData["warehouse_first_lien_leverage_cut-off"] = uploadedData["warehouse_first_lien_leverage_cut-off"] || data?.other_data?.["warehouse_first_lien_leverage_cut-off"] || null;
+			formData["first_lien_leverage_cut-off_point"] = uploadedData["first_lien_leverage_cut_off_point"] || data?.other_data?.["first_lien_leverage_cut-off_point"] || null;
+			formData["warehouse_first_lien_leverage_cut-off"] = uploadedData["warehouse_first_lien_leverage_cut_off"] || data?.other_data?.["warehouse_first_lien_leverage_cut-off"] || null;
 			formData["last_out_attachment_point"] = uploadedData["last_out_attachment_point"] || data?.other_data?.["last_out_attachment_point"] || null;
-			formData["trailing_12-month_ebitda"] = uploadedData["trailing_12-month_ebitda"] || data?.other_data?.["trailing_12-month_ebitda"] || null;
-			formData["trailing_24-month_ebitda"] = uploadedData["trailing_24-month_ebitda"] || data?.other_data?.["trailing_24-month_ebitda"] || null;
+			formData["trailing_12-month_ebitda"] = uploadedData["trailing_12_month_ebitda"] || data?.other_data?.["trailing_12-month_ebitda"] || null;
+			formData["trailing_24-month_ebitda"] = uploadedData["trailing_24_month_ebitda"] || data?.other_data?.["trailing_24-month_ebitda"] || null;
 			formData["total_leverage"] = uploadedData["total_leverage"] || data?.other_data?.["total_leverage"] || null;
 			formData["ltv"] = uploadedData["ltv"] || data?.other_data?.["ltv"] || null;
 			formData["concentration_test_threshold_1"] = uploadedData["concentration_test_threshold_1"] || data?.other_data?.["concentration_test_threshold_1"] || null;
@@ -165,6 +165,8 @@ export const AddAdditionalInformationModal = (
 			break;
 		}
 		setInitialFormData(formData);
+		console.log(formData);
+		
 	}, [data, uploadedData]);
 
 	const handleCancel = () => {
@@ -423,7 +425,7 @@ export const AddAdditionalInformationModal = (
 			if (row.length > 0) {
 				const record = {};
 				row.forEach((value, index) => {
-					record[header[index].toLowerCase().replace(/[^a-z0-9]+/g, '_')] = value;
+					record[header[index].toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().replace(/ +/g, '_')] = value;
 				});
 				temp.push(record);
 			}
@@ -771,7 +773,7 @@ export const AddAdditionalInformationModal = (
 								<DynamicFileUploadComponent
 									uploadedFiles={selectedFiles}
 									setUploadedFiles={setSelectedFiles}
-									supportedFormats={['csv', 'xlsx']}
+									supportedFormats={['xlsx']}
 									fundType={previewFundType}
 									showDownload={!(typeof data === 'object' && data !== null && Object.keys(data).length > 0)}
 									fileDownloadOptions={fileDownloadOptions}
