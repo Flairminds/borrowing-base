@@ -21,9 +21,9 @@ export const validateInitialFile = (files, closing_date, fund_type, over_write) 
 };
 
 
-export const getDateReport = async (closing_date, base_data_file_id) => {
+export const getDateReport = async (closing_date, base_data_file_id, fund_type) => {
 	const dataDate = closing_date && !base_data_file_id
-		? { closing_date: closing_date, user_id: 1 }
+		? { closing_date: closing_date, user_id: 1, fund_type: fund_type }
 		: { base_data_file_id: base_data_file_id, user_id: 1 };
 
 	const response = await axios.post(`${ApiURL}/dashboard/get_bb_data_of_date`, dataDate, {
@@ -33,6 +33,16 @@ export const getDateReport = async (closing_date, base_data_file_id) => {
 	return response;
 };
 
+export const getAvailableDates = async(fund_type)=>{
+	try {
+		const response = await axios.post(`${ApiURL}/dashboard/get_closing_dates`, {fund_type}, {
+		withCredentials: true})
+		return response
+	} catch (error) {
+		console.log("date fetching failed")
+		return error
+	}
+}
 
 export const uploadInitialFile = (file_data) => {
 
