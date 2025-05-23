@@ -29,7 +29,8 @@ def upload_source_files():
 
         return HTTPResponse.success(message=service_response["message"])
     except Exception as e:
-        Log.func_error(e)
+        # Log.func_error(e)
+        print(str(e)[:200])
         return HTTPResponse.error(message="Internal server error", status_code=500)
 
 def get_blobs():
@@ -47,6 +48,13 @@ def extract_base_data():
         req_body = flask.request.get_json()
         file_ids = req_body.get("files_list")
         fund_type = req_body.get("fund_type")
+        ignore_unmapped_check = req_body.get("ignore_unmapped_check")
+        # 
+        if ignore_unmapped_check is not True:
+            unmapped_sec_res = diService.get_unmapped_securities(file_ids, fund_type)
+            if not unmapped_sec_res["success"]:
+                return HTTPResponse.error(message=unmapped_sec_res.get("message"), status_code=unmapped_sec_res.get("status_code"), result=unmapped_sec_res.get("data"))
+        # 
         service_response = diService.extract_base_data(file_ids, fund_type)
         if not service_response["success"]:
             return HTTPResponse.error(message=service_response.get("message"), status_code=service_response.get("status_code"))
@@ -346,10 +354,18 @@ def base_data_other_info():
         else:
             return HTTPResponse.error(message="extraction_info_id is missing")
 
-        if(service_response["success"]):
-            return HTTPResponse.success(message=service_response.get("message"))
+        if(not service_response["success"]):
+            return HTTPResponse.error(message=service_response.get('message'), status_code=500)
+        
+        other_info = diService.get_base_data_other_info(extraction_info_id, fund_type)
+        if(not other_info["success"]):
+            return HTTPResponse.error(status_code=500)
+        result = {
+            "fund_type": fund_type,
+            "other_info": other_info["data"]
+        }
+        return HTTPResponse.success(message=service_response.get("message"), result=result)
 
-        return HTTPResponse.error(message=service_response.get('message'), status_code=500)
     except Exception as e:
         Log.func_error(e=e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
@@ -453,6 +469,28 @@ def save_mapped_columns():
         
         return HTTPResponse.success(message="Saved successfully.")
 
+    except Exception as e:
+        Log.func_error(e=e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+    
+def add_vae_data():
+    try:
+        req_body = flask.request.get_json()
+        vae_data = req_body.get('vaeData')
+        response = diService.add_vae_data(vae_data)
+        if not response.get('success'):
+            return HTTPResponse.error(message="Something went wrong.")
+        return HTTPResponse.success(message="Saved successfully.")
+    except Exception as e:
+        Log.func_error(e=e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def get_vae_data():
+    try:
+        response = diService.get_vae_data()
+        if not response.get('success'):
+            return HTTPResponse.error(message="Something went wrong.")
+        return HTTPResponse.success(message="Success", result=response['data'])
     except Exception as e:
         Log.func_error(e=e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)

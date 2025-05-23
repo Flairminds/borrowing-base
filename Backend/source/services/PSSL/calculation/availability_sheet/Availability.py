@@ -93,6 +93,45 @@ class Availability:
         availability_df = availability_df.append(borrowing_base_row, ignore_index=True)
         self.calculator_info.intermediate_calculation_dict['Availability'] = availability_df
 
+    def sum_of_product(self):
+      #(L36*L38)-L44+L45+L47
+      availability_df = self.calculator_info.intermediate_calculation_dict['Availability']
+
+      # L44
+
+      # L45, L47
+      on_deposit_in_unfunded_exposure_account = availability_df.loc[availability_df['Terms'] == 'On Deposit in Unfunded Exposure Account', 'Values'].values[0]
+      cash_on_deposit_in_principal_collections_account = availability_df.loc[availability_df['Terms'] == 'Cash on deposit in Principal Collections Account', 'Values'].values[0]
+
+    def weighted_average_advance_rate(self):
+        availability_df = self.calculator_info.intermediate_calculation_dict['Availability']
+        concentration_limit_df = self.calculator_info.intermediate_calculation_dict['Concentration Limits']
+
+        return
+
+    def unfunded_exposure_equity_amount(self):
+        print("L44")
+
+    def adjusted_borrowing_value_of_eligible_loans(self):
+        #   L24=L33-L41+L47-L44+L45
+        print("L24")
+        availability_df = self.calculator_info.intermediate_calculation_dict['Availability']
+
+        # L33
+        adjusted_brrowing_value_of_eligible_loans = availability_df.loc[availability_df['Terms'] == 'Adjusted Borrowing Value of Eligible Loans', 'Values'].values[0]
+        
+        # L41
+
+        # L44
+
+        # L45, L47
+        on_deposit_in_unfunded_exposure_account = availability_df.loc[availability_df['Terms'] == 'On Deposit in Unfunded Exposure Account', 'Values'].values[0]
+        cash_on_deposit_in_principal_collections_account = availability_df.loc[availability_df['Terms'] == 'Cash on deposit in Principal Collections Account', 'Values'].values[0]
+
+    def get_availability():
+        # MIN(L21, L22, L24)
+        # L21 = Facility Amt
+        print("hi")
 
     def calculate_availability(self):
         self.get_adjusted_borrowing_value() # 'L33'
@@ -101,3 +140,10 @@ class Availability:
         self.get_excess_conc_amount() # 'L34'
         self.get_approved_foreign_currency_reserve() # 'L35'
         self.get_borrowing_base() # 'L36'
+
+        # self.unfunded_exposure_equity_amount() # 'L44'
+        # self.weighted_average_advance_rate() # 'L38'
+        # self.sum_of_product() # 'L22'
+        # self.adjusted_borrowing_value_of_eligible_loans() #'L24'
+
+        # self.get_availability() # 'L26'

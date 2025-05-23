@@ -275,9 +275,9 @@ def override_file(base_data_file, excel_file, xl_sheet_df_map, fund_type, includ
     except Exception as e:
         return ServiceResponse.error(message=f"An unexpected error occurred: {str(e)}")
 
-def get_closing_dates_list():
+def get_closing_dates_list(fund_type):
     user_id = 1
-    base_data_files = BaseDataFile.query.filter_by(user_id=user_id).all()
+    base_data_files = BaseDataFile.query.filter_by(user_id=user_id, fund_type=fund_type).all()
     closing_dates = [base_data_file.closing_date.strftime("%Y-%m-%d") for base_data_file in base_data_files]
     return closing_dates
 

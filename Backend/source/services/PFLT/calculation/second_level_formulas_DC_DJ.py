@@ -184,6 +184,20 @@ class SecondLevelCalculations_DC_DJ(EC):
             * loan_list_df["Foreign Currency Variability Factor"]
         )
 
+    def Revolver(self):
+        loan_list_df = self.file_df["Loan List"]
+        loan_list_df["Revolver"] = loan_list_df.apply(lambda row: "Yes" if row["Loan Type (Term / Delayed Draw / Revolver)"] == "Revolver" else "No", axis=1)
+
+    def ddtl(self):
+        loan_list_df = self.file_df["Loan List"]
+        loan_list_df["DDTL"] = loan_list_df.apply(lambda row: "Yes" if row["Loan Type (Term / Delayed Draw / Revolver)"] == "Delayed Draw" else "No", axis=1)
+
+    def Paid_Less_than_Qtrly(self):
+        loan_list_df = self.file_df["Loan List"]
+        loan_list_df["Paid Less than Qtrly"] = loan_list_df.apply(
+            lambda row: "Yes" if row["Interest Paid"] != "Semi-Annully" else "No", axis=1
+        )
+
     def PFLTBB_calculation_Second_Level_Formulas_DC_to_DJ(self):
         # try:
         # Perform calculations
@@ -203,6 +217,9 @@ class SecondLevelCalculations_DC_DJ(EC):
         self.Foreign_Currency_Loan_OC_Balance()  # column DH
         self.Foreign_Currency_Variability_Factor()  # column DI
         self.Foreign_Currency_Variability_Reserve()  # column DJ
+        self.Revolver()
+        self.ddtl()
+        self.Paid_Less_than_Qtrly()
 
     # except Exception as e:
     #     print(f"Error occurred while reading the file: {e}")

@@ -7,7 +7,7 @@ import styles from './DynamicFileUploadComponent.module.css';
 export const DynamicFileUploadComponent = ({
 	uploadedFiles,
 	setUploadedFiles,
-	supportedFormats = ['csv', 'xlsx', 'xlsm'], // supported extensions
+	supportedFormats = ['xlsx', 'xlsm'], // supported extensions
 	fundType,
 	fileDownloadOptions = {},
 	showDownload = true

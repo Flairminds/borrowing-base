@@ -33,10 +33,11 @@ export const uploadNewFile = (files, reportDate, selectedFunds) => {
 };
 
 
-export const exportBaseDataFile = (uploadedFilesData, selectedFund) => {
+export const exportBaseDataFile = (uploadedFilesData, selectedFund, ignoreUnmappedCheck) => {
 	const uploadedData = {
 		"files_list": uploadedFilesData,
-		"fund_type": selectedFund
+		"fund_type": selectedFund,
+		"ignore_unmapped_check": ignoreUnmappedCheck
 	};
 	const exportRes = axios.post(`${ApiURL}/data_ingestion/extract_base_data`, uploadedData);
 	return exportRes;
@@ -217,6 +218,22 @@ export const compareAddSecurities = (file, fund_type) => {
 
 export const saveMappedColumns = (data) => {
 	return axios.patch(`${ApiURL}/data_ingestion/save_mapped_columns`, data, {
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+};
+
+export const saveVAEData = (data) => {
+	return axios.post(`${ApiURL}/data_ingestion/add_vae_data`, data, {
+		headers: {
+			'Content-Type': 'application/json'
+		}
+	});
+};
+
+export const getVAEData = () => {
+	return axios.get(`${ApiURL}/data_ingestion/get_vae_data`, {
 		headers: {
 			'Content-Type': 'application/json'
 		}

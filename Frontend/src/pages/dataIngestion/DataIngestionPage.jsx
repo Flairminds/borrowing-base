@@ -1,5 +1,5 @@
-import { Select } from 'antd';
-import React, { useEffect, useState } from 'react';
+import { Select, Modal } from 'antd';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router';
 import { BackOption } from '../../components/BackOption/BackOption';
 import { Calender } from '../../components/calender/Calender';
@@ -15,6 +15,7 @@ import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import styles from './DataIngestionPage.module.css';
 import { Icons } from '../../components/icons';
+import { extractionFileStrings } from '../../utils/constants/constants';
 
 export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 
@@ -35,6 +36,8 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [showErrorsModal, setShowErrorsModal] = useState(false);
 	const [validationInfoData, setValidationInfoData] = useState([]);
 	const [filesSelected, setFilesSelected] = useState(0);
+	const [unmappedSecurities, setUnmappedSecurities] = useState(0);
+	const [showUnmappedSecuritiesModal, setShowUnmappedSecuritiesModal] = useState(false);
 
 	const navigate = useNavigate();
 	let extractionInterval;
@@ -152,6 +155,30 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 		// setSelectedIds([]);
 	}, []);
 
+	useEffect(() => {
+		if (extractionInProgress) {
+			const intervalRef = { current: null };
+			intervalRef.current = setInterval(async() => {
+				const payload = fundMap[selectedFundType] || null;
+				const fileresponse = await getBlobFilesList(payload);
+				const responseData = fileresponse.data.result;
+				const inProgressCount = responseData.data.filter(r => !['completed', 'failed'].includes(r.extraction_status.toLowerCase())).length;
+				console.log('File check interval running');
+				if (inProgressCount == 0) {
+					clearInterval(intervalRef.current);
+					console.log('File check interval completed but running');
+					showToast('success', 'All files extraction completed. Please refresh page.');
+				}
+			}, 5000);
+			return () => {
+				// Cleanup the interval on component unmount
+				if (intervalRef.current) {
+					clearInterval(intervalRef.current);
+				}
+			};
+		}
+	}, [extractionInProgress]);
+
 	const handleCheckboxClick = (fileId) => {
 		if (selectedIds?.current.indexOf(fileId) === -1) {
 			// setSelectedIds([...selectedIds, fileId]);
@@ -166,7 +193,8 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 		console.info('sel ids', selectedIds);
 	};
 
-	const handleFileExtraction = async() => {
+	const handleFileExtraction = async(e, ignoreUnmappedCheck = false) => {
+		e.preventDefault();
 		// setFileExtractionLoading(true);
 		try {
 			if (!selectedFundType) {
@@ -180,7 +208,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			setExtractionInProgress(true);
 			const selectedFund = fundMap[selectedFundType] || "";
 			setBaseFilePreviewData([]);
-			const extractionResponse = await exportBaseDataFile(selectedIds.current, selectedFund);
+			const extractionResponse = await exportBaseDataFile(selectedIds.current, selectedFund, ignoreUnmappedCheck);
 			console.info(extractionResponse, 'rex');
 			const extractionData = extractionResponse?.data.result;
 			showToast("info", extractionResponse.data.message);
@@ -191,6 +219,10 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 			console.error(err);
 			setExtractionInProgress(false);
 			showToast("error", err.response.data.message);
+			if (err.response.data.result && err.response.data.result.data.length > 0) {
+				setUnmappedSecurities(err.response.data.result.data);
+				setShowUnmappedSecuritiesModal(true);
+			}
 		}
 
 		// setFileExtractionLoading(false);
@@ -332,7 +364,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 										loading={extractionInProgress}
 										loadingText='Extracting...'
 										isFilled={true}
-										onClick={handleFileExtraction}
+										onClick={(e) => handleFileExtraction(e)}
 										text='Extract Base Data'
 									// loading={fileExtractionLoading}
 									/>
@@ -346,7 +378,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 							</div>
 						</div>
 					</div>
-					<div><Icons.InfoIcon title={``} />{selectedFundType === 0 ? 'Select a fund type' : selectedFundType == 3 ? 'Select a cashfile and mastercomp file for base data extraction' : 'Select a cashfile, mastercomp file and a marketvalue file for base data extraction'}</div>
+					<div><Icons.InfoIcon title={``} />{selectedFundType === 0 ? 'Select a fund type' : extractionFileStrings[selectedFundType]}</div>
 
 					{/* <div className={styles.buttonsContainer}>
 							<div className={styles.uploadFileBtnContainer}>
@@ -390,6 +422,41 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 				setIsModalOpen={setShowErrorsModal}
 				validationInfoData={validationInfoData}
 			/>
+			<Modal title={""} open={showUnmappedSecuritiesModal} footer={null} onCancel={() => setShowUnmappedSecuritiesModal(false)} style={{marginTop: '-50px'}}>
+				{unmappedSecurities.length > 0 &&
+				<div>
+					<p>{unmappedSecurities.length} unmapped securities</p>
+					<ol>
+						{unmappedSecurities.map((item, index) => {
+							if (item) {
+								return <li key={index}>{item.asset} [{item.type}]</li>;
+							}
+						})}
+					</ol>
+					<div>
+						<UIComponents.Button
+							onClick={() => setExtractionInProgress(false)}
+							text='Cancel'
+						// loading={fileExtractionLoading}
+						/>
+						<UIComponents.Button
+							isFilled={true}
+							btnDisabled={true}
+							onClick={() => {}}
+							text='Review Mapping'
+						// loading={fileExtractionLoading}
+						/>
+						<UIComponents.Button
+							loading={extractionInProgress}
+							loadingText='Extracting...'
+							isFilled={true}
+							onClick={(e) => handleFileExtraction(e, true)}
+							text='Extract Base Data'
+						// loading={fileExtractionLoading}
+						/>
+					</div>
+				</div>}
+			</Modal>
 		</>
 	);
 };

@@ -16,6 +16,7 @@ import { UIComponents } from '../../components/uiComponents';
 import { ShowEmptyBasedDataValues } from '../../modal/showEmptyBasedDataValues/ShowEmptyBasedDataValues';
 import { PersistBaseDataModal } from '../../modal/PresistBaseData/PresistBaseDataModal';
 import { VAEModal } from '../../modal/VAEModal/VAEModal';
+import { PCOFCashDataModal } from '../../modal/PCOFCashDataModal/PCOFCashDataModal';
 
 
 
@@ -37,6 +38,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [loading, setLoading] = useState(false);
 	const [isPresistBaseModalVisible, setIsPresistBaseModalVisible] = useState(false);
 	const [showVAEModal, setShowVAEModal] = useState(false);
+	const [showPCOFCashModal, setShowPCOFCashModal] = useState(false);
 
 
 	const {infoId} = useParams();
@@ -257,7 +259,14 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 
 	const handleConfirmEmptyBaseModal = () => {
 		setIsShowEmptyBaseDataModalOpen(false);
-		setIsAddFieldModalOpen(true);
+		if (previewFundType == 'PCOF') {
+			const cashData = filteredData.find(f => f.investment_name?.value == 'Cash');
+			if (!cashData || ((cashData.investment_cost.meta_info && !cashData.investment_cost.value) || (!cashData.investment_cost.meta_info && !cashData.investment_cost)) || ((cashData.investment_external_valuation.meta_info && !cashData.investment_external_valuation.value) || (!cashData.investment_external_valuation.meta_info && !cashData.investment_external_valuation)) || ((cashData.investment_par.meta_info && !cashData.investment_par.value) || (!cashData.investment_par.meta_info && !cashData.investment_par))) {
+				setShowPCOFCashModal(true);
+			} else {
+				setIsAddFieldModalOpen(true);
+			}
+		} else setIsAddFieldModalOpen(true);
 	};
 
 	const handleCancelEmptyBaseModal = () => {
@@ -282,7 +291,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 						</div>
 						<div>
 							<UIComponents.Button onClick={showModal} isFilled={true} text='Bulk Update' btnDisabled={previewFundType == 'PSSL' ? false : false} title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />
-							{/* {previewFundType == 'PSSL' && <UIComponents.Button onClick={() => setShowVAEModal(true)} isFilled={true} text='VAE' title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />} */}
+							{previewFundType == 'PSSL' && <UIComponents.Button onClick={() => setShowVAEModal(true)} isFilled={true} text='VAE' title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />}
 							{/* <UIComponents.Button onClick={() => setIsPresistBaseModalVisible(true)} isFilled={true} text='Compare And Update Previous Base Data'/> */}
 							<UIComponents.Button onClick={() => setIsShowEmptyBaseDataModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PSSL' ? false : false} />
 						</div>
@@ -316,6 +325,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				selectedFiles={selectedFiles}
 				setSelectedFiles={setSelectedFiles}
 				baseFilePreviewData= {baseFilePreviewData}
+				setBaseFilePreviewData={setBaseFilePreviewData}
 				previewPageId= {previewPageId}
 				setTablesData= {setTablesData}
 				getborrowingbasedata= {getborrowingbasedata}
@@ -341,6 +351,9 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				onConfirm={handleConfirmEmptyBaseModal}
 				onCancel={handleCancelEmptyBaseModal}
 			/>
+			<PCOFCashDataModal visible={showPCOFCashModal} onCancel={() => setShowPCOFCashModal(false)} onConfirm={() => {
+				setShowPCOFCashModal(false); setIsAddFieldModalOpen(true);
+			}} />
 			<PersistBaseDataModal
 				visible={isPresistBaseModalVisible}
 				onClose={() => setIsPresistBaseModalVisible(false)}
