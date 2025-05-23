@@ -28,7 +28,9 @@ export const Dashboard = ({
 	setAssetSelectionData,
 	getLandingPageData,
 	whatifAnalysisPerformed,
-	setWhatifAnalysisPerformed
+	setWhatifAnalysisPerformed,
+	selectedFund,
+	setSelectedFund
 }) => {
 
 	const [trendGraphData, setTrendGraphData] = useState([]);
@@ -75,6 +77,8 @@ export const Dashboard = ({
 				setWhatIfAnalysisListData={setWhatIfAnalysisListData}
 				fundType={fundType}
 				setFundType={setFundType}
+				selectedFund={selectedFund}
+				setSelectedFund={setSelectedFund}
 			/>
 			<div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
 				<PortfollioDashboard

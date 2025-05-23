@@ -118,7 +118,7 @@ export const Calender = ({
 			<DatePicker
 				id={fileUpload ? 'fileuploadDatePicker' : 'reportDatePicker'}
 				style={fileUpload ? {width: 130 } : {visibility: 'hidden', width: 3}}
-				suffixIcon={<img src={CalendarIcon}/>}
+				suffixIcon={<img src={CalendarIcon}/>}	
 				placeholder='Report Date'
 				cellRender={cellRender}
 				onChange={onDateChange || handleDateChange}

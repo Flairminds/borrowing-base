@@ -37,6 +37,7 @@ export function App() {
 	const [previewPageId, setPreviewPageId] = useState(-1);
 	const [previewFundType, setPreviewFundType] = useState("");
 	const [whatifAnalysisPerformed, setWhatifAnalysisPerformed] = useState(false);
+	const [selectedFund,setSelectedFund]=useState()
 
 	// const [selectedIds, setSelectedIds] = useState([]);
 	const selectedIds = useRef([]);
@@ -109,6 +110,8 @@ export function App() {
 								getLandingPageData={getLandingPageData}
 								setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
 								whatifAnalysisPerformed= {whatifAnalysisPerformed}
+								selectedFund={selectedFund}
+								setSelectedFund={setSelectedFund}
 							/>
 						}
 					/>
