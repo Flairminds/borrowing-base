@@ -422,7 +422,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 				setIsModalOpen={setShowErrorsModal}
 				validationInfoData={validationInfoData}
 			/>
-			<Modal title={""} open={showUnmappedSecuritiesModal} footer={null} onCancel={() => setShowUnmappedSecuritiesModal(false)} style={{marginTop: '-25px'}}>
+			<Modal title={""} open={showUnmappedSecuritiesModal} footer={null} onCancel={() => setShowUnmappedSecuritiesModal(false)} style={{marginTop: '-50px'}}>
 				{unmappedSecurities.length > 0 &&
 				<div>
 					<p>{unmappedSecurities.length} unmapped securities</p>
@@ -433,14 +433,28 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 							}
 						})}
 					</ol>
-					<UIComponents.Button
-						loading={extractionInProgress}
-						loadingText='Extracting...'
-						isFilled={true}
-						onClick={(e) => handleFileExtraction(e, true)}
-						text='Extract Base Data'
-					// loading={fileExtractionLoading}
-					/>
+					<div>
+						<UIComponents.Button
+							onClick={() => setExtractionInProgress(false)}
+							text='Cancel'
+						// loading={fileExtractionLoading}
+						/>
+						<UIComponents.Button
+							isFilled={true}
+							btnDisabled={true}
+							onClick={() => {}}
+							text='Review Mapping'
+						// loading={fileExtractionLoading}
+						/>
+						<UIComponents.Button
+							loading={extractionInProgress}
+							loadingText='Extracting...'
+							isFilled={true}
+							onClick={(e) => handleFileExtraction(e, true)}
+							text='Extract Base Data'
+						// loading={fileExtractionLoading}
+						/>
+					</div>
 				</div>}
 			</Modal>
 		</>
