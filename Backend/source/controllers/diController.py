@@ -48,8 +48,12 @@ def extract_base_data():
         req_body = flask.request.get_json()
         file_ids = req_body.get("files_list")
         fund_type = req_body.get("fund_type")
+        ignore_unmapped_check = req_body.get("ignore_unmapped_check")
         # 
-        unmapped_sec = diService.get_unmapped_securities(file_ids, fund_type)
+        if ignore_unmapped_check is not True:
+            unmapped_sec_res = diService.get_unmapped_securities(file_ids, fund_type)
+            if not unmapped_sec_res["success"]:
+                return HTTPResponse.error(message=unmapped_sec_res.get("message"), status_code=unmapped_sec_res.get("status_code"), result=unmapped_sec_res.get("data"))
         # 
         service_response = diService.extract_base_data(file_ids, fund_type)
         if not service_response["success"]:
