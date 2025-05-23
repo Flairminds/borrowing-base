@@ -730,7 +730,7 @@ def edit_base_data(changes):
                 table = PfltBaseData
             case 'PCOF':
                 table = PcofBaseData
-            case 'PFLT':
+            case 'PSSL':
                 table = PsslBaseData
             case _:
                 return
