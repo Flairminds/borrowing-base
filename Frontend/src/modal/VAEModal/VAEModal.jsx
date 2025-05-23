@@ -71,7 +71,6 @@ export const VAEModal = ({ visible, data, columnNames, onCancel }) => {
 			}));
 		}
 	}, [formData.totalDebt, formData.ttmEbitda, formData.unrestrictedCash]);
-
 	useEffect(() => {
 		if (formData.recurringRevenue && formData.ttmEbitda) {
 			let temp = formData.ttmEbitda / formData.recurringRevenue;
@@ -228,17 +227,17 @@ export const VAEModal = ({ visible, data, columnNames, onCancel }) => {
 				materialModification: formData.materialModification || null,
 				vaeDecisionDate: formData.vaeDecisionDate ? formData.vaeDecisionDate.format("YYYY-MM-DD") : null,
 				financialsDate: formData.financialsDate ? formData.financialsDate.format("YYYY-MM-DD") : null,
-				ttmEbitda: formData.ttmEbitda != null ? parseInt(formData.ttmEbitda) : null,
-				seniorDebt: formData.seniorDebt != null ? parseInt(formData.seniorDebt) : null,
-				totalDebt: formData.totalDebt != null ? parseInt(formData.totalDebt) : null,
-				unrestrictedCash: formData.unrestrictedCash != null ? parseInt(formData.unrestrictedCash) : null,
-				netSeniorLeverage: formData.netSeniorLeverage != null ? parseInt(formData.netSeniorLeverage) : null,
-				netTotalLeverage: formData.netTotalLeverage != null ? parseInt(formData.netTotalLeverage) : null,
-				interestCoverage: formData.interestCoverage != null ? parseInt(formData.interestCoverage) : null,
-				recurringRevenue: formData.recurringRevenue != null ? parseInt(formData.recurringRevenue) : null,
-				debtToRecurringRevenueRatio: formData.debtToRecurringRevenueRatio != null ? parseInt(formData.debtToRecurringRevenueRatio) : null,
-				liquidity: formData.liquidity != null ? parseInt(formData.liquidity) : null,
-				assignedValue: formData.assignedValue != null ? parseInt(formData.assignedValue) / 100 : null
+				ttmEbitda: formData.ttmEbitda != null ? parseFloat(formData.ttmEbitda) : null,
+				seniorDebt: formData.seniorDebt != null ? parseFloat(formData.seniorDebt) : null,
+				totalDebt: formData.totalDebt != null ? parseFloat(formData.totalDebt) : null,
+				unrestrictedCash: formData.unrestrictedCash != null ? parseFloat(formData.unrestrictedCash) : null,
+				netSeniorLeverage: formData.netSeniorLeverage != null ? parseFloat(formData.netSeniorLeverage) : null,
+				netTotalLeverage: formData.netTotalLeverage != null ? parseFloat(formData.netTotalLeverage) : null,
+				interestCoverage: formData.interestCoverage != null ? parseFloat(formData.interestCoverage) : null,
+				recurringRevenue: formData.recurringRevenue != null ? parseFloat(formData.recurringRevenue) : null,
+				debtToRecurringRevenueRatio: formData.debtToRecurringRevenueRatio != null ? parseFloat(formData.debtToRecurringRevenueRatio) : null,
+				liquidity: formData.liquidity != null ? parseFloat(formData.liquidity) : null,
+				assignedValue: formData.assignedValue != null ? parseFloat(formData.assignedValue) / 100 : null
 			};
 			const response = await saveVAEData({vaeData: payload});
 			if (response.data.success) {
