@@ -4,6 +4,7 @@ import { toast } from 'react-toastify';
 import GreenEllipse from '../../assets/GreenEllipse.svg';
 import CalendarIcon from '../../assets/NavbarIcons/Calendar.svg';
 import { getDateReport } from '../../services/api';
+import { LoaderSmall } from '../uiComponents/loader/loader';
 
 export const Calender = ({
 	setReportDate,
@@ -15,7 +16,11 @@ export const Calender = ({
 	availableClosingDates,
 	setFundType,
 	getTrendGraphData,
-	onDateChange = null
+	onDateChange = null,
+	selectedFund,
+	setGettingDashboardData,
+	gettingDates,
+	setCurrentFund
 }) => {
 
 	const handleDateChange = async (date, dateString) => {
@@ -38,8 +43,10 @@ export const Calender = ({
 		} else {
 			if (dateString) {
 				try {
-					const response = await getDateReport(dateString);
+					setGettingDashboardData(true)
+					const response = await getDateReport(dateString, null, selectedFund);
 					if (response.status === 200) {
+						setCurrentFund(response.data.fund_name)
 						setTablesData(response.data);
 						setBaseFile({ name: response.data.file_name, id: response.data.base_data_file_id });
 						setWhatifAnalysisPerformed(false);
@@ -47,8 +54,10 @@ export const Calender = ({
 						setFundType(response.data.fund_name);
 						getTrendGraphData(response.data.fund_name);
 						toast.info(`Data for ${dateString} imported`);
+						setGettingDashboardData(false)
 					}
 				} catch (err) {
+					setGettingDashboardData(false)
 					if (err.response && err.response.status === 404) {
 						toast.info(err.response.data.message);
 					} else {
@@ -108,29 +117,33 @@ export const Calender = ({
 
 
 	return (
-		<div >
-			{/* <DatePicker
-			style={{ width: 120 }}
-			allowClear={true}
-			placeholder='Report Date'
-			onChange={handleDateChange}
-			/> */}
-			<DatePicker
-				id={fileUpload ? 'fileuploadDatePicker' : 'reportDatePicker'}
-				style={fileUpload ? {width: 130 } : {visibility: 'hidden', width: 3}}
-				suffixIcon={<img src={CalendarIcon}/>}	
-				placeholder='Report Date'
-				cellRender={cellRender}
-				onChange={onDateChange || handleDateChange}
-				allowClear={true}
-			/>
-			{!fileUpload ?
-				<label htmlFor={fileUpload ? 'fileuploadDatePicker' : 'reportDatePicker'}>
-					<img src={CalendarIcon} alt="Calender Icon" />
-				</label>
-				:
-				null
+		<>
+			{gettingDates ? <LoaderSmall/> :
+				<>
+					{/* <DatePicker
+					style={{ width: 120 }}
+					allowClear={true}
+					placeholder='Report Date'
+					onChange={handleDateChange}
+					/> */}
+					<DatePicker
+						id={fileUpload ? 'fileuploadDatePicker' : 'reportDatePicker'}
+						style={fileUpload ? {width: 130 } : {visibility: 'hidden', width: 3}}
+						suffixIcon={<img src={CalendarIcon}/>}	
+						placeholder='Report Date'
+						cellRender={cellRender}
+						onChange={onDateChange || handleDateChange}
+						allowClear={true}
+					/>
+					{!fileUpload ?
+						<label htmlFor={fileUpload ? 'fileuploadDatePicker' : 'reportDatePicker'}>
+							<img src={CalendarIcon} alt="Calender Icon" />
+						</label>
+						:
+						null
+					}
+				</>		
 			}
-		</div>
+		</>
 	);
 };

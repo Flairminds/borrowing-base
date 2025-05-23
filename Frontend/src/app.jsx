@@ -38,7 +38,9 @@ export function App() {
 	const [previewFundType, setPreviewFundType] = useState("");
 	const [whatifAnalysisPerformed, setWhatifAnalysisPerformed] = useState(false);
 	const [selectedFund,setSelectedFund]=useState()
-
+	const [gettingDashboardData,setGettingDashboardData]=useState(false)
+	const [gettingDates,setGettingDates]=useState(false)
+	const [currentFund,setCurrentFund]=useState("fetching...")
 	// const [selectedIds, setSelectedIds] = useState([]);
 	const selectedIds = useRef([]);
 
@@ -46,6 +48,8 @@ export function App() {
 		try {
 			const res = await landingPageData(1);
 			if (res.status == 200) {
+				setSelectedFund(res.data.fund_name)
+				setCurrentFund(res.data.fund_name)
 				setConstDate(res.data.closing_date);
 				setAvailableClosingDates(res.data.closing_dates);
 				setTablesData(res.data);
@@ -63,6 +67,7 @@ export function App() {
 
 	const getborrowingbasedata = async (base_data_file_id) => {
 		try {
+			setGettingDashboardData(true)
 			const response = await getDateReport(null, base_data_file_id);
 			if (response.status === 200) {
 				setTablesData(response.data);
@@ -70,10 +75,12 @@ export function App() {
 				setWhatifAnalysisPerformed(false);
 				setReportDate(response.data.closing_date);
 				setFundType(response.data.fund_name);
+				setGettingDashboardData(false);
 			}
 		} catch (err) {
 			if (err.response && err.response.status === 404) {
 				console.error(err);
+				setGettingDashboardData(false)
 			} else {
 				console.error(err);
 			}
@@ -112,6 +119,13 @@ export function App() {
 								whatifAnalysisPerformed= {whatifAnalysisPerformed}
 								selectedFund={selectedFund}
 								setSelectedFund={setSelectedFund}
+								setAvailableClosingDates={setAvailableClosingDates}
+								gettingDashboardData={gettingDashboardData}
+								setGettingDashboardData={setGettingDashboardData}
+								gettingDates={gettingDates}
+								setGettingDates={setGettingDates}
+								currentFund={currentFund}
+								setCurrentFund={setCurrentFund}
 							/>
 						}
 					/>
