@@ -67,9 +67,9 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
 
 
             # upload blob in container
-            # blob_client.upload_blob(name=blob_name, data=file)
-            # file_url = blob_client.url + '/' + blob_name
-            file_url = '/'
+            blob_client.upload_blob(name=blob_name, data=file)
+            file_url = blob_client.url + '/' + blob_name
+            # file_url = '/'
             # add details of files in db
             source_file = SourceFiles(file_name=file_name, extension=extension, report_date=report_date, file_url=file_url, file_size=file_size, company_id=company_id, fund_types=fund_names, is_validated=is_validated, is_extracted=is_extracted, extraction_status='In Progress', uploaded_by=uploaded_by, file_type=file_type)
 
@@ -538,19 +538,19 @@ def get_base_data(info_id):
             with engine.connect() as connection:
                 result = connection.execute(text('''
                     select count(distinct pbd.issuer) as no_of_issuers,
-                            count(distinct pbd.investment_name) as no_of_investments,
+                            count(distinct pbd.investment_name) as no_of_investments
                             --sum(pbd.total_commitment::float) as total_commitment,
                             --sum(pbd.outstanding_principal::float) as total_outstanding_balance,
-                            (select count(distinct ssubh."Security/Facility Name") from source_files sf left join sf_sheet_us_bank_holdings ssubh on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
+                            --(select count(distinct ssm.Issuer_Name) from source_files sf left join sf_sheet_marketbook_1 ssm on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
                     from pcof_base_data pbd
                     where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
                 final_result = result[0]
-            no_of_issuers, no_of_investments, unmapped_records = final_result
+            no_of_issuers, no_of_investments = final_result
             card_data = [{
                 "No of Issuers": no_of_issuers,
                 "No of Investments": no_of_investments,
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
-                "Unmapped Securities": unmapped_records,
+                # "Unmapped Securities": unmapped_records,
                 "Fund Type": base_data_info.fund_type
             }]
  
@@ -2077,22 +2077,31 @@ def get_vae_data():
 def get_unmapped_securities(file_ids, fund_type):
     try:
         engine = db.get_engine()
-        with engine.connect() as connection:
-            result = connection.execute(
-            text("""
-                SELECT DISTINCT ssubh."Security/Facility Name"
+        query = ''
+        if fund_type == 'PCOF':
+            query = """select distinct ssm."Issuer_Name" as asset, ssm."Asset_Name" as type from source_files sf left join sf_sheet_marketbook_1 ssm on ssm.source_file_id = sf.id left join pflt_security_mapping psm on TRIM(psm.marketvalue_issuer) = TRIM(ssm."Issuer_Name") and TRIM(psm.marketvalue_asset) = TRIM(ssm."Asset_Name") where sf.id = ANY(:file_ids) and psm.id is null and file_type = 'market_book_file'"""
+        else:
+            query = """SELECT DISTINCT ssubh."Security/Facility Name" as asset
                 FROM source_files sf
                 LEFT JOIN sf_sheet_us_bank_holdings ssubh ON ssubh.source_file_id = sf.id
                 LEFT JOIN pflt_security_mapping psm 
                     ON psm.cashfile_security_name = ssubh."Security/Facility Name"
                 WHERE sf.id = ANY(:file_ids)
                 AND psm.id IS NULL
-                AND file_type = 'cashfile'
-            """),
-            {"file_ids": file_ids}
-        ).fetchall()
-
-        return [row[0] for row in result]
+                AND file_type = 'cashfile'"""
+        with engine.connect() as connection:
+            rows = connection.execute(text(query), {"file_ids": file_ids}).fetchall()
+            result = [dict(row._mapping) for row in rows]
+        response = {
+            'data': result,
+            'count': len(result)
+        }
+        if len(result) > 0:
+            message = f"{len(result)} unmapped securities in the selected files. Please review them in the Security mapping screen before proceeding."
+            if fund_type == 'PCOF':
+                message = f"{len(result)} unmapped assets from market value file in the selected files. Please review them before proceeding."
+            return ServiceResponse.error(data=response, message=message, status_code=409)
+        return ServiceResponse.success()
     
     except Exception as e:
         raise Exception(e)

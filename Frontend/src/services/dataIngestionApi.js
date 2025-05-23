@@ -33,10 +33,11 @@ export const uploadNewFile = (files, reportDate, selectedFunds) => {
 };
 
 
-export const exportBaseDataFile = (uploadedFilesData, selectedFund) => {
+export const exportBaseDataFile = (uploadedFilesData, selectedFund, ignoreUnmappedCheck) => {
 	const uploadedData = {
 		"files_list": uploadedFilesData,
-		"fund_type": selectedFund
+		"fund_type": selectedFund,
+		"ignore_unmapped_check": ignoreUnmappedCheck
 	};
 	const exportRes = axios.post(`${ApiURL}/data_ingestion/extract_base_data`, uploadedData);
 	return exportRes;
