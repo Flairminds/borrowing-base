@@ -56,7 +56,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
 						else 'Yes'
 					end as "is_eligible_issuer" -- could not map
                 from sf_sheet_marketbook_1 ssm
-                left join pflt_security_mapping sm on sm.marketvalue_issuer = ssm."Issuer_Name" and sm.marketvalue_asset = ssm."Asset_Name"
+                left join pflt_security_mapping sm on TRIM(sm.marketvalue_issuer) = TRIM(ssm."Issuer_Name") and TRIM(sm.marketvalue_asset) = TRIM(ssm."Asset_Name")
                 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
                 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
                 left join lien_type_mapping lien_mapping on lien_mapping.lien_type = ss."[SI] Credit Facility Lien Type" and (lien_mapping.is_deleted = false or lien_mapping.is_deleted is null)
