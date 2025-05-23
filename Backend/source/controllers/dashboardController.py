@@ -1,5 +1,6 @@
 from datetime import datetime
 from flask import jsonify, request
+import json
 
 from models import BaseDataFile, ModifiedBaseDataFile, WhatIfAnalysis
 from source.utility.HTTPResponse import HTTPResponse
@@ -183,6 +184,7 @@ def get_bb_data_of_date():
     try:
         data = request.get_json()
         selected_date = data.get("closing_date")
+        fund_type = data.get("fund_type")
         user_id = data.get("user_id")
         base_data_file_id = data.get("base_data_file_id")
         return dashboardService.get_bb_data_of_date(selected_date, user_id, base_data_file_id)
@@ -246,10 +248,10 @@ def calculate_bb():
             for base_data_file in base_data_files
         ]
 
-        if base_data_file.fund_type == "PCOF":
-            response = pcofDashboardService.calculate_bb(base_data_file, selected_assets, user_id)
-        else:
-            response = pfltDashboardService.calculate_bb(base_data_file, selected_assets, user_id)
+        match base_data_file.fund_type:
+            case 'PCOF': response = pcofDashboardService.calculate_bb(base_data_file, selected_assets, user_id)
+            case 'PFLT': response = pfltDashboardService.calculate_bb(base_data_file, selected_assets, user_id)
+            case 'PSSL': response = pssl_dashboard_service.get_bb_calculation(base_data_file, selected_assets, user_id)
 
         response["closing_dates"] = closing_dates
 
@@ -298,3 +300,12 @@ def download_calculated_df():
     base_data_file_id = request_body["base_data_file_id"]
     base_data_file = commonServices.get_base_data_file(base_data_file_id=base_data_file_id)
     return dashboardService.download_calculated_df(base_data_file)
+
+def get_closing_dates():
+    try: 
+        data = json.loads(request.data)
+        fund_type = data.get("fund_type")
+        closing_dates = dashboardService.get_closing_dates_list(fund_type)
+        return HTTPResponse.success(result=closing_dates)
+    except Exception as e:
+        return HTTPResponse.error(message="Internal Server Error")

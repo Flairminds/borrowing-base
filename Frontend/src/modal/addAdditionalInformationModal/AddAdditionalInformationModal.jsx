@@ -37,7 +37,8 @@ export const AddAdditionalInformationModal = (
 		baseFilePreviewData,
 		previewPageId,
 		getborrowingbasedata,
-		setLoading
+		setLoading,
+		setBaseFilePreviewData
 	}
 ) => {
 	const [form] = Form.useForm();
@@ -70,10 +71,10 @@ export const AddAdditionalInformationModal = (
 			formData["borrower"] = uploadedData["borrower"] || data?.other_data?.["borrower"] || null;
 			formData["determination_date"] = uploadedData.determination_date ? dayjs(uploadedData.determination_date) : dayjs(data?.other_data?.determination_date) || null;
 			formData["revolving_closing_date"] = uploadedData.revolving_closing_date ? dayjs(uploadedData.revolving_closing_date) : dayjs(data?.other_data?.revolving_closing_date) || null;
-			formData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] = uploadedData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || data?.other_data?.["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || null;
-			formData["(b)_facility_size"] = uploadedData["(b)_facility_size"] || data?.other_data?.["(b)_facility_size"] || null;
-			formData["loans_(cad)"] = uploadedData["loans_(cad)"] ? uploadedData["loans_(cad)"] : data?.other_data?.["loans_(cad)"] || null;
-			formData["loans_(usd)"] = uploadedData["loans_(usd)"] || data?.other_data?.["loans_(usd)"] || null;
+			formData["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] = uploadedData["commitment_period_3_years_from_final_closing_date_as_defined_in_lpa_"] || data?.other_data?.["commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)"] || null;
+			formData["(b)_facility_size"] = uploadedData["_b_facility_size"] || data?.other_data?.["(b)_facility_size"] || null;
+			formData["loans_(cad)"] = uploadedData["loans_cad_"] ? uploadedData["loans_cad_"] : data?.other_data?.["loans_(cad)"] || null;
+			formData["loans_(usd)"] = uploadedData["loans_usd_"] || data?.other_data?.["loans_(usd)"] || null;
 
 			formData["principle_obligations"] = uploadedData["principle_obligations"]?.length > 0 ? uploadedData["principle_obligations"]
 				: data?.other_data?.["principle_obligations"]?.length > 0 ? data.other_data["principle_obligations"] : null;
@@ -106,17 +107,18 @@ export const AddAdditionalInformationModal = (
 					concentration_limit: item.concentration_limit ? `${(item.concentration_limit * 100)}` : null
 				})) : null;
 
-			formData["first_lien_leverage_cut-off_point"] = uploadedData["first_lien_leverage_cut-off_point"] || data?.other_data?.["first_lien_leverage_cut-off_point"] || null;
-			formData["warehouse_first_lien_leverage_cut-off"] = uploadedData["warehouse_first_lien_leverage_cut-off"] || data?.other_data?.["warehouse_first_lien_leverage_cut-off"] || null;
+			formData["first_lien_leverage_cut-off_point"] = uploadedData["first_lien_leverage_cut_off_point"] || data?.other_data?.["first_lien_leverage_cut-off_point"] || null;
+			formData["warehouse_first_lien_leverage_cut-off"] = uploadedData["warehouse_first_lien_leverage_cut_off"] || data?.other_data?.["warehouse_first_lien_leverage_cut-off"] || null;
 			formData["last_out_attachment_point"] = uploadedData["last_out_attachment_point"] || data?.other_data?.["last_out_attachment_point"] || null;
-			formData["trailing_12-month_ebitda"] = uploadedData["trailing_12-month_ebitda"] || data?.other_data?.["trailing_12-month_ebitda"] || null;
-			formData["trailing_24-month_ebitda"] = uploadedData["trailing_24-month_ebitda"] || data?.other_data?.["trailing_24-month_ebitda"] || null;
+			formData["trailing_12-month_ebitda"] = uploadedData["trailing_12_month_ebitda"] || data?.other_data?.["trailing_12-month_ebitda"] || null;
+			formData["trailing_24-month_ebitda"] = uploadedData["trailing_24_month_ebitda"] || data?.other_data?.["trailing_24-month_ebitda"] || null;
 			formData["total_leverage"] = uploadedData["total_leverage"] || data?.other_data?.["total_leverage"] || null;
 			formData["ltv"] = uploadedData["ltv"] || data?.other_data?.["ltv"] || null;
 			formData["concentration_test_threshold_1"] = uploadedData["concentration_test_threshold_1"] || data?.other_data?.["concentration_test_threshold_1"] || null;
 			formData["concentration_test_threshold_2"] = uploadedData["concentration_test_threshold_2"] || data?.other_data?.["concentration_test_threshold_2"] || null;
 			formData["threshold_1_advance_rate"] = uploadedData["threshold_1_advance_rate"] || data?.other_data?.["threshold_1_advance_rate"] || null;
 			formData["threshold_2_advance_rate"] = uploadedData["threshold_2_advance_rate"] || data?.other_data?.["threshold_2_advance_rate"] || null;
+			formData["obligors_net_capital"] = uploadedData["obligors_net_capital"] || data?.other_data?.["obligors_net_capital"] || null;
 			break;
 
 		case "PFLT":
@@ -128,18 +130,43 @@ export const AddAdditionalInformationModal = (
 		case "PSSL":
 			formData["determination_date"] = uploadedData?.determination_date ? dayjs(uploadedData.determination_date) : data?.other_data?.determination_date ? dayjs(data.other_data.determination_date) : null;
 			formData["measurement_date"] = uploadedData?.measurement_date ? dayjs(uploadedData.measurement_date) : data?.other_data?.measurement_date ? dayjs(data.other_data.measurement_date) : null;
-			formData["facility_amount"] = uploadedData?.facility_amount ? uploadedData.facility_amount : data?.other_data?.facility_amount ? data.other_data.facility_amount : null;
-			formData["on_deposit_in_unfunded_exposure_account"] = uploadedData?.on_deposit_in_unfunded_exposure_account ? uploadedData.on_deposit_in_unfunded_exposure_account : data?.other_data?.on_deposit_in_unfunded_exposure_account ? data.other_data.on_deposit_in_unfunded_exposure_account : null;
-			formData["cash_on_deposit_in_principal_collections_account"] = uploadedData?.cash_on_deposit_in_principal_collections_account ? uploadedData.cash_on_deposit_in_principal_collections_account : data?.other_data?.cash_on_deposit_in_principal_collections_account ? data.other_data.cash_on_deposit_in_principal_collections_account : null;
-			formData["foreign_currency_hedged_by_borrower"] = uploadedData?.foreign_currency_hedged_by_borrower ? uploadedData.foreign_currency_hedged_by_borrower : data?.other_data?.foreign_currency_hedged_by_borrower ? data.other_data.foreign_currency_hedged_by_borrower : null;
-			formData["current_advances_outstanding"] = uploadedData?.current_advances_outstanding ? uploadedData.current_advances_outstanding : data?.other_data?.current_advances_outstanding ? data.other_data.current_advances_outstanding : null;
-			formData["advances_repaid"] = uploadedData?.advances_repaid ? uploadedData.advances_repaid : data?.other_data?.advances_repaid ? data.other_data.current_advances_outstanding : null;
-			formData["advances_requested"] = uploadedData?.advances_requested ? uploadedData.advances_requested : data?.other_data?.advances_requested ? data.other_data.current_advances_outstanding : null;
+			formData["facility_amount"] = uploadedData?.facility_amount ? uploadedData.facility_amount : data?.other_data?.facility_amount ? data.other_data.facility_amount : 0;
+			formData["on_deposit_in_unfunded_exposure_account"] = uploadedData?.on_deposit_in_unfunded_exposure_account ? uploadedData.on_deposit_in_unfunded_exposure_account : data?.other_data?.on_deposit_in_unfunded_exposure_account ? data.other_data.on_deposit_in_unfunded_exposure_account : 0;
+			formData["cash_on_deposit_in_principal_collections_account"] = uploadedData?.cash_on_deposit_in_principal_collections_account ? uploadedData.cash_on_deposit_in_principal_collections_account : data?.other_data?.cash_on_deposit_in_principal_collections_account ? data.other_data.cash_on_deposit_in_principal_collections_account : 0;
+			formData["foreign_currency_hedged_by_borrower"] = uploadedData?.foreign_currency_hedged_by_borrower ? uploadedData.foreign_currency_hedged_by_borrower : data?.other_data?.foreign_currency_hedged_by_borrower ? data.other_data.foreign_currency_hedged_by_borrower : 0;
+			formData["current_advances_outstanding"] = uploadedData?.current_advances_outstanding ? uploadedData.current_advances_outstanding : data?.other_data?.current_advances_outstanding ? data.other_data.current_advances_outstanding : 0;
+			formData["advances_repaid"] = uploadedData?.advances_repaid ? uploadedData.advances_repaid : data?.other_data?.advances_repaid ? data?.other_data?.advances_repaid : 0;
+			formData["advances_requested"] = uploadedData?.advances_requested ? uploadedData.advances_requested : data?.other_data?.advances_requested ? data?.other_data?.advances_requested : 0;
 			formData["exchange_rates"] = uploadedData?.exchange_rates?.length > 0 ? uploadedData.exchange_rates : data?.other_data?.exchange_rates?.length > 0 ? data.other_data.exchange_rates : null;
 			formData["obligor_tiers"] = uploadedData?.obligor_tiers?.length > 0 ? uploadedData.obligor_tiers : data?.other_data?.obligor_tiers?.length > 0 ? data.other_data.obligor_tiers : null;
+
+			formData["obligor_tiers_ebitda"] = uploadedData?.obligor_tiers_ebitda?.length > 0 ? uploadedData.obligor_tiers_ebitda : data?.other_data?.obligor_tiers_ebitda?.length > 0 ? data.other_data.obligor_tiers_ebitda : null;
+
+			formData["first_lien_10mm"] = uploadedData?.first_lien_10mm ? uploadedData.first_lien_10mm : data?.other_data?.first_lien_10mm ? data.other_data.first_lien_10mm : null;
+			formData["first_lien_10mm_senior_leverage_in_excess_of_6_5x"] = uploadedData?.first_lien_10mm_senior_leverage_in_excess_of_6_5x ? uploadedData.first_lien_10mm_senior_leverage_in_excess_of_6_5x : data?.other_data?.first_lien_10mm_senior_leverage_in_excess_of_6_5x ? data.other_data.first_lien_10mm_senior_leverage_in_excess_of_6_5x : null;
+			formData["first_lien_10mm_senior_leverage_in_excess_of_7_5x"] = uploadedData?.first_lien_10mm_senior_leverage_in_excess_of_7_5x ? uploadedData.first_lien_10mm_senior_leverage_in_excess_of_7_5x : data?.other_data?.first_lien_10mm_senior_leverage_in_excess_of_7_5x ? data.other_data.first_lien_10mm_senior_leverage_in_excess_of_7_5x : null;
+
+			formData["first_lien_10mm_and_50mm"] = uploadedData?.first_lien_10mm_and_50mm ? uploadedData.first_lien_10mm_and_50mm : data?.other_data?.first_lien_10mm_and_50mm ? data.other_data.first_lien_10mm_and_50mm : null;
+			formData["first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x"] = uploadedData?.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x ? uploadedData.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x : data?.other_data?.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x ? data.other_data.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x : null;
+			formData["first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x"] = uploadedData?.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x ? uploadedData.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x : data?.other_data?.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x ? data.other_data.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x : null;
+
+			formData["first_lien_50mm_unrated"] = uploadedData?.first_lien_50mm_unrated ? uploadedData.first_lien_50mm_unrated : data?.other_data?.first_lien_50mm_unrated ? data.other_data.first_lien_50mm_unrated : null;
+			formData["first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x"] = uploadedData?.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x ? uploadedData.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x : data?.other_data?.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x ? data.other_data.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x : null;
+			formData["first_lien_50mm_unrated_senior_leverage_in_excess_of_7_5x"] = uploadedData?.first_lien_50mm_unrated_senior_leverage_in_excess_of_7_5x ? uploadedData.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x : data?.other_data?.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x ? data.other_data.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x : null;
+
+			formData["first_lien_50mm_b_or_better"] = uploadedData?.first_lien_50mm_b_or_better ? uploadedData.first_lien_50mm_b_or_better : data?.other_data?.first_lien_50mm_b_or_better ? data.other_data.first_lien_50mm_b_or_better : null;
+			formData["first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x"] = uploadedData?.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x ? uploadedData.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x : data?.other_data?.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x ? data.other_data.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x : null;
+			formData["first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x"] = uploadedData?.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x ? uploadedData.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x : data?.other_data?.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x ? data.other_data.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x : null;
+
+			formData["last_out"] = uploadedData?.last_out ? uploadedData.last_out : data?.other_data?.last_out ? data.other_data.last_out : null;
+			formData["recurring_revenue"] = uploadedData?.recurring_revenue ? uploadedData.recurring_revenue : data?.other_data?.recurring_revenue ? data.other_data.recurring_revenue : null;
+			formData["second_lien"] = uploadedData?.second_lien ? uploadedData.second_lien : data?.other_data?.second_lien ? data.other_data.second_lien : null;
+			formData["ineligible"] = uploadedData?.ineligible ?? data?.other_data?.ineligible ?? null;
 			break;
 		}
 		setInitialFormData(formData);
+		console.log(formData);
+		
 	}, [data, uploadedData]);
 
 	const handleCancel = () => {
@@ -290,6 +317,7 @@ export const AddAdditionalInformationModal = (
 					...values,
 					"exchange_rates": values["exchange_rates"],
 					"obligor_tiers": values["obligor_tiers"],
+					"obligor_tiers_ebitda": values["obligor_tiers_ebitda"],
 					"availability": {
 						"determination_date": values.determination_date,
 						"measurement_date": values.measurement_date,
@@ -300,6 +328,31 @@ export const AddAdditionalInformationModal = (
 						"current_advances_outstanding": `${values["current_advances_outstanding"]}`,
 						"advances_repaid": values.advances_repaid,
 						"advances_requested": values.advances_requested
+					},
+					"obligor_outstandings": {
+						"first_lien_10mm":	values.first_lien_10mm,
+						"first_lien_10mm_senior_leverage_in_excess_of_6_5x": values.first_lien_10mm_senior_leverage_in_excess_of_6_5x,
+						"first_lien_10mm_senior_leverage_in_excess_of_7_5x": values.first_lien_10mm_senior_leverage_in_excess_of_7_5x,
+
+						"first_lien_10mm_and_50mm": values.first_lien_10mm_and_50mm,
+						"first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x": values.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x,
+						"first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x": values.first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x,
+
+						"first_lien_50mm_unrated": values.first_lien_50mm_unrated,
+						"first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x": values.first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x,
+						"first_lien_50mm_unrated_senior_leverage_in_excess_of_7_5x": values.first_lien_50mm_unrated_senior_leverage_in_excess_of_7_5x,
+
+						"first_lien_50mm_b_or_better": values.first_lien_50mm_b_or_better,
+						"first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x": values.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x,
+						"first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x": values.first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x,
+
+						"last_out": values.last_out,
+						"last_out_total_leverage_in_excess_of_7_5_x": values.last_out_total_leverage_in_excess_of_7_5_x,
+						"second_lien": values.second_lien,
+						"second_lien_total_leverage_in_excess_of_7_5_x": values.second_lien_total_leverage_in_excess_of_7_5_x,
+						"recurring_revenue": values.recurring_revenue,
+						"recurring_revenue_amounts_above_2_5_x": values.recurring_revenue_amounts_above_2_5_x,
+						"ineligible": values.ineligible
 					}
 				};
 
@@ -348,6 +401,7 @@ export const AddAdditionalInformationModal = (
 				showToast("success", response?.message);
 				form.resetFields();
 				onClose();
+				setBaseFilePreviewData(response.result.other_info);
 			}
 			if (isTriggerCalled && response?.["success"]) {
 				generateBaseData();
@@ -371,7 +425,7 @@ export const AddAdditionalInformationModal = (
 			if (row.length > 0) {
 				const record = {};
 				row.forEach((value, index) => {
-					record[header[index].toLowerCase().replace(/[\s/]+/g, '_')] = value;
+					record[header[index].toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().replace(/ +/g, '_')] = value;
 				});
 				temp.push(record);
 			}
@@ -409,9 +463,11 @@ export const AddAdditionalInformationModal = (
 					if (header && (header.toLowerCase().includes("percentage") ||
 						header.toLowerCase().includes("percent") ||
 						header.toLowerCase().includes("unquoted") ||
+						header.toLowerCase().includes("quoted") ||
 						header.toLowerCase().includes("advance rate") ||
 						header.toLowerCase().includes("concentration limit") ||
-						header.toLowerCase().includes("applicable collateral value")
+						header.toLowerCase().includes("applicable collateral value") ||
+						header.toLowerCase().includes("permitted add backs")
 					)) {
 						isPercentageColumn = true;
 					}
@@ -458,18 +514,19 @@ export const AddAdditionalInformationModal = (
 					sheet.sheetName.toLocaleLowerCase() === "availability borrower" ||
 					sheet.sheetName.toLocaleLowerCase() === "other metrics" ||
 					sheet.sheetName.toLocaleLowerCase() === "input" ||
-					sheet.sheetName.toLocaleLowerCase() === "availability"
+					sheet.sheetName.toLocaleLowerCase() === "availability" ||
+					sheet.sheetName.toLocaleLowerCase() === "obligor outstandings"
 				) {
-					const data = Object.fromEntries(sheet?.data?.slice(1).filter(row => row.length === 2));
+					const data = Object.fromEntries(sheet?.data?.slice(1).filter(row => Array.isArray(row) && row.length === 2));
 					const transformedData = Object.fromEntries(
 						Object.entries(data).map(([key, value]) => {
-							const transformedKey = key.toLowerCase().replace(/\s+/g, '_');
+							const transformedKey = key.toLowerCase().replace(/[^a-z0-9]+/g, '_');
 							return [transformedKey, value];
 						})
 					);
 					uploadedDataValues = { ...uploadedDataValues, ...transformedData };
 				} else {
-					uploadedDataValues[sheet.sheetName.toLowerCase().replace(/\s+/g, '_')] = mapDataToPrincipalObligations(sheet.data);
+					uploadedDataValues[sheet.sheetName.toLowerCase().replace(/[^a-z0-9]+/g, '_') ] = mapDataToPrincipalObligations(sheet.data);
 				}
 			});
 
@@ -510,7 +567,7 @@ export const AddAdditionalInformationModal = (
 				rows.push(headerRow);
 			}
 
-			if (["input", "availability_borrower", "other_metrics", "availability"].includes(sheetName) ) {
+			if (["input", "availability_borrower", "other_metrics", "availability", "obligor_outstandings"].includes(sheetName) ) {
 				for (const key in obj) {
 					let formattedValue = fmtDateValue(obj[key]);
 					if ((key.includes("threshold") || key.includes("ltv")) && key !== "") {
@@ -520,7 +577,7 @@ export const AddAdditionalInformationModal = (
 				}
 			} else {
 				obj.forEach((item) => {
-					const row = columnSequence.map((col) => {
+					const row = columnSequence?.map((col) => {
 						const columnDetail = columnDetails.find((detail) => detail.name === col.col_name);
 						const value = item[col.col_name] || "";
 
@@ -639,8 +696,8 @@ export const AddAdditionalInformationModal = (
 															</div>
 
 															<div className={styles.rowContainer}>
-																{fields?.map((field, index) => (
-																	<div key={index} className={styles.row}
+																{fields?.map((field, ind) => (
+																	<div key={ind} className={styles.row}
 																		style={{
 																			display: "grid",
 																			gridTemplateColumns: `repeat(${selectedData[sheet]?.Column.length}, 1fr)`, // Dynamic grid
@@ -648,36 +705,42 @@ export const AddAdditionalInformationModal = (
 																			padding: "10px"
 																		}}
 																	>
-																		{selectedData[sheet]?.Column?.map((inputField, index) => (
-																			<Form.Item
-																				key={index}
-																				name={[field.name, inputField.name]}
-																				noStyle
-																			>
-																				{inputField.type === "datePicker" ? (
-																					<DatePicker
-																						placeholder={inputField.label}
-																						format="MM-DD-YYYY"
-																						style={{
-																							width: "100%",
-																							padding: "4px",
-																							borderRadius: "8px",
-																							border: "1px solid rgba(201, 196, 196, 0.6)"
-																						}}
-																					/>
-																				) : (
-																					<Input
-																						placeholder={inputField.label}
-																						style={{
-																							width: "100%",
-																							padding: "4px",
-																							borderRadius: "8px",
-																							border: "1px solid rgba(201, 196, 196, 0.6)"
-																						}}
-																					/>
-																				)}
-																			</Form.Item>
-																		))}
+																		{selectedData[sheet]?.Column?.map((inputField, index) => {
+																			const defaultValue = selectedData[sheet]?.defaultData?.[ind]?.[inputField.name];
+																			return (
+																				<Form.Item
+																					key={index}
+																					name={[field.name, inputField.name]}
+																					noStyle
+																					initialValue= {defaultValue}
+																				>
+																					{inputField.type === "datePicker" ? (
+																						<DatePicker
+																							placeholder={inputField.label}
+																							format="MM-DD-YYYY"
+																							style={{
+																								width: "100%",
+																								padding: "4px",
+																								borderRadius: "8px",
+																								border: "1px solid rgba(201, 196, 196, 0.6)"
+																							}}
+																							disabled= {inputField?.isNotEditable}
+																						/>
+																					) : (
+																						<Input
+																							placeholder={inputField.label}
+																							style={{
+																								width: "100%",
+																								padding: "4px",
+																								borderRadius: "8px",
+																								border: "1px solid rgba(201, 196, 196, 0.6)"
+																							}}
+																							disabled= {inputField?.isNotEditable}
+																						/>
+																					)}
+																				</Form.Item>
+																			);
+																		})}
 																	</div>
 																))}
 															</div>
@@ -710,7 +773,7 @@ export const AddAdditionalInformationModal = (
 								<DynamicFileUploadComponent
 									uploadedFiles={selectedFiles}
 									setUploadedFiles={setSelectedFiles}
-									supportedFormats={['csv', 'xlsx']}
+									supportedFormats={['xlsx']}
 									fundType={previewFundType}
 									showDownload={!(typeof data === 'object' && data !== null && Object.keys(data).length > 0)}
 									fileDownloadOptions={fileDownloadOptions}

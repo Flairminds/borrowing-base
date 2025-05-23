@@ -102,7 +102,7 @@ export const DynamicTableComponents = ({
 			}
 			const initalColumnsConsidered = [...initialAdditionalColumns, ...selectedColumntoDisplay, ...additionalColumns];
 			const intialColumns = initalColumnsConsidered.map((t) => t.label);
-			console.info(intialColumns, 'test', initalColumnsConsidered);
+			// console.info(intialColumns, 'test', initalColumnsConsidered);
 			setSelectedColumns(intialColumns);
 			setBreaks([0, parseInt(columns.length / 3) + 1, (2 * parseInt(columns.length / 3)) + 1, columns.length]);
 		}

@@ -647,7 +647,19 @@ class ConcentraionTestFormatter:
             "First Lien Last Out",
             "Loans with Remaining Maturity > 6 Years",
             "Recurring Revenue Loans",
-            "Fixed Rate Loans"
+            "Fixed Rate Loans",
+            "Max. Weighted Average Leverage thru Borrower",
+            "Partial PIK Loan",
+            "Discount Collateral Loans",
+            "Credit Improved Loans",
+            "Warrants to Purchase Equity Securities",
+            "LBO Loan",
+            "Participation Interests",
+            "Eligible Covenant Lite Loans",
+            "Top 5 Obligors",
+            "LTM EBITDA < 15,000,000",
+            "LTM EBITDA >= 5,000,000 but < 7,500,000",
+            "Leverage Limitations"
         ]
         concentration_tests = []
         concentration_limits = []

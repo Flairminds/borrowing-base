@@ -105,7 +105,10 @@ export const ShowEmptyBasedDataValues = ({ visible, data, columnNames, onConfirm
 					}
 				}
 				if (colValueEmpty) {
-					emptyColumns.push(columnNames?.find(col => col.key === cols[j]));
+					const temp = columnNames?.find(col => col.key === cols[j]);
+					if (temp) {
+						emptyColumns.push(temp);
+					}
 				}
 			}
 			setEmptyColumnsList(emptyColumns);

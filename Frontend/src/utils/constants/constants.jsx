@@ -304,6 +304,20 @@ export const PCOFData = {
 			}
 		]
 	},
+	obligors_net_capital: {
+		Column: [
+			{
+				name: "obligors_net_capital",
+				label: "Obligors Net Capital",
+				type: "text"
+			},
+			{
+				name: "values",
+				label: "Values",
+				type: "float"
+			}
+		]
+	},
 	other_metrics: {
 		Header: [
 			{
@@ -459,6 +473,184 @@ export const PSSLData = {
 			{
 				name: "applicable_collateral_value",
 				label: "Applicable Collateral Value (%)",
+				type: "float",
+				unit: "percent"
+			}
+		]
+	},
+	obligor_tiers_ebitda: {
+		Column: [
+			{
+				name: "ebitda",
+				label: "EBITDA",
+				type: "text",
+				isNotEditable: true
+			},
+			{
+				name: "absolute_value",
+				label: "Absolute Value",
+				type: "text"
+			},
+			{
+				name: "debt_to_cash_capitalization_ratio",
+				label: "Debt-to-Cash Capitalization Ratio (%)",
+				type: "float",
+				unit: "percent",
+				isNotEditable: true
+			},
+			{
+				name: "permitted_add_backs",
+				label: "Permitted Add-Backs (%)",
+				type: "float",
+				unit: "percent"
+			}
+		],
+		defaultData: [
+			{
+				id: 1,
+				ebitda: "\u003C$10MM",
+				debt_to_cash_capitalization_ratio: "\u003E35.0"
+			},
+			{
+				id: 2,
+				ebitda: "\u003C$10MM",
+				debt_to_cash_capitalization_ratio: "\u226435.0"
+			},
+			{
+				id: 3,
+				ebitda: "\u2265$10MM and \u003C$50MM",
+				debt_to_cash_capitalization_ratio: "\u003E50.0"
+			},
+			{
+				id: 4,
+				ebitda: "\u2265$10MM and \u003C$50MM",
+				debt_to_cash_capitalization_ratio: "\u226450.0"
+			},
+			{
+				id: 5,
+				ebitda: "\u2265$50MM",
+				debt_to_cash_capitalization_ratio: "\u003E50.0"
+			},
+			{
+				id: 6,
+				ebitda: "\u2265$50MM",
+				debt_to_cash_capitalization_ratio: "\u226450.0"
+			}
+		]
+	},
+	obligor_outstandings: {
+		Header: [
+			{
+				name: "first_lien_10mm",
+				label: "First Lien < $10MM",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "first_lien_10mm_senior_leverage_in_excess_of_6_5x",
+				label: "First Lien < $10MM, Senior Leverage in excess of 6.5x",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "first_lien_10mm_senior_leverage_in_excess_of_7_5x",
+				label: "First Lien < $10MM, Senior Leverage in excess of 7.5x",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "first_lien_10mm_and_50mm",
+				label: "First Lien ≥ $10MM and < $50MM",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "first_lien_10mm_and_50mm_senior_leverage_in_excess_of_6_5x",
+				label: "First Lien ≥ $10MM and < $50MM, Senior Leverage in excess of 6.5x",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "first_lien_10mm_and_50mm_senior_leverage_in_excess_of_7_5x",
+				label: "First Lien ≥ $10MM and < $50MM, Senior Leverage in excess of 7.5x",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "first_lien_50mm_unrated",
+				label: "First Lien ≥ $50MM & Unrated",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "first_lien_50mm_unrated_senior_leverage_in_excess_of_6_5x",
+				label: "First Lien ≥ $50MM & Unrated, Senior Leverage in excess of 6.5x",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "first_lien_50mm_unrated_senior_leverage_in_excess_of_7_5x",
+				label: "First Lien ≥ $50MM & Unrated, Senior Leverage in excess of 7.5x",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "first_lien_50mm_b_or_better",
+				label: "First Lien ≥ $50MM & B- or better",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "first_lien_50mm_b_or_better_senior_leverage_in_excess_of_6_5x",
+				label: "First Lien ≥ $50MM & B- or better, Senior Leverage in excess of 6.5x",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "first_lien_50mm_b_or_better_senior_leverage_in_excess_of_7_5x",
+				label: "First Lien ≥ $50MM & B- or better, Senior Leverage in excess of 7.5x",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "last_out",
+				label: "Last Out",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "last_out_total_leverage_in_excess_of_7_5_x",
+				label: "Last Out Total Leverage in excess of 7.5x",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "second_lien",
+				label: "Second Lien",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "second_lien_total_leverage_in_excess_of_7_5_x",
+				label: "Second Lien Total Leverage in excess of 7.5x",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "recurring_revenue",
+				label: "Recurring Revenue",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "recurring_revenue_amounts_above_2_5_x",
+				label: "Recurring Revenue, Amounts above 2.5x",
+				type: "float",
+				unit: "percent"
+			},
+			{
+				name: "ineligible",
+				label: "Ineligible",
 				type: "float",
 				unit: "percent"
 			}
@@ -645,9 +837,9 @@ export const PCOF_COLUMNS_NAME = {
 	"principle_obligations": {
 		"columns_info": [
 			{
-				"col_name": "principle_obligations",
+				"col_name": "principal_obligations",
 				"sequence": 1,
-				"display_name": "Principle Obligations"
+				"display_name": "Principal Obligations"
 			},
 			{
 				"col_name": "currency",
@@ -771,6 +963,20 @@ export const PCOF_COLUMNS_NAME = {
 			}
 		]
 	},
+	"obligors_net_capital": {
+		"columns_info": [
+			{
+				"col_name": "obligors_net_capital",
+				"sequence": 1,
+				"display_name": "Obligors Net Capital"
+			},
+			{
+				"col_name": "values",
+				"sequence": 2,
+				"display_name": "Values"
+			}
+		]
+	},
 	"other_metrics": {
 		"columns_info": [
 			{
@@ -844,5 +1050,49 @@ export const PSSL_COLUMNS_NAME = {
 				"display_name": "Applicable Collateral Value"
 			}
 		]
+	},
+	"obligor_tiers_ebitda": {
+		"columns_info": [
+			{
+				"col_name": "ebitda",
+				"sequence": 1,
+				"display_name": "EBITDA"
+			},
+			{
+				"col_name": "absolute_value",
+				"sequence": 2,
+				"display_name": "Absolute Value"
+			},
+			{
+				"col_name": "debt_to_cash_capitalization_ratio",
+				"sequence": 3,
+				"display_name": "Debt-to-Cash Capitalization Ratio"
+			},
+			{
+				"col_name": "permitted_add_backs",
+				"sequence": 4,
+				"display_name": "Permitted Add-Backs"
+			}
+		]
+	},
+	"obligor_outstandings": {
+		"columns_info": [
+			{
+				"col_name": "loan_category",
+				"sequence": 1,
+				"display_name": "Loan Category"
+			},
+			{
+				"col_name": "advance_rate",
+				"sequence": 2,
+				"display_name": "Advance Rate (%)"
+			}
+		]
 	}
 };
+
+export const extractionFileStrings = {
+	1: "Select a mastercomp file and a marketvalue file for base data extraction",
+	2: "Select a cashfile, mastercomp file, marketvalue, master_ratings file for base data extraction",
+	3: "Select a cashfile, mastercomp, master_ratings file for base data extraction",
+}

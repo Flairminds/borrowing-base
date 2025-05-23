@@ -83,6 +83,15 @@ PCOF_IV = {}
 
 MARKET_BOOK = {}
 
+master_rating = {
+    "Ratings Data (Borrower)": (0, 3, 16),
+    "Borrower Name": (0, 1, 2),
+    "Moody's": (0, 3, 5),
+    "S&P": (0, 6, 10),
+    "Fitch": (0, 11, 13),
+    "Date Estimates": (0, 14, 16)
+}
+
 sheet_column_mapper = {
     "Borrower Stats": borrower_stats,
     "Securities Stats": security_stats,
@@ -95,7 +104,8 @@ sheet_column_mapper = {
     "MarketBook": MARKET_BOOK,
     # "Sheet1": {},
     "Market and Book Value Position_": {},
-    "PSSL II Borrowing Base": PSSL_II_Borrowing_base
+    "PSSL II Borrowing Base": PSSL_II_Borrowing_base,
+    "Master Ratings": master_rating
 }
 
 FUND_SHEETS = {
