@@ -10,7 +10,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
         with engine.connect() as connection:
             pcof_base_data = pd.DataFrame(connection.execute(text(f'''
                 select distinct
-                    ss."Security" as investment_name,
+                    CONCAT_WS(' - ', ssm."Issuer_Name", ssm."Asset_Name") as investment_name,
                     sm.family_name  as "issuer",
                     case
 						when lien_master.lien_type is null then ss."[SI] Credit Facility Lien Type"
@@ -52,9 +52,9 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."[PSM] Capitalization Multiple" as "leverage_total_capitalization",
                     ss."LTV" as "leverage_ltv_thru_pcof_iv", -- was from PCOF IV, Now taking from security stats (BU)
                     case
-						when ss."[SI] Credit Facility Lien Type" = 'Ineligible' then 'No'
+						when ss."[SI] Security Type" = 'Common Equity' then 'No'
 						else 'Yes'
-					end as "is_eligible_issuer" -- could not map
+					end as "is_eligible_issuer"
                 from sf_sheet_marketbook_1 ssm
                 left join pflt_security_mapping sm on TRIM(sm.marketvalue_issuer) = TRIM(ssm."Issuer_Name") and TRIM(sm.marketvalue_asset) = TRIM(ssm."Asset_Name")
                 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
@@ -63,7 +63,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
 				left join lien_type_master lien_master on lien_master.id = lien_mapping.master_lien_type_id
                 where (ssm.source_file_id = :market_book_file_id) and
                 ((sm.id is not null AND ss.source_file_id = :master_comp_file_id AND bs.source_file_id = :master_comp_file_id) or sm.id is null)
-                group by ss."Security", sm.family_name, ss."[SI] Credit Facility Lien Type", bs."[ACM] [COI/LC] PNNT Industry", bs."[ACM] [COI/LC] Closing Date", ss."[SI] Maturity",
+                group by ssm."Issuer_Name", ssm."Asset_Name", sm.family_name, ss."[SI] Credit Facility Lien Type", ss."[SI] Security Type", bs."[ACM] [COI/LC] PNNT Industry", bs."[ACM] [COI/LC] Closing Date", ss."[SI] Maturity",
                     ss."[SI] PIK Coupon",
                     ss."[SI] Cash Spread to LIBOR",
                     ss."[SI] LIBOR Floor",
@@ -81,7 +81,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ssm."BookValue",
                     ssm."MarketValue",
                     lien_master.lien_type
-                order by ss."Security"
+                order by CONCAT_WS(' - ', ssm."Issuer_Name", ssm."Asset_Name")
             '''), {'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}))
 
         if pcof_base_data.empty:
