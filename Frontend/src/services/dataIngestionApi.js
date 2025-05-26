@@ -51,6 +51,14 @@ export const getBaseFilePreviewData = (info_id) => {
 	return previewResponse;
 };
 
+export const getCardData = (info_id) => {
+	const fileData = {
+		'info_id': info_id
+	};
+	const previewResponse = axios.post(`${ApiURL}/data_ingestion/get_card_data`, fileData);
+	return previewResponse;
+};
+
 export const getBaseDataFilesList = (data) => {
 	const fileData = {
 		"report_date": data.report_date,

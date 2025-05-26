@@ -34,7 +34,8 @@ export const DynamicTableComponents = ({
 	previewFundType,
 	filterSelections,
 	visibleSortHeader = false,
-	showFilter = true
+	showFilter = true,
+	isCellLoading
 }) => {
 
 	const [updatedColumnsData, setUpdatedColumnsData] = useState(columns);
@@ -195,14 +196,13 @@ export const DynamicTableComponents = ({
 		});
 	};
 
-	const handleSaveEdit = async () => {
-
+	const handleSaveEdit = async (currentValue) => {
 		const { rowIndex, columnkey, id, unit } = editingCell;
 		let value = inputValue.displayValue;
 		if (unit == 'percent') {
 			value = value / 100;
 		}
-		const saveStatus = await onChangeSave(rowIndex, columnkey, value, id);
+		const saveStatus = await onChangeSave(rowIndex, columnkey, value, id, currentValue);
 
 		if (saveStatus.success) {
 			setEditingCell(null);
@@ -402,7 +402,7 @@ export const DynamicTableComponents = ({
 																	src={RightIcon}
 																	alt="Save"
 																	className={tableStyles.iconButton}
-																	onClick={handleSaveEdit}
+																	onClick={() => handleSaveEdit(row[col.key]?.cellActualValue)}
 																/>
 																<img
 																	src={CrossIcon}
@@ -431,6 +431,7 @@ export const DynamicTableComponents = ({
 				visible={modalVisible}
 				onClose={() => setModalVisible(false)}
 				cellDetails={cellDetail}
+				isCellLoading={isCellLoading}
 			/>
 		</div>
 	);

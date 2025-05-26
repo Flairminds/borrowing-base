@@ -38,6 +38,8 @@ export function App() {
 	const [previewPageId, setPreviewPageId] = useState(-1);
 	const [previewFundType, setPreviewFundType] = useState("");
 	const [whatifAnalysisPerformed, setWhatifAnalysisPerformed] = useState(false);
+	const [cardData, setCardData] = useState([]);
+
 
 	// const [selectedIds, setSelectedIds] = useState([]);
 	const selectedIds = useRef([]);
@@ -163,6 +165,8 @@ export function App() {
 								previewFundType={previewFundType}
 								setPreviewFundType={setPreviewFundType}
 								getborrowingbasedata ={getborrowingbasedata}
+								cardData={cardData}
+								setCardData={setCardData}
 							/>
 						}
 					/>

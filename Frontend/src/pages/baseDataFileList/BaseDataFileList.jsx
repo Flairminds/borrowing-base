@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 import { CustomButton } from '../../components/uiComponents/Button/CustomButton';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { SourceFileModal } from '../../modal/sourceFileModal/SourceFileModal';
-import { getBaseDataFilesList, getBaseFilePreviewData } from '../../services/dataIngestionApi';
+import { getBaseDataFilesList, getBaseFilePreviewData, getCardData } from '../../services/dataIngestionApi';
 import { fundMap, fundOptionsArray, PAGE_ROUTES } from '../../utils/constants/constants';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BaseDataFileList.module.css';
@@ -42,27 +42,7 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 			alert(row.comments);
 			return;
 		}
-		try {
-			setDataLoading(true);
-			const previewDataResponse = await getBaseFilePreviewData(row.id);
-			const result = previewDataResponse.data?.result;
-			if (result)
-				setBaseFilePreviewData({
-					baseData: result.base_data_table,
-					reportDate: result.report_date,
-					baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
-					cardData: result?.card_data && result.card_data[0],
-					infoId: row.id,
-					otherInfo: result.other_info,
-					fundType: result?.fund_type
-				});
-			setPreviewPageId(row.id);
-			setPreviewFundType(row.fund);
-			navigate(`/data-ingestion/base-data-preview/${row.id}`);
-		} catch (err) {
-			showToast("error", err.response.data.message);
-			setDataLoading(false);
-		}
+		navigate(`/data-ingestion/base-data-preview/${row.id}`);
 	};
 
 	const columnsToAdd = [{

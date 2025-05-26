@@ -67,6 +67,17 @@ def extract_base_data():
         Log.func_error(e)
         return HTTPResponse.error(message="Could not generate base data", status_code=500)
     
+def get_card_data():
+    try:
+        req_body = flask.request.get_json()
+        info_id = req_body.get("info_id")
+        card_data = diService.get_card_data(info_id)
+        return HTTPResponse.success(result=card_data)
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Something went wrong.", status_code=500)
+    
+    
 def get_base_data():
     try:
         req_body = flask.request.get_json()
@@ -81,7 +92,7 @@ def get_base_data():
             "base_data_table": service_response["data"]["base_data_table"],
             "report_date": service_response["data"]["report_date"],
             "fund_type": service_response["data"]["fund_type"],
-            "card_data": service_response["data"]["card_data"],
+            # "card_data": service_response["data"]["card_data"],
             "other_info": other_info["data"]
             # "base_data_mapping": base_data_map_res["data"]
         }

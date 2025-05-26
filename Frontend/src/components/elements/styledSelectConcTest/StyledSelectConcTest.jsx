@@ -25,7 +25,7 @@ const optionRender = (option) => (
 
 
 
-export const StyledSelectConcTest = ({optionsArray, onChange}) => {
+export const StyledSelectConcTest = ({optionsArray, onChange, value}) => {
 	const [options, setOptions] = useState();
 
 	// const filterOption =(searchValue) =>{
@@ -55,6 +55,7 @@ export const StyledSelectConcTest = ({optionsArray, onChange}) => {
 		<>
 			<Select
 				removeIcon={true}
+				value={value}
 				showSearch
 				placeholder="Select Test"
 				style={{ width: "650px", margin: '0 0.5rem'}}

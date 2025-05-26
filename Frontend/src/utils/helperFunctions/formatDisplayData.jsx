@@ -63,3 +63,25 @@ export const fmtDateValue = (value) => {
 export const formatColumnName = (name) => {
 	return name.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
 };
+
+
+export function formatCellValue(value) {
+	if (value instanceof Date) return value;
+
+	if (typeof value === 'string' && value.trim().endsWith('%')) {
+		return value;
+	}
+
+	const num = parseFloat(value);
+	if (isNaN(num)) return value;
+
+	if (Math.abs(num) >= 1_000_000_000) {
+		return (num / 1_000_000_000).toFixed(1).replace(/\.0$/, '') + 'B';
+	} else if (Math.abs(num) >= 1_000_000) {
+		return (num / 1_000_000).toFixed(1).replace(/\.0$/, '') + 'M';
+	} else if (Math.abs(num) >= 1_000) {
+		return (num / 1_000).toFixed(1).replace(/\.0$/, '') + 'K';
+	} else {
+		return num.toString();
+	}
+}

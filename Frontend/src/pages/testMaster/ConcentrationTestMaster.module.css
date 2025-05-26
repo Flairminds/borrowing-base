@@ -134,3 +134,9 @@
     font-weight: bold;
     width: auto;
   }
+
+.clearText {
+  font-size: small;
+  color: #326FC0;
+  cursor: pointer;
+}

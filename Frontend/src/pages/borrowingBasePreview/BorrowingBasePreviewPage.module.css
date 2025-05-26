@@ -79,6 +79,7 @@
   /* padding: 10px 0; */
   font-size: smaller;
   text-align: center;
+  min-height: 4.1rem;
 }
 
 .card {

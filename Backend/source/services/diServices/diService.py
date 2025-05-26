@@ -464,47 +464,13 @@ def persist_old_base_data(fund_type):
         return ServiceResponse.success(message="Base data updated")
     except Exception as e:
         raise Exception(e)
-
-
-
-def get_base_data(info_id):
+    
+def get_card_data(info_id):
     try:
-        # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
-       
         base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
-        if base_data_info.fund_type == 'PFLT':
-            sheet_name = "Loan List"
-        elif base_data_info.fund_type == 'PCOF':
-            sheet_name = "PL BB Build"
-        else:
-            sheet_name = "Portfolio"
- 
-        base_data_mapping = db.session.query(
-            BaseDataMapping.bdm_id,
-            BaseDataMapping.bd_column_lookup,
-            BaseDataMapping.bd_column_name,
-            BaseDataMapping.bd_column_datatype,
-            BaseDataMapping.bd_column_unit,
-            BaseDataMapping.bd_column_is_required,
-            BaseDataMapping.is_one_time_input,
-            BaseDataMapping.is_on_going_input_rarely_updated,
-            BaseDataMapping.is_on_going_input,
-            BaseDataMapping.description,
-            BaseDataMapping.is_editable,
-            BaseDataMapping.sf_sheet_name,
-            BaseDataMapping.sf_column_name,
-            BaseDataMappingColumnInfo.sequence,
-            BaseDataMappingColumnInfo.is_selected
-        ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type, BaseDataMapping.bd_sheet_name == sheet_name).order_by(BaseDataMappingColumnInfo.sequence).all()
- 
- 
-        card_data = []
- 
         engine = db.get_engine()
-       
+
         if base_data_info.fund_type == 'PFLT':
-            base_data = PfltBaseData.query.filter(PfltBaseData.base_data_info_id == info_id).order_by(PfltBaseData.id).all()
-            HistoryData = PfltBaseDataHistory
             with engine.connect() as connection:
                 result = connection.execute(text('''
                     select count(distinct pbd.obligor_name) as no_of_obligors,
@@ -525,16 +491,14 @@ def get_base_data(info_id):
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
                 "Fund Type": base_data_info.fund_type
             }]
+
         if base_data_info.fund_type == 'PSSL':
-            base_data = PsslBaseData.query.filter(PsslBaseData.base_data_info_id == info_id).order_by(PsslBaseData.id).all()
-            HistoryData = PsslBaseDataHistory
             card_data = [{
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
                 "Fund Type": base_data_info.fund_type
             }]
+
         if base_data_info.fund_type == 'PCOF':
-            base_data = PcofBaseData.query.filter_by(base_data_info_id = info_id).order_by(PcofBaseData.id).all()
-            HistoryData = PcofBaseDataHistory
             with engine.connect() as connection:
                 result = connection.execute(text('''
                     select count(distinct pbd.issuer) as no_of_issuers,
@@ -553,6 +517,54 @@ def get_base_data(info_id):
                 # "Unmapped Securities": unmapped_records,
                 "Fund Type": base_data_info.fund_type
             }]
+
+        return card_data
+    except Exception as e:
+        raise Exception(e)
+
+
+def get_base_data(info_id):
+    try:
+        # datetime_obj = datetime.strptime(report_date, "%Y-%m-%d")
+       
+        base_data_info = ExtractedBaseDataInfo.query.filter_by(id = info_id).first()
+        if base_data_info.fund_type == 'PFLT':
+            sheet_name = "Loan List"
+        elif base_data_info.fund_type == 'PCOF':
+            sheet_name = "PL BB Build"
+        elif base_data_info.fund_type == 'PSSL':
+            sheet_name = "Portfolio"
+ 
+        base_data_mapping = db.session.query(
+            BaseDataMapping.bdm_id,
+            BaseDataMapping.bd_column_lookup,
+            BaseDataMapping.bd_column_name,
+            BaseDataMapping.bd_column_datatype,
+            BaseDataMapping.bd_column_unit,
+            BaseDataMapping.bd_column_is_required,
+            BaseDataMapping.is_one_time_input,
+            BaseDataMapping.is_on_going_input_rarely_updated,
+            BaseDataMapping.is_on_going_input,
+            BaseDataMapping.description,
+            BaseDataMapping.is_editable,
+            BaseDataMapping.sf_sheet_name,
+            BaseDataMapping.sf_column_name,
+            BaseDataMappingColumnInfo.sequence,
+            BaseDataMappingColumnInfo.is_selected
+        ).join(BaseDataMapping, BaseDataMapping.bdm_id == BaseDataMappingColumnInfo.bdm_id).filter(BaseDataMapping.fund_type == base_data_info.fund_type, BaseDataMapping.bd_sheet_name == sheet_name).order_by(BaseDataMappingColumnInfo.sequence).all()
+        
+        if base_data_info.fund_type == 'PFLT':
+            base_data = PfltBaseData.query.filter(PfltBaseData.base_data_info_id == info_id).order_by(PfltBaseData.id).all()
+            HistoryData = PfltBaseDataHistory
+
+        if base_data_info.fund_type == 'PSSL':
+            base_data = PsslBaseData.query.filter(PsslBaseData.base_data_info_id == info_id).order_by(PsslBaseData.id).all()
+            HistoryData = PsslBaseDataHistory
+
+        if base_data_info.fund_type == 'PCOF':
+            base_data = PcofBaseData.query.filter_by(base_data_info_id = info_id).order_by(PcofBaseData.id).all()
+            HistoryData = PcofBaseDataHistory
+           
  
         temp = []
         # print(base_data[0])
@@ -631,7 +643,7 @@ def get_base_data(info_id):
             "base_data_table": base_data_table,
             "report_date": base_data_info.report_date.strftime("%Y-%m-%d"),
             "fund_type": base_data_info.fund_type,
-            "card_data": card_data
+            # "card_data": card_data
         }
         return ServiceResponse.success(data=result, message="Base Data")
     except Exception as e:

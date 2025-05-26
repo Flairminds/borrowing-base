@@ -4,10 +4,10 @@ import { useNavigate, useParams } from 'react-router';
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { AddAdditionalInformationModal } from '../../modal/addAdditionalInformationModal/AddAdditionalInformationModal';
 import { getBaseDataCellDetail, generateBaseDataFile } from '../../services/api';
-import { editBaseData, getBaseFilePreviewData } from '../../services/dataIngestionApi';
+import { editBaseData, getBaseFilePreviewData, getCardData } from '../../services/dataIngestionApi';
 import { filterPreviewData } from '../../utils/helperFunctions/filterPreviewData';
 import { filterPreviewTable } from '../../utils/helperFunctions/filterPreviewTable';
-import { fmtDisplayVal } from '../../utils/helperFunctions/formatDisplayData';
+import { fmtDisplayVal, formatCellValue } from '../../utils/helperFunctions/formatDisplayData';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import styles from './BorrowingBasePreviewPage.module.css';
 import { FileUploadModal } from '../../modal/addMoreSecurities/FileUploadModal';
@@ -17,10 +17,11 @@ import { ShowEmptyBasedDataValues } from '../../modal/showEmptyBasedDataValues/S
 import { PersistBaseDataModal } from '../../modal/PresistBaseData/PresistBaseDataModal';
 import { VAEModal } from '../../modal/VAEModal/VAEModal';
 import { PCOFCashDataModal } from '../../modal/PCOFCashDataModal/PCOFCashDataModal';
+import { LoaderSmall } from '../../components/uiComponents/loader/loader';
 
 
 
-export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setPreviewFundType, setTablesData, setPreviewPageId, getborrowingbasedata}) => {
+export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePreviewData, previewPageId, previewFundType, setPreviewFundType, setTablesData, setPreviewPageId, getborrowingbasedata, cardData, setCardData}) => {
 	const navigate = useNavigate();
 	// const { infoId } = useParams();
 	const [mapping, setMapping] = useState({});
@@ -39,7 +40,8 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const [isPresistBaseModalVisible, setIsPresistBaseModalVisible] = useState(false);
 	const [showVAEModal, setShowVAEModal] = useState(false);
 	const [showPCOFCashModal, setShowPCOFCashModal] = useState(false);
-
+	const [cardLoading, setCardLoading] = useState(false);
+	const [isCellLoading, setIsCellLoading] = useState(false);
 
 	const {infoId} = useParams();
 
@@ -50,8 +52,6 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 	const handleCancel = () => {
 		setIsOpenFileUpload(false);
 	};
-
-	// console.log("infoId", infoId);
 
 	useEffect(() => {
 		let col = [];
@@ -88,6 +88,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				'Formula': 'Not mapped'
 			}
 		};
+		setIsCellLoading(true);
 		try {
 			const response = await getBaseDataCellDetail({ 'ebd_id': baseFilePreviewData.infoId || infoId, 'column_key': columnKey, 'data_id': rowId });
 			const detail = response?.data?.result;
@@ -140,8 +141,10 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				</>;
 			}
 			setCellDetail(temp);
+			setIsCellLoading(false);
 		} catch (error) {
 			console.error(error.message);
+			setIsCellLoading(false);
 			setCellDetail(temp);
 		}
 	};
@@ -150,18 +153,25 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		try {
 			setLoading(true);
 			const previewpageId = previewId ? previewId : previewPageId;
-			const previewDataResponse = await getBaseFilePreviewData(previewpageId);
-			const result = previewDataResponse.data?.result;
+			const [previewDataResponse, cardResult] = await Promise.allSettled([
+				getBaseFilePreviewData(previewpageId),
+				getCardData(previewpageId)
+			]);
+
+			const result = previewDataResponse?.value?.data?.result;
+			const cardValues = cardResult?.status === 'fulfilled' && cardResult?.value?.data?.result?.[0] || [];
+
 			if (result)
 				setBaseFilePreviewData({
 					baseData: result?.base_data_table,
 					reportDate: result?.report_date,
 					baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
-					cardData: result?.card_data && result.card_data[0],
 					otherInfo: result.other_info,
 					fundType: result?.fund_type,
 					infoId: result?.other_info?.extraction_info_id
 				});
+
+			setCardData(cardValues);
 			setPreviewFundType(result?.fund_type);
 			setFilteredData(result?.base_data_table?.data);
 			setLoading(false);
@@ -171,7 +181,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		}
 	};
 
-	const handleSaveEdit = async (rowIndex, columnkey, inputValue, id) => {
+	const handleSaveEdit = async (rowIndex, columnkey, inputValue, id, currentValue) => {
 		const updatedData = [...filteredData];
 		const changes = [{
 			id: id,
@@ -181,9 +191,25 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		];
 
 		try {
-			await editBaseData(changes);
+			setCardLoading(true);
+			const [_, cardResponse] = await Promise.allSettled([editBaseData(changes), getCardData(previewPageId)]);
 			// await handleBaseDataPreview();
-			updatedData[rowIndex][columnkey] = inputValue;
+			// updatedData[rowIndex][columnkey] = inputValue;
+			updatedData[rowIndex][columnkey] = {
+				// "data_type": null,
+				"display_value": formatCellValue(inputValue),
+				"old_value": currentValue,
+				"title": formatCellValue(inputValue),
+				"unit": null,
+				"value": inputValue,
+				"isEditable": true,
+				"cellDisplayValue": formatCellValue(inputValue),
+				"cellActualValue": inputValue,
+				"cellTitleValue": inputValue,
+				"cellOldValue": currentValue,
+				"isManuallyAdded": null,
+				"isValueEmpty": false
+			};
 			// setBaseFilePreviewData({
 			// 	...baseFilePreviewData,
 			// 	'baseData': {
@@ -191,11 +217,15 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			// 		'data': updatedData
 			// 	}
 			// });
+			const cardValues = cardResponse.status === 'fulfilled' && cardResponse?.value?.data?.result?.[0] || [];
+			setCardData(cardValues);
 			setFilteredData(updatedData);
+			setCardLoading(false);
 			// setBaseFilePreviewData({...BorrowingBasePreviewPage.baseData, data: updatedData});
 			return { success: true, msg: "Update success" };
 		} catch (error) {
 			// showToast("error", error?.response?.data?.message || "Failed to update data");
+			setCardLoading(false);
 			return { success: false, msg: error?.response?.data?.message || "Failed to update data" };
 		}
 	};
@@ -273,47 +303,54 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		setIsShowEmptyBaseDataModalOpen(false);
 	};
 
-
 	return (
-		<div className={styles.previewPage}>
+		<>
 			{loading ? <UIComponents.Loader /> :
-				<div className={styles.tableContainer}>
-					<div style={{ display: 'flex', justifyContent: 'space-between' }}>
-						<div>
-							<div className={styles.cardContainer}>
-								{baseFilePreviewData?.cardData && Object.keys(baseFilePreviewData?.cardData).map((cardTitle, index) => (
-									<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/configuration?tab=security_mapping') : () => {}}>
-										<div>{cardTitle}</div>
-										<div className={styles.cardTitle}><b>{fmtDisplayVal(baseFilePreviewData?.cardData[cardTitle], 0)}</b></div>
-									</div>
-								))}
+				<div className={styles.previewPage}>
+					<div className={styles.tableContainer}>
+						<div style={{ display: 'flex', justifyContent: 'space-between' }}>
+							<div>
+								<div className={styles.cardContainer}>
+									{cardLoading ? <LoaderSmall /> :
+										<>
+											{cardData && Object.keys(cardData).map((cardTitle, index) => (
+												<div key={index} className={styles.card} title={cardTitle == 'Unmapped Securities' ? "Click to go to 'Security mapping'" : ""} onClick={cardTitle == 'Unmapped Securities' ? () => navigate('/configuration?tab=security_mapping') : () => {}}>
+													<div>{cardTitle}</div>
+													<div className={styles.cardTitle}><b>{fmtDisplayVal(cardData?.[cardTitle], 0)}</b></div>
+												</div>
+											))}
+										</>
+									}
+								</div>
+							</div>
+							<div>
+								<UIComponents.Button onClick={showModal} isFilled={true} text='Bulk Update' btnDisabled={previewFundType == 'PSSL' ? false : false} title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />
+								{previewFundType == 'PSSL' && <UIComponents.Button onClick={() => setShowVAEModal(true)} isFilled={true} text='VAE' title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />}
+								{/* <UIComponents.Button onClick={() => setIsPresistBaseModalVisible(true)} isFilled={true} text='Compare And Update Previous Base Data'/> */}
+								<UIComponents.Button onClick={() => setIsShowEmptyBaseDataModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PSSL' ? false : false} />
 							</div>
 						</div>
 						<div>
-							<UIComponents.Button onClick={showModal} isFilled={true} text='Bulk Update' btnDisabled={previewFundType == 'PSSL' ? false : false} title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />
-							{previewFundType == 'PSSL' && <UIComponents.Button onClick={() => setShowVAEModal(true)} isFilled={true} text='VAE' title={previewFundType == 'PSSL' ? 'Work in progress' : 'Add more securities data in the base data'} />}
-							{/* <UIComponents.Button onClick={() => setIsPresistBaseModalVisible(true)} isFilled={true} text='Compare And Update Previous Base Data'/> */}
-							<UIComponents.Button onClick={() => setIsShowEmptyBaseDataModalOpen(true)} isFilled={true} text='Trigger Calculation' loading={triggerBBCalculation} loadingText={'Calculating'} btnDisabled={previewFundType == 'PSSL' ? false : false} />
+							<DynamicTableComponents
+								data={filteredData}
+								columns={baseFilePreviewData?.baseData?.columns}
+								enableStickyColumns={true}
+								showSettings={true}
+								showCellDetailsModal={true}
+								enableColumnEditing={true}
+								onChangeSave={handleSaveEdit}
+								getCellDetailFunc={getCellDetail}
+								cellDetail={cellDetail}
+								refreshDataFunction={handleBaseDataPreview}
+								previewFundType={previewFundType}
+								filterSelections={filterSelections[baseFilePreviewData.fundType]}
+								showFilter={true}
+								isCellLoading={isCellLoading}
+							/>
 						</div>
 					</div>
-					<div>
-						<DynamicTableComponents
-							data={filteredData}
-							columns={baseFilePreviewData?.baseData?.columns}
-							enableStickyColumns={true}
-							showSettings={true}
-							showCellDetailsModal={true}
-							enableColumnEditing={true}
-							onChangeSave={handleSaveEdit}
-							getCellDetailFunc={getCellDetail}
-							cellDetail={cellDetail}
-							refreshDataFunction={handleBaseDataPreview}
-							previewFundType={previewFundType}
-							filterSelections={filterSelections[baseFilePreviewData.fundType]}
-							showFilter={true}
-						/>
-					</div>
-				</div>}
+				</div>
+			}
 			<AddAdditionalInformationModal
 				isAddFieldModalOpen={isAddFieldModalOpen}
 				setIsAddFieldModalOpen={setIsAddFieldModalOpen}
@@ -359,7 +396,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 				onClose={() => setIsPresistBaseModalVisible(false)}
 			/>
 			{previewFundType == 'PSSL' && <VAEModal visible={showVAEModal} onCancel={() => setShowVAEModal(false)} />}
-		</div>
+		</>
 		// <div>
 		//     {Object.keys(mapping)?.map(m => {
 		//         return (

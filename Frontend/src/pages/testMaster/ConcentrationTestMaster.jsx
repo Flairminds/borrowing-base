@@ -15,6 +15,7 @@ export const ConcentrationTestMaster = () => {
 	const [tableData, setTableData] = useState([]);
 	const [displayTableData, setDisplayTableData] = useState([]);
 	const [sortedData, setSortedData] = useState([]);
+	const [displaySortedData, setDisplaySortedData] = useState([]);
 	const [submitBtnLoading, setSubmitBtnLoading] = useState(false);
 	const [activeRowFundData, setActiveRowFundData] = useState({
 		hightlightType: "",
@@ -22,6 +23,7 @@ export const ConcentrationTestMaster = () => {
 	});
 	const [optionsArray, setoptionsArray] = useState([]);
 	const [loading, setLoading] = useState(false);
+	const [selectedTest, setSelectedTest] = useState(undefined);
 
 	const handleDropdownChange = async(value) => {
 		try {
@@ -114,7 +116,7 @@ export const ConcentrationTestMaster = () => {
 
 	useEffect(() => {
 		if (!displayTableData || displayTableData.length <= 0) return;
-		console.info(displayTableData, 'test -123' );
+		// console.info(displayTableData, 'test -123' );
 		const sorted = [...(displayTableData?.data ?? [])]
 			.sort((a, b) => b.show_on_dashboard - a.show_on_dashboard)
 			.sort((a, b) => {
@@ -124,22 +126,31 @@ export const ConcentrationTestMaster = () => {
 				return 0;
 			});
 		setSortedData(sorted);
-
+		setDisplaySortedData(sorted);
 		const optionResult = styledDropdownOptions(displayTableData?.data);
 		setoptionsArray(optionResult);
 	}, [displayTableData]);
 
 	const handleTestSelect = (value) => {
-		const fundID = parseInt(value.split('||')[1]);
+		const testID = parseInt(value.split('||')[1]);
+		const selectedTest = sortedData?.filter(item => item?.test_id === testID);
+		setDisplaySortedData(selectedTest);
+		setSelectedTest(value);
 		setActiveRowFundData({
 			hightlightType: "testHightlight",
-			hightlightIds: [fundID]
+			hightlightIds: [testID]
 		});
 	};
 
 	useEffect(() => {
 		handleDropdownChange(defaultFund);
 	}, []);
+
+	const handleClear = () => {
+		setDisplaySortedData(sortedData);
+		setSelectedTest(undefined);
+		setActiveRowFundData(null);
+	};
 
 	return (
 		<>
@@ -156,7 +167,8 @@ export const ConcentrationTestMaster = () => {
 				<div className={styles.dropDownHeading}>
 					Concentration Test
 					<div style={{display: 'inline-block'}}>
-						<StyledSelectConcTest optionsArray={optionsArray} onChange={handleTestSelect} />
+						<StyledSelectConcTest optionsArray={optionsArray} onChange={handleTestSelect} value={selectedTest}/>
+						<span className={styles.clearText} onClick={handleClear}>Show All</span>
 					</div>
 				</div>
 			</div>
@@ -173,7 +185,7 @@ export const ConcentrationTestMaster = () => {
 								</tr>
 							</thead>
 							<tbody>
-								{sortedData?.map((row, rowIndex) => (
+								{displaySortedData?.map((row, rowIndex) => (
 									<tr
 										key={rowIndex}
 										className={

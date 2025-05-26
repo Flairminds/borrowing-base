@@ -165,8 +165,7 @@ export const AddAdditionalInformationModal = (
 			break;
 		}
 		setInitialFormData(formData);
-		console.log(formData);
-		
+
 	}, [data, uploadedData]);
 
 	const handleCancel = () => {

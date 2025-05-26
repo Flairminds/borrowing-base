@@ -28,6 +28,10 @@ def change_bd_col_seq():
 def get_base_data_col():
     return diController.get_base_data_col()
 
+@di_blueprint.route("/get_card_data", methods=["POST"])
+def get_card_data():
+    return diController.get_card_data()
+
 @di_blueprint.route("/update_bd_col_select", methods=["POST"])
 def update_bd_col_select():
     return diController.update_bd_col_select()
