@@ -19,13 +19,36 @@ def trigger_pssl_bb(bdi_id):
         base_data_other_info = BaseDataOtherInfo.query.filter_by(extraction_info_id=bdi_id).first()
 
         vae_info = VaeData.query.all()
-
         vae_dicts = [row.__dict__ for row in vae_info]
-
         for row in vae_dicts:
             row.pop('_sa_instance_state', None)
-
         vae_df = pd.DataFrame(vae_dicts)
+        vae_columns = {
+            "obligor": "Obligor",
+            "event_type": "Event Type",
+            "material_modification": "Material Modification",
+            "vae_decision_date": "Date of VAE Decision",
+            "financials_date": "Date of Financials",
+            "ttm_ebitda": "TTM EBITDA",
+            "senior_debt": "Senior Debt",
+            "total_debt": "Total Debt",
+            "unrestricted_cash": "Unrestricted Cash",
+            "interest_coverage": "Interest Coverage",
+            "recurring_revenue": "Recurring Revenue",
+            "liquidity": "Liquidity",
+            "assigned_value": "Assigned Value",
+        }
+        vae_df.rename(columns=vae_columns, inplace=True)
+        columns_to_keep = list(vae_columns.values())
+        vae_df = vae_df[columns_to_keep]
+        vae_df['Date of VAE Decision'] = pd.to_datetime(vae_df['Date of VAE Decision'])
+        vae_df['TTM EBITDA'] = vae_df['TTM EBITDA'].astype(float)
+        vae_df['Senior Debt'] = vae_df['Senior Debt'].astype(float)
+        vae_df['Total Debt'] = vae_df['Total Debt'].astype(float)
+        vae_df['Unrestricted Cash'] = vae_df['Unrestricted Cash'].astype(float)
+        vae_df['Interest Coverage'] = vae_df['Interest Coverage'].astype(float)
+        vae_df['Assigned Value'] = vae_df['Assigned Value'].astype(float)
+
         with engine.connect() as connection:
             base_data_df = pd.DataFrame(connection.execute(text(f"select * from pssl_base_data where base_data_info_id = :ebd_id"), {'ebd_id': bdi_id}).fetchall())
             base_data_mapping_df = pd.DataFrame(connection.execute(text("""select bd_sheet_name, bd_column_name, bd_column_lookup from base_data_mapping bdm where fund_type = 'PSSL' and bd_sheet_name = 'Portfolio'""")))
