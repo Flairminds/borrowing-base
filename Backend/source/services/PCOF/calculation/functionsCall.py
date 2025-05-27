@@ -289,7 +289,7 @@ def calculation_for_Segmentation_overview(df_industry, df_PL_BB_Build):
 
         # Filtering df_PL_BB_Build based on the industry and specific rows
         filtered_df = df_PL_BB_Build[
-            (df_PL_BB_Build["Investment Industry"] == industry)
+            (df_PL_BB_Build["Investment Industry"].str.lower() == industry.lower())
             & (df_PL_BB_Build["Is Eligible Issuer"] == "Yes")
         ]
 
@@ -523,7 +523,7 @@ def calculation_results_function_Call(
     concentrationrestExecutor = ConcentrationTestExecutor(
         {
             "PL BB Build": df_PL_BB_Build,
-            "Availability Borrower": df_Availability_Borrower,
+            "Availability Borrower": df_Availability_Borrower
         },
         "PCOF",
     )
