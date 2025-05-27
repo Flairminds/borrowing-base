@@ -152,6 +152,7 @@ export function App() {
 								setBaseFilePreviewData={setBaseFilePreviewData}
 								setPreviewPageId={setPreviewPageId}
 								setPreviewFundType={setPreviewFundType}
+								setCardData={setCardData}
 							/>
 						}
 					/>

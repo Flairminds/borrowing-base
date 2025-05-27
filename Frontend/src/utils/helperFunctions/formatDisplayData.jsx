@@ -65,13 +65,16 @@ export const formatColumnName = (name) => {
 };
 
 
-export function formatCellValue(value) {
-	if (value instanceof Date) return value;
+export function formatCellValue(value, unit) {
+	if (unit === 'percent') {
+		return value / 100;
+	}
 
-	if (typeof value === 'string' && value.trim().endsWith('%')) {
+	if (unit === 'date') {
 		return value;
 	}
 
+	// Handle general number formatting
 	const num = parseFloat(value);
 	if (isNaN(num)) return value;
 

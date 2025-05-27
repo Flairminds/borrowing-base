@@ -159,7 +159,12 @@ export const DynamicTableComponents = ({
 		}
 	};
 
+	console.log("input", inputValue);
+	
+
 	const handleCellEdit = (rowIndex, columnkey, cellValue, dataType, rowId, unit) => {
+		console.log("cell", cellValue);
+		
 		setEditingCell({ rowIndex, columnkey, id: rowId.value, unit: unit });
 		if (dataType === "date" && cellValue) {
 			setInputValue({
@@ -196,24 +201,29 @@ export const DynamicTableComponents = ({
 		});
 	};
 
-	const handleSaveEdit = async (currentValue) => {
+	const handleSaveEdit = async () => {
 		const { rowIndex, columnkey, id, unit } = editingCell;
-		let value = inputValue.displayValue;
-		if (unit == 'percent') {
-			value = value / 100;
-		}
-		const saveStatus = await onChangeSave(rowIndex, columnkey, value, id, currentValue);
+		const value = inputValue.displayValue;
+		// if (unit == 'percent') {
+		// 	value = value / 100;
+		// }
 
-		if (saveStatus.success) {
-			setEditingCell(null);
-			setInputValue({
-				value: null,
-				displayValue: ""
-			});
-			showToast("success", "Data updated successfully");
-		} else {
-			showToast("error", saveStatus.msg);
-		}
+		console.log("inputValue", inputValue);
+		console.log("value", value);
+		
+		// const saveStatus = await onChangeSave(rowIndex, columnkey, value, id, unit);
+		// console.log("saves", saveStatus);
+		
+		// if (saveStatus.success) {
+		// 	setEditingCell(null);
+		// 	setInputValue({
+		// 		value: null,
+		// 		displayValue: ""
+		// 	});
+		// 	showToast("success", "Data updated successfully");
+		// } else {
+		// 	showToast("error", saveStatus.msg);
+		// }
 	};
 
 	const handleCancelEdit = (e) => {
@@ -402,7 +412,7 @@ export const DynamicTableComponents = ({
 																	src={RightIcon}
 																	alt="Save"
 																	className={tableStyles.iconButton}
-																	onClick={() => handleSaveEdit(row[col.key]?.cellActualValue)}
+																	onClick={handleSaveEdit}
 																/>
 																<img
 																	src={CrossIcon}

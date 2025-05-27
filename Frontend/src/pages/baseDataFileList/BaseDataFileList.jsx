@@ -14,7 +14,7 @@ import { STATUS_BG_COLOR, FUND_BG_COLOR } from '../../utils/styles';
 import { Calender } from '../../components/calender/Calender';
 import { Icons } from '../../components/icons';
 
-export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, setPreviewFundType }) => {
+export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, setPreviewFundType, setCardData }) => {
 	const [baseDataFilesList, setBaseDataFilesList] = useState({});
 	const [extractionInProgress, setExtractionInProgress] = useState(false);
 	const [isPopupOpen, setIsPopupOpen] = useState(false);
@@ -42,7 +42,32 @@ export const BaseDataFileList = ({ setBaseFilePreviewData, setPreviewPageId, set
 			alert(row.comments);
 			return;
 		}
-		navigate(`/data-ingestion/base-data-preview/${row.id}`);
+		try {
+			setDataLoading(true);
+			const [previewDataResponse, cardResult] = await Promise.allSettled([
+				getBaseFilePreviewData(row?.id),
+				getCardData(row?.id)
+			]);
+
+			const result = previewDataResponse?.value?.data?.result;
+			const cardValues = cardResult?.status === 'fulfilled' && cardResult?.value?.data?.result?.[0] || [];
+			if (result)
+				setBaseFilePreviewData({
+					baseData: result.base_data_table,
+					reportDate: result.report_date,
+					baseDataMapping: result?.base_data_mapping && result.base_data_mapping,
+					infoId: row.id,
+					otherInfo: result.other_info,
+					fundType: result?.fund_type
+				});
+			setCardData(cardValues);
+			setPreviewPageId(row.id);
+			setPreviewFundType(row.fund);
+			navigate(`/data-ingestion/base-data-preview/${row.id}`);
+		} catch (err) {
+			showToast("error", err?.response?.data?.message);
+			setDataLoading(false);
+		}
 	};
 
 	const columnsToAdd = [{

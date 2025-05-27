@@ -181,14 +181,21 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 		}
 	};
 
-	const handleSaveEdit = async (rowIndex, columnkey, inputValue, id, currentValue) => {
+	const handleSaveEdit = async (rowIndex, columnkey, inputValue, id, unit) => {
 		const updatedData = [...filteredData];
 		const changes = [{
 			id: id,
 			[columnkey]: inputValue,
 			fundType: previewFundType
-		}
-		];
+		}];
+
+		console.log("inputValue", inputValue);
+		// console.log("unit", unit);
+		const currentValue = updatedData[rowIndex][columnkey]["cellActualValue"];
+		console.log("currentValue", currentValue);
+		
+		const formatedCellValue = formatCellValue(inputValue, unit);
+		// console.log("formated", formatedCellValue);
 
 		try {
 			setCardLoading(true);
@@ -197,13 +204,13 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 			// updatedData[rowIndex][columnkey] = inputValue;
 			updatedData[rowIndex][columnkey] = {
 				// "data_type": null,
-				"display_value": formatCellValue(inputValue),
+				"display_value": formatCellValue(inputValue, unit),
 				"old_value": currentValue,
-				"title": formatCellValue(inputValue),
-				"unit": null,
+				"title": inputValue,
+				"unit": unit,
 				"value": inputValue,
 				"isEditable": true,
-				"cellDisplayValue": formatCellValue(inputValue),
+				"cellDisplayValue": formatCellValue(inputValue, unit),
 				"cellActualValue": inputValue,
 				"cellTitleValue": inputValue,
 				"cellOldValue": currentValue,
