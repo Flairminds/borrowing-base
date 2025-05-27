@@ -349,7 +349,8 @@ def Weighted_maturity(data, Other_metrics, Borrower):
 def Eligible_Issuer(data, Other_metrics):
     data["Final Eligible"] = Final_Eligible(data, Other_metrics)["Final Eligible"]
     data["Eligible Issuer"] = data.apply(
-        lambda x: x["Investment Name"] if x["Final Eligible"] == "Yes" else "", axis=1
+        lambda x: x["Issuer"] if (x["Final Eligible"] == "Yes") and (x["Issuer"] != "Cash") and (x["Issuer"] != '') else "",
+    axis=1
     )
     return data
 
