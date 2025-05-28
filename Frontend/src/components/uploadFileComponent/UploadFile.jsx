@@ -22,6 +22,7 @@ import { ProgressBar } from '../progressBar/ProgressBar';
 import { DynamicTableComponents } from '../reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { UIComponents } from '../uiComponents';
 import stylesUload from './UploadFile.module.css';
+import { fmtDateValue } from '../../utils/helperFunctions/formatDisplayData';
 
 
 export const UploadFile = ({
@@ -65,6 +66,9 @@ export const UploadFile = ({
 	}, {
 		key: "fund_type",
 		label: "Fund"
+	}, {
+		key: "created_at",
+		label: "Created At"
 	}];
 
 	useEffect(() => {
@@ -305,9 +309,9 @@ export const UploadFile = ({
 
 	const handleDateFilterChange = (date, dateString) => {
 		setFilterDate(dateString);
-		const fundType = selectedOption === 1 ? "PCOF" : selectedOption === 2 ? "PFLT" : null;
+		const fundType = selectedOption === 1 ? "PCOF" : selectedOption === 2 ? "PFLT" : selectedOption === 2 ? "PSSL" : null;
 		const filteredData = fetchFileList.filter(file => {
-			const matchesDate = !dateString || file.closing_date === dateString;
+			const matchesDate = !dateString || fmtDateValue(file.closing_date) === fmtDateValue(dateString);
 			const matchesFundType = !fundType || file.fund_type === fundType;
 			return matchesDate && matchesFundType;
 		});

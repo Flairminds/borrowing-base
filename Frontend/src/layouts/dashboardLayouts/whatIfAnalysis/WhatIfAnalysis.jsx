@@ -378,7 +378,7 @@ export const WhatIfAnalysis = ({
 				</div>
 				<div style={{ display: "flex", alignItems: "center", gap: '5px'}}>
 					<div>
-						<UIComponents.Button text='Import/Use File' onClick={() => setIsAnalysisModalOpen(true)} isFilled={true} title='Import new data file or use existing file for calculation' />
+						<UIComponents.Button text='Import/Use Base Data' onClick={() => setIsAnalysisModalOpen(true)} isFilled={true} title='Import new data file or use existing file for calculation' />
 					</div>
 					<div>
 						<WhatIfAnalysisOptions

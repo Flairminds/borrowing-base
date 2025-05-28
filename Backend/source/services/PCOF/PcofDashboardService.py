@@ -202,7 +202,7 @@ class PcofDashboardService:
         return obligators_net_capital
 
     def get_total_bb_table(self, df_Availability_Borrower):
-        search_values = ["Total Borrowing Base"]
+        search_values = ["Portfolio Leverage Borrowing Base", "Subscription Borrowing Base", "Total Borrowing Base"]
         return self.convert_to_card_table(df_Availability_Borrower, search_values)
 
     def get_leverage_bb_table(self, df_Availability_Borrower):
