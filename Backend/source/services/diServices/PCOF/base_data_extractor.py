@@ -17,7 +17,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
 						else lien_master.lien_type
 					end
 					as "investment_investment_type",
-                    bs."[ACM] [COI/LC] PNNT Industry" as "investment_industry",
+                    pi.std_industry_name as "investment_industry",
                     bs."[ACM] [COI/LC] Closing Date"::date as "investment_closing_date",
                     case when ss."[SI] Maturity" is not null and ss."[SI] Maturity" != 'NM' then ss."[SI] Maturity" else null end as "investment_maturity",
                     sum(ssm."Commitment"::float) as "investment_par",
@@ -61,9 +61,10 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
                 left join lien_type_mapping lien_mapping on lien_mapping.lien_type = ss."[SI] Credit Facility Lien Type" and (lien_mapping.is_deleted = false or lien_mapping.is_deleted is null)
 				left join lien_type_master lien_master on lien_master.id = lien_mapping.master_lien_type_id
+				left join pcof_industries pi on pi.industry_name = bs."[ACM] [COI/LC] PNNT Industry"
                 where (ssm.source_file_id = :market_book_file_id) and
                 ((sm.id is not null AND ss.source_file_id = :master_comp_file_id AND bs.source_file_id = :master_comp_file_id) or sm.id is null)
-                group by ss."Security", sm.family_name, ss."[SI] Credit Facility Lien Type", ss."[SI] Security Type", bs."[ACM] [COI/LC] PNNT Industry", bs."[ACM] [COI/LC] Closing Date", ss."[SI] Maturity",
+                group by ss."Security", sm.family_name, ss."[SI] Credit Facility Lien Type", ss."[SI] Security Type", bs."[ACM] [COI/LC] Closing Date", ss."[SI] Maturity",
                     ss."[SI] PIK Coupon",
                     ss."[SI] Cash Spread to LIBOR",
                     ss."[SI] LIBOR Floor",
@@ -77,7 +78,8 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."[PSM] Defaulted / Restructured?",
                     ss."[PSM] Capitalization Multiple",
                     ss."LTV",
-                    lien_master.lien_type
+                    lien_master.lien_type,
+                    pi.std_industry_name
                 order by ss."Security"
             '''), {'master_comp_file_id': master_comp_file_details.id, 'market_book_file_id': market_book_file_details.id}))
 

@@ -25,7 +25,7 @@ def trigger_pcof_bb(bdi_id):
             base_data_df = pd.DataFrame(connection.execute(text(f'select * from pcof_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
             base_data_mapping_df = pd.DataFrame(connection.execute(text("""select bd_sheet_name, bd_column_name, bd_column_lookup from base_data_mapping bdm where fund_type = 'PCOF'""")))
             pl_bb_result_security_df = pd.DataFrame(connection.execute(text('''select ps.security_name as "Security" from pcof_securities ps''')))
-            input_industries_df = pd.DataFrame(connection.execute(text('''select pi.industry_name as "Industries" from pcof_indsutries pi''')))
+            input_industries_df = pd.DataFrame(connection.execute(text('''select distinct std_industry_name as "Industries" from pcof_industries pi''')))
             pl_bb_results = pd.DataFrame(connection.execute(text('''select ct.test_name as "Concentration Tests", fct.limit_percentage as "Concentration Limit" from concentration_test ct, fund_concentration_test fct where fct.fund_id = 1''')))
 
 
