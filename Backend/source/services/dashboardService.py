@@ -321,16 +321,19 @@ def download_calculated_df(base_data_file):
         intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
         sheet_list = get_report_sheets(base_data_file.fund_type)
 
-        downloadable_sheets = []
         if base_data_file.fund_type == "PCOF":
-            other_sheets = ["df_subscriptionBB", "df_security", "df_industry", "df_Input_pricing", "df_Inputs_Portfolio_LeverageBorrowingBase", "df_Obligors_Net_Capital", "df_Inputs_Advance_Rates", "df_Inputs_Concentration_limit", "df_principle_obligations", "df_segmentation_overview", "df_PL_BB_Output"]
+            downloadable_sheets = ["df_PL_BB_Build", "df_Inputs_Other_Metrics", "df_Availability_Borrower", "df_PL_BB_Results", "df_subscriptionBB", "df_security", "df_industry", "df_Input_pricing", "df_Inputs_Portfolio_LeverageBorrowingBase", "df_Obligors_Net_Capital", "df_Inputs_Advance_Rates", "df_Inputs_Concentration_limit", "df_principle_obligations", "df_segmentation_overview", "df_PL_BB_Output"]
             for sheet in sheet_list:
                 sheet_name = sheet[0]
                 sheet_lookup = sheet[1]
-                intermediate_calculation[sheet_name] = intermediate_calculation.pop(sheet_lookup)
 
-                downloadable_sheets.append(sheet_name)
-            downloadable_sheets.extend(other_sheets)    
+                if sheet_lookup in intermediate_calculation:
+                    intermediate_calculation[sheet_name] = intermediate_calculation.pop(sheet_lookup)
+
+                for i, downloadable_sheet_lookup in enumerate(downloadable_sheets):
+                    if downloadable_sheet_lookup == sheet_lookup:
+                        downloadable_sheets[i] = sheet_name
+                        break     
 
         if base_data_file.fund_type == "PFLT":
             downloadable_sheets = ["Loan List", "Inputs", "Exchange Rates", "Haircut", "Industry", "Cash Balance Projections", "Credit Balance Projection", "Borrowing Base", "Concentration Test"]
@@ -374,7 +377,7 @@ def download_calculated_df(base_data_file):
 
                         elif data_type == 'float' and unit == 'percent':
                             dataframe[column_name] = dataframe[column_name].apply(
-                                lambda x: f"{x * 100:.2f}%" if pd.notnull(x) else ""
+                                lambda x: f"{x * 100}%" if pd.notnull(x) else None
                             )
 
                     dataframe.to_excel(writer, sheet_name=sheet_name, index=False)
