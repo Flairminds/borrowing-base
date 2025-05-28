@@ -523,7 +523,8 @@ def calculation_results_function_Call(
     concentrationrestExecutor = ConcentrationTestExecutor(
         {
             "PL BB Build": df_PL_BB_Build,
-            "Availability Borrower": df_Availability_Borrower
+            "Availability Borrower": df_Availability_Borrower,
+            "Segmentation Overview": df_segmentation_overview,
         },
         "PCOF",
     )

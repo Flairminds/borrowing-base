@@ -593,6 +593,7 @@ class ConcentrationTestExecutor:
             .agg({"Borrowing Base": "sum"})
             .reset_index()
         )
+        test_required_col_df = test_required_col_df[test_required_col_df["Industry"] != "Total"]
         BB_sum = test_required_col_df["Borrowing Base"].sum()
         test_required_col_df["Percetage Borrowing Base"] = (
             test_required_col_df["Borrowing Base"] / BB_sum
@@ -629,6 +630,7 @@ class ConcentrationTestExecutor:
             .agg({"Borrowing Base": "sum"})
             .reset_index()
         )
+        test_required_col_df = test_required_col_df[test_required_col_df["Industry"] != "Total"]
         BB_sum = test_required_col_df["Borrowing Base"].sum()
         test_required_col_df["Percetage Borrowing Base"] = (
             test_required_col_df["Borrowing Base"] / BB_sum

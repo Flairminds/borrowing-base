@@ -348,10 +348,12 @@ def Weighted_maturity(data, Other_metrics, Borrower):
 # BT=IF($BR14="Yes",E14,"")
 def Eligible_Issuer(data, Other_metrics):
     data["Final Eligible"] = Final_Eligible(data, Other_metrics)["Final Eligible"]
-    data["Eligible Issuer"] = data.apply(
-        lambda x: x["Issuer"] if (x["Final Eligible"] == "Yes") and (x["Issuer"] != "Cash") and (x["Issuer"] != '') else "",
-    axis=1
-    )
+    def eligible_issuer_helper(row):
+        if (row["Final Eligible"] == "Yes") and (row["Issuer"] != "Cash") and (row["Issuer"] != ''):
+            return row["Issuer"]
+        else:
+            return ""
+    data["Eligible Issuer"] = data.apply(eligible_issuer_helper, axis=1)
     return data
 
 
@@ -1864,20 +1866,30 @@ def calculate_Eligible_Issuers(df_PL_BB_Build):
     l = len(df_PL_BB_Build[df_PL_BB_Build["Is Eligible Issuer"] == "Yes"])
 
     df_PL_BB_Build["Eligible Issuers"] = 0  # Initialize the new column with zeros
-
+    # df_PL_BB_Build = df_PL_BB_Build.sort_values(by='Issuer').reset_index(drop=True)
     df_PL_BB_Build.loc[0, "Eligible Issuers"] = 1  # Set the value of the first row to 1
-
+    df_PL_BB_Build["Issuer"] = df_PL_BB_Build["Issuer"].fillna(0)  # Fill NaN values with 0
+    issuer_count = {}
+    count = 0
     for i in range(1, l - 1):
+        # condition = (
+        #     (df_PL_BB_Build.at[i, "Issuer"] == df_PL_BB_Build.at[i - 1, "Issuer"])
+        #     or (df_PL_BB_Build.at[i, "Eligible"] == "No")
+        #     or (df_PL_BB_Build.at[i, "Issuer"] == 0)
+        # )
         condition = (
-            (df_PL_BB_Build.at[i, "Issuer"] == df_PL_BB_Build.at[i - 1, "Issuer"])
-            or (df_PL_BB_Build.at[i, "Eligible"] == "No")
+            (df_PL_BB_Build.at[i, "Eligible"] == "Yes")
             or (df_PL_BB_Build.at[i, "Issuer"] == 0)
         )
-
+        issuer = df_PL_BB_Build.at[i, "Issuer"]
         if condition:
-            df_PL_BB_Build.at[i, "Eligible Issuers"] = df_PL_BB_Build.at[i - 1, "Eligible Issuers"]
-        else:
-            df_PL_BB_Build.at[i, "Eligible Issuers"] = df_PL_BB_Build.at[i - 1, "Eligible Issuers"] + 1
+            if issuer_count.get(issuer) is not None:
+                eligible_issuer_no = issuer_count[issuer]
+                df_PL_BB_Build.at[i, "Eligible Issuers"] = eligible_issuer_no
+            else:
+                count = count + 1
+                issuer_count[issuer] = count
+                df_PL_BB_Build.at[i, "Eligible Issuers"] = count
 
 
     return df_PL_BB_Build
