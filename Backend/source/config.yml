@@ -126,11 +126,11 @@ fund_std_col_map:
   Max. Industry Concentration (Largest Industry, % BB):
     PCOF: 
       Borrowing Base:
-        Sheet Name: PL BB Build
-        Column Name: Borrowing Base
+        Sheet Name: Segmentation Overview
+        Column Name: BB
       Industry:
-        Sheet Name: PL BB Build
-        Column Name: Eligible Industry
+        Sheet Name: Segmentation Overview
+        Column Name: industry
     PFLT:
       Borrowing Base:
         Sheet Name: Loan List
@@ -148,11 +148,11 @@ fund_std_col_map:
   Max. Industry Concentration (2nd Largest Industry, % BB):
     PCOF: 
       Borrowing Base:
-        Sheet Name: PL BB Build
-        Column Name: Borrowing Base
+        Sheet Name: Segmentation Overview
+        Column Name: BB
       Industry:
-        Sheet Name: PL BB Build
-        Column Name: Eligible Industry
+        Sheet Name: Segmentation Overview
+        Column Name: industry
     PFLT:
       Borrowing Base:
         Sheet Name: Loan List
@@ -486,9 +486,9 @@ fund_std_col_map:
         Column Name: Investment Name
   Max. Third Party Finance Companies:
     PCOF:
-      LTV Transaction:
+      Third Party Finance Company:
         Sheet Name: PL BB Build
-        Column Name: Classifications LTV Transaction
+        Column Name: Classifications Third Party Finance Company
       Borrowing Base:
         Sheet Name: PL BB Build
         Column Name: Borrowing Base
@@ -633,5 +633,13 @@ fund_std_col_map:
       Leverage Limitations:
         Sheet Name: Loan List
         Column Name: LTM Snr Debt / EBITDA
+  Max. Industry Concentration (All Other Industries, % BB):
+    PCOF: 
+      Borrowing Base:
+        Sheet Name: Segmentation Overview
+        Column Name: BB
+      Industry:
+        Sheet Name: Segmentation Overview
+        Column Name: industry
       
 

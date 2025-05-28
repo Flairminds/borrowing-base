@@ -865,3 +865,17 @@ class VaeData(db.Model):
     created_at = db.Column(db.DateTime(timezone=True), default=datetime.utcnow)
     modified_by = db.Column(db.Integer)
     modified_at = db.Column(db.DateTime(timezone=True))
+
+class PcofIndustry(db.Model):
+    __tablename__ = 'pcof_industries'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    industry_name = db.Column(db.Text, nullable=True)
+    std_industry_name = db.Column(db.Text, nullable=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "industry_name": self.industry_name,
+            "std_industry_name": self.std_industry_name
+        }
