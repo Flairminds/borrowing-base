@@ -447,19 +447,11 @@ class ConcentrationTestExecutor:
     def execute_Max_LTV_Transactions(
         self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard, comparison_type
     ):
-        ltv_transaction_grouped_df = (
-            test_required_col_df.groupby("LTV Transaction")
-            .agg({"Borrowing Base": "sum"})
-            .reset_index()
-        )
-        yes_sum = 0
-        for index, row in ltv_transaction_grouped_df.iterrows():
-            if row["LTV Transaction"] == "Yes":
-                yes_sum = row["Borrowing Base"]
+        total_bb = test_required_col_df["Borrowing Base"].sum()
+        actual = test_required_col_df[test_required_col_df["LTV Transaction"] == "Yes"]["Borrowing Base"].sum()
+        actual_percent = actual / total_bb
 
-        actual = yes_sum / ltv_transaction_grouped_df["Borrowing Base"].sum()
-        rounded_actual = round(actual, 3)
-        if self.is_pass(actual=actual, limit=self.limit_percent, comparison_type=comparison_type):
+        if self.is_pass(actual=actual_percent, limit=self.limit_percent, comparison_type=comparison_type):
             result = result = "Pass"
         else:
             result = "Fail"
@@ -467,7 +459,7 @@ class ConcentrationTestExecutor:
         row_data = {
             "Concentration Tests": [test_name],
             "Concentration Limit": [self.limit_percent],
-            "Actual": [rounded_actual],
+            "Actual": [actual_percent],
             "Result": [result],
             "Show on dashboard": [show_on_dashboard]
         }
@@ -1110,9 +1102,11 @@ class ConcentrationTestExecutor:
 
     def max_third_party_finance_companies(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard, comparison_type):
         try:
-            actual = test_required_col_df[test_required_col_df["LTV Transaction"] == "Yes"]["Borrowing Base"].sum()
+            total_bb = test_required_col_df["Borrowing Base"].sum()
+            actual = test_required_col_df[test_required_col_df["Third Party Finance Company"] == "Yes"]["Borrowing Base"].sum()
+            actual_percent = actual / total_bb
 
-            if self.is_pass(actual=actual, limit=self.limit_percent, comparison_type=comparison_type):
+            if self.is_pass(actual=actual_percent, limit=self.limit_percent, comparison_type=comparison_type):
                 result = result = "Pass"
             else:
                 result = "Fail"
@@ -1120,7 +1114,7 @@ class ConcentrationTestExecutor:
             row_data = {
                 "Concentration Tests": [test_name],
                 "Concentration Limit": [self.limit_percent],
-                "Actual": [actual],
+                "Actual": [actual_percent],
                 "Result": [result],
                 "Show on dashboard": [show_on_dashboard],
                 "Absolute Limit": [self.min_limit],
