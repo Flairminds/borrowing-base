@@ -486,9 +486,9 @@ fund_std_col_map:
         Column Name: Investment Name
   Max. Third Party Finance Companies:
     PCOF:
-      LTV Transaction:
+      Third Party Finance Company:
         Sheet Name: PL BB Build
-        Column Name: Classifications LTV Transaction
+        Column Name: Classifications Third Party Finance Company
       Borrowing Base:
         Sheet Name: PL BB Build
         Column Name: Borrowing Base

@@ -96,8 +96,8 @@ def trigger_pcof_bb(bdi_id):
             {"A": "Date of determination:", "B": datetime.datetime.strptime(base_data_other_info.other_info_list.get('availability_borrower').get('determination_date')[:-5], "%Y-%m-%dT%H:%M:%S")},
             {"A": "Revolving Closing Date", "B": datetime.datetime.strptime(base_data_other_info.other_info_list.get('availability_borrower').get('revolving_closing_date')[:-5], "%Y-%m-%dT%H:%M:%S")},
             {"A": "Commitment Period (3 years from Final Closing Date, as defined in LPA)", "B": base_data_other_info.other_info_list.get('availability_borrower').get('commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)')},
-            {"A": "(b) Facility Size", "B":  base_data_other_info.other_info_list.get('availability_borrower').get('(b)_facility_size')},
-            {"A": "Loans (USD)", "B":  base_data_other_info.other_info_list.get('availability_borrower').get('loans_(usd)')},
+            {"A": "(b) Facility Size", "B":  pd.to_numeric(base_data_other_info.other_info_list.get('availability_borrower').get('(b)_facility_size'), errors='coerce')},
+            {"A": "Loans (USD)", "B":  pd.to_numeric(base_data_other_info.other_info_list.get('availability_borrower').get('loans_(usd)'), errors='coerce')},
             {"A": "Loans (CAD)", "B":  base_data_other_info.other_info_list.get('availability_borrower').get('loans_(cad)')}
         ]
         df_Availability_Borrower = pd.DataFrame(availability_borrower_data)
