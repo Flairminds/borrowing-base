@@ -222,7 +222,8 @@ class ConcentrationTestExecutor:
             "Top 5 Obligors": self.top_5_bligors,
             "LTM EBITDA < 15,000,000": self.ltm_ebitda_lt_15MM,
             "LTM EBITDA >= 5,000,000 but < 7,500,000": self.ltm_ebitda_gt_5MM_lt_7_5MM,
-            "Leverage Limitations": self.leverage_limitations
+            "Leverage Limitations": self.leverage_limitations,
+            "Max. Industry Concentration (All Other Industries, % BB)": self.max_industry_concentration_all_other_industries
         }
 
     def get_applicable_limit(self, limit_percent, total_bb, min_limit):
@@ -1316,6 +1317,41 @@ class ConcentrationTestExecutor:
             return concentration_test_df
         except Exception as e:
             raise Exception(e)
+
+    def max_industry_concentration_all_other_industries(self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard, comparison_type):
+        test_required_col_df = (
+            test_required_col_df.groupby("Industry")
+            .agg({"Borrowing Base": "sum"})
+            .reset_index()
+        )
+        test_required_col_df = test_required_col_df[test_required_col_df["Industry"] != "Total"]
+        BB_sum = test_required_col_df["Borrowing Base"].sum()
+        test_required_col_df["Percetage Borrowing Base"] = (
+            test_required_col_df["Borrowing Base"] / BB_sum
+        )
+
+        # check after demo
+        if test_required_col_df.empty:
+            return concentration_test_df
+        actual = self.get_kth_largest_percent_BB(test_required_col_df, 3)
+        rounded_actual = round(actual, 3)
+        if self.is_pass(actual=actual, limit=self.limit_percent, comparison_type=comparison_type):
+            result = result = "Pass"
+        else:
+            result = "Fail"
+
+        row_data = {
+            "Concentration Tests": [test_name],
+            "Concentration Limit": [self.limit_percent],
+            "Actual": [rounded_actual],
+            "Result": [result],
+            "Show on dashboard": [show_on_dashboard]
+        }
+        row_df = pd.DataFrame(row_data)
+        concentration_test_df = pd.concat(
+            [concentration_test_df, row_df], ignore_index=True
+        )
+        return concentration_test_df
 
     def executeConentrationTest(self):
 

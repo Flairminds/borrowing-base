@@ -4,6 +4,7 @@ from datetime import date, datetime, timezone
 import json
 from io import BytesIO
 import pandas as pd
+from sqlalchemy import text
 
 from models import db, BaseDataFile, WhatIfAnalysis
 from Exceptions.StdFileFormatException import StdFileFormatException
@@ -282,13 +283,55 @@ def get_closing_dates_list(fund_type):
     closing_dates = [base_data_file.closing_date.strftime("%Y-%m-%d") for base_data_file in base_data_files]
     return closing_dates
 
+def get_report_sheets(fund_type):
+    try: 
+        engine = db.get_engine()
+        with engine.connect() as connection:
+                sheets_info_list = connection.execute(text(f"""
+                    select smm.name, smm.lookup, smm.sequence 
+                    from file_metadata_master fmm 
+                    join sheet_metadata_master smm on fmm.id = smm.file_id 	
+                    where fmm."type" = 'borrowing_base_report' and smm.fund_id = (select id from fund where fund_name = '{fund_type}')
+                """)).fetchall()
+        
+        return sheets_info_list
+    except Exception as e:
+        return ServiceResponse.error(message=f"An unexpected error occurred: {str(e)}")
+    
+def get_columns_for_sheet_report(sheet_name):
+    try:
+        engine = db.get_engine()
+        with engine.connect() as connection:
+            columns_tuple = connection.execute(text(f"""
+                select cmm.column_lookup, cmm.column_name, cmm.data_type, cmm.unit, cmm.sequence 
+                from column_metadata_master cmm 
+                JOIN sheet_metadata_master smm ON cmm.sheet_id = smm.smm_id 
+                JOIN file_metadata_master fmm ON smm.file_id = fmm.id
+                WHERE smm."lookup" = '{sheet_name}' 
+                AND fmm.type = 'borrowing_base_report'
+            """)).fetchall()
+        
+        return columns_tuple
+    except Exception as e:
+        return ServiceResponse.error(message=f"An unexpected error occurred: {str(e)}")
+
 
 def download_calculated_df(base_data_file):
     try:
         intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
-        if base_data_file.fund_type == "PCOF":  
-            downloadable_sheets = ["df_PL_BB_Build", "df_Inputs_Other_Metrics", "df_Availability_Borrower", "df_PL_BB_Results", "df_subscriptionBB", "df_security", "df_industry", "df_Input_pricing", "df_Inputs_Portfolio_LeverageBorrowingBase", "df_Obligors_Net_Capital", "df_Inputs_Advance_Rates", "df_Inputs_Concentration_limit", "df_principle_obligations", "df_segmentation_overview", "df_PL_BB_Output"]
-        
+        sheet_list = get_report_sheets(base_data_file.fund_type)
+
+        downloadable_sheets = []
+        if base_data_file.fund_type == "PCOF":
+            other_sheets = ["df_subscriptionBB", "df_security", "df_industry", "df_Input_pricing", "df_Inputs_Portfolio_LeverageBorrowingBase", "df_Obligors_Net_Capital", "df_Inputs_Advance_Rates", "df_Inputs_Concentration_limit", "df_principle_obligations", "df_segmentation_overview", "df_PL_BB_Output"]
+            for sheet in sheet_list:
+                sheet_name = sheet[0]
+                sheet_lookup = sheet[1]
+                intermediate_calculation[sheet_name] = intermediate_calculation.pop(sheet_lookup)
+
+                downloadable_sheets.append(sheet_name)
+            downloadable_sheets.extend(other_sheets)    
+
         if base_data_file.fund_type == "PFLT":
             downloadable_sheets = ["Loan List", "Inputs", "Exchange Rates", "Haircut", "Industry", "Cash Balance Projections", "Credit Balance Projection", "Borrowing Base", "Concentration Test"]
 
@@ -299,15 +342,58 @@ def download_calculated_df(base_data_file):
         for sheet in downloadable_sheets:
             sheet_dfs[sheet] = intermediate_calculation[sheet]
         
-        excel_data = BytesIO()
-        with pd.ExcelWriter(excel_data, engine="openpyxl") as writer:
-            for dataframe_name, dataframe in sheet_dfs.items():
-                for col in dataframe.select_dtypes(include=['datetimetz']).columns:
-                    dataframe[col] = dataframe[col].dt.tz_localize(None)
+        if base_data_file.fund_type == "PCOF":
+            excel_data = BytesIO()
+            sheet_list_sorted = sorted(sheet_list, key=lambda x: x[2])
 
-                dataframe.to_excel(writer, sheet_name=dataframe_name, index=False)
+            used_sheets = []
+            with pd.ExcelWriter(excel_data, engine="openpyxl") as writer:
+                for sheet_name, sheet_lookup, _ in sheet_list_sorted:
+                    used_sheets.append(sheet_name)
+                    column_info = get_columns_for_sheet_report(sheet_lookup)
+                    column_info_sorted = sorted(column_info, key=lambda x: x[4]) 
 
-        # Set the BytesIO stream position to the beginning
+                    dataframe = sheet_dfs[sheet_name]
+
+                    desired_columns = [col[1] for col in column_info_sorted]
+                    extra_columns = [col for col in dataframe.columns if col not in desired_columns]
+                    final_columns = desired_columns + extra_columns
+
+                    dataframe = dataframe[[col for col in final_columns if col in dataframe.columns]]
+
+                    for column_lookup, column_name, data_type, unit, _ in column_info_sorted:
+                        if column_name not in dataframe.columns:
+                            continue
+
+                        elif data_type == 'date':
+                            if pd.api.types.is_datetime64tz_dtype(dataframe[column_name]):
+                                dataframe[column_name] = dataframe[column_name].dt.tz_localize(None)
+
+                            dataframe[column_name] = pd.to_datetime(dataframe[column_name], errors='coerce')
+                            dataframe[column_name] = dataframe[column_name].dt.strftime('%m/%d/%Y')                
+
+                        elif data_type == 'float' and unit == 'percent':
+                            dataframe[column_name] = dataframe[column_name].apply(
+                                lambda x: f"{x * 100:.2f}%" if pd.notnull(x) else ""
+                            )
+
+                    dataframe.to_excel(writer, sheet_name=sheet_name, index=False)
+
+                for dataframe_name, dataframe in sheet_dfs.items():
+                    if dataframe_name not in used_sheets:
+                        for col in dataframe.select_dtypes(include=['datetimetz']).columns:
+                            dataframe[col] = dataframe[col].dt.tz_localize(None)
+
+                        dataframe.to_excel(writer, sheet_name=dataframe_name, index=False)
+        else:
+            excel_data = BytesIO()
+            with pd.ExcelWriter(excel_data, engine="openpyxl") as writer:
+                for dataframe_name, dataframe in sheet_dfs.items():
+                    for col in dataframe.select_dtypes(include=['datetimetz']).columns:
+                        dataframe[col] = dataframe[col].dt.tz_localize(None)
+
+                    dataframe.to_excel(writer, sheet_name=dataframe_name, index=False)
+    
         excel_data.seek(0)
 
         response = make_response(

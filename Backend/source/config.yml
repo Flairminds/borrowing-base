@@ -633,5 +633,13 @@ fund_std_col_map:
       Leverage Limitations:
         Sheet Name: Loan List
         Column Name: LTM Snr Debt / EBITDA
+  Max. Industry Concentration (All Other Industries, % BB):
+    PCOF: 
+      Borrowing Base:
+        Sheet Name: Segmentation Overview
+        Column Name: BB
+      Industry:
+        Sheet Name: Segmentation Overview
+        Column Name: industry
       
 
