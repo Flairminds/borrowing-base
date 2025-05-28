@@ -25,7 +25,7 @@ def trigger_pcof_bb(bdi_id):
             base_data_df = pd.DataFrame(connection.execute(text(f'select * from pcof_base_data where base_data_info_id = :ebd_id'), {'ebd_id': bdi_id}).fetchall())
             base_data_mapping_df = pd.DataFrame(connection.execute(text("""select bd_sheet_name, bd_column_name, bd_column_lookup from base_data_mapping bdm where fund_type = 'PCOF'""")))
             pl_bb_result_security_df = pd.DataFrame(connection.execute(text('''select ps.security_name as "Security" from pcof_securities ps''')))
-            input_industries_df = pd.DataFrame(connection.execute(text('''select pi.industry_name as "Industries" from pcof_indsutries pi''')))
+            input_industries_df = pd.DataFrame(connection.execute(text('''select distinct std_industry_name as "Industries" from pcof_industries pi''')))
             pl_bb_results = pd.DataFrame(connection.execute(text('''select ct.test_name as "Concentration Tests", fct.limit_percentage as "Concentration Limit" from concentration_test ct, fund_concentration_test fct where fct.fund_id = 1''')))
 
 
@@ -78,7 +78,7 @@ def trigger_pcof_bb(bdi_id):
         base_data_df.rename(columns=rename_df_col, inplace=True)
 
         xl_df_map = {}
-        xl_df_map['PL BB Build'] = base_data_df
+        # xl_df_map['PL BB Build'] = base_data_df
 
         base_data_other_info = BaseDataOtherInfo.query.filter_by(extraction_info_id=bdi_id).first()
 
@@ -96,8 +96,8 @@ def trigger_pcof_bb(bdi_id):
             {"A": "Date of determination:", "B": datetime.datetime.strptime(base_data_other_info.other_info_list.get('availability_borrower').get('determination_date')[:-5], "%Y-%m-%dT%H:%M:%S")},
             {"A": "Revolving Closing Date", "B": datetime.datetime.strptime(base_data_other_info.other_info_list.get('availability_borrower').get('revolving_closing_date')[:-5], "%Y-%m-%dT%H:%M:%S")},
             {"A": "Commitment Period (3 years from Final Closing Date, as defined in LPA)", "B": base_data_other_info.other_info_list.get('availability_borrower').get('commitment_period_(3_years_from_final_closing_date,_as_defined_in_lpa)')},
-            {"A": "(b) Facility Size", "B":  base_data_other_info.other_info_list.get('availability_borrower').get('(b)_facility_size')},
-            {"A": "Loans (USD)", "B":  base_data_other_info.other_info_list.get('availability_borrower').get('loans_(usd)')},
+            {"A": "(b) Facility Size", "B":  pd.to_numeric(base_data_other_info.other_info_list.get('availability_borrower').get('(b)_facility_size'), errors='coerce')},
+            {"A": "Loans (USD)", "B":  pd.to_numeric(base_data_other_info.other_info_list.get('availability_borrower').get('loans_(usd)'), errors='coerce')},
             {"A": "Loans (CAD)", "B":  base_data_other_info.other_info_list.get('availability_borrower').get('loans_(cad)')}
         ]
         df_Availability_Borrower = pd.DataFrame(availability_borrower_data)
@@ -233,14 +233,16 @@ def trigger_pcof_bb(bdi_id):
 
         df_PL_BB_Build["Leverage PCOF IV Leverage"].fillna(0, inplace=True)
 
-        df_PL_BB_Build["Rates Fixed Coupon"] = pd.to_numeric(df_PL_BB_Build["Rates Fixed Coupon"], errors='coerce')
-        df_PL_BB_Build["Rates Fixed Coupon"] = df_PL_BB_Build["Rates Fixed Coupon"].fillna(0).astype(int)
+        df_PL_BB_Build["Rates Fixed Coupon"] = pd.to_numeric(df_PL_BB_Build["Rates Fixed Coupon"])
+        df_PL_BB_Build["Rates Fixed Coupon"] = df_PL_BB_Build["Rates Fixed Coupon"].astype(float)
+        df_PL_BB_Build["Rates Fixed Coupon"] = df_PL_BB_Build["Rates Fixed Coupon"].fillna(0).astype(float)
 
         df_PL_BB_Build["Rates Current LIBOR/Floor"] = pd.to_numeric(df_PL_BB_Build["Rates Current LIBOR/Floor"], errors='coerce')
         df_PL_BB_Build["Rates Current LIBOR/Floor"] = df_PL_BB_Build["Rates Current LIBOR/Floor"].fillna(0).astype(int)
 
         df_PL_BB_Build["Rates Floating Cash Spread"] = pd.to_numeric(df_PL_BB_Build["Rates Floating Cash Spread"], errors='coerce')
-        df_PL_BB_Build["Rates Floating Cash Spread"] = df_PL_BB_Build["Rates Floating Cash Spread"].fillna(0).astype(int)
+        df_PL_BB_Build["Rates Floating Cash Spread"] = df_PL_BB_Build["Rates Floating Cash Spread"].astype(float)
+        df_PL_BB_Build["Rates Floating Cash Spread"] = df_PL_BB_Build["Rates Floating Cash Spread"].fillna(0)
 
         df_PL_BB_Build['Investment Maturity'] = pd.to_datetime(df_PL_BB_Build['Investment Maturity'], errors='coerce')
         
@@ -295,20 +297,19 @@ def trigger_pcof_bb(bdi_id):
         
         included_excluded_assets = pcofDashboardService.pcof_included_excluded_assets(xl_df_map)
 
-        dt_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        
+        dt_string = extracted_base_data_info.report_date.strftime("%m_%d_%Y")
         base_data_file = BaseDataFile(
             user_id=1,
             file_data=pickled_xl_df_map,
             fund_type='PCOF',
-            file_name ='Generated Data '+dt_string,
+            file_name ='PCOF Base data ' + dt_string,
             included_excluded_assets_map=included_excluded_assets,
             closing_date=extracted_base_data_info.report_date,
             extracted_base_data_info_id = bdi_id
         )
         db.session.add(base_data_file)
         db.session.commit()
-        print(f'[PCOF]Generated Data {dt_string}')
+        print(f'PCOF Base data {dt_string}')
         bb_response = pcofBBCalculator.get_bb_calculation(base_data_file=base_data_file, selected_assets=json.loads(included_excluded_assets)['included_assets'], user_id=1)
 
         bb_response["base_data_file_id"] = base_data_file.id

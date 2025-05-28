@@ -277,7 +277,7 @@ def calculate_subscription_Borrowing_Base(avail, subscription):
     else:
         val = 0
 
-    new_row = {"A": "Subscription Borrowing Base", "B": val}
+    new_row = {"A": "Subscription Borrowing Base", "B": subscription["Borrowing Base"].sum()}
     avail.loc[len(avail)] = new_row
     return avail
 
