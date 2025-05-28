@@ -297,20 +297,19 @@ def trigger_pcof_bb(bdi_id):
         
         included_excluded_assets = pcofDashboardService.pcof_included_excluded_assets(xl_df_map)
 
-        dt_string = datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        
+        dt_string = extracted_base_data_info.report_date.strftime("%m_%d_%Y")
         base_data_file = BaseDataFile(
             user_id=1,
             file_data=pickled_xl_df_map,
             fund_type='PCOF',
-            file_name ='Generated Data '+dt_string,
+            file_name ='PCOF Base data ' + dt_string,
             included_excluded_assets_map=included_excluded_assets,
             closing_date=extracted_base_data_info.report_date,
             extracted_base_data_info_id = bdi_id
         )
         db.session.add(base_data_file)
         db.session.commit()
-        print(f'[PCOF]Generated Data {dt_string}')
+        print(f'PCOF Base data {dt_string}')
         bb_response = pcofBBCalculator.get_bb_calculation(base_data_file=base_data_file, selected_assets=json.loads(included_excluded_assets)['included_assets'], user_id=1)
 
         bb_response["base_data_file_id"] = base_data_file.id
