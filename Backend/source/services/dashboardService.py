@@ -12,6 +12,7 @@ from source.services.PCOF import utility as PCOFUtility
 from source.services.PCOF.PcofDashboardService import PcofDashboardService
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 from source.utility.ServiceResponse import ServiceResponse
+from utility.Util import excel_cell_format
 
 pcofDashboardService = PcofDashboardService()
 pfltDashboardService = PfltDashboardService()
@@ -365,46 +366,7 @@ def download_calculated_df(base_data_file):
                     used_sheets.append(sheet_name)
                     column_info = get_columns_for_sheet_report(sheet_lookup)
 
-                    dataframe = sheet_dfs[sheet_name]
-
-                    desired_columns = [col[1] for col in column_info]
-                    extra_columns = [col for col in dataframe.columns if col not in desired_columns]
-                    final_columns = desired_columns + extra_columns
-
-                    dataframe = dataframe[[col for col in final_columns if col in dataframe.columns]]
-                    format_columns = {}  # Dictionary to store column names and their formats
-                    for column_lookup, column_name, data_type, unit, _ in column_info:
-                        if column_name not in dataframe.columns:
-                            continue
-
-                        elif data_type == 'date':
-                            if pd.api.types.is_datetime64tz_dtype(dataframe[column_name]):
-                                dataframe[column_name] = dataframe[column_name].dt.tz_localize(None)
-
-                            dataframe[column_name] = pd.to_datetime(dataframe[column_name], errors='coerce')
-                            dataframe[column_name] = dataframe[column_name].dt.strftime('%m/%d/%Y')                
-
-                        elif data_type == 'float':
-                            if unit == 'percent':
-                                format_columns[column_name] = '0.00%'
-                            elif unit == 'currency':
-                                format_columns[column_name] = '$#,##0.00'
-                            elif unit == 'decimal':
-                                format_columns[column_name] = '#,##0.00'
-
-                    dataframe.to_excel(writer, sheet_name=sheet_name, index=False)
-                    if format_columns:
-                        worksheet = writer.sheets[sheet_name]
-                        
-                        # Apply formats to columns
-                        for col_name, number_format in format_columns.items():
-                            col_idx = dataframe.columns.get_loc(col_name)
-                            col_letter = chr(65 + col_idx) if col_idx < 26 else chr(64 + col_idx // 26) + chr(65 + col_idx % 26)
-                            
-                            # Skip header row and format all data rows
-                            for row in range(2, len(dataframe) + 2):
-                                cell = worksheet[f"{col_letter}{row}"]
-                                cell.number_format = number_format
+                    dataframe = excel_cell_format(writer, sheet_dfs, sheet_name, column_info)
 
                 for dataframe_name, dataframe in sheet_dfs.items():
                     if dataframe_name not in used_sheets:

@@ -1,6 +1,7 @@
 import re
 from numerize import numerize
 import locale
+import pandas as pd
 
 def remove_special_characters_and_spaces(input_string):
     input_string = input_string.lower()
@@ -100,3 +101,50 @@ def numerized_to_currency(numerized_value, currency_symbol = '$'):
     
 def currency_to_float_to_numerize_to_currency(value):
    return numerized_to_currency(float_to_numerized(currency_to_float(value)))
+
+def excel_cell_format(writer, sheet_dfs, sheet_name, column_info):
+    try:
+        dataframe = sheet_dfs[sheet_name]
+        columns_in_db = [col[1] for col in column_info]
+        columns_not_in_db = [col for col in dataframe.columns if col not in columns_in_db]
+        final_columns = columns_in_db + columns_not_in_db
+
+        dataframe = dataframe[[col for col in final_columns if col in dataframe.columns]]
+        format_columns = {}  # Dictionary to store column names and their formats
+        for column_lookup, column_name, data_type, unit, _ in column_info:
+            if column_name not in dataframe.columns:
+                continue
+
+            elif data_type == 'date':
+                if pd.api.types.is_datetime64tz_dtype(dataframe[column_name]):
+                    dataframe[column_name] = dataframe[column_name].dt.tz_localize(None)
+
+                dataframe[column_name] = pd.to_datetime(dataframe[column_name], errors='coerce')
+                dataframe[column_name] = dataframe[column_name].dt.strftime('%m/%d/%Y')                
+
+            elif data_type == 'float':
+                if unit == 'percent':
+                    format_columns[column_name] = '0.00%'
+                elif unit == 'currency':
+                    format_columns[column_name] = '$#,##0.00'
+                elif unit == 'decimal':
+                    format_columns[column_name] = '#,##0.00'
+
+        dataframe.to_excel(writer, sheet_name=sheet_name, index=False)
+        if format_columns:
+            worksheet = writer.sheets[sheet_name]
+            
+            # Apply formats to columns
+            for col_name, number_format in format_columns.items():
+                col_idx = dataframe.columns.get_loc(col_name)
+                col_letter = chr(65 + col_idx) if col_idx < 26 else chr(64 + col_idx // 26) + chr(65 + col_idx % 26)
+                
+                # Skip header row and format all data rows
+                for row in range(2, len(dataframe) + 2):
+                    cell = worksheet[f"{col_letter}{row}"]
+                    cell.number_format = number_format
+                
+        return dataframe
+            
+    except Exception as e:
+        return f"An unexpected error occurred: {str(e)}"
