@@ -12,6 +12,7 @@ from source.services.PCOF import utility as PCOFUtility
 from source.services.PCOF.PcofDashboardService import PcofDashboardService
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 from source.utility.ServiceResponse import ServiceResponse
+from utility.Util import excel_cell_format
 
 pcofDashboardService = PcofDashboardService()
 pfltDashboardService = PfltDashboardService()
@@ -287,12 +288,19 @@ def get_report_sheets(fund_type):
     try: 
         engine = db.get_engine()
         with engine.connect() as connection:
-                sheets_info_list = connection.execute(text(f"""
-                    select smm.name, smm.lookup, smm.sequence 
-                    from file_metadata_master fmm 
-                    join sheet_metadata_master smm on fmm.id = smm.file_id 	
-                    where fmm."type" = 'borrowing_base_report' and smm.fund_id = (select id from fund where fund_name = '{fund_type}')
-                """)).fetchall()
+                sheets_info_list = connection.execute(text("""
+                    SELECT smm.name, smm.lookup, smm.sequence, smm.data_format 
+                    FROM file_metadata_master fmm 
+                    JOIN sheet_metadata_master smm ON fmm.id = smm.file_id 	
+                    WHERE fmm.type = 'borrowing_base_report'
+                    AND smm.fund_id = (
+                        SELECT id FROM fund WHERE fund_name = :fund_type
+                    )
+                    ORDER BY 
+                        CASE WHEN smm.sequence IS NULL THEN 1 ELSE 0 END,
+                        smm.sequence,
+                        smm.name
+                """), {'fund_type': fund_type}).fetchall()
         
         return sheets_info_list
     except Exception as e:
@@ -302,14 +310,18 @@ def get_columns_for_sheet_report(sheet_name):
     try:
         engine = db.get_engine()
         with engine.connect() as connection:
-            columns_tuple = connection.execute(text(f"""
-                select cmm.column_lookup, cmm.column_name, cmm.data_type, cmm.unit, cmm.sequence 
-                from column_metadata_master cmm 
+           columns_tuple = connection.execute(text("""
+                SELECT cmm.column_lookup, cmm.column_name, cmm.data_type, cmm.unit, cmm.sequence 
+                FROM column_metadata_master cmm 
                 JOIN sheet_metadata_master smm ON cmm.sheet_id = smm.smm_id 
                 JOIN file_metadata_master fmm ON smm.file_id = fmm.id
-                WHERE smm."lookup" = '{sheet_name}' 
+                WHERE smm."lookup" = :sheet_name 
                 AND fmm.type = 'borrowing_base_report'
-            """)).fetchall()
+                ORDER BY 
+                    CASE WHEN cmm.sequence IS NULL THEN 1 ELSE 0 END,
+                    cmm.sequence,
+                    cmm.column_name
+            """), {'sheet_name': sheet_name}).fetchall()
         
         return columns_tuple
     except Exception as e:
@@ -326,9 +338,15 @@ def download_calculated_df(base_data_file):
             for sheet in sheet_list:
                 sheet_name = sheet[0]
                 sheet_lookup = sheet[1]
+                sheet_format = sheet[3]
 
                 if sheet_lookup in intermediate_calculation:
-                    intermediate_calculation[sheet_name] = intermediate_calculation.pop(sheet_lookup)
+                    if sheet_format == 'key_value':
+                        df = intermediate_calculation[sheet_lookup]
+                        # If it's a two-column DataFrame, assume first column is key and second is value
+                        intermediate_calculation[sheet_name] = pd.Series(df.iloc[:, 1].values, index=df.iloc[:, 0])
+                    else:
+                        intermediate_calculation[sheet_name] = intermediate_calculation.pop(sheet_lookup)
 
                 for i, downloadable_sheet_lookup in enumerate(downloadable_sheets):
                     if downloadable_sheet_lookup == sheet_lookup:
@@ -347,40 +365,14 @@ def download_calculated_df(base_data_file):
         
         if base_data_file.fund_type == "PCOF":
             excel_data = BytesIO()
-            sheet_list_sorted = sorted(sheet_list, key=lambda x: x[2])
 
             used_sheets = []
             with pd.ExcelWriter(excel_data, engine="openpyxl") as writer:
-                for sheet_name, sheet_lookup, _ in sheet_list_sorted:
+                for sheet_name, sheet_lookup, _, sheet_format in sheet_list:
                     used_sheets.append(sheet_name)
                     column_info = get_columns_for_sheet_report(sheet_lookup)
-                    column_info_sorted = sorted(column_info, key=lambda x: x[4]) 
 
-                    dataframe = sheet_dfs[sheet_name]
-
-                    desired_columns = [col[1] for col in column_info_sorted]
-                    extra_columns = [col for col in dataframe.columns if col not in desired_columns]
-                    final_columns = desired_columns + extra_columns
-
-                    dataframe = dataframe[[col for col in final_columns if col in dataframe.columns]]
-
-                    for column_lookup, column_name, data_type, unit, _ in column_info_sorted:
-                        if column_name not in dataframe.columns:
-                            continue
-
-                        elif data_type == 'date':
-                            if pd.api.types.is_datetime64tz_dtype(dataframe[column_name]):
-                                dataframe[column_name] = dataframe[column_name].dt.tz_localize(None)
-
-                            dataframe[column_name] = pd.to_datetime(dataframe[column_name], errors='coerce')
-                            dataframe[column_name] = dataframe[column_name].dt.strftime('%m/%d/%Y')                
-
-                        elif data_type == 'float' and unit == 'percent':
-                            dataframe[column_name] = dataframe[column_name].apply(
-                                lambda x: f"{x * 100}%" if pd.notnull(x) else None
-                            )
-
-                    dataframe.to_excel(writer, sheet_name=sheet_name, index=False)
+                    dataframe = excel_cell_format(writer, sheet_dfs, sheet_name, sheet_format, column_info)
 
                 for dataframe_name, dataframe in sheet_dfs.items():
                     if dataframe_name not in used_sheets:

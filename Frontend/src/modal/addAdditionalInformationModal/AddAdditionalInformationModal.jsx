@@ -165,8 +165,6 @@ export const AddAdditionalInformationModal = (
 			break;
 		}
 		setInitialFormData(formData);
-		console.log(formData);
-		
 	}, [data, uploadedData]);
 
 	const handleCancel = () => {
@@ -684,7 +682,7 @@ export const AddAdditionalInformationModal = (
 															<div className={styles.rowHeader}
 																style={{
 																	display: "grid",
-																	gridTemplateColumns: `repeat(${selectedData[sheet]?.Column?.length}, 1fr)`, // Dynamic grid
+																	gridTemplateColumns: `repeat(${selectedData[sheet]?.Column?.length}, 1fr) 50px`, // Dynamic grid
 																	gap: "10px",
 																	padding: "10px"
 																}}>
@@ -693,6 +691,7 @@ export const AddAdditionalInformationModal = (
 																		{inputField.label}
 																	</div>
 																))}
+																<div className={styles.column}></div>
 															</div>
 
 															<div className={styles.rowContainer}>
@@ -700,9 +699,10 @@ export const AddAdditionalInformationModal = (
 																	<div key={ind} className={styles.row}
 																		style={{
 																			display: "grid",
-																			gridTemplateColumns: `repeat(${selectedData[sheet]?.Column.length}, 1fr)`, // Dynamic grid
+																			gridTemplateColumns: `repeat(${selectedData[sheet]?.Column.length}, 1fr) 50px`, // Dynamic grid
 																			gap: "10px",
-																			padding: "10px"
+																			padding: "10px",
+																			alignItems: "center"
 																		}}
 																	>
 																		{selectedData[sheet]?.Column?.map((inputField, index) => {
@@ -741,6 +741,17 @@ export const AddAdditionalInformationModal = (
 																				</Form.Item>
 																			);
 																		})}
+																		<MinusCircleOutlined
+																			onClick={() => {
+																				remove(ind);
+																			}}
+																			style={{
+																				color: '#ff4d4f',
+																				fontSize: '20px',
+																				cursor: 'pointer',
+																				transition: 'all 0.3s'
+																			}}
+																		/>
 																	</div>
 																))}
 															</div>
