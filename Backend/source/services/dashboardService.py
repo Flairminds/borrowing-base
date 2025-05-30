@@ -289,7 +289,7 @@ def get_report_sheets(fund_type):
         engine = db.get_engine()
         with engine.connect() as connection:
                 sheets_info_list = connection.execute(text("""
-                    SELECT smm.name, smm.lookup, smm.sequence 
+                    SELECT smm.name, smm.lookup, smm.sequence, smm.data_format 
                     FROM file_metadata_master fmm 
                     JOIN sheet_metadata_master smm ON fmm.id = smm.file_id 	
                     WHERE fmm.type = 'borrowing_base_report'
@@ -338,9 +338,15 @@ def download_calculated_df(base_data_file):
             for sheet in sheet_list:
                 sheet_name = sheet[0]
                 sheet_lookup = sheet[1]
+                sheet_format = sheet[3]
 
                 if sheet_lookup in intermediate_calculation:
-                    intermediate_calculation[sheet_name] = intermediate_calculation.pop(sheet_lookup)
+                    if sheet_format == 'key_value':
+                        df = intermediate_calculation[sheet_lookup]
+                        # If it's a two-column DataFrame, assume first column is key and second is value
+                        intermediate_calculation[sheet_name] = pd.Series(df.iloc[:, 1].values, index=df.iloc[:, 0])
+                    else:
+                        intermediate_calculation[sheet_name] = intermediate_calculation.pop(sheet_lookup)
 
                 for i, downloadable_sheet_lookup in enumerate(downloadable_sheets):
                     if downloadable_sheet_lookup == sheet_lookup:
@@ -362,11 +368,11 @@ def download_calculated_df(base_data_file):
 
             used_sheets = []
             with pd.ExcelWriter(excel_data, engine="openpyxl") as writer:
-                for sheet_name, sheet_lookup, _ in sheet_list:
+                for sheet_name, sheet_lookup, _, sheet_format in sheet_list:
                     used_sheets.append(sheet_name)
                     column_info = get_columns_for_sheet_report(sheet_lookup)
 
-                    dataframe = excel_cell_format(writer, sheet_dfs, sheet_name, column_info)
+                    dataframe = excel_cell_format(writer, sheet_dfs, sheet_name, sheet_format, column_info)
 
                 for dataframe_name, dataframe in sheet_dfs.items():
                     if dataframe_name not in used_sheets:
