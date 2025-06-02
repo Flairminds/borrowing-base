@@ -68,7 +68,7 @@ export function App() {
 	const getborrowingbasedata = async (base_data_file_id) => {
 		try {
 			setGettingDashboardData(true)
-			const response = await getDateReport(null, base_data_file_id);
+			const response = await getDateReport(null, base_data_file_id, null);
 			if (response.status === 200) {
 				setTablesData(response.data);
 				setBaseFile({ name: response.data.file_name, id: response.data.base_data_file_id });
