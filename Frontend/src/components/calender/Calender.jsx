@@ -20,7 +20,8 @@ export const Calender = ({
 	selectedFund,
 	setGettingDashboardData,
 	gettingDates,
-	setCurrentFund
+	setCurrentFund,
+	setTrendGraphData
 }) => {
 
 	const handleDateChange = async (date, dateString) => {
@@ -44,6 +45,7 @@ export const Calender = ({
 			if (dateString) {
 				try {
 					setGettingDashboardData(true)
+					setTrendGraphData(null)
 					const response = await getDateReport(dateString, null, selectedFund);
 					if (response.status === 200) {
 						setCurrentFund(response.data.fund_name)
