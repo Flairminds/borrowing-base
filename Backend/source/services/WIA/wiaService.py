@@ -193,7 +193,10 @@ def delete_rows(df, changes, sheet_name):
     rows_to_delete = changes["rows_to_delete"]
     sheet_uniques_name = sheet_uniques.get(sheet_name)
     for row_to_delete in rows_to_delete:
-        df = df[df[sheet_uniques_name] != row_to_delete["row_identifier"]]
+        row_identifier = row_to_delete["row_identifier"]
+        if row_identifier == "":
+            row_identifier = np.nan
+        df = df[df[sheet_uniques_name] != row_identifier]
     return df
     
 
@@ -508,7 +511,7 @@ def update_df(initial_df, sheet_df, changes, sheet_name):
         return ServiceResponse.success(data=sheet_df)
         
     except Exception as e:
-        return ServiceResponse.error(message = "Internal Server Error")
+        raise Exception(e)
 
 
 def get_modified_data_file(modified_base_data_file_id):

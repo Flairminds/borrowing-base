@@ -228,7 +228,7 @@ def trigger_pcof_bb(bdi_id):
 
         df_PL_BB_Build["Investment Cost"] = df_PL_BB_Build["Investment Cost"].astype(float)
         df_PL_BB_Build[["Investment Cost"]].fillna(0)
-        df_PL_BB_Build["Investment Par"] = df_PL_BB_Build["Investment Cost"].astype(float)
+        df_PL_BB_Build["Investment Par"] = df_PL_BB_Build["Investment Par"].astype(float)
         df_PL_BB_Build[["Investment Par"]].fillna(0)
 
         df_PL_BB_Build["Leverage PCOF IV Leverage"].fillna(0, inplace=True)
