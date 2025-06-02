@@ -394,7 +394,7 @@ export const WhatIfAnalysis = ({
 						{gettingDates ? <LoaderSmall/> :
 							<>
 								<Calender setReportDate={setReportDate} setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} setBaseFile={setBaseFile}
-									availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData} selectedFund={selectedFund} setGettingDashboardData={setGettingDashboardData} gettingDates={gettingDates} setCurrentFund={setCurrentFund}
+									availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData} selectedFund={selectedFund} setGettingDashboardData={setGettingDashboardData} gettingDates={gettingDates} setCurrentFund={setCurrentFund} setTrendGraphData={setTrendGraphData}
 								/>
 								{reportDate && <span style={{color: "#2A2E34"}}>{reportDate}<Icons.InfoIcon title={'Select report date from highlighted dates in calendar to view results.'} /></span>}
 							</>
