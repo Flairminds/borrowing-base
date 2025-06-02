@@ -1,4 +1,5 @@
 import { Popover, Select } from 'antd';
+import { Popover, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {toast} from 'react-toastify';
 import about from "../../../assets/NavbarIcons/Default.svg";
@@ -108,6 +109,7 @@ export const WhatIfAnalysis = ({
 	const [whatIfAnalysisType, setWhatIfAnalysisType] = useState();
 	const [simulationType, setSimulationType] = useState();
 	const [isAddLoadBtnDisable, setIsAddLoadBtnDisable] = useState(true);
+	
 	
 
 	useEffect(() => {
