@@ -25,7 +25,7 @@ const optionRender = (option) => (
 
 
 
-export const StyledSelectConcTest = ({optionsArray, onChange}) => {
+export const StyledSelectConcTest = ({optionsArray, onChange, value}) => {
 	const [options, setOptions] = useState();
 
 	// const filterOption =(searchValue) =>{
@@ -60,6 +60,7 @@ export const StyledSelectConcTest = ({optionsArray, onChange}) => {
 				style={{ width: "650px", margin: '0 0.5rem'}}
 				onChange={(value) => onChange(value)}
 				options={options}
+				value={value}
 				// onSearch={filterOption}
 				// onBlur={resetOptions}
 				onFocus={resetOptions}
