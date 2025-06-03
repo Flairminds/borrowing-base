@@ -60,10 +60,14 @@ def update_parameters(base_data_file, type, asset_percent_list):
         opposite_type = "Leverage"
         type_col = "Financials LTM EBITDA ($MMs)"
         opposite_type_col = "Leverage Total Leverage"
+        fe_type_col = "updated_ebitda"
+        fe_opposite_type_col = "updated_leverage"
     else:
         opposite_type = "Ebitda"
         type_col = "Leverage Total Leverage"
         opposite_type_col = "Financials LTM EBITDA ($MMs)"
+        fe_type_col = "updated_leverage"
+        fe_opposite_type_col = "updated_ebitda"
     
     for asset_percent in asset_percent_list:
         if asset_percent.get("percent"):
@@ -102,21 +106,26 @@ def update_parameters(base_data_file, type, asset_percent_list):
     df_PL_BB_Build = df_PL_BB_Build[df_PL_BB_Build["Is Eligible Issuer"] == "Yes"]
     selected_assets_mask = df_PL_BB_Build["Investment Name"].isin(selected_assets)
     df_PL_BB_Build = df_PL_BB_Build[selected_assets_mask].reset_index(drop=True)
-    if "Cash" in df_PL_BB_Build["Investment Name"].tolist():
+    if "Cash" not in df_PL_BB_Build["Investment Name"].tolist():
         df_PL_BB_Build = df_PL_BB_Build.append(original_pl_bb_build[original_pl_bb_build['Investment Name'] == 'Cash'])
     
     initial_pl_bb_build = df_PL_BB_Build.copy(deep=True)
 
-    df_PL_BB_Build[['Financials LTM EBITDA ($MMs)', 'Leverage Total Leverage']] = df_PL_BB_Build[['Financials LTM EBITDA ($MMs)', 'Leverage Total Leverage']].fillna(0)
+    # df_PL_BB_Build[['Financials LTM EBITDA ($MMs)', 'Leverage Total Leverage']] = df_PL_BB_Build[['Financials LTM EBITDA ($MMs)', 'Leverage Total Leverage']].fillna(0)
 
-    df_PL_BB_Build['Financials LTM EBITDA ($MMs)'] = pd.to_numeric(df_PL_BB_Build['Financials LTM EBITDA ($MMs)'], errors='coerce')
-    df_PL_BB_Build['Leverage Total Leverage'] = pd.to_numeric(df_PL_BB_Build['Leverage Total Leverage'], errors='coerce')
+    # df_PL_BB_Build['Financials LTM EBITDA ($MMs)'] = pd.to_numeric(df_PL_BB_Build['Financials LTM EBITDA ($MMs)'], errors='coerce')
+    # df_PL_BB_Build['Leverage Total Leverage'] = pd.to_numeric(df_PL_BB_Build['Leverage Total Leverage'], errors='coerce')
 
-    df_PL_BB_Build["debt"] = (df_PL_BB_Build["Financials LTM EBITDA ($MMs)"] * df_PL_BB_Build["Leverage Total Leverage"])
-    df_PL_BB_Build[type_col] = asset_percent_df[type] * (1 + asset_percent_df["percent"] / 100)
+    # df_PL_BB_Build["debt"] = (df_PL_BB_Build["Financials LTM EBITDA ($MMs)"] * df_PL_BB_Build["Leverage Total Leverage"])
     
-    df_PL_BB_Build[opposite_type_col] = (df_PL_BB_Build["debt"] / df_PL_BB_Build[opposite_type_col])
-    df_PL_BB_Build = df_PL_BB_Build.reset_index()
+    
+    # df_PL_BB_Build[opposite_type_col] = (df_PL_BB_Build["debt"] / df_PL_BB_Build[opposite_type_col])
+    # df_PL_BB_Build = df_PL_BB_Build.reset_index()
+    # df_PL_BB_Build[type_col] = asset_percent_df[type] * (1 + asset_percent_df["percent"] / 100)
+
+    df_PL_BB_Build[type_col] = asset_percent_df[fe_type_col]
+    df_PL_BB_Build[opposite_type_col] = asset_percent_df[fe_opposite_type_col]
+
     midified_df_PL_BB_Build = df_PL_BB_Build.copy(deep=True)
 
     intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)

@@ -5,8 +5,8 @@ from source.services.PFLT.calculation.PFLT_Calculation_Initiator import (
     PFLTCalculationInitiator,
 )
 from numerize import numerize
-from source.concentration_test_application import ConcentraionTestFormatter
-
+# from source.concentration_test_application import ConcentraionTestFormatter
+from source.services.concTestService.concTestService import ConcentraionTestFormatter
 
 class PFLTBorrowingBase(PFLTCalculationInitiator):
     def __init__(self, file_df):

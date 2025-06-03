@@ -22,11 +22,12 @@ export const ConcentrationTestMaster = () => {
 	});
 	const [optionsArray, setoptionsArray] = useState([]);
 	const [loading, setLoading] = useState(false);
+	const [selectedTest, setSelectedTest] = useState(null);
 
 	const handleDropdownChange = async(value) => {
 		try {
 			setLoading(true);
-			setoptionsArray([]);
+			setSelectedTest(null);
 			const res = await getConcentrationTestMasterData(value);
 			const deepCopyData = JSON.parse(JSON.stringify(res.data));
 			setTableData(deepCopyData);
@@ -114,7 +115,7 @@ export const ConcentrationTestMaster = () => {
 
 	useEffect(() => {
 		if (!displayTableData || displayTableData.length <= 0) return;
-		console.info(displayTableData, 'test -123' );
+		// console.info(displayTableData, 'test -123' );
 		const sorted = [...(displayTableData?.data ?? [])]
 			.sort((a, b) => b.show_on_dashboard - a.show_on_dashboard)
 			.sort((a, b) => {
@@ -125,15 +126,31 @@ export const ConcentrationTestMaster = () => {
 			});
 		setSortedData(sorted);
 
-		const optionResult = styledDropdownOptions(displayTableData?.data);
+		const optionResult = styledDropdownOptions(tableData?.data);
 		setoptionsArray(optionResult);
 	}, [displayTableData]);
 
 	const handleTestSelect = (value) => {
-		const fundID = parseInt(value.split('||')[1]);
+		setSelectedTest(value);
+		const testID = parseInt(value.split('||')[1]);
 		setActiveRowFundData({
 			hightlightType: "testHightlight",
-			hightlightIds: [fundID]
+			hightlightIds: [testID]
+		});
+		const selectedTest = tableData?.data?.filter(test => test?.test_id === testID);
+
+		setDisplayTableData({
+			...displayTableData,
+			data: selectedTest
+		});
+	};
+
+	const handleShowAll = () => {
+		setSelectedTest(null);
+		setDisplayTableData(tableData);
+		setActiveRowFundData({
+			hightlightType: "",
+			hightlightIds: []
 		});
 	};
 
@@ -156,7 +173,8 @@ export const ConcentrationTestMaster = () => {
 				<div className={styles.dropDownHeading}>
 					Concentration Test
 					<div style={{display: 'inline-block'}}>
-						<StyledSelectConcTest optionsArray={optionsArray} onChange={handleTestSelect} />
+						<StyledSelectConcTest optionsArray={optionsArray} onChange={handleTestSelect} value={selectedTest} />
+						<span style={{cursor: "pointer", color: "#4096FF", fontSize: "small"}} onClick={handleShowAll}>Show All</span>
 					</div>
 				</div>
 			</div>

@@ -1,8 +1,8 @@
 import pandas as pd
 from numerize import numerize
 
-from source.concentration_test_application import ConcentraionTestFormatter
-
+# from source.concentration_test_application import ConcentraionTestFormatter
+from source.services.concTestService.concTestService import ConcentraionTestFormatter
 
 def clean_data(
     df_PL_BB_Results,
