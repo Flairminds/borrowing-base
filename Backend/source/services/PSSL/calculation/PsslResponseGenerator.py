@@ -1,7 +1,8 @@
 from numerize import numerize
 import re
 
-from source.concentration_test_application import ConcentraionTestFormatter
+# from source.concentration_test_application import ConcentraionTestFormatter
+from source.services.concTestService.concTestService import ConcentraionTestFormatter
 from source.utility.Util import currency_to_float_to_numerize_to_currency
 class PsslResponseGenerator:
 
