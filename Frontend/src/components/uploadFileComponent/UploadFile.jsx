@@ -12,7 +12,7 @@ import PCOFSampleFile from '../../assets/template File/10.31.2023_PCOF_IV_Borrow
 import PFLTSampleFile from '../../assets/template File/PFLT 09.30.24 Borrowing Base Data.xlsx';
 import { ErrorMessage } from '../../modal/errorMessageModal/ErrorMessage';
 import { OverWriteDataModal } from '../../modal/overWriteDataModal/OverWriteDataModal';
-import { uploadedFileList, validateInitialFile, assetSelectionList } from '../../services/api';
+import { uploadedFileList, validateInitialFile, assetSelectionList, getDateReport } from '../../services/api';
 import { fundOptionsArray } from '../../utils/constants/constants';
 import { fundOptionValueToFundName } from '../../utils/helperFunctions/borrowing_base_functions';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
@@ -20,6 +20,7 @@ import { Calender } from '../calender/Calender';
 import { ModalComponents } from '../modalComponents';
 import { ProgressBar } from '../progressBar/ProgressBar';
 import { DynamicTableComponents } from '../reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { LoaderSmall } from '../uiComponents/loader/loader';
 import { UIComponents } from '../uiComponents';
 import stylesUload from './UploadFile.module.css';
 import { fmtDateValue } from '../../utils/helperFunctions/formatDisplayData';
@@ -35,7 +36,8 @@ export const UploadFile = ({
 	setWhatifAnalysisPerformed,
 	availableClosingDates,
 	fundType,
-	setFundType
+	setFundType,
+	setTablesData
 }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [isLoaderVisible, setIsLoaderVisible] = useState(false);
@@ -55,6 +57,8 @@ export const UploadFile = ({
 	const [searchTerm, setSearchTerm] = useState('');
 	const [selectedTab, setSelectedTab] = useState('existing');
 	const [filterDate, setFilterDate] = useState(null);
+	const [fileLoading, setFileLoading] = useState(false);
+	const [resultLoadingId, setResultLoadingId] = useState(null);
 	const navigate = useNavigate();
 
 	const getFileListColumns = [{
@@ -81,11 +85,15 @@ export const UploadFile = ({
 	}, [isModalVisible]);
 
 	const fetchFiles = async () => {
+		setFileLoading(true);
 		try {
 			const response = await uploadedFileList();
 			setFetchFileList(response.data.files_list);
 			setDisplayFetchData(response.data.files_list);
+			setFileLoading(false);
 		} catch (error) {
+			setFileLoading(false);
+			toast.error("Something went wrong.");
 			console.error('Error fetching file list:', error);
 		}
 	};
@@ -140,6 +148,28 @@ export const UploadFile = ({
 		setIsLoaderVisible(false);
 		setDuplicateFileModalOpen(false);
 		setSelectedFiles([]);
+	};
+
+	const handleViewResult = async (baseDataFileId) => {
+		setResultLoadingId(baseDataFileId);
+		try {
+			const response = await getDateReport(null, baseDataFileId);
+			if (response.status === 200) {
+				setTablesData(response.data);
+				setBaseFile({ name: response.data.file_name, id: response.data.base_data_file_id });
+				setReportDate(response.data.closing_date);
+				setFundType(response.data.fund_name);
+				setIsAnalysisModalOpen(false);
+			}
+			setSelectedOption(0);
+			setWhatifAnalysisPerformed(false);
+			setResultLoadingId(null);
+			toast.success("Loaded Successfully.");
+		} catch (error) {
+			console.error(error);
+			toast.error("Something went wrong.");
+			setResultLoadingId(null);
+		}
 	};
 
 	// Function not currently in use
@@ -271,7 +301,6 @@ export const UploadFile = ({
 	});
 
 	const handleFileClick = async (fileId, fileName, userId, reportDate, fund) => {
-		// setLoading(true)
 		try {
 			// const response = await uploadInitialFile({base_data_file_id:file_id, user_id:user_id, });
 			const res = await assetSelectionList(fileId);
@@ -292,6 +321,7 @@ export const UploadFile = ({
 			}
 		} catch (err) {
 			console.error(err);
+			toast.error("Something went wrong.");
 		}
 	};
 
@@ -465,27 +495,41 @@ export const UploadFile = ({
 										className={stylesUload.searchinputTag}
 									/>
 								</div>
-								{searchTerm === '' || displayFetchData.length > 0 ? (
-									<DynamicTableComponents
-										data={displayFetchData}
-										columns={getFileListColumns}
-										additionalColumns={[
-											{
-												label: "",
-												render: (value, file) => (
-													<UIComponents.Button
-														onClick={() => handleFileClick(file.base_data_file_id, file.file_name, file.user_id, file.closing_date, file.fund_type)}
-														isFilled={true}
-														text={'Use'}
-													/>
-												)
-											}
-										]}
-										visibleSortHeader={true}
-									/>
-								) : (
-									<div>No file available. Please upload a new file.</div>
-								)}
+								{fileLoading ? <LoaderSmall /> :
+									<>
+										{searchTerm === '' || displayFetchData.length > 0 ? (
+											<DynamicTableComponents
+												data={displayFetchData}
+												columns={getFileListColumns}
+												additionalColumns={[
+													{
+														label: "",
+														render: (value, file) => (
+															<>
+																<UIComponents.Button
+																	onClick={() => handleFileClick(file.base_data_file_id, file.file_name, file.user_id, file.closing_date, file.fund_type)}
+																	isFilled={true}
+																	text={'Calculate'}
+																/>
+																{file?.is_calculated &&
+																	<UIComponents.Button
+																		onClick={() => handleViewResult(file.base_data_file_id)}
+																		isFilled={true}
+																		text={'View Result'}
+																		loading={resultLoadingId === file.base_data_file_id}
+																	/>
+																}
+															</>
+														)
+													}
+												]}
+												visibleSortHeader={true}
+											/>
+										) : (
+											<div>No file available. Please upload a new file.</div>
+										)}
+									</>
+								}
 							</div>
 						)}
 					</Modal>
