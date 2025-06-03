@@ -26,13 +26,21 @@ export const updateAssetDefaultColumnsData = {
 	'Loan List': 'Security_Name',
 	'Inputs': 'INPUTS',
 	'Cash Balance Projections': 'Currency',
-	'Credit Balance Projection': 'Currency'
+	'Credit Balance Projection': 'Currency',
+	'Portfolio': 'Borrower',
+	'VAE': 'Obligor'
+};
 
+export const DEFAULT_SHEET_NAME = {
+	"PCOF": 'PL BB Build',
+	"PFLT": 'Loan List',
+	"PSSL": 'Portfolio'
 };
 
 export const updateAssetModalData = (fundType) => {
-	return fundType === 'PCOF' ? 'PL BB Build' : 'Loan List';
+	return DEFAULT_SHEET_NAME[fundType];
 };
+
 
 export const fundOptionsArray = [
 	{ value: 0, label: '-- Select Fund --' },

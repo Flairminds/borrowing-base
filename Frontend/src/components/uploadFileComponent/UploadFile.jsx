@@ -37,7 +37,8 @@ export const UploadFile = ({
 	availableClosingDates,
 	fundType,
 	setFundType,
-	setTablesData
+	setTablesData,
+	setCurrentFund
 }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [isLoaderVisible, setIsLoaderVisible] = useState(false);
@@ -160,6 +161,7 @@ export const UploadFile = ({
 				setReportDate(response.data.closing_date);
 				setFundType(response.data.fund_name);
 				setIsAnalysisModalOpen(false);
+				setCurrentFund(response.data.fund_name);
 			}
 			setSelectedOption(0);
 			setWhatifAnalysisPerformed(false);
