@@ -75,20 +75,7 @@ def latest_closing_date(user_id):
     data["file_name"] = latest_data.file_name
     data["fund_name"] = latest_data.fund_type
 
-    base_data_files = BaseDataFile.query.filter_by(user_id=user_id).all()
-    closing_dates = [
-        base_data_file.closing_date.strftime("%Y-%m-%d")
-        for base_data_file in base_data_files
-    ]
-    data["closing_dates"] = closing_dates
-
-    base_data_files = BaseDataFile.query.filter(
-        BaseDataFile.user_id == user_id, BaseDataFile.response != None
-    ).all()
-    closing_dates = [
-        base_data_file.closing_date.strftime("%Y-%m-%d")
-        for base_data_file in base_data_files
-    ]
+    closing_dates = get_closing_dates_list(latest_data.fund_type)
     data["closing_dates"] = closing_dates
     return jsonify(data), 200
 
@@ -122,11 +109,11 @@ def get_files_list(user_id):
     return jsonify({"error_status": False, "files_list": file_names}), 200
 
 
-def get_bb_data_of_date(selected_date, user_id, base_data_file_id):
+def get_bb_data_of_date(selected_date, user_id, base_data_file_id, fund_type):
     if base_data_file_id:
         borrowing_base_results = BaseDataFile.query.filter_by(id=base_data_file_id).first()
     else:
-        borrowing_base_results = BaseDataFile.query.filter_by(user_id=user_id, closing_date=selected_date).first()
+        borrowing_base_results = BaseDataFile.query.filter_by(user_id=user_id, closing_date=selected_date, fund_type=fund_type).first()
 
     if not borrowing_base_results:
         return (
@@ -146,11 +133,9 @@ def get_bb_data_of_date(selected_date, user_id, base_data_file_id):
             404,
         )
     
-    base_data_files = BaseDataFile.query.filter_by(user_id=user_id).all()
-    closing_dates = [
-        base_data_file.closing_date.strftime("%Y-%m-%d")
-        for base_data_file in base_data_files
-    ]
+    fund_type = borrowing_base_results.fund_type
+   
+    closing_dates = get_closing_dates_list(fund_type)
 
     pickle_borrowing_base_date_wise_results = borrowing_base_results.response
     borrowing_base_date_wise_results = pickle.loads(
@@ -284,7 +269,11 @@ def override_file(base_data_file, excel_file, xl_sheet_df_map, fund_type, includ
 
 def get_closing_dates_list(fund_type):
     user_id = 1
-    base_data_files = BaseDataFile.query.filter_by(user_id=user_id, fund_type=fund_type).all()
+    base_data_files = BaseDataFile.query.filter(
+        BaseDataFile.response!=None, 
+        BaseDataFile.user_id==user_id, 
+        BaseDataFile.fund_type==fund_type
+    ).all()
     closing_dates = [base_data_file.closing_date.strftime("%Y-%m-%d") for base_data_file in base_data_files]
     return closing_dates
 

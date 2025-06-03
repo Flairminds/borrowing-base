@@ -1,4 +1,4 @@
-import { Popover } from 'antd';
+import { Popover, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {toast} from 'react-toastify';
 import about from "../../../assets/NavbarIcons/Default.svg";
@@ -24,10 +24,13 @@ import { UpdateAssetDetailsModal } from '../../../modal/updateAssetWIA/updateAss
 // import { assetInventory } from '../../../utils/asset';
 import { UpdateParameterModal } from '../../../modal/updateParameterModal/UpdateParameterModal';
 import { WhatIfAnalysisLib } from '../../../modal/whatIfAnalysisLibrary/WhatIfAnalysisLib';
-import { EbitdaAnalysis, addNewAsset, changeParameter, downLoadReportSheet, downloadExcelAssest, getListOfWhatIfAnalysis, getPreviewTable, intermediateMetricsTable, saveWhatIfAnalysis } from '../../../services/api';
+import { EbitdaAnalysis, addNewAsset, changeParameter, downLoadReportSheet, downloadExcelAssest, getListOfWhatIfAnalysis, getPreviewTable, intermediateMetricsTable, saveWhatIfAnalysis, getAvailableDates } from '../../../services/api';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
 import Styles from './WhatIfAnalysis.module.css';
 import { Icons } from '../../../components/icons';
+import { wiaOptions } from '../../../utils/configurations/wiaOptions';
+import { fundOptionsArray } from '../../../utils/constants/constants';
+import { LoaderSmall } from '../../../components/uiComponents/loader/loader';
 
 export const WhatIfAnalysis = ({
 	getTrendGraphData,
@@ -46,7 +49,14 @@ export const WhatIfAnalysis = ({
 	whatIfAnalysisListData,
 	setWhatIfAnalysisListData,
 	fundType,
-	setFundType
+	setFundType,
+	selectedFund,
+	setSelectedFund,
+	setAvailableClosingDates,
+	setGettingDashboardData,
+	gettingDates,
+	setGettingDates,
+	setCurrentFund
 }) => {
 	const [selectedRow, setSelectedRow] = useState(null);
 	// const[isAnalysisModalOpen,setIsAnalysisModalOpen] =useState(false)
@@ -98,6 +108,7 @@ export const WhatIfAnalysis = ({
 	const [whatIfAnalysisType, setWhatIfAnalysisType] = useState();
 	const [simulationType, setSimulationType] = useState();
 	const [isAddLoadBtnDisable, setIsAddLoadBtnDisable] = useState(true);
+	
 
 	useEffect(() => {
 		if (selectedFiles.length > 0) {
@@ -350,10 +361,17 @@ export const WhatIfAnalysis = ({
 		setIsAssetInventoryModal(true);
 	};
 
-	// useEffect(() => {
-	// 	console.log(selectedOptionUpdateValue, 'selected');
-	// }, [selectedOptionUpdateValue]);
-
+	const handleFundChange=async(fund)=>{
+		try {
+			setGettingDates(true)
+			const response = await getAvailableDates(fund);
+			setAvailableClosingDates(response?.data?.result)
+			setGettingDates(false)
+		} catch (err) {
+			setGettingDates(false)
+			console.log(err)
+		}
+	}
 	return (
 		<>
 			{saveBtn && (
@@ -362,11 +380,25 @@ export const WhatIfAnalysis = ({
 			<div style={{display: "inline-flex", flexWrap: 'wrap', width: '100%', justifyContent: 'space-between', padding: '0.5rem 1rem'}}>
 				<div style={{ display: "flex", alignItems: 'baseline'}}>
 					<h4>Borrowing Base Dashboard</h4>
-					<div style={{display: 'flex', alignItems: 'baseline', padding: '0 1rem'}}>
-						<Calender setReportDate={setReportDate} setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} setBaseFile={setBaseFile}
-							availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData}
-						/>
-						{reportDate && <span style={{color: "#2A2E34"}}>{reportDate}<Icons.InfoIcon title={'Select report date from highlighted dates in calendar to view results.'} /></span>}
+					<div style={{display: 'flex', alignItems: 'baseline', padding: '0 1rem', gap:"10px"}}>
+						<Select
+								defaultValue={fundOptionsArray[0]}
+								style={{ width: 180, borderRadius: '8px', border: '1px solid #6D6E6F' }}
+								value={selectedFund}
+								onSelect={(value) => {
+									setSelectedFund(fundOptionsArray[value].label);
+									handleFundChange(fundOptionsArray[value].label)
+								}}
+								options={fundOptionsArray}
+							/>
+						{gettingDates ? <LoaderSmall/> :
+							<>
+								<Calender setReportDate={setReportDate} setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} setBaseFile={setBaseFile}
+									availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData} selectedFund={selectedFund} setGettingDashboardData={setGettingDashboardData} gettingDates={gettingDates} setCurrentFund={setCurrentFund} setTrendGraphData={setTrendGraphData}
+								/>
+								{reportDate && <span style={{color: "#2A2E34"}}>{reportDate}<Icons.InfoIcon title={'Select report date from highlighted dates in calendar to view results.'} /></span>}
+							</>
+						}
 					</div>
 					{/* <span style={{color: "#6D6E6F", padding: '0 0.5rem'}}>{constDate}</span> */}
 					{saveBtn && (

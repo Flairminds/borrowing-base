@@ -45,7 +45,6 @@ export const WhatIfAnalysisOptions = ({
 		}
 	};
 
-
 	return (
 		<>
 

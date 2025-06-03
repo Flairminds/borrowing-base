@@ -7,6 +7,7 @@ import { PrincipleObligationTable } from '../../layouts/dashboardLayouts/Princip
 import { WhatIfAnalysis } from '../../layouts/dashboardLayouts/whatIfAnalysis/WhatIfAnalysis';
 import { lineChartData } from '../../services/api';
 import styles from './dashboard.module.css';
+import { Loader } from '../../components/uiComponents/loader/loader';
 // import { AssetSelectionPage } from '../../pages/assetSelection/AssetSelectionPage';
 // import { previousSelectedAssetsArray } from '../../utils/helperFunctions/getSelectedAssets';
 
@@ -28,7 +29,16 @@ export const Dashboard = ({
 	setAssetSelectionData,
 	getLandingPageData,
 	whatifAnalysisPerformed,
-	setWhatifAnalysisPerformed
+	setWhatifAnalysisPerformed,
+	selectedFund,
+	setSelectedFund,
+	setAvailableClosingDates,
+	gettingDashboardData,
+	setGettingDashboardData,
+	gettingDates,
+	setGettingDates,
+	currentFund,
+	setCurrentFund
 }) => {
 
 	const [trendGraphData, setTrendGraphData] = useState([]);
@@ -37,12 +47,13 @@ export const Dashboard = ({
 	const [whatIfAnalysisListData, setWhatIfAnalysisListData ] = useState([]);
 
 	useEffect(() => {
-		getTrendGraphData(fundType);
+		if(fundType){
+			getTrendGraphData(fundType);
+		}
 		if (!tablesData) {
 			getLandingPageData();
 		}
 	}, [fundType, tablesData]);
-
 
 	const getTrendGraphData = async(fund) => {
 		try {
@@ -75,27 +86,40 @@ export const Dashboard = ({
 				setWhatIfAnalysisListData={setWhatIfAnalysisListData}
 				fundType={fundType}
 				setFundType={setFundType}
+				selectedFund={selectedFund}
+				setSelectedFund={setSelectedFund}
+				setAvailableClosingDates={setAvailableClosingDates}
+				setGettingDashboardData={setGettingDashboardData}
+				gettingDates={gettingDates}
+				setGettingDates={setGettingDates}
+				currentFund={currentFund}
+				setCurrentFund={setCurrentFund}
 			/>
-			<div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
-				<PortfollioDashboard
-					reportDate={reportDate}
-					setReportDate={setReportDate}
-					tablesData={tablesData}
-					setTablesData={setTablesData}
-					trendGraphData={trendGraphData}
-					baseFile={baseFile}
-					getTrendGraphData={getTrendGraphData}
-					setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
-					whatifAnalysisPerformed={whatifAnalysisPerformed}
-					setBaseFile={setBaseFile}
-					availableClosingDates={availableClosingDates}
-					fundType={fundType}
-				/>
-				<TableGraph title="Segmentation Overview" tableData={tablesData?.segmentation_overview_data} tableColumns={tablesData?.segmentation_overview_data?.columns[0]?.data} chartsData={tablesData?.segmentation_chart_data?.segmentation_chart_data} yAxis= {tablesData?.segmentation_chart_data?.x_axis} />
-				<TableGraph title="Security" tableData={tablesData?.security_data} tableColumns={tablesData?.security_data?.columns[0]?.data} chartsData={tablesData?.security_chart_data?.security_chart_data} yAxis={tablesData?.security_chart_data?.x_axis} />
-				<ConcentrationTestTable baseFile={baseFile} title="Concentration Test" tablesData={tablesData} setTablesData={setTablesData} setWhatIfAnalysisListData={setWhatIfAnalysisListData} />
-				<PrincipleObligationTable title="Principal Obligations" tablesData={tablesData} />
-			</div>
+			{gettingDashboardData ? <Loader/> :
+				<div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
+					<PortfollioDashboard
+						reportDate={reportDate}
+						setReportDate={setReportDate}
+						tablesData={tablesData}
+						setTablesData={setTablesData}
+						trendGraphData={trendGraphData}
+						baseFile={baseFile}
+						getTrendGraphData={getTrendGraphData}
+						setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
+						whatifAnalysisPerformed={whatifAnalysisPerformed}
+						setBaseFile={setBaseFile}
+						availableClosingDates={availableClosingDates}
+						fundType={fundType}
+						selectedFund={selectedFund}
+						gettingDashboardData={gettingDashboardData}
+						currentFund={currentFund}
+					/>
+					<TableGraph title="Segmentation Overview" tableData={tablesData?.segmentation_overview_data} tableColumns={tablesData?.segmentation_overview_data?.columns[0]?.data} chartsData={tablesData?.segmentation_chart_data?.segmentation_chart_data} yAxis= {tablesData?.segmentation_chart_data?.x_axis} />
+					<TableGraph title="Security" tableData={tablesData?.security_data} tableColumns={tablesData?.security_data?.columns[0]?.data} chartsData={tablesData?.security_chart_data?.security_chart_data} yAxis={tablesData?.security_chart_data?.x_axis} />
+					<ConcentrationTestTable baseFile={baseFile} title="Concentration Test" tablesData={tablesData} setTablesData={setTablesData} setWhatIfAnalysisListData={setWhatIfAnalysisListData} />
+					<PrincipleObligationTable title="Principal Obligations" tablesData={tablesData} />
+				</div>
+			}
 		</div>
 	);
 };
