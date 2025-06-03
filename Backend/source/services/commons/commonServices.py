@@ -60,10 +60,12 @@ def get_raw_value(updated_value, col_type):
             case np.int64:
                 if type(updated_value) == str:
                     if updated_value != "":
-                        updated_value = int(updated_value.replace(",", ""))
+                        updated_value = float(updated_value.replace(",", ""))
                     else:
                         updated_value = None    
                 else:
+                    if updated_value != updated_value:
+                        updated_value = 0
                     updated_value = int(updated_value)
 
             case np.float64:
@@ -81,6 +83,8 @@ def get_raw_value(updated_value, col_type):
                         updated_value = None
                     else:
                         updated_value = pd.to_datetime(updated_value, format="%Y-%m-%d", errors="coerce")
+                elif type(updated_value) == pd._libs.tslibs.nattype.NaTType:
+                    updated_value = updated_value
                 else:
                     updated_value = datetime.strptime(updated_value, "%Y-%m-%d").date()
             
@@ -100,7 +104,7 @@ def get_raw_value(updated_value, col_type):
         return updated_value
     
     except Exception as e:
-        return ServiceResponse.error(message=f"Error in get_raw_value: {e}")
+        raise Exception(e)
 
 
 def get_row_index(sheet_df, row_name, sheet_uniques_name):
