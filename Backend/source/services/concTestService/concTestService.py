@@ -391,20 +391,19 @@ class ConcentrationTestExecutor:
     def execute_Second_Lien(
         self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard, comparison_type
     ):
-        total_borrowing_base = test_required_col_df.loc[
-            test_required_col_df["Terms"]
-            == "BORROWING BASE - (A) minus (B) minus (A)(iv)",
-            "Values",
-        ].iloc[0]
+        total_borrowing_base = test_required_col_df.loc[test_required_col_df["Terms"] == "Concentration Test Amount", "Values"].iloc[0]
 
-        actual = test_required_col_df["Second Lien"].sum() / total_borrowing_base
-        if actual > self.limit_percent:
+        applicable_limit = total_borrowing_base * self.limit_percent
+
+        actual = test_required_col_df["Second Lien"].sum() / total_borrowing_base 
+        
+        if self.is_pass(limit=applicable_limit, actual=actual, comparison_type=comparison_type) :
             result = "Pass"
         else:
             result = "Fail"
         row_data = {
             "Concentration Tests": [test_name],
-            "Concentration Limit": [self.limit_percent],
+            "Concentration Limit": [applicable_limit],
             "Actual": [actual],
             "Result": [result],
             "Show on dashboard": [show_on_dashboard]
@@ -414,7 +413,7 @@ class ConcentrationTestExecutor:
             [concentration_test_df, row_df], ignore_index=True
         )
         return concentration_test_df
-
+    
     def execute_DIP_Collateral_Loans(
         self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard, comparison_type
     ):

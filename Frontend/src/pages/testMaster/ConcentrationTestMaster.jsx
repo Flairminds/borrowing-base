@@ -5,6 +5,7 @@ import { StyledSelectConcTest } from '../../components/elements/styledSelectConc
 import { UIComponents } from '../../components/uiComponents';
 // import buttonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { Loader } from '../../components/uiComponents/loader/loader';
+import UpdateConcTestModal from '../../modal/updateConcTestModal/updateConcTest';
 import { changeConcentrationTestMasterData, getConcentrationTestMasterData } from '../../services/api';
 import { defaultFund, ConctestMasterdropdownValues } from '../../utils/configurations/fundsDetails';
 import { convertToDropdownOptions, getConcTestChnages, styledDropdownOptions } from '../../utils/helperFunctions/concentrationMasterData';
@@ -23,6 +24,7 @@ export const ConcentrationTestMaster = () => {
 	const [optionsArray, setoptionsArray] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [selectedTest, setSelectedTest] = useState(null);
+	const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
 
 	const handleDropdownChange = async(value) => {
 		try {
@@ -69,7 +71,7 @@ export const ConcentrationTestMaster = () => {
 		});
 	};
 
-	const submitChnages = async() => {
+	const submitChnages = async(selectedOption) => {
 		setSubmitBtnLoading(true);
 		const changes = getConcTestChnages(tableData, displayTableData);
 		setActiveRowFundData({
@@ -77,7 +79,7 @@ export const ConcentrationTestMaster = () => {
 			hightlightIds: []
 		});
 		try {
-			const res = await changeConcentrationTestMasterData(changes);
+			const res = await changeConcentrationTestMasterData(changes, selectedOption);
 			if (res.status == 200) {
 				toast.success(res.data.message);
 			}
@@ -86,6 +88,8 @@ export const ConcentrationTestMaster = () => {
 			toast.error(err.response.data.message);
 			console.error(err);
 			setSubmitBtnLoading(false);
+		} finally {
+			setIsUpdateModalOpen(false);
 		}
 	};
 
@@ -254,8 +258,15 @@ export const ConcentrationTestMaster = () => {
 					</div>
 
 					<div className={styles.updateBtn}>
-						<UIComponents.Button onClick={submitChnages} loading={submitBtnLoading} text={submitBtnLoading ? 'Updating' : 'Update'} />
+						<UIComponents.Button onClick={() => setIsUpdateModalOpen(true)} text={'Update'} />
 					</div>
+					<UpdateConcTestModal
+						isUpdatedModalOpen={isUpdateModalOpen}
+						setIsUpdatedModalOpen={setIsUpdateModalOpen}
+						onSubmit={submitChnages}
+						setSubmitBtnLoading={setSubmitBtnLoading}
+						loading={submitBtnLoading}
+					/>
 				</>
 			}
 
