@@ -47,7 +47,7 @@ export const Dashboard = ({
 	const [whatIfAnalysisListData, setWhatIfAnalysisListData ] = useState([]);
 
 	useEffect(() => {
-		if(fundType){
+		if (fundType) {
 			getTrendGraphData(fundType);
 		}
 		if (!tablesData) {

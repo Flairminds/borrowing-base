@@ -1,9 +1,11 @@
 import { Select } from 'antd';
-import React from 'react';
+import React, { useState } from 'react';
 // import { updateAssetData } from '../../utils/updateAssetData';
 import { toast } from 'react-toastify';
 import { getUpdateAssetData } from '../../services/api';
 import { wiaOptions } from '../../utils/configurations/wiaOptions';
+import { DEFAULT_SHEET_NAME } from '../../utils/constants/constants';
+import { LoaderSmall } from '../uiComponents/loader/loader';
 
 export const WhatIfAnalysisOptions = ({
 	selectedOption,
@@ -19,6 +21,8 @@ export const WhatIfAnalysisOptions = ({
 	fundType
 }) => {
 
+	const [isLoading, setIsLoading] = useState(false);
+
 	const handleDropdownChange = (value) => {
 		setSaveBtn(false);
 		setWhatIfAnalysisId(null);
@@ -33,22 +37,25 @@ export const WhatIfAnalysisOptions = ({
 	};
 
 	const getUpdateAssetSheetData = async() => {
-		const defaultsheetName = fundType === 'PCOF' ? 'PL BB Build' : 'Loan List';
+		const defaultsheetName = DEFAULT_SHEET_NAME[fundType];
 		const basefileid = baseFile.id;
 		try {
+			setIsLoading(true);
 			const res = await getUpdateAssetData(basefileid, defaultsheetName);
 			setUpdateAssetTableData(res.data.result);
 			setIsupdateAssetModalOpen(true);
 		} catch (err) {
 			toast.error("something went wrong");
 			console.error(err);
+		} finally {
+			setIsLoading(false);
 		}
 	};
 
 	return (
 		<>
 
-			<div style={{ flex: "1" }}>
+			<div style={{ display: "flex", flex: "1", alignItems: "center" }}>
 				<Select
 				// className={ButtonStyles.filledBtn}
 					defaultValue="-- What if Analysis --"
@@ -58,6 +65,7 @@ export const WhatIfAnalysisOptions = ({
 					onSelect={(value) => setSelectedOption(value)}
 					options={wiaOptions[fundType]}
 				/>
+				{isLoading && <span style={{padding: "0 5px"}}> <LoaderSmall /></span>}
 			</div>
 			<div>
 				{/* <AboutModal isAboutModalState={isAboutModalState} aboutModalState={aboutModalState}  /> */}
