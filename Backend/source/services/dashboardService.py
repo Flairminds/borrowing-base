@@ -4,15 +4,19 @@ from datetime import date, datetime, timezone
 import json
 from io import BytesIO
 import pandas as pd
+import re
 from sqlalchemy import text
 
-from models import db, BaseDataFile, WhatIfAnalysis
+from source.services.aiIntegration.openai import OpenAIClient
+from source.services.aiIntegration.gemini import GeminiClient
+from models import db, BaseDataFile, WhatIfAnalysis, CompanyInfoOpenAI
 from Exceptions.StdFileFormatException import StdFileFormatException
 from source.services.PCOF import utility as PCOFUtility
 from source.services.PCOF.PcofDashboardService import PcofDashboardService
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 from source.utility.ServiceResponse import ServiceResponse
 from utility.Util import excel_cell_format
+from source.utility.aiPrompts import company_info_prompt
 
 pcofDashboardService = PcofDashboardService()
 pfltDashboardService = PfltDashboardService()
@@ -415,3 +419,46 @@ def download_calculated_df(base_data_file):
             ),
             500,
         )
+
+def get_company_insights(company_name: str):
+    try:
+        result = CompanyInfoOpenAI.query.filter_by(company_name=company_name).first()
+        parsed_json = {}
+        client = OpenAIClient()
+        client.scrape_website()
+        if result is None:
+            prompt = company_info_prompt(company_name)
+
+            # gemini
+            # client = GeminiClient()
+            # result = client.generate_content(prompt)
+            # print(result)
+            # clean_str = result["content"].strip('`')
+            # clean_str = re.sub(r'^json\s*', '', clean_str).strip()
+            # parsed_json = json.loads(clean_str)
+            # data.candidates?.[0]?.content?.parts?.[0]?.text
+
+            # openai
+            client = OpenAIClient()
+            result = client.chat_completion([
+                {"role": "system", "content": "You are a corporate analyst. Summarize company data from JSON."},
+                {"role": "user", "content": prompt}
+            ])
+            clean_str = result["content"].strip('"')
+            clean_str = result["content"].strip('`')
+            clean_str = re.sub(r'^json\s*', '', clean_str).strip()
+            parsed_json = json.loads(clean_str)
+
+            company_info = CompanyInfoOpenAI(
+                company_name=company_name,
+                company_info=parsed_json,
+                model_name='openai-gpt4.1'
+            )
+            
+            db.session.add(company_info)
+            db.session.commit()
+        else:
+            parsed_json = result.company_info
+        return ServiceResponse.success(data=parsed_json)
+    except Exception as e:
+        raise Exception(e)

@@ -360,3 +360,8 @@ export const generateBaseDataFile = (payload) => {
 	const res = axios.post(`${ApiURL}/data_ingestion/trigger_bb_calculation`, payload);
 	return res;
 };
+
+export const getCompanyInfo = (payload) => {
+	const res = axios.post(`${ApiURL}/dashboard/get_company_insights`, payload);
+	return res;
+};

@@ -71,3 +71,4 @@ virtualenv==20.26.3
 wcwidth==0.2.6
 Werkzeug==2.3.6
 xlrd==2.0.1
+google-generativeai

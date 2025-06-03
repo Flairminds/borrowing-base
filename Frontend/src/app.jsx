@@ -10,13 +10,12 @@ import { BorrowingBasePreviewPage } from './pages/borrowingBasePreview/Borrowing
 import { ConfigurationPage } from './pages/configurationPage/ConfigurationPage';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { DataIngestionPage } from './pages/dataIngestion/DataIngestionPage';
+import PortfolioInsights from './pages/portfolioInsights/PortfolioInsights';
 import { SecurityMapping } from './pages/securityMapping/SecurityMapping';
 // import { SecurityMappingPage } from './pages/securityMappingPage/SecurityMappingPage';
 import { ConcentrationTestMaster } from './pages/testMaster/ConcentrationTestMaster';
 import { getDateReport, landingPageData } from './services/api';
 import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
-import { showToast } from './utils/helperFunctions/toastUtils';
-
 
 
 export function App() {
@@ -114,6 +113,7 @@ export function App() {
 						}
 					/>
 					<Route path='/fund-setup' element={<ConcentrationTestMaster />} />
+					<Route path='/insights' element={<PortfolioInsights />} />
 					<Route path='/asset-selection'
 						element={
 							<AssetSelectionPage
