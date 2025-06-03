@@ -1,11 +1,13 @@
 // import dollarMoneyCurrencyIcon from '../../assets/sideBarIcons/dollarMoneyCurrencyIcon.svg';
 // import DoneCheckIcon from '../../assets/sideBarIcons/DoneCheckIcon.svg';
 // import GroupUserIcon from '../../assets/sideBarIcons/GroupUserIcon.svg';
+import { MdInsights } from "react-icons/md";
 import HomeIcon from '../../assets/sideBarIcons/HomeIcon.svg';
 import projectDocumentsIcon from '../../assets/sideBarIcons/projectDocumentsIcon.svg';
 import settingIcon from '../../assets/sideBarIcons/settingIcon.svg';
 // import suitcasePortfolioIcon from '../../assets/sideBarIcons/suitcasePortfolioIcon.svg';
 import ThreeBarIcon from '../../assets/sideBarIcons/ThreeBarIcon.svg';
+import React from 'react';
 
 export const updateAssetDefaultColumnsData = {
 	'PL BB Build': 'Investment_Name',
@@ -63,7 +65,8 @@ export const sidebarItemsArray = [
 	{ imgSrc: HomeIcon, imgAlt: "Home Icon", name: 'Dashboard', route: '/' },
 	{ imgSrc: ThreeBarIcon, imgAlt: "ThreeBar Icon", name: 'Conc. Test Setup', route: '/fund-setup' },
 	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: PAGE_ROUTES.BASE_DATA_LIST.url },
-	{ imgSrc: settingIcon, imgAlt: "Config Icon", name: 'Configuration', route: '/configuration' }
+	{ imgSrc: settingIcon, imgAlt: "Config Icon", name: 'Configuration', route: '/configuration' },
+	{ imgIcon: <MdInsights size={25} />, imgAlt: "Config Icon", name: 'Insights', route: '/insights' }
 	// { imgSrc: DoneCheckIcon, imgAlt: "DoneCheck Icon" },
 	// { imgSrc: suitcasePortfolioIcon, imgAlt: "suitcasePortfolio Icon" },
 	// { imgSrc: GroupUserIcon, imgAlt: "GroupUser Icon" },

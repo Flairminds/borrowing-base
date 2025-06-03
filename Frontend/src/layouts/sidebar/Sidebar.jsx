@@ -35,7 +35,9 @@ export const Sidebar = () => {
 					<Tooltip placement="right" title={collapseSidebar ? item.name : ""}>
 						<div className={`py-2 px-1 my-2 rounded-3`} style={{backgroundColor: active === index + 1 ? '#919191' : '', textWrap: 'nowrap'}}
 							onClick={() => handleIconClick(index + 1, item.route)} onMouseEnter={() => setActive(index + 1)}>
-							<img src={item.imgSrc} alt={item.imgAlt} />
+							{item.imgSrc ?
+								<img src={item.imgSrc} alt={item.imgAlt} />
+								: item.imgIcon}
 							{!collapseSidebar ? <span style={{padding: '0 5px'}}>{item.name}</span> : <></>}
 						</div>
 					</Tooltip>

@@ -879,3 +879,13 @@ class PcofIndustry(db.Model):
             "industry_name": self.industry_name,
             "std_industry_name": self.std_industry_name
         }
+
+class CompanyInfoOpenAI(db.Model):
+    __tablename__ = 'company_info_open_ai'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    company_name = db.Column(db.String)
+    company_info = db.Column(db.JSON)
+    model_name = db.Column(db.String)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    modified_at = db.Column(db.DateTime(timezone=True))
+

@@ -1,6 +1,7 @@
 from azure.core.exceptions import ResourceExistsError
 import os
 import mmap
+import re
 from io import BytesIO
 import pandas as pd
 from datetime import datetime
@@ -18,6 +19,7 @@ from datetime import datetime
 from werkzeug.datastructures import FileStorage
 import time
 
+from source.services.aiIntegration.openai import OpenAIClient
 from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
@@ -2105,3 +2107,33 @@ def get_unmapped_securities(file_ids, fund_type):
     
     except Exception as e:
         raise Exception(e)
+
+
+def get_mapping_suggestions():
+    family_name_rows = PfltSecurityMapping.query.filter_by(cashfile_security_name = None).distinct().all()
+    family_names = [row.family_name for row in family_name_rows]
+    client = OpenAIClient()
+    profile = "Berwick Industrial Park"
+    prompt = (
+        "Given the following company profile, select the best matching company name from the list. "
+        "Provide the best match and a short reasoning.\n"
+        f"Profile: {profile}\n"
+        f"Company Names: {family_names}\n"
+        "Respond in JSON format as {\"best_match\": <company_name>, \"reasoning\": <reason>, \"all_scores\": [<company_name>: <score>, ...]}"
+    )
+    response = client.chat_completion([
+        {"role": "system", "content": "You are a corporate analyst. Summarize company data from JSON."},
+        {"role": "user", "content": prompt}
+    ])
+    print(response)
+    clean_str = response["content"].strip('"')
+    clean_str = response["content"].strip('`')
+    clean_str = re.sub(r'^json\s*', '', clean_str).strip()
+    parsed_json = json.loads(clean_str)
+    # Try to parse the response as JSON
+    try:
+        result = json.loads(response["content"] if isinstance(response, dict) else response)
+    except Exception:
+        result = {"raw_response": response}
+    return result
+    

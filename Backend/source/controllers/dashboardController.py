@@ -309,3 +309,15 @@ def get_closing_dates():
         return HTTPResponse.success(result=closing_dates)
     except Exception as e:
         return HTTPResponse.error(message="Internal Server Error")
+
+def get_company_insights():
+    data = json.loads(request.data)
+    company_name = data.get("company_name")
+    if not company_name:
+        return HTTPResponse.error(message="Missing 'company_name' in request body.", status_code=400)
+    try:
+        result = dashboardService.get_company_insights(company_name)
+        return HTTPResponse.success(result=result)
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error")
