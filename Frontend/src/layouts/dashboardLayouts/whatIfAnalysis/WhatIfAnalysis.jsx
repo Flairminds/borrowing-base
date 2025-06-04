@@ -377,7 +377,7 @@ export const WhatIfAnalysis = ({
 			{saveBtn && (
 				<WIAInformation baseFile={baseFile} whaIfAnalsisData={whaIfAnalsisData} isSetDescriptionModal={isSetDescriptionModal} />
 			)}
-			<div style={{display: "inline-flex", flexWrap: 'wrap', width: '100%', justifyContent: 'space-between', padding: '0.5rem 0rem'}}>
+			<div style={{display: "inline-flex", flexWrap: 'wrap', width: '100%', justifyContent: 'space-between', padding: '1rem 0rem'}}>
 				<div style={{ display: "flex", alignItems: 'center'}}>
 					<h4 style={{margin: "0"}}>Borrowing Base Dashboard</h4>
 					{!selectedFund ? <span style={{padding: "0 5px"}}><LoaderSmall /></span> :
@@ -412,7 +412,7 @@ export const WhatIfAnalysis = ({
 				</div>
 				<div style={{ display: "flex", alignItems: "center", gap: '5px'}}>
 					<div>
-						<UIComponents.Button text='Import/Use Base Data' onClick={() => setIsAnalysisModalOpen(true)} isFilled={true} title='Import new data file or use existing file for calculation' />
+						<UIComponents.Button text='Borrowing Base Reports' onClick={() => setIsAnalysisModalOpen(true)} isFilled={true} title='Import new data file or use existing file for calculation' />
 					</div>
 					<div>
 						<WhatIfAnalysisOptions

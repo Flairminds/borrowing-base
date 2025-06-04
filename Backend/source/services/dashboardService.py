@@ -414,39 +414,41 @@ def get_company_insights(company_name: str):
     try:
         result = CompanyInfoOpenAI.query.filter_by(company_name=company_name).first()
         parsed_json = {}
-        client = OpenAIClient()
-        client.scrape_website()
+        # client = OpenAIClient()
+        # client.scrape_website()
         if result is None:
             prompt = company_info_prompt(company_name)
 
             # gemini
-            # client = GeminiClient()
-            # result = client.generate_content(prompt)
-            # print(result)
-            # clean_str = result["content"].strip('`')
-            # clean_str = re.sub(r'^json\s*', '', clean_str).strip()
-            # parsed_json = json.loads(clean_str)
+            client = GeminiClient()
+            client.search()
+            result = client.generate_content(prompt)
+            clean_str = result.strip('`')
+            clean_str = re.sub(r'^json\s*', '', clean_str).strip()
+            clean_str = clean_str.strip('`')
+            print(clean_str)
+            parsed_json = json.loads(clean_str)
             # data.candidates?.[0]?.content?.parts?.[0]?.text
 
             # openai
-            client = OpenAIClient()
-            result = client.chat_completion([
-                {"role": "system", "content": "You are a corporate analyst. Summarize company data from JSON."},
-                {"role": "user", "content": prompt}
-            ])
-            clean_str = result["content"].strip('"')
-            clean_str = result["content"].strip('`')
-            clean_str = re.sub(r'^json\s*', '', clean_str).strip()
-            parsed_json = json.loads(clean_str)
+            # client = OpenAIClient()
+            # result = client.chat_completion([
+            #     {"role": "system", "content": "You are a corporate analyst. Summarize company data from JSON."},
+            #     {"role": "user", "content": prompt}
+            # ])
+            # clean_str = result["content"].strip('"')
+            # clean_str = result["content"].strip('`')
+            # clean_str = re.sub(r'^json\s*', '', clean_str).strip()
+            # parsed_json = json.loads(clean_str)
 
-            company_info = CompanyInfoOpenAI(
-                company_name=company_name,
-                company_info=parsed_json,
-                model_name='openai-gpt4.1'
-            )
+            # company_info = CompanyInfoOpenAI(
+            #     company_name=company_name,
+            #     company_info=parsed_json,
+            #     model_name='openai-gpt4.1'
+            # )
             
-            db.session.add(company_info)
-            db.session.commit()
+            # db.session.add(company_info)
+            # db.session.commit()
         else:
             parsed_json = result.company_info
         return ServiceResponse.success(data=parsed_json)
