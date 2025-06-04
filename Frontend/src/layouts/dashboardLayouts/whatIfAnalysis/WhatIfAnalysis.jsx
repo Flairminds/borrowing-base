@@ -392,7 +392,7 @@ export const WhatIfAnalysis = ({
 								}}
 								options={fundOptionsArray}
 							/>
-							{gettingDates ? <LoaderSmall/> :
+							{gettingDates ? <span style={{padding: "0 5px"}}><LoaderSmall /></span> :
 								<div style={{display: "flex", alignItems: "center", padding: "0 5px 0 7px"}}>
 									<Calender setReportDate={setReportDate} setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} setBaseFile={setBaseFile}
 										availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData} selectedFund={selectedFund} setGettingDashboardData={setGettingDashboardData} setCurrentFund={setCurrentFund} setTrendGraphData={setTrendGraphData}

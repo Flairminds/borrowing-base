@@ -13,7 +13,7 @@ import PFLTSampleFile from '../../assets/template File/PFLT 09.30.24 Borrowing B
 import { ErrorMessage } from '../../modal/errorMessageModal/ErrorMessage';
 import { OverWriteDataModal } from '../../modal/overWriteDataModal/OverWriteDataModal';
 import { uploadedFileList, validateInitialFile, assetSelectionList, getDateReport } from '../../services/api';
-import { fundOptionsArray } from '../../utils/constants/constants';
+import { fundMap, fundOptionsArray } from '../../utils/constants/constants';
 import { fundOptionValueToFundName } from '../../utils/helperFunctions/borrowing_base_functions';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { Calender } from '../calender/Calender';
@@ -329,7 +329,7 @@ export const UploadFile = ({
 
 	const handleDropdownChange = (value) => {
 		setSelectedOption(value);
-		const fundType = value === 1 ? "PCOF" : value === 2 ? "PFLT" : null;
+		const fundType = fundMap[value];
 		const filteredData = fetchFileList.filter(file => {
 			const matchesFundType = !fundType || file.fund_type === fundType;
 			const matchesDate = !filterDate || file.closing_date === filterDate;
@@ -341,7 +341,7 @@ export const UploadFile = ({
 
 	const handleDateFilterChange = (date, dateString) => {
 		setFilterDate(dateString);
-		const fundType = selectedOption === 1 ? "PCOF" : selectedOption === 2 ? "PFLT" : selectedOption === 2 ? "PSSL" : null;
+		const fundType = fundMap[selectedOption];
 		const filteredData = fetchFileList.filter(file => {
 			const matchesDate = !dateString || fmtDateValue(file.closing_date) === fmtDateValue(dateString);
 			const matchesFundType = !fundType || file.fund_type === fundType;
@@ -414,11 +414,6 @@ export const UploadFile = ({
 									style={{ width: 150, borderRadius: '8px', margin: "0.5rem 0rem" }}
 									onChange={handleDropdownChange}
 									value={selectedOption}
-									onSelect={(value) => {
-										setFundType(fundOptionValueToFundName(value)),
-										setSelectedOption(value);
-									}
-									}
 									options={fundOptionsArray}
 								/>
 							</div>
