@@ -1,11 +1,10 @@
-import { Select, Switch } from 'antd';
+import { Checkbox, Select, Switch } from 'antd';
 import React, { useState, useEffect } from 'react';
 import {toast} from 'react-toastify';
 import { StyledSelectConcTest } from '../../components/elements/styledSelectConcTest/StyledSelectConcTest';
 import { UIComponents } from '../../components/uiComponents';
 // import buttonStyles from '../../components/uiComponents/Button/ButtonStyle.module.css';
 import { Loader } from '../../components/uiComponents/loader/loader';
-import UpdateConcTestModal from '../../modal/updateConcTestModal/updateConcTest';
 import { changeConcentrationTestMasterData, getConcentrationTestMasterData } from '../../services/api';
 import { defaultFund, ConctestMasterdropdownValues } from '../../utils/configurations/fundsDetails';
 import { convertToDropdownOptions, getConcTestChnages, styledDropdownOptions } from '../../utils/helperFunctions/concentrationMasterData';
@@ -24,7 +23,7 @@ export const ConcentrationTestMaster = () => {
 	const [optionsArray, setoptionsArray] = useState([]);
 	const [loading, setLoading] = useState(false);
 	const [selectedTest, setSelectedTest] = useState(null);
-	const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
+	const [updateOldRecords, setUpdateOldRecords] = useState(false);
 
 	const handleDropdownChange = async(value) => {
 		try {
@@ -71,7 +70,7 @@ export const ConcentrationTestMaster = () => {
 		});
 	};
 
-	const submitChnages = async(selectedOption) => {
+	const submitChnages = async() => {
 		setSubmitBtnLoading(true);
 		const changes = getConcTestChnages(tableData, displayTableData);
 		setActiveRowFundData({
@@ -79,17 +78,15 @@ export const ConcentrationTestMaster = () => {
 			hightlightIds: []
 		});
 		try {
-			const res = await changeConcentrationTestMasterData(changes, selectedOption);
+			const res = await changeConcentrationTestMasterData(changes, updateOldRecords);
 			if (res.status == 200) {
 				toast.success(res.data.message);
 			}
-			setSubmitBtnLoading(false);
 		} catch (err) {
 			toast.error(err.response.data.message);
 			console.error(err);
-			setSubmitBtnLoading(false);
 		} finally {
-			setIsUpdateModalOpen(false);
+			setSubmitBtnLoading(false);
 		}
 	};
 
@@ -256,9 +253,11 @@ export const ConcentrationTestMaster = () => {
 							</tbody>
 						</table>
 					</div>
-
-					<div className={styles.updateBtn}>
-						<UIComponents.Button onClick={submitChnages} loading={submitBtnLoading} text={submitBtnLoading ? 'Updating' : 'Update'} isFilled={true} />
+					<div className={styles.updateBtnContainer}>
+						<Checkbox onChange={(e) => setUpdateOldRecords(e.target.checked)}>
+							Update Old Records
+						</Checkbox>
+						<UIComponents.Button onClick={submitChnages} text={'Update'} loading={submitBtnLoading} />
 					</div>
 				</>
 			}
