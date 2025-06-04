@@ -49,6 +49,7 @@ export const WhatIfAnalysisOptions = ({
 			console.error(err);
 		} finally {
 			setIsLoading(false);
+			setSelectedOption(0);
 		}
 	};
 
