@@ -8,6 +8,7 @@ from source.services.PCOF.WIA import updateParameterAnalyst as pcofUpdateParamet
 from source.services.PFLT.WIA import updateParameterAnalyst as pfltUpdateParameterAnalyst
 from source.services.PCOF.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pcofUpdateAssetAnalyst
 from source.services.PFLT.WIA.updateAssetAnalyst import UpdateAssetAnalyst as pfltUpdateAssetAnalyst
+from source.services.PSSL.WIA.updateAssetAnalyst import UpdateAssetAnalyst as psslUpdateAssetAnalyst
 from source.services.PCOF.standardFileFormat import add_asset_std_file_format as PCOF_STANDARD_FILE_FORMAT
 from source.services.PFLT.PFLT_std_file_format import add_asset_std_file_format as PFLT_STANDARD_FILE_FORMAT
 from source.services.Standard_File_Formater import validate_file as add_asset_validate_file
@@ -258,6 +259,9 @@ def calculate_bb_modified_sheets():
                 update_asset_response = response_data["data"]
             case "PFLT":
                 response_data = pfltUpdateAssetAnalyst.update_assset(base_data_file, modified_base_data_file)
+                update_asset_response = response_data["data"]
+            case "PSSL":
+                response_data = psslUpdateAssetAnalyst.update_assset(base_data_file, modified_base_data_file)
                 update_asset_response = response_data["data"]
 
         update_asset_response["what_if_analysis_id"] = request_data.get("modified_base_data_file_id")
