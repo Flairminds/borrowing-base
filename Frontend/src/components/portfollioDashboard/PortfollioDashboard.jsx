@@ -69,9 +69,9 @@ export const PortfollioDashboard = ({
 					<div className={stylesOverView.main}>
 						<div className={stylesOverView.titleDiv}>
 							<div className={stylesOverView.overViewHeadingDiv}>
-								<span className={stylesOverView.overViewHeading}>Overview</span>
-								<span className={stylesOverView.fundTypeContainer}>{currentFund}</span>
-
+								<h3 style={{fontSize: '20px', margin: '0.8rem 0.4rem'}}>{currentFund} Borrowing Base Overview</h3>
+								{/* <span className={stylesOverView.overViewHeading}>Overview</span> */}
+								{/* <span className={stylesOverView.fundTypeContainer}>{currentFund}</span> */}
 							</div>
 							{/* <div className={stylesOverView.rangePickerDiv}>
 								<RangePicker format="YYYY-MM-DD" onChange={handleRangeChange} />
