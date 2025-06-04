@@ -5,8 +5,9 @@ import json
 from io import BytesIO
 import pandas as pd
 import re
-from sqlalchemy import text
+from sqlalchemy import func, text
 
+from source.services.aiIntegration.serpapi import SerpAPIClient
 from source.services.aiIntegration.openai import OpenAIClient
 from source.services.aiIntegration.gemini import GeminiClient
 from models import db, BaseDataFile, WhatIfAnalysis, CompanyInfoOpenAI
@@ -412,23 +413,25 @@ def download_calculated_df(base_data_file):
 
 def get_company_insights(company_name: str):
     try:
-        result = CompanyInfoOpenAI.query.filter_by(company_name=company_name).first()
+        result = CompanyInfoOpenAI.query.filter(func.lower(CompanyInfoOpenAI.company_name) == company_name.lower()).first()
         parsed_json = {}
-        # client = OpenAIClient()
-        # client.scrape_website()
+        model_name = ''
         if result is None:
-            prompt = company_info_prompt(company_name)
+            # serpapi
+            serpapi_client = SerpAPIClient()
+            google_search_result = serpapi_client.search(company_name)
+            google_search_result_for_ai_prompt = "\n".join(google_search_result)
+            
+            prompt = company_info_prompt(company_name, google_search_result_for_ai_prompt)
 
             # gemini
             client = GeminiClient()
-            client.search()
             result = client.generate_content(prompt)
             clean_str = result.strip('`')
             clean_str = re.sub(r'^json\s*', '', clean_str).strip()
             clean_str = clean_str.strip('`')
-            print(clean_str)
             parsed_json = json.loads(clean_str)
-            # data.candidates?.[0]?.content?.parts?.[0]?.text
+            model_name = 'gemini-2.0-flash'
 
             # openai
             # client = OpenAIClient()
@@ -440,15 +443,16 @@ def get_company_insights(company_name: str):
             # clean_str = result["content"].strip('`')
             # clean_str = re.sub(r'^json\s*', '', clean_str).strip()
             # parsed_json = json.loads(clean_str)
+            # model_name='openai-gpt4.1'
 
-            # company_info = CompanyInfoOpenAI(
-            #     company_name=company_name,
-            #     company_info=parsed_json,
-            #     model_name='openai-gpt4.1'
-            # )
+            company_info = CompanyInfoOpenAI(
+                company_name=company_name,
+                company_info=parsed_json,
+                model_name=model_name
+            )
             
-            # db.session.add(company_info)
-            # db.session.commit()
+            db.session.add(company_info)
+            db.session.commit()
         else:
             parsed_json = result.company_info
         return ServiceResponse.success(data=parsed_json)

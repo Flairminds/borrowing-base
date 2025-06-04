@@ -11,28 +11,10 @@ class GeminiClient:
         genai.configure(api_key=api_key)
         self.model = genai.GenerativeModel('gemini-2.0-flash')
     
-    def search(self):
-        try:
-            # Define parameters for the SerpApi search
-            params = {
-                "engine": "google",
-                "q": 'Pegasus Steel company details',
-                "api_key": "10ef535b00fe562340523ffa69d27b417a77f1680f14b3c3044dfa448c6739b4",
-                "location": "New York, United States" # Current location, as per your request
-            }
-
-            # Perform the search using SerpApi
-            search = SerpApiClient(params)
-            results = search.get_json()
-            print(results)
-            return results
-
-        except Exception as e:
-            raise Exception(e)
-
     def generate_content(self, prompt: str) -> str:
         """
         Generate content using Gemini API given a prompt.
         """
         response = self.model.generate_content(prompt)
+        print(response.usage_metadata)
         return response.text
