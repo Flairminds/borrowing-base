@@ -59,7 +59,7 @@ const PortfolioInsights = () => {
 				<>
 					{companyInfo && (
 						<div>
-							<p style={{fontSize: '13px'}}><i>*This content is generated using OpenAI for information purpose and may be subject to errors or omissions. Please verify independently.</i></p>
+							<p style={{fontSize: '13px'}}><i>*This content is auto-generated using publicly available data for information purpose and may be subject to errors or omissions. Please verify independently.</i></p>
 							{companyInfo.error ? (
 								companyInfo.suggestions && companyInfo.suggestions.length > 0 ? (
 									<div className={styles.suggestions}>
