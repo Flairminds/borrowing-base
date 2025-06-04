@@ -353,9 +353,10 @@ export const getConcentrationTestMasterData = (fund_name) => {
 	return res;
 };
 
-export const changeConcentrationTestMasterData = (changes) => {
+export const changeConcentrationTestMasterData = (changes, updateOldRecords) => {
 	const payload = {
-		changes: changes
+		changes: changes,
+		toUpdatePrevious: updateOldRecords
 	};
 	const res = axios.post(`${ApiURL}/fund_setup/change_limit_percent`, payload);
 	return res;
