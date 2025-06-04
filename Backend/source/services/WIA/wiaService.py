@@ -11,12 +11,23 @@ from source.utility.ServiceResponse import ServiceResponse
 from constants.error_constants import ErrorConstants
 from source.services.PCOF.WIA.util import PCOF_WIA
 from source.services.PFLT.WIA.util import PFLT_WIA
+from source.services.PSSL.WIA.util import PSSL_WIA
 import app
 from source.services.commons import commonServices
 from source.services.sheetUniques import sheet_uniques
+from source.services.PCOF.standardFileFormat import std_file_format as PCOF_STANDARD_FILE_FORMAT
+from source.services.PFLT.PFLT_std_file_format import std_file_format as PFLT_STANDARD_FILE_FORMAT
+from source.services.PSSL.standardFileFormat import standard_file_format as PSSL_STANDARD_FILE_FORMAT
 
 PCOF_FUND_WIA = PCOF_WIA()
 PFLT_FUND_WIA = PFLT_WIA()
+PSSL_FUND_WIA = PSSL_WIA()
+
+base_data_std_file_format = {
+    "PCOF": PCOF_STANDARD_FILE_FORMAT,
+    "PFLT": PFLT_STANDARD_FILE_FORMAT,
+    "PSSL": PSSL_STANDARD_FILE_FORMAT
+}
 
 def get_asset_overview(excelfile):
     wia_ref_sheets_dict = pd.read_excel(excelfile, sheet_name=None)
@@ -174,7 +185,7 @@ def validate_get_sheet_data_request(data):
     if not sheet_name:
         return ServiceResponse.error(message=ErrorConstants.SHEET_NAME_REQUIRED_MSG)
     
-def add_row_at_index(sheet_df, changes, sheet_name):
+def add_row_at_index(sheet_df, changes, sheet_name, fund_type):
     rows_to_add = changes["rows_to_add"]
     for row_to_add in rows_to_add:
         row_index = row_to_add["row_index"]
@@ -189,7 +200,7 @@ def add_row_at_index(sheet_df, changes, sheet_name):
     return sheet_df
 
 
-def delete_rows(df, changes, sheet_name):
+def delete_rows(df, changes, sheet_name, fund_type):
     rows_to_delete = changes["rows_to_delete"]
     sheet_uniques_name = sheet_uniques.get(sheet_name)
     for row_to_delete in rows_to_delete:
@@ -207,6 +218,7 @@ def update_add_df(data):
 
     base_data_file = BaseDataFile.query.filter_by(id=base_data_file_id).first()
     xl_sheet_df_map = pickle.loads(base_data_file.file_data)
+    fund_type = base_data_file.fund_type
 
     sheet_df = xl_sheet_df_map[sheet_name]
 
@@ -249,15 +261,15 @@ def update_add_df(data):
     # add new line in dataframe
     added_rows = changes.get("rows_to_add")
     if added_rows:
-        df = add_row_at_index(df, changes, sheet_name)
+        df = add_row_at_index(df, changes, sheet_name, fund_type)
 
     rows_to_delete = changes.get("rows_to_delete")
     if rows_to_delete:
-        df = delete_rows(df, changes, sheet_name)
+        df = delete_rows(df, changes, sheet_name, fund_type)
 
     updated_assets = changes.get("updated_assets")
     if updated_assets:
-        response_data = update_df(initial_df, df, changes, sheet_name)
+        response_data = update_df(initial_df, df, changes, sheet_name, fund_type)
         df = response_data["data"]
     
     df = df.reset_index(drop=True)
@@ -442,6 +454,9 @@ def get_file_data(data):
         if sheet_name == "Loan List":
             sheet_df = filter_assets(sheet_df, base_data_file, "Security Name")
 
+        if sheet_name == "Portfolio":
+            sheet_df = filter_assets(sheet_df, base_data_file, "Borrower")
+
         what_if_analysis_id = data.get("what_if_analysis_id")
         if what_if_analysis_id:
             modified_base_data_file = ModifiedBaseDataFile.query.filter_by(
@@ -459,6 +474,9 @@ def get_file_data(data):
             table_dict = response_data["data"]
         if fund_type == "PFLT":
             response_data = PFLT_FUND_WIA.convert_to_table(sheet_df, sheet_name)
+            table_dict = response_data["data"]
+        if fund_type == "PSSL":
+            response_data = PSSL_FUND_WIA.convert_to_table(sheet_df, sheet_name)
             table_dict = response_data["data"]
 
         changes = None
@@ -480,7 +498,7 @@ def get_file_data(data):
         return ServiceResponse.error(message = "Internal Server Error")
     
 
-def update_df(initial_df, sheet_df, changes, sheet_name):
+def update_df(initial_df, sheet_df, changes, sheet_name, fund_type):
     values_to_update = changes["updated_assets"]
 
     try:
@@ -496,7 +514,8 @@ def update_df(initial_df, sheet_df, changes, sheet_name):
                     prev_value = value_to_update.get("prev_value") or ''
                     updated_value = commonServices.get_updated_value(prev_value, updated_value)
 
-                    col_type = initial_df[col_name].dtype
+                    # col_type = initial_df[col_name].dtype
+                    col_type = base_data_std_file_format[fund_type][sheet_name][col_name]
 
                     updated_value = commonServices.get_raw_value(updated_value, col_type)
                     # print(col_type, col_name, updated_value)

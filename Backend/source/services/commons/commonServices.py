@@ -57,7 +57,7 @@ def get_raw_value(updated_value, col_type):
   
     try:
         match col_type:
-            case np.int64:
+            case "Number":
                 if type(updated_value) == str:
                     if updated_value != "":
                         updated_value = float(updated_value.replace(",", ""))
@@ -77,7 +77,7 @@ def get_raw_value(updated_value, col_type):
                 else:
                     updated_value = float(updated_value)
 
-            case "<M8[ns]":
+            case "datetime64[ns]":
                 if type(updated_value) == str:
                     if find_is_NaT(updated_value):
                         updated_value = None
@@ -88,7 +88,7 @@ def get_raw_value(updated_value, col_type):
                 else:
                     updated_value = datetime.strptime(updated_value, "%Y-%m-%d").date()
             
-            case object:
+            case "object":
                 try:
                     if not pd.isna(updated_value):
                         if updated_value != "":
