@@ -1,5 +1,5 @@
-def company_info_prompt(company_name):
-    return '''Give me a detailed corporate profile of ''' + company_name + ''', including the following:
+def company_info_prompt(company_name, google_result):
+    return '''Summarize the data provided in the user query to produce a better result.\n''' + google_result + '''\nGive priority to data provided in this prompt in case of conflict. Give me a detailed corporate profile of ''' + company_name + ''', including the following:
     1. Parent company or ownership structure
     2. History of mergers and acquisitions of this company
     3. History of mergers and acquisitions by this company
@@ -15,17 +15,17 @@ def company_info_prompt(company_name):
 		"industry": string,
 		"founder": string,
 		"current_ceo": string,
-		"employee_count": number,
+		"employee_count": string,
 		"products_and_services": Array,
 		"key_programs_served": Array,
 		"ownership_history": [{
-			"date": string in format MM-DD-YYYY,
+			"date": string in format 'MM-DD-YYYY' or 'Mmm, YYYY',
 			"acquirer": string,
 			"deal_type": string,
 			"details": string
 		}],
         "acquisitions_history": [{
-			"date": string in format MM-DD-YYYY,
+			"date": string in format 'MM-DD-YYYY' or 'Mmm, YYYY',
 			"acquirer": string,
 			"deal_type": string,
 			"details": string
@@ -34,7 +34,7 @@ def company_info_prompt(company_name):
 		"sister_companies": string[],
 		"subsidiaries": string[],
 		"key_milestones": [{
-			"year": number,
+			"date": string in format 'MM-DD-YYYY' or 'Mmm, YYYY',
 			"event": string
 		}],
 		"partnerships_and_joint_ventures": [{
@@ -42,7 +42,10 @@ def company_info_prompt(company_name):
 			"type": string,
 			"details": string
 		}],
-		"latest_news_links": string[],
+		"latest_news_links": [{
+			"date": string in format 'MM-DD-YYYY' or 'Mmm, YYYY',
+            "link": string
+        }],
 		"sources": string[]
 	}
 	If you can't find the result or face any issue, then return that as following json -
@@ -55,7 +58,8 @@ def company_info_prompt(company_name):
 		"error": true
 		"suggestions": string[]
 	}
-	Do not send anything else in output other than json. Use only verifiable sources and do not send wrong results. Check in crunchbase.com for better results.'''
+    Do not send anything else in output other than json. Use only verifiable sources and do not send wrong results. Check in crunchbase.com for better results.'''
+    
 
 
 # def company_info_prompt(company_name):

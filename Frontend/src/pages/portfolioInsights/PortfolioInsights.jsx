@@ -131,6 +131,21 @@ const PortfolioInsights = () => {
 											</div>
 										</div>
 									)}
+									{companyInfo.key_milestones && companyInfo.key_milestones.length > 0 && (
+										<div className={styles.companyInfo}>
+											<div>
+												<b>Key Milestones:</b>
+												<ol style={{ margin: '8px 0 0 16px' }}>
+													{companyInfo.key_milestones.map((p, i) => (
+														<li key={i}>
+															<div>{p.date}</div>
+															<div>{p.event}</div>
+														</li>
+													))}
+												</ol>
+											</div>
+										</div>
+									)}
 									{companyInfo.subsidiaries && companyInfo.subsidiaries.length > 0 && (
 										<div className={styles.companyInfo}>
 											<div>
@@ -161,7 +176,10 @@ const PortfolioInsights = () => {
 												<b>Latest News:</b>
 												<ol style={{ margin: '8px 0 0 16px' }}>
 													{companyInfo.latest_news_links.map((p, i) => (
-														<li key={i}><a href={p} target="_blank" rel="noreferrer">{p}</a></li>
+														<li key={i}>
+															<div>{p.date}</div>
+															<div><a href={p.link} target="_blank" rel="noreferrer">{p.link}</a></div>
+														</li>
 													))}
 												</ol>
 											</div>
