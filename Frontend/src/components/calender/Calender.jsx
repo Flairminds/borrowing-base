@@ -130,7 +130,7 @@ export const Calender = ({
 					/> */}
 					<DatePicker
 						id={fileUpload ? 'fileuploadDatePicker' : 'reportDatePicker'}
-						style={fileUpload ? {width: 130 } : {visibility: 'hidden', width: 3}}
+						style={fileUpload ? {width: 130 } : {visibility: 'hidden', width: 3, padding: '0'}}
 						suffixIcon={<img src={CalendarIcon}/>}	
 						placeholder='Report Date'
 						cellRender={cellRender}
@@ -144,7 +144,7 @@ export const Calender = ({
 						:
 						null
 					}
-				</>		
+				</>
 			}
 		</>
 	);
