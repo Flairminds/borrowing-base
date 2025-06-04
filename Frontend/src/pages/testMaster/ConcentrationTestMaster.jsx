@@ -254,7 +254,7 @@ export const ConcentrationTestMaster = () => {
 					</div>
 
 					<div className={styles.updateBtn}>
-						<UIComponents.Button onClick={submitChnages} loading={submitBtnLoading} text={submitBtnLoading ? 'Updating' : 'Update'} />
+						<UIComponents.Button onClick={submitChnages} loading={submitBtnLoading} text={submitBtnLoading ? 'Updating' : 'Update'} isFilled={true} />
 					</div>
 				</>
 			}

@@ -54,7 +54,7 @@ export const TableGraph = ({title, tableData, tableColumns, chartsData, yAxis}) 
 
 	return (
 		<div className={Styles.tableGraphContainer}>
-			<div style={{fontSize: '18px', fontWeight: 500, margin: '0.8rem 0.4rem'}}>{title}</div>
+			<h3 style={{fontSize: '20px', margin: '0.8rem 0.4rem'}}>{title}</h3>
 			<div className='d-flex'>
 				<div className={`${Styles.tableContainer}`}>
 					<table className={Styles.table}>

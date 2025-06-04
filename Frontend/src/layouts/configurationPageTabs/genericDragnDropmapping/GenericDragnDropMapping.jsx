@@ -11,8 +11,8 @@ import { deleteLoanTypeMapping, getLoanTypeMappingData, updateLoanTypeMapping } 
 import { fundOptionsArray } from '../../../utils/constants/constants';
 import { capitalizeFirstLetter } from '../../../utils/helperFunctions/commonHelperFunctions';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
-import styles from './GenericDragnDropMapping.module.css';
 import { SELECTED_TAG } from '../../../utils/styles';
+import styles from './GenericDragnDropMapping.module.css';
 
 const ItemType = "ITEM";
 
