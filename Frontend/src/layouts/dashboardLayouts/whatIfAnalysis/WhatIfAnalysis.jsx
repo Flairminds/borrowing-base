@@ -377,11 +377,12 @@ export const WhatIfAnalysis = ({
 			{saveBtn && (
 				<WIAInformation baseFile={baseFile} whaIfAnalsisData={whaIfAnalsisData} isSetDescriptionModal={isSetDescriptionModal} />
 			)}
-			<div style={{display: "inline-flex", flexWrap: 'wrap', width: '100%', justifyContent: 'space-between', padding: '0.5rem 1rem'}}>
-				<div style={{ display: "flex", alignItems: 'baseline'}}>
-					<h4>Borrowing Base Dashboard</h4>
-					<div style={{display: 'flex', alignItems: 'baseline', padding: '0 1rem', gap:"10px"}}>
-						<Select
+			<div style={{display: "inline-flex", flexWrap: 'wrap', width: '100%', justifyContent: 'space-between', padding: '0.5rem 0rem'}}>
+				<div style={{ display: "flex", alignItems: 'center'}}>
+					<h4 style={{margin: "0"}}>Borrowing Base Dashboard</h4>
+					{!selectedFund ? <span style={{padding: "0 5px"}}><LoaderSmall /></span> :
+						<div style={{display: 'flex', alignItems: 'center', padding: '0 0.7rem', gap: "2px"}}>
+							<Select
 								defaultValue={fundOptionsArray[0]}
 								style={{ width: 180, borderRadius: '8px', border: '1px solid #6D6E6F' }}
 								value={selectedFund}
@@ -391,15 +392,16 @@ export const WhatIfAnalysis = ({
 								}}
 								options={fundOptionsArray}
 							/>
-						{gettingDates ? <LoaderSmall/> :
-							<>
-								<Calender setReportDate={setReportDate} setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} setBaseFile={setBaseFile}
-									availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData} selectedFund={selectedFund} setGettingDashboardData={setGettingDashboardData} gettingDates={gettingDates} setCurrentFund={setCurrentFund} setTrendGraphData={setTrendGraphData}
-								/>
-								{reportDate && <span style={{color: "#2A2E34"}}>{reportDate}<Icons.InfoIcon title={'Select report date from highlighted dates in calendar to view results.'} /></span>}
-							</>
-						}
-					</div>
+							{gettingDates ? <span style={{padding: "0 5px"}}><LoaderSmall /></span> :
+								<div style={{display: "flex", alignItems: "center", padding: "0 5px 0 7px"}}>
+									<Calender setReportDate={setReportDate} setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} setBaseFile={setBaseFile}
+										availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData} selectedFund={selectedFund} setGettingDashboardData={setGettingDashboardData} setCurrentFund={setCurrentFund} setTrendGraphData={setTrendGraphData}
+									/>
+									{reportDate && <span style={{color: "#2A2E34"}}>{reportDate}<Icons.InfoIcon title={'Select report date from highlighted dates in calendar to view results.'} /></span>}
+								</div>
+							}
+						</div>
+					}
 					{/* <span style={{color: "#6D6E6F", padding: '0 0.5rem'}}>{constDate}</span> */}
 					{saveBtn && (
 						<div style={{display: "flex"}}>
@@ -456,6 +458,7 @@ export const WhatIfAnalysis = ({
 							availableClosingDates={availableClosingDates}
 							fundType={fundType}
 							setFundType={setFundType}
+							setCurrentFund={setCurrentFund}
 						/>
 					</div>
 				</div>

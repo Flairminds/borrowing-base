@@ -114,7 +114,7 @@ def get_bb_data_of_date(selected_date, user_id, base_data_file_id, fund_type):
     if base_data_file_id:
         borrowing_base_results = BaseDataFile.query.filter_by(id=base_data_file_id).first()
     else:
-        borrowing_base_results = BaseDataFile.query.filter_by(user_id=user_id, closing_date=selected_date, fund_type=fund_type).first()
+        borrowing_base_results = BaseDataFile.query.filter_by(user_id=user_id, closing_date=selected_date, fund_type=fund_type).order_by(BaseDataFile.created_at.desc()).first()
 
     if not borrowing_base_results:
         return (

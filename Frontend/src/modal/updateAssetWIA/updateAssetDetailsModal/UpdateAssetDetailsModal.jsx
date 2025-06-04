@@ -10,6 +10,7 @@ import MoreOptionsIcon from '../../../assets/updateAssetIcons/MoreOptionsIcon.sv
 // import ButtonStyles from '../../../components/uiComponents/Button/ButtonStyle.module.css';
 import { ModalComponents } from '../../../components/modalComponents';
 import { CustomButton } from '../../../components/uiComponents/Button/CustomButton';
+import { Loader } from '../../../components/uiComponents/loader/loader';
 import { getUpdateAssetData, updateModifiedAssets, updateSheetValues } from '../../../services/api';
 import { updateAssetDefaultColumnsData, updateAssetModalData } from '../../../utils/constants/constants';
 import { fmtDisplayVal } from '../../../utils/helperFunctions/formatDisplayData';
@@ -56,6 +57,7 @@ export const UpdateAssetDetailsModal = ({
 	const [isButtonDisabled, setIsButtonDisabled] = useState(true);
 	const [importFilePopup, setImportFilePopup ] = useState(false);
 	const [exportFilePopup, setExportFilePopup] = useState(false);
+	const [isTableLoading, setIsTableLoading] = useState(false);
 
 	useEffect(() => {
 		if (fundType) {
@@ -113,46 +115,39 @@ export const UpdateAssetDetailsModal = ({
 	};
 
 	const handleSheetChange = async(sheetName) => {
-
-		let totalChangesOnSheet = {
-			updated_assets: [],
-			rows_to_add: [],
-			rows_to_delete: []
-		};
-		if (updateAssetTableData?.changes) {
-			totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes, ...appliedChanges];
-		} else {
-			totalChangesOnSheet.updated_assets = [...appliedChanges];
-		}
-
-		if (addedDeletedAssets.addedAssets.length > 0) {
-			totalChangesOnSheet.rows_to_add = addedDeletedAssets.addedAssets;
-		}
-
-		if (addedDeletedAssets?.deletedAssets?.length > 0) {
-			totalChangesOnSheet.rows_to_delete = addedDeletedAssets?.deletedAssets;
-		}
-
 		try {
+			setIsTableLoading(true);
+
+			let totalChangesOnSheet = {
+				updated_assets: [],
+				rows_to_add: [],
+				rows_to_delete: []
+			};
+			
+			if (updateAssetTableData?.changes) {
+				totalChangesOnSheet.updated_assets = [...updateAssetTableData?.changes, ...appliedChanges];
+			} else {
+				totalChangesOnSheet.updated_assets = [...appliedChanges];
+			}
+			
+			if (addedDeletedAssets.addedAssets.length > 0) {
+				totalChangesOnSheet.rows_to_add = addedDeletedAssets.addedAssets;
+			}
+
+			if (addedDeletedAssets?.deletedAssets?.length > 0) {
+				totalChangesOnSheet.rows_to_delete = addedDeletedAssets?.deletedAssets;
+			}
+
 			if (appliedChanges.length > 0 || addedDeletedAssets?.addedAssets?.length > 0 || addedDeletedAssets?.deletedAssets?.length > 0 ) {
 				const res = await updateSheetValues(baseFile.id, selectedSheetNumber, totalChangesOnSheet, whatIfAnalysisId);
 				setWhatIfAnalysisId(res.data.result.modified_base_data_file_id);
 			}
-		} catch (err) {
-			console.error(err);
 
-		}
+			setAaddedDeletedAssets({
+				addedAssets: [],
+				deletedAssets: []
+			});
 
-		setAaddedDeletedAssets({
-			addedAssets: [],
-			deletedAssets: []
-		});
-		totalChangesOnSheet = {
-			updated_assets: [],
-			rows_to_add: []
-		};
-
-		try {
 			const res = await getUpdateAssetData(baseFile.id, sheetName, whatIfAnalysisId);
 			setUpdateAssetTableData(res.data.result);
 			setAppliedChanges([]);
@@ -160,6 +155,8 @@ export const UpdateAssetDetailsModal = ({
 			setSelectedSheetNumber(sheetName);
 		} catch (err) {
 			console.error(err);
+		} finally {
+			setIsTableLoading(false);
 		}
 
 	};
@@ -304,7 +301,6 @@ export const UpdateAssetDetailsModal = ({
 		// saveAs(blob, "CLO data.xlsx");
 	};
 
-
 	return (
 		<>
 			<Modal
@@ -345,70 +341,71 @@ export const UpdateAssetDetailsModal = ({
 						}
 					</div>
 					<div className={Styles.tableContainer}>
-						<table className={Styles.table}>
-							<thead>
-								<tr className={Styles.headRow}>
-									{updateAssetTableData && updateAssetTableData?.table_data[selectedSheetNumber]?.columns.map((col, index) => (
-										<th key={index} className={Styles.th}>
-											{col.label}
-										</th>
-									))}
-									<th className={Styles.th}></th>
-								</tr>
-							</thead>
-							<tbody>
-								{updateAssetTableData && updateAssetTableData?.table_data[selectedSheetNumber]?.data.map((row, rowIndex) => (
-									<tr key={rowIndex}>
-										{updateAssetTableData && updateAssetTableData?.table_data[selectedSheetNumber]?.columns.map((col) => (
-
-											<td
-												key={col}
-												className={Styles.td}
-											>
-
-												<div className={Styles.inputCellDiv}>
-													<input
-														className={showModification && getLatestPrevValue(updateAssetTableData?.changes, appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) ? Styles.currValueInput : Styles.assetUpdateInput}
-														onFocus={() => handleInputFocus(row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label)}
-														type="text"
-														value={fmtDisplayVal(selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label ? updateAssetInputText : row[col.key])}
-														onChange={(e) => handleCellInputChange(e)}
-													/>
-													{selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label &&
-													<>
-														<img
-															style={{zIndex: 200}} src={RightIcon} alt="Right Icon"
-															onClick={(e) => handleCommitChange(e, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.key, col.label, row[col.key])}
-														/>
-														<img
-															src={CrossIcon} alt="Cross Icon"
-															onClick={() => handleCancelChange()}
-														/>
-													</>
-													}
-												</div>
-												{showModification && getLatestPrevValue(updateAssetTableData?.changes, appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) &&
-												<div className={`${Styles.inputCellDiv} ${Styles.prevValueText}`}>
-													{getLatestPrevValue(updateAssetTableData?.changes, appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label)}
-												</div>
-												}
-
-
-											</td>
+						{isTableLoading ? <Loader /> :
+							<table className={Styles.table}>
+								<thead>
+									<tr className={Styles.headRow}>
+										{updateAssetTableData && updateAssetTableData?.table_data[selectedSheetNumber]?.columns.map((col, index) => (
+											<th key={index} className={Styles.th}>
+												{col.label}
+											</th>
 										))}
-										<td className={Styles.td}>
-											<img onClick={() => updateAddDeleteData(rowIndex, 'duplicate')} src={DuplicateAssetIcon} alt="Duplicate Asset Icon" className={Styles.editAssetOptionImage} />
-
-											<Popover placement="bottomLeft" content={<MoreOptionContent rowIndex={rowIndex} />}>
-												<img src={MoreOptionsIcon} alt="More Options Icon" className={Styles.editAssetOptionImage} />
-											</Popover>
-										</td>
+										<th className={Styles.th}></th>
 									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
+								</thead>
+								<tbody>
+									{updateAssetTableData && updateAssetTableData?.table_data[selectedSheetNumber]?.data.map((row, rowIndex) => (
+										<tr key={rowIndex}>
+											{updateAssetTableData && updateAssetTableData?.table_data[selectedSheetNumber]?.columns.map((col) => (
 
+												<td
+													key={col}
+													className={Styles.td}
+												>
+
+													<div className={Styles.inputCellDiv}>
+														<input
+															className={showModification && getLatestPrevValue(updateAssetTableData?.changes, appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) ? Styles.currValueInput : Styles.assetUpdateInput}
+															onFocus={() => handleInputFocus(row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label)}
+															type="text"
+															value={fmtDisplayVal(selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label ? updateAssetInputText : row[col.key])}
+															onChange={(e) => handleCellInputChange(e)}
+														/>
+														{selectedCellData.investment_name == row[updateAssetDefaultColumnsData[selectedSheetNumber]] && selectedCellData.colName == col.label &&
+														<>
+															<img
+																style={{zIndex: 200}} src={RightIcon} alt="Right Icon"
+																onClick={(e) => handleCommitChange(e, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.key, col.label, row[col.key])}
+															/>
+															<img
+																src={CrossIcon} alt="Cross Icon"
+																onClick={() => handleCancelChange()}
+															/>
+														</>
+														}
+													</div>
+													{showModification && getLatestPrevValue(updateAssetTableData?.changes, appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label) &&
+													<div className={`${Styles.inputCellDiv} ${Styles.prevValueText}`}>
+														{getLatestPrevValue(updateAssetTableData?.changes, appliedChanges, row[updateAssetDefaultColumnsData[selectedSheetNumber]], col.label)}
+													</div>
+													}
+
+
+												</td>
+											))}
+											<td className={Styles.td}>
+												<img onClick={() => updateAddDeleteData(rowIndex, 'duplicate')} src={DuplicateAssetIcon} alt="Duplicate Asset Icon" className={Styles.editAssetOptionImage} />
+
+												<Popover placement="bottomLeft" content={<MoreOptionContent rowIndex={rowIndex} />}>
+													<img src={MoreOptionsIcon} alt="More Options Icon" className={Styles.editAssetOptionImage} />
+												</Popover>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						}
+					</div>
 				</>
 
 			</Modal>
