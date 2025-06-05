@@ -20,7 +20,6 @@ export const Calender = ({
 	selectedFund,
 	setGettingDashboardData,
 	gettingDates,
-	setCurrentFund,
 	setTrendGraphData
 }) => {
 
@@ -48,7 +47,6 @@ export const Calender = ({
 					setTrendGraphData(null)
 					const response = await getDateReport(dateString, null, selectedFund);
 					if (response.status === 200) {
-						setCurrentFund(response.data.fund_name)
 						setTablesData(response.data);
 						setBaseFile({ name: response.data.file_name, id: response.data.base_data_file_id });
 						setWhatifAnalysisPerformed(false);

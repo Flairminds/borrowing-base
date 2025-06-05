@@ -36,9 +36,7 @@ export const Dashboard = ({
 	gettingDashboardData,
 	setGettingDashboardData,
 	gettingDates,
-	setGettingDates,
-	currentFund,
-	setCurrentFund
+	setGettingDates
 }) => {
 
 	const [trendGraphData, setTrendGraphData] = useState([]);
@@ -92,8 +90,6 @@ export const Dashboard = ({
 				setGettingDashboardData={setGettingDashboardData}
 				gettingDates={gettingDates}
 				setGettingDates={setGettingDates}
-				currentFund={currentFund}
-				setCurrentFund={setCurrentFund}
 			/>
 			{gettingDashboardData ? <Loader/> :
 				<div style={{display: 'flex', flexDirection: 'column', gap: '20px'}}>
@@ -112,7 +108,6 @@ export const Dashboard = ({
 						fundType={fundType}
 						selectedFund={selectedFund}
 						gettingDashboardData={gettingDashboardData}
-						currentFund={currentFund}
 					/>
 					<TableGraph title="Segmentation Overview" tableData={tablesData?.segmentation_overview_data} tableColumns={tablesData?.segmentation_overview_data?.columns[0]?.data} chartsData={tablesData?.segmentation_chart_data?.segmentation_chart_data} yAxis= {tablesData?.segmentation_chart_data?.x_axis} />
 					<TableGraph title="Security" tableData={tablesData?.security_data} tableColumns={tablesData?.security_data?.columns[0]?.data} chartsData={tablesData?.security_chart_data?.security_chart_data} yAxis={tablesData?.security_chart_data?.x_axis} />

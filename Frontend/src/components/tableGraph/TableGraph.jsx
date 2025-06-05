@@ -94,7 +94,7 @@ export const TableGraph = ({title, tableData, tableColumns, chartsData, yAxis}) 
 							{(len > 9) && (
 								<tr>
 									<td colSpan={tableColumns.length} className={Styles.td}>
-										<UIComponents.Button onClick={ModalOpen} text={`View other +${tableData[tableColumns[0]].length - 6 }`} asLink={true} />
+										<UIComponents.Button customStyle={{padding: "0 1rem"}} onClick={ModalOpen} text={`View other +${tableData[tableColumns[0]].length - 6 }`} asLink={true} />
 										<TableViewModal openModal={openModal} setOpenModal={setOpenModal} data={tableData} columns={tableColumns} heading={''} />
 									</td>
 								</tr>

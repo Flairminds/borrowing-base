@@ -23,7 +23,7 @@ export const PortfollioDashboard = ({
 	getTrendGraphData,
 	whatifAnalysisPerformed,
 	gettingDashboardData,
-	currentFund
+	fundType
 }) => {
 	const [activeComponent, setActiveComponent] = useState('');
 	const [overviewTableData, setOverviewTableData] = useState();
@@ -69,7 +69,7 @@ export const PortfollioDashboard = ({
 					<div className={stylesOverView.main}>
 						<div className={stylesOverView.titleDiv}>
 							<div className={stylesOverView.overViewHeadingDiv}>
-								<h3 style={{fontSize: '20px', margin: '0.8rem 0.4rem'}}>{currentFund} Borrowing Base Overview</h3>
+								<h3 style={{fontSize: '20px', margin: '0.8rem 0.4rem'}}>{fundType && `${fundType} Borrowing Base Overview`}</h3>
 								{/* <span className={stylesOverView.overViewHeading}>Overview</span> */}
 								{/* <span className={stylesOverView.fundTypeContainer}>{currentFund}</span> */}
 							</div>

@@ -37,10 +37,9 @@ export function App() {
 	const [previewPageId, setPreviewPageId] = useState(-1);
 	const [previewFundType, setPreviewFundType] = useState("");
 	const [whatifAnalysisPerformed, setWhatifAnalysisPerformed] = useState(false);
-	const [selectedFund,setSelectedFund]=useState()
-	const [gettingDashboardData,setGettingDashboardData]=useState(false)
-	const [gettingDates,setGettingDates]=useState(false)
-	const [currentFund,setCurrentFund]=useState("fetching...")
+	const [selectedFund, setSelectedFund] = useState("Fetching...");
+	const [gettingDashboardData, setGettingDashboardData] = useState(false);
+	const [gettingDates, setGettingDates] = useState(false);
 	// const [selectedIds, setSelectedIds] = useState([]);
 	const selectedIds = useRef([]);
 
@@ -48,8 +47,7 @@ export function App() {
 		try {
 			const res = await landingPageData(1);
 			if (res.status == 200) {
-				setSelectedFund(res.data.fund_name)
-				setCurrentFund(res.data.fund_name)
+				setSelectedFund(res.data.fund_name);
 				setConstDate(res.data.closing_date);
 				setAvailableClosingDates(res.data.closing_dates);
 				setTablesData(res.data);
@@ -75,6 +73,7 @@ export function App() {
 				setWhatifAnalysisPerformed(false);
 				setReportDate(response.data.closing_date);
 				setFundType(response.data.fund_name);
+				setSelectedFund(response.data.fund_name);
 				setGettingDashboardData(false);
 			}
 		} catch (err) {
@@ -86,7 +85,6 @@ export function App() {
 			}
 		}
 	};
-
 
 	useEffect(() => {
 		setSelectedAssets(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
@@ -124,8 +122,6 @@ export function App() {
 								setGettingDashboardData={setGettingDashboardData}
 								gettingDates={gettingDates}
 								setGettingDates={setGettingDates}
-								currentFund={currentFund}
-								setCurrentFund={setCurrentFund}
 							/>
 						}
 					/>
