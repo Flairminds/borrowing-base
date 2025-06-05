@@ -38,7 +38,7 @@ export const UploadFile = ({
 	fundType,
 	setFundType,
 	setTablesData,
-	setCurrentFund
+	setSelectedFund
 }) => {
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [isLoaderVisible, setIsLoaderVisible] = useState(false);
@@ -161,7 +161,7 @@ export const UploadFile = ({
 				setReportDate(response.data.closing_date);
 				setFundType(response.data.fund_name);
 				setIsAnalysisModalOpen(false);
-				setCurrentFund(response.data.fund_name);
+				setSelectedFund(response.data.fund_name);
 			}
 			setSelectedOption(0);
 			setWhatifAnalysisPerformed(false);
@@ -315,6 +315,7 @@ export const UploadFile = ({
 					'assetSelectionList': res.data
 				});
 				setFundType(fund);
+				setSelectedFund(fund);
 				// getTrendGraphData(fund);
 				navigate('asset-selection');
 				setBaseFile({ name: fileName, id: fileId });

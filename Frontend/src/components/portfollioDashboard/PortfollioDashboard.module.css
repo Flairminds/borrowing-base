@@ -280,6 +280,7 @@ form {
   .fixedHeight
 {
   height: 420px;
+  min-height: fit-content;
 }
 
 .overViewHeadingDiv{

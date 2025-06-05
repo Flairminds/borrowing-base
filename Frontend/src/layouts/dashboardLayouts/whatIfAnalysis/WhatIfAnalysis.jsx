@@ -55,8 +55,7 @@ export const WhatIfAnalysis = ({
 	setAvailableClosingDates,
 	setGettingDashboardData,
 	gettingDates,
-	setGettingDates,
-	setCurrentFund
+	setGettingDates
 }) => {
 	const [selectedRow, setSelectedRow] = useState(null);
 	// const[isAnalysisModalOpen,setIsAnalysisModalOpen] =useState(false)
@@ -361,17 +360,19 @@ export const WhatIfAnalysis = ({
 		setIsAssetInventoryModal(true);
 	};
 
-	const handleFundChange=async(fund)=>{
+	const handleFundChange = async(fund) => {
+		setSelectedFund(fund);
 		try {
-			setGettingDates(true)
+			setGettingDates(true);
 			const response = await getAvailableDates(fund);
-			setAvailableClosingDates(response?.data?.result)
-			setGettingDates(false)
+			setAvailableClosingDates(response?.data?.result);
+			setGettingDates(false);
 		} catch (err) {
-			setGettingDates(false)
-			console.log(err)
+			setGettingDates(false);
+			console.log(err);
 		}
-	}
+	};
+
 	return (
 		<>
 			{saveBtn && (
@@ -386,16 +387,13 @@ export const WhatIfAnalysis = ({
 								defaultValue={fundOptionsArray[0]}
 								style={{ width: 180, borderRadius: '8px', border: '1px solid #6D6E6F' }}
 								value={selectedFund}
-								onSelect={(value) => {
-									setSelectedFund(fundOptionsArray[value].label);
-									handleFundChange(fundOptionsArray[value].label)
-								}}
+								onSelect={(value) => handleFundChange(fundOptionsArray[value].label)}
 								options={fundOptionsArray}
 							/>
-							{gettingDates ? <span style={{padding: "0 5px"}}><LoaderSmall /></span> :
+							{(gettingDates || selectedFund === "Fetching..." ) ? <span style={{padding: "0 5px"}}><LoaderSmall /></span> :
 								<div style={{display: "flex", alignItems: "center", padding: "0 5px 0 7px"}}>
 									<Calender setReportDate={setReportDate} setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} setBaseFile={setBaseFile}
-										availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData} selectedFund={selectedFund} setGettingDashboardData={setGettingDashboardData} setCurrentFund={setCurrentFund} setTrendGraphData={setTrendGraphData}
+										availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData} selectedFund={selectedFund} setGettingDashboardData={setGettingDashboardData} setTrendGraphData={setTrendGraphData}
 									/>
 									{reportDate && <span style={{color: "#2A2E34"}}>{reportDate}<Icons.InfoIcon title={'Select report date from highlighted dates in calendar to view results.'} /></span>}
 								</div>
@@ -458,7 +456,7 @@ export const WhatIfAnalysis = ({
 							availableClosingDates={availableClosingDates}
 							fundType={fundType}
 							setFundType={setFundType}
-							setCurrentFund={setCurrentFund}
+							setSelectedFund={setSelectedFund}
 						/>
 					</div>
 				</div>
