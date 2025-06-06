@@ -62,6 +62,7 @@ from source.routes.fundSetupRoute import fundSetup_blueprint
 from source.routes.wiaRoute import wia_blueprint
 from source.routes.diRoute import di_blueprint
 from source.routes.mappingRoute import mapping_setup_blueprint
+from source.routes.aiIntegrationRout import web_scraping_blueprint
 
 BASE_DIR = pathlib.Path().absolute()
 os.chdir(BASE_DIR)
@@ -104,6 +105,7 @@ app.register_blueprint(fundSetup_blueprint, url_prefix="/api/fund_setup")
 app.register_blueprint(wia_blueprint, url_prefix="/api/wia")
 app.register_blueprint(di_blueprint, url_prefix="/api/data_ingestion")
 app.register_blueprint(mapping_setup_blueprint, url_prefix="/api/mapping")
+app.register_blueprint(web_scraping_blueprint, url_prefix="/api/scraping")
 
 
 @app.route("/lib/<path:filename>")
