@@ -89,7 +89,7 @@ def store_sheet_data(data_dict):
             print(f"Processing sheet: {sheet_name}")
 
             df = truncate_and_rename_columns(df)
-            if (sheet_name == "Market and Book Value Position_"):
+            if (sheet_name == "Market and Book Value"):
                 table_name = "sf_sheet_marketbook_1"
             else:
                 table_name = 'sf_sheet' + '_' + sheet_name.lower().replace(" ", "_")

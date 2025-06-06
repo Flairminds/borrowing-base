@@ -314,7 +314,7 @@ def get_file_type(sheet_name_list):
     cashFileSheetList = {"US Bank Holdings", "Client Holdings"} 
     masterCompSheetList = {"Borrower Stats", "Securities Stats", "SOI Mapping"}
     # marketValueSheetList = {"Sheet1"}
-    marketValueSheetList = {"Market and Book Value Position_"}
+    marketValueSheetList = {"Market and Book Value"}
     masterRatingsList = {"Master Ratings"}
 
     if any(sheet in sheet_name_list for sheet in masterRatingsList):
@@ -1406,7 +1406,26 @@ def extract_validate_store_update(source_file):
             extension = src_file.extension
             file_full_name = file_name + extension
 
+            if extension.lower() == '.csv' and "market" in file_name.lower():
+                file_bytes = source_file["file"]
+                file_stream = BytesIO(file_bytes)
+                
+                df = pd.read_csv(file_stream)
+                
+                excel_buffer = BytesIO()
+                with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                    df.to_excel(writer, index=False, sheet_name='Market and Book Value')
+                excel_buffer.seek(0)
+                
+                source_file["file"] = excel_buffer.getvalue()
+                src_file.extension = '.xlsx'
+
             extraction_response = extract_source_file(source_file)
+            
+            # Restore original extension if it was CSV
+            if extension.lower() == '.csv':
+                src_file.extension = extension
+
             file_type = src_file.file_type
             engine = db.get_engine()
         
