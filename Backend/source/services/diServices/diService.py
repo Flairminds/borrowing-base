@@ -581,13 +581,14 @@ def get_base_data(info_id):
                         except Exception as e:
                             print(e, val, type(val))
                         # t[key] = val
+                col_details = next((b for b in base_data_mapping if b.bd_column_lookup == key), None)
+                if col_details is not None and col_details[4] == 'currency':
+                    numerized_val = '$' + numerized_val if numerized_val is not None else val
                 t[key] = {
                     "meta_info": True,
                     "value": val,
                     "display_value": numerized_val if numerized_val else val,
                     "title": val,
-                    "data_type": None,
-                    "unit": None,
                     "old_value": old_value
                 }
             # t['report_date'] = t['report_date'].strftime("%Y-%m-%d")
