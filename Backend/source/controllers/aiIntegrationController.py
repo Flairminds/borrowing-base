@@ -2,6 +2,7 @@ from source.utility.Log import Log
 from source.utility.HTTPResponse import HTTPResponse
 
 from source.services.aiIntegration.webScraping.webScraper import DiffBotScraperClient
+from source.services.aiIntegration.webScraping.ScraperAPI import ScrapperApiClient
 
 def search():
     try:
@@ -10,7 +11,8 @@ def search():
         # web_url = "https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.spglobal.com/market-intelligence/en/solutions/products/sp-capital-iq-pro&ved=2ahUKEwi_oLvkhNyNAxV1ATQIHVuiK4AQFnoECBwQAQ"
         # web_url = "https://www.google.com/url?sa=t&source=web&rct=j&opi=89978449&url=https://www.targetedpetcare.com/&ved=2ahUKEwi19eiliNyNAxWohv0HHXdfKp8QFnoECCQQAQ"
 
-        scraper_client = DiffBotScraperClient()
+        # scraper_client = DiffBotScraperClient()
+        scraper_client = ScrapperApiClient()
         print(web_url)
         response = scraper_client.scrape(web_url)
         if response['success'] is False:
