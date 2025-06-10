@@ -6,6 +6,7 @@ from models import BaseDataFile, ModifiedBaseDataFile, WhatIfAnalysis
 from source.utility.HTTPResponse import HTTPResponse
 from source.services.commons import commonServices
 from source.services import dashboardService
+from source.services import compareReportsService
 from source.services.PCOF.PcofDashboardService import PcofDashboardService
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 from source.services.PSSL.PsslDashboardService import PsslDashboardService
@@ -317,6 +318,14 @@ def get_company_insights():
         return HTTPResponse.error(message="Missing 'company_name' in request body.", status_code=400)
     try:
         result = dashboardService.get_company_insights(company_name)
+        return HTTPResponse.success(result=result)
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error")
+    
+def compare_pcof_report():
+    try:
+        result = compareReportsService.compare_pcof_report()
         return HTTPResponse.success(result=result)
     except Exception as e:
         Log.func_error(e)

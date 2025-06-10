@@ -41,7 +41,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                         else 'No'
                     end as "classifications_defaulted_restructured",
                     ss."[C] LTM Rev" as "financials_ltm_revenue_mms",
-                    ss."EBITDA" as "financials_ltm_ebitda_mms",
+                    bs."[CM] [R] LTM EBITDA" as "financials_ltm_ebitda_mms",
                     null as "leverage_revolver_commitment", -- could not map -- considering null for now
                     ss."[PSM] TEV" as "leverage_total_enterprise_value",
                     ss."Total Gross Leverage" as "leverage_total_leverage",
@@ -70,7 +70,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."[SI] LIBOR Floor",
                     ss."[SI] Type of Rate",
                     ss."[C] LTM Rev",
-                    ss."EBITDA",
+                    bs."[CM] [R] LTM EBITDA",
                     ss."[PSM] TEV",
                     ss."Total Gross Leverage",
                     ss."Pennant Gross Leverage",
