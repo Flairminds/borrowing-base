@@ -307,6 +307,7 @@ class PfltSecurityMapping(db.Model):
     cashfile_security_name = db.Column(db.String)
     marketvalue_issuer = db.Column(db.String)
     marketvalue_asset = db.Column(db.String)
+    pcof_report_inv_name = db.Column(db.String)
     created_by = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_by = db.Column(db.Integer, nullable=True)
