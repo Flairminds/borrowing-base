@@ -1,0 +1,76 @@
+.progressBar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  margin: 10px 0;
+  position: relative;
+}
+
+.progressStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.stepIconContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.stepIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #E6E8EC;
+  color: #fff;
+}
+
+.stepIcon.active {
+  background: #00B884;
+}
+
+.stepIcon.completed {
+  background: #00B884;
+}
+
+.stepLabel {
+  font-size: 14px;
+  color: #6B7280;
+  text-align: center;
+  max-width: 120px;
+  margin-top: 8px;
+}
+
+.stepLabel.active {
+  color: #00B884;
+  font-weight: 500;
+}
+
+.progressLine {
+  position: absolute;
+  top: 20px;
+  left: calc(10% + 20px);
+  right: calc(10% + 20px);
+  height: 2px;
+  background: #E6E8EC;
+  z-index: 0;
+}
+
+.progressLineSegment {
+  position: absolute;
+  top: 20px;
+  height: 2px;
+  background: #00B884;
+  z-index: 0;
+  transition: width 0.3s ease, left 0.3s ease;
+} 

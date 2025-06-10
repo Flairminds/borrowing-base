@@ -33,8 +33,6 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 	const [filterDate, setFilterDate] = useState(null);
 	const [reportDates, setReportDates] = useState([]);
 	const [extractionInProgress, setExtractionInProgress] = useState(false);
-	const [showErrorsModal, setShowErrorsModal] = useState(false);
-	const [validationInfoData, setValidationInfoData] = useState([]);
 	const [filesSelected, setFilesSelected] = useState(0);
 	const [unmappedSecurities, setUnmappedSecurities] = useState(0);
 	const [showUnmappedSecuritiesModal, setShowUnmappedSecuritiesModal] = useState(false);

@@ -1,0 +1,175 @@
+import { UploadOutlined } from '@ant-design/icons';
+import { Checkbox, Upload } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { DynamicTableComponents } from '../reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { UIComponents } from '../uiComponents';
+import { showToast } from '../../utils/helperFunctions/toastUtils';
+import { getBlobFilesList } from '../../services/dataIngestionApi';
+import { FUND_BG_COLOR } from '../../utils/styles';
+import { LoaderSmall } from '../uiComponents/loader/loader';
+
+export const UploadFiles = ({ uploadedFiles, setUploadedFiles, selectedFund, selectedDate }) => {
+	const [showUploader, setShowUploader] = useState(false);
+	const [dataLoading, setDataLoading] = useState(false);
+	const [showErrorsModal, setShowErrorsModal] = useState(false);
+	const [validationInfoData, setValidationInfoData] = useState([]);
+	const [dataIngestionFileListColumns, setDataIngestionFileListColumns] = useState([]);
+	const [tableData, setTableData] = useState([]);
+
+
+	console.log("dataIngestionFileListColumns", dataIngestionFileListColumns);
+
+	const columns = [
+		{ key: 'date', label: 'REPORT DATE', isEditable: false },
+		{ key: 'fund', label: 'FUND', isEditable: false },
+		{ key: 'name', label: 'FILE NAME', isEditable: false },
+		{ key: 'uploadedAt', label: 'UPLOADED AT', isEditable: false },
+		{ key: 'uploadedBy', label: 'UPLOADED BY', isEditable: false }
+	];
+
+	useEffect(() => {
+		blobFilesList(selectedFund);
+	}, [selectedFund]);
+
+	const injectRender = (columns) => {
+		return columns?.map((col) => {
+			if (col.key === 'extraction_status') {
+				return {
+					...col,
+					render: (value, row) => (
+						<div>
+							<span style={{display: 'inline-block', padding: '3px 7px', borderRadius: '8px', ...(STATUS_BG_COLOR[row.extraction_status.toLowerCase()] || {backgroundColor: 'gray', color: 'white'})}}>
+								{row.extraction_status}
+							</span>
+							{row.extraction_status === 'Failed' && row.validation_info &&
+								<span
+									style={{cursor: "pointer", paddingLeft: "3px"}}
+									onClick={() => {
+										const recordData = Object.entries(row);
+										recordData.forEach((data) => {
+											if (data[0] === "validation_info") {
+												setShowErrorsModal(true);
+												setValidationInfoData(data[1]);
+											}
+										});
+									}}
+								>
+									Show more
+								</span>
+							}
+						</div>
+					)
+				};
+			}
+			if (col.key === 'fund') {
+				return {
+					...col,
+					render: (value, row) => (
+						<div>
+							{row.fund.map((f, i) => {
+								return (
+									<span key={i} style={{display: 'inline-block', ...(FUND_BG_COLOR[f] || { backgroundColor: 'gray', color: 'white'}), padding: '3px 7px', margin: '0 2px', borderRadius: '8px'}}>
+										{f}
+									</span>
+								);
+							})}
+						</div>
+					)
+				};
+			}
+			return col;
+		});
+	};
+
+	const blobFilesList = async(fundType) => {
+		try {
+			setDataLoading(true);
+			const payload = fundType || null;
+			const blobResponse = await getBlobFilesList(payload);
+			const responseData = blobResponse.data.result;
+			console.log("respose", blobResponse);
+			setTableData(responseData.data);
+			
+			let updatedColumns = [...responseData.columns];
+			updatedColumns = injectRender(updatedColumns);
+			setDataIngestionFileListColumns(updatedColumns);
+			setDataLoading(false);
+
+		} catch (err) {
+			console.error(err);
+			showToast("error", err.response.data.message);
+			setDataLoading(false);
+		}
+	};
+
+	console.log("fil;", tableData);
+
+	const handleFiles = () => {
+		console.log("he");
+		
+	}
+
+	return (
+		<>
+			<div
+				style={{
+					backgroundColor: '#f5f6f8',
+					borderRadius: 8,
+					padding: '8px 16px',
+					display: 'flex',
+					alignItems: 'center',
+					justifyContent: 'center',
+					fontWeight: 500,
+					fontSize: 18,
+					marginBottom: '0.8rem'
+				}}
+			>
+				<span style={{ marginRight: 16 }}>
+					Fund: <span style={{ color: '#00a99d', fontWeight: 'bold' }}>{selectedFund}</span>
+				</span>
+				<span>
+					Report Date: <span style={{ color: '#00a99d', fontWeight: 'bold' }}>{selectedDate.format('MM-DD-YYYY')}</span>
+				</span>
+			</div>
+
+			<div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+				<Checkbox
+					style={{ transform: 'scale(1.5)', marginRight: "1rem"}}
+					checked={showUploader}
+					onChange={(e) => setShowUploader(e.target.checked)}
+				/>
+				<span style={{ fontWeight: 600, fontSize: 18 }}>
+					Upload source files
+				</span>
+			</div>
+
+			{showUploader && (
+				<div
+					key="uploader-container"
+					style={{
+						border: '1px dashed #d9d9d9',
+						borderRadius: 8,
+						padding: 32,
+						textAlign: 'center',
+						marginBottom: 24
+					}}
+				>
+					<Upload.Dragger multiple showUploadList={false} beforeUpload={() => false} onChange={({ fileList }) => handleFiles(fileList)}>
+						<p style={{ color: '#aaa', fontSize: 32 }}>
+							<UploadOutlined />
+						</p>
+						<p>Drag and drop your files here, or</p>
+						<UIComponents.Button text="Browse Files" />
+					</Upload.Dragger>
+				</div>
+			)}
+
+			{dataLoading ? <LoaderSmall /> :
+				<>
+					<div style={{ fontWeight: 500, marginBottom: 8 }}>Uploaded files</div>
+					<DynamicTableComponents data={tableData} columns={dataIngestionFileListColumns} />
+				</>
+			}
+		</>
+	);
+};

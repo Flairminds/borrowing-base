@@ -1,4 +1,3 @@
-
 .ingestionPageContainer {
   display: flex;
   justify-content: center;
@@ -79,8 +78,61 @@
 }
 
 .headRow .th:last-child 
-{
-  border-top-right-radius: 9px;
+
+.cardTabsWrapper {
+  background: #fff;
+  border: 1px solid #e4e6ef;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.06);
+  padding: 0 0 24px 0;
+  margin-top: 24px;
+  width: 100%;
+  max-width: 1100px;
+  min-height: 540px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  /* Remove gap between tab bar and content */
+  overflow: visible;
+}
+
+/* Remove background from tab label text */
+.ant-tabs-tab .ant-tabs-tab-btn {
+  background: none !important;
+}
+
+/* Ensure tab content fits and is not cut off */
+.ant-tabs-content-holder {
+  min-height: 400px;
+  padding: 0 24px;
+  box-sizing: border-box;
+  background: transparent;
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+}
+
+/* Fix border continuity for card tabs */
+.ant-tabs-card .ant-tabs-content,
+.ant-tabs-card .ant-tabs-tabpane {
+  background: transparent;
+  border-radius: 0 0 12px 12px;
+}
+
+/* Responsive width for smaller screens */
+@media (max-width: 1200px) {
+  .cardTabsWrapper {
+    max-width: 98vw;
+  }
+}
+
+.tabBodyFixed {
+  width: 100%;
+  max-width: 1050px;
+  min-height: 400px;
+  max-height: 540px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 0 8px 0 0;
 }
 
 .lastRow .totalRow:first-child
@@ -93,5 +145,126 @@
   border-bottom-right-radius: 8px;
 }
 
+.dataIngestionPageContainer {
+  padding: 24px;
+}
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  background: #fff;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  padding: 0 24px;
+  border-bottom: 1px solid #e8e8e8;
+  margin-bottom: 0;
+}
+
+.tab {
+  padding: 16px 24px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: #595959;
+  transition: all 0.3s;
+  border-bottom: 2px solid transparent;
+  position: relative;
+  bottom: -1px;
+}
+
+.tab:hover {
+  color: #13c2c2;
+}
+
+.activeTab {
+  color: #13c2c2;
+  border-bottom: 2px solid #13c2c2;
+  background: #fff;
+}
+
+.tabContent {
+  min-height: 400px;
+  background: #fff;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.progressBar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+  margin: 40px 0;
+  position: relative;
+}
+
+.progressStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+}
+
+.stepIconContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.stepIcon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #E6E8EC;
+  color: #fff;
+}
+
+.stepIcon.active {
+  background: #00B884;
+}
+
+.stepIcon.completed {
+  background: #00B884;
+}
+
+.stepLabel {
+  font-size: 14px;
+  color: #6B7280;
+  text-align: center;
+  max-width: 120px;
+  margin-top: 8px;
+}
+
+.stepLabel.active {
+  color: #00B884;
+  font-weight: 500;
+}
+
+.progressLine {
+  position: absolute;
+  top: 20px;
+  left: calc(10% + 20px);
+  right: calc(10% + 20px);
+  height: 2px;
+  background: #E6E8EC;
+  z-index: 0;
+}
+
+.progressLineSegment {
+  position: absolute;
+  top: 20px;
+  height: 2px;
+  background: #00B884;
+  z-index: 0;
+  transition: width 0.3s ease, left 0.3s ease;
+}
 
   

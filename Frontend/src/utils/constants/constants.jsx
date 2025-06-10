@@ -74,7 +74,8 @@ export const sidebarItemsArray = [
 	{ imgSrc: ThreeBarIcon, imgAlt: "ThreeBar Icon", name: 'Conc. Test Setup', route: '/fund-setup' },
 	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: PAGE_ROUTES.BASE_DATA_LIST.url },
 	{ imgSrc: settingIcon, imgAlt: "Config Icon", name: 'Configuration', route: '/configuration' },
-	{ imgIcon: <MdInsights size={25} />, imgAlt: "Config Icon", name: 'Insights', route: '/insights' }
+	{ imgIcon: <MdInsights size={25} />, imgAlt: "Config Icon", name: 'Insights', route: '/insights' },
+	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion New', route: '/data-ingestion/new' }
 	// { imgSrc: DoneCheckIcon, imgAlt: "DoneCheck Icon" },
 	// { imgSrc: suitcasePortfolioIcon, imgAlt: "suitcasePortfolio Icon" },
 	// { imgSrc: GroupUserIcon, imgAlt: "GroupUser Icon" },

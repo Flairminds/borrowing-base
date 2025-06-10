@@ -10,6 +10,7 @@ import { BorrowingBasePreviewPage } from './pages/borrowingBasePreview/Borrowing
 import { ConfigurationPage } from './pages/configurationPage/ConfigurationPage';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { DataIngestionPage } from './pages/dataIngestion/DataIngestionPage';
+import DataIngestionNew from './pages/dataIngestion/DataIngestionNew';
 import PortfolioInsights from './pages/portfolioInsights/PortfolioInsights';
 import { SecurityMapping } from './pages/securityMapping/SecurityMapping';
 // import { SecurityMappingPage } from './pages/securityMappingPage/SecurityMappingPage';
@@ -181,6 +182,7 @@ export function App() {
 					/>
 					{/* <Route path='/security-mapping' element={<SecurityMappingPage selectedSecurities={selectedSecurities} />} /> */}
 					<Route path='/configuration' element={<ConfigurationPage />} />
+					<Route path='/data-ingestion/new' element={<DataIngestionNew />} />
 
 					{/* <Route path='/securities-mapping' element={<SecurityMapping />} /> */}
 				</Route>
