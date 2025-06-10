@@ -416,6 +416,7 @@ def get_company_insights(company_name: str):
         result = CompanyInfoOpenAI.query.filter(func.lower(CompanyInfoOpenAI.company_name) == company_name.lower()).first()
         parsed_json = {}
         model_name = ''
+        kg_parsed_json = None
         if result is None:
             # serpapi
             serpapi_client = SerpAPIClient()
