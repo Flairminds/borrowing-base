@@ -61,6 +61,64 @@ def company_info_prompt(company_name, google_result):
     Do not send anything else in output other than json. Use only verifiable sources and do not send wrong results. Check in crunchbase.com for better results.'''
     
 
-
+def knowledge_graph_prompt(input):
+    return input + '''\nGive me the knowledge graph of companies mentioned in this in the following json schema:\n{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GraphData",
+  "type": "object",
+  "properties": {
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "label", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "type": { "type": "string" },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "industry": { "type": "string" },
+              "founder": { "type": "string" },
+              "current_ceo": { "type": "string" },
+              "employee_count": { "type": "integer" },
+              "products_and_services": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["source", "target", "type"],
+        "properties": {
+          "source": { "type": "string" },
+          "target": { "type": "string" },
+          "type": { "type": "string" },
+          "properties": {
+            "type": "object",
+            "properties": {
+              "date": { "type": "string" },
+              "deal_type": { "type": "string" }
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": ["nodes", "edges"],
+  "additionalProperties": false
+}
+'''
 # def company_info_prompt(company_name):
 #     return '''What is today precise date?'''

@@ -238,7 +238,7 @@ def trigger_pcof_bb(bdi_id):
         df_PL_BB_Build["Rates Fixed Coupon"] = df_PL_BB_Build["Rates Fixed Coupon"].fillna(0).astype(float)
 
         df_PL_BB_Build["Rates Current LIBOR/Floor"] = pd.to_numeric(df_PL_BB_Build["Rates Current LIBOR/Floor"], errors='coerce')
-        df_PL_BB_Build["Rates Current LIBOR/Floor"] = df_PL_BB_Build["Rates Current LIBOR/Floor"].fillna(0).astype(int)
+        df_PL_BB_Build["Rates Current LIBOR/Floor"] = df_PL_BB_Build["Rates Current LIBOR/Floor"].fillna(0).astype(float)
 
         df_PL_BB_Build["Rates Floating Cash Spread"] = pd.to_numeric(df_PL_BB_Build["Rates Floating Cash Spread"], errors='coerce')
         df_PL_BB_Build["Rates Floating Cash Spread"] = df_PL_BB_Build["Rates Floating Cash Spread"].astype(float)

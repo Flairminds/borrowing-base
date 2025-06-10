@@ -17,7 +17,7 @@ from source.services.PCOF.PcofDashboardService import PcofDashboardService
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 from source.utility.ServiceResponse import ServiceResponse
 from utility.Util import excel_cell_format
-from source.utility.aiPrompts import company_info_prompt
+from source.utility.aiPrompts import company_info_prompt, knowledge_graph_prompt
 
 pcofDashboardService = PcofDashboardService()
 pfltDashboardService = PfltDashboardService()
@@ -426,8 +426,8 @@ def get_company_insights(company_name: str):
 
             # gemini
             client = GeminiClient()
-            result = client.generate_content(prompt)
-            clean_str = result.strip('`')
+            prompt_result = client.generate_content(prompt)
+            clean_str = prompt_result.strip('`')
             clean_str = re.sub(r'^json\s*', '', clean_str).strip()
             clean_str = clean_str.strip('`')
             parsed_json = json.loads(clean_str)
@@ -455,6 +455,20 @@ def get_company_insights(company_name: str):
             db.session.commit()
         else:
             parsed_json = result.company_info
-        return ServiceResponse.success(data=parsed_json)
+            kg_parsed_json = result.knowledge_graph
+            if result.knowledge_graph is None:
+                # getting relationships for knowledge graph
+                kg_prompt = knowledge_graph_prompt(json.dumps(parsed_json))
+                client = GeminiClient()
+                prompt_result = client.generate_content(kg_prompt)
+                kg_clean_str = prompt_result.strip('`')
+                kg_clean_str = re.sub(r'^json\s*', '', kg_clean_str).strip()
+                kg_clean_str = kg_clean_str.strip('`')
+                kg_parsed_json = json.loads(kg_clean_str)
+                model_name = 'gemini-2.0-flash'
+                result.knowledge_graph = kg_parsed_json
+                db.session.add(result)
+                db.session.commit()
+        return ServiceResponse.success(data={ "parsed_json": parsed_json, "kg_parsed_json": kg_parsed_json })
     except Exception as e:
         raise Exception(e)

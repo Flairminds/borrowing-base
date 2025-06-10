@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { DynamicInputComponent } from '../../components/reusableComponents/dynamicInputsComponent/DynamicInputComponent';
 import { UIComponents } from '../../components/uiComponents';
+import CompanyKnowledgeGraph from '../../layouts/companyKnowledgeGraph/CompanyKnowledgeGraph';
 import { getCompanyInfo } from '../../services/api';
 import styles from './PortfolioInsights.module.css';
 
-const fetchCompanyInfo = async (companyName, setCompanyInfo, setLoading) => {
+const fetchCompanyInfo = async (companyName, setCompanyInfo, setCompanyGraphInfo, setLoading) => {
 	setLoading(true);
 	try {
 		const response = await getCompanyInfo({ "company_name": companyName });
@@ -14,12 +15,14 @@ const fetchCompanyInfo = async (companyName, setCompanyInfo, setLoading) => {
 			return;
 		}
 		try {
-			setCompanyInfo(response.data.result.data);
+			setCompanyInfo(response.data.result.data.parsed_json);
+			setLoading(false);
+			setCompanyGraphInfo(response.data.result.data.kg_parsed_json);
 		} catch (e) {
-			setCompanyInfo({ error: true, error_message: 'Failed to parse company info.' });
+			setCompanyInfo({ error: true, "error_message": 'Failed to parse company info.' });
 		}
 	} catch (error) {
-		setCompanyInfo({ error: true, error_message: 'Error fetching data.' });
+		setCompanyInfo({ error: true, "error_message": 'Error fetching data.' });
 	}
 	setLoading(false);
 };
@@ -27,11 +30,12 @@ const fetchCompanyInfo = async (companyName, setCompanyInfo, setLoading) => {
 const PortfolioInsights = () => {
 	const [companyName, setCompanyName] = useState('');
 	const [companyInfo, setCompanyInfo] = useState(null);
+	const [companyGraphInfo, setCompanyGraphInfo] = useState(null);
 	const [loading, setLoading] = useState(false);
 
 	const handleSearch = () => {
 		if (companyName.trim()) {
-			fetchCompanyInfo(companyName, setCompanyInfo, setLoading);
+			fetchCompanyInfo(companyName, setCompanyInfo, setCompanyGraphInfo, setLoading);
 		}
 	};
 
@@ -55,6 +59,7 @@ const PortfolioInsights = () => {
 					loading={loading}
 				/>
 			</div>
+			<CompanyKnowledgeGraph data={companyGraphInfo} />
 			{loading ? <UIComponents.LoaderSmall /> :
 				<>
 					{companyInfo && (

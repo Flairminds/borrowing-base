@@ -885,6 +885,7 @@ class CompanyInfoOpenAI(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
     company_name = db.Column(db.String)
     company_info = db.Column(db.JSON)
+    knowledge_graph = db.Column(db.JSON)
     model_name = db.Column(db.String)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_at = db.Column(db.DateTime(timezone=True))
