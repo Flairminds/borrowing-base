@@ -22,6 +22,7 @@ export function isDateValid(dateStr) {
 export const fmtDisplayVal = (value, decimals = 2) => {
 	let temp = value;
 	if (!temp) return temp;
+	if (typeof value === 'string' && value.startsWith('$')) return temp;
 	// console.log("value is number", typeof(value), value, isNaN(value));
 	if (typeof (value) === 'number' || !isNaN(value)) {
 		temp = parseFloat(value).toFixed(decimals).replace(/\d(?=(\d{3})+\.)/g, '$&,');

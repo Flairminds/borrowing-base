@@ -307,6 +307,7 @@ class PfltSecurityMapping(db.Model):
     cashfile_security_name = db.Column(db.String)
     marketvalue_issuer = db.Column(db.String)
     marketvalue_asset = db.Column(db.String)
+    pcof_report_inv_name = db.Column(db.String)
     created_by = db.Column(db.Integer, nullable=True)
     created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
     modified_by = db.Column(db.Integer, nullable=True)
@@ -879,3 +880,14 @@ class PcofIndustry(db.Model):
             "industry_name": self.industry_name,
             "std_industry_name": self.std_industry_name
         }
+
+class CompanyInfoOpenAI(db.Model):
+    __tablename__ = 'company_info_open_ai'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True, nullable=False)
+    company_name = db.Column(db.String)
+    company_info = db.Column(db.JSON)
+    knowledge_graph = db.Column(db.JSON)
+    model_name = db.Column(db.String)
+    created_at = db.Column(db.DateTime(timezone=True), server_default=db.func.now())
+    modified_at = db.Column(db.DateTime(timezone=True))
+

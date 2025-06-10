@@ -10,13 +10,12 @@ import { BorrowingBasePreviewPage } from './pages/borrowingBasePreview/Borrowing
 import { ConfigurationPage } from './pages/configurationPage/ConfigurationPage';
 import { Dashboard } from './pages/dashboard/Dashboard';
 import { DataIngestionPage } from './pages/dataIngestion/DataIngestionPage';
+import PortfolioInsights from './pages/portfolioInsights/PortfolioInsights';
 import { SecurityMapping } from './pages/securityMapping/SecurityMapping';
 // import { SecurityMappingPage } from './pages/securityMappingPage/SecurityMappingPage';
 import { ConcentrationTestMaster } from './pages/testMaster/ConcentrationTestMaster';
 import { getDateReport, landingPageData } from './services/api';
 import { previousSelectedAssetsArray } from './utils/helperFunctions/getSelectedAssets';
-import { showToast } from './utils/helperFunctions/toastUtils';
-
 
 
 export function App() {
@@ -38,7 +37,9 @@ export function App() {
 	const [previewPageId, setPreviewPageId] = useState(-1);
 	const [previewFundType, setPreviewFundType] = useState("");
 	const [whatifAnalysisPerformed, setWhatifAnalysisPerformed] = useState(false);
-
+	const [selectedFund, setSelectedFund] = useState("Fetching...");
+	const [gettingDashboardData, setGettingDashboardData] = useState(false);
+	const [gettingDates, setGettingDates] = useState(false);
 	// const [selectedIds, setSelectedIds] = useState([]);
 	const selectedIds = useRef([]);
 
@@ -46,6 +47,7 @@ export function App() {
 		try {
 			const res = await landingPageData(1);
 			if (res.status == 200) {
+				setSelectedFund(res.data.fund_name);
 				setConstDate(res.data.closing_date);
 				setAvailableClosingDates(res.data.closing_dates);
 				setTablesData(res.data);
@@ -63,23 +65,26 @@ export function App() {
 
 	const getborrowingbasedata = async (base_data_file_id) => {
 		try {
-			const response = await getDateReport(null, base_data_file_id);
+			setGettingDashboardData(true)
+			const response = await getDateReport(null, base_data_file_id, null);
 			if (response.status === 200) {
 				setTablesData(response.data);
 				setBaseFile({ name: response.data.file_name, id: response.data.base_data_file_id });
 				setWhatifAnalysisPerformed(false);
 				setReportDate(response.data.closing_date);
 				setFundType(response.data.fund_name);
+				setSelectedFund(response.data.fund_name);
+				setGettingDashboardData(false);
 			}
 		} catch (err) {
 			if (err.response && err.response.status === 404) {
 				console.error(err);
+				setGettingDashboardData(false)
 			} else {
 				console.error(err);
 			}
 		}
 	};
-
 
 	useEffect(() => {
 		setSelectedAssets(assetSelectionData?.assetSelectionList?.data ? previousSelectedAssetsArray(assetSelectionData?.assetSelectionList?.data) : []);
@@ -110,10 +115,18 @@ export function App() {
 								getLandingPageData={getLandingPageData}
 								setWhatifAnalysisPerformed={setWhatifAnalysisPerformed}
 								whatifAnalysisPerformed= {whatifAnalysisPerformed}
+								selectedFund={selectedFund}
+								setSelectedFund={setSelectedFund}
+								setAvailableClosingDates={setAvailableClosingDates}
+								gettingDashboardData={gettingDashboardData}
+								setGettingDashboardData={setGettingDashboardData}
+								gettingDates={gettingDates}
+								setGettingDates={setGettingDates}
 							/>
 						}
 					/>
 					<Route path='/fund-setup' element={<ConcentrationTestMaster />} />
+					<Route path='/insights' element={<PortfolioInsights />} />
 					<Route path='/asset-selection'
 						element={
 							<AssetSelectionPage

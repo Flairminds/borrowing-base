@@ -9,6 +9,24 @@
 	--primary-link-color: #5196ff;
 	--error-text-color: red;
 	--border-radius: 5px;
+  --section-background-color: white;
+  --section-box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --section-border-radius: 5px;
+  --section-border: 1px solid rgb(245, 245, 245);
+  --card-background-color: white;
+  --card-box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --card-border-radius: 5px;
+  --card-border: 1px solid rgb(245, 245, 245);
+  --card-border-active: 1px solid #66dbca;
+  --table-background-color: white;
+  --table-box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --table-border-radius: 5px;
+  --table-border: 1px solid rgb(245, 245, 245);
+  --table-header-color: #DCDEDE;
+  --tabs-background-color: #DCDEDE;
+  --tabs-background-color-active: rgb(240, 240, 240);
+  --tabs-background-color-hover: rgb(240, 240, 240);
+  --btn-box-shadow: 0 10px 15px 2px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
 * {
@@ -84,3 +102,7 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 } */
+
+body {
+  background-color: rgb(245, 245, 245);
+}

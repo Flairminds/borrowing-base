@@ -6,6 +6,7 @@ from models import BaseDataFile, ModifiedBaseDataFile, WhatIfAnalysis
 from source.utility.HTTPResponse import HTTPResponse
 from source.services.commons import commonServices
 from source.services import dashboardService
+from source.services import compareReportsService
 from source.services.PCOF.PcofDashboardService import PcofDashboardService
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 from source.services.PSSL.PsslDashboardService import PsslDashboardService
@@ -187,7 +188,7 @@ def get_bb_data_of_date():
         fund_type = data.get("fund_type")
         user_id = data.get("user_id")
         base_data_file_id = data.get("base_data_file_id")
-        return dashboardService.get_bb_data_of_date(selected_date, user_id, base_data_file_id)
+        return dashboardService.get_bb_data_of_date(selected_date, user_id, base_data_file_id, fund_type)
     except Exception as e:
         return {
             "error": str(e),
@@ -308,4 +309,24 @@ def get_closing_dates():
         closing_dates = dashboardService.get_closing_dates_list(fund_type)
         return HTTPResponse.success(result=closing_dates)
     except Exception as e:
+        return HTTPResponse.error(message="Internal Server Error")
+
+def get_company_insights():
+    data = json.loads(request.data)
+    company_name = data.get("company_name")
+    if not company_name:
+        return HTTPResponse.error(message="Missing 'company_name' in request body.", status_code=400)
+    try:
+        result = dashboardService.get_company_insights(company_name)
+        return HTTPResponse.success(result=result)
+    except Exception as e:
+        Log.func_error(e)
+        return HTTPResponse.error(message="Internal Server Error")
+    
+def compare_pcof_report():
+    try:
+        result = compareReportsService.compare_pcof_report()
+        return HTTPResponse.success(result=result)
+    except Exception as e:
+        Log.func_error(e)
         return HTTPResponse.error(message="Internal Server Error")

@@ -4,15 +4,20 @@ from datetime import date, datetime, timezone
 import json
 from io import BytesIO
 import pandas as pd
-from sqlalchemy import text
+import re
+from sqlalchemy import func, text
 
-from models import db, BaseDataFile, WhatIfAnalysis
+from source.services.aiIntegration.serpapi import SerpAPIClient
+from source.services.aiIntegration.openai import OpenAIClient
+from source.services.aiIntegration.gemini import GeminiClient
+from models import db, BaseDataFile, WhatIfAnalysis, CompanyInfoOpenAI
 from Exceptions.StdFileFormatException import StdFileFormatException
 from source.services.PCOF import utility as PCOFUtility
 from source.services.PCOF.PcofDashboardService import PcofDashboardService
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 from source.utility.ServiceResponse import ServiceResponse
 from utility.Util import excel_cell_format
+from source.utility.aiPrompts import company_info_prompt, knowledge_graph_prompt
 
 pcofDashboardService = PcofDashboardService()
 pfltDashboardService = PfltDashboardService()
@@ -71,20 +76,7 @@ def latest_closing_date(user_id):
     data["file_name"] = latest_data.file_name
     data["fund_name"] = latest_data.fund_type
 
-    base_data_files = BaseDataFile.query.filter_by(user_id=user_id).all()
-    closing_dates = [
-        base_data_file.closing_date.strftime("%Y-%m-%d")
-        for base_data_file in base_data_files
-    ]
-    data["closing_dates"] = closing_dates
-
-    base_data_files = BaseDataFile.query.filter(
-        BaseDataFile.user_id == user_id, BaseDataFile.response != None
-    ).all()
-    closing_dates = [
-        base_data_file.closing_date.strftime("%Y-%m-%d")
-        for base_data_file in base_data_files
-    ]
+    closing_dates = get_closing_dates_list(latest_data.fund_type)
     data["closing_dates"] = closing_dates
     return jsonify(data), 200
 
@@ -110,7 +102,8 @@ def get_files_list(user_id):
             "closing_date": file.closing_date.strftime("%m-%d-%Y"),
             "created_at": file.created_at.strftime("%m-%d-%Y %H:%M"),
             "fund_type": file.fund_type,
-            "extracted_base_data_info_id": file.extracted_base_data_info_id
+            "extracted_base_data_info_id": file.extracted_base_data_info_id,
+            "is_calculated": True if file.response else False
         }
         for file in base_data_files
     ]
@@ -118,11 +111,11 @@ def get_files_list(user_id):
     return jsonify({"error_status": False, "files_list": file_names}), 200
 
 
-def get_bb_data_of_date(selected_date, user_id, base_data_file_id):
+def get_bb_data_of_date(selected_date, user_id, base_data_file_id, fund_type):
     if base_data_file_id:
         borrowing_base_results = BaseDataFile.query.filter_by(id=base_data_file_id).first()
     else:
-        borrowing_base_results = BaseDataFile.query.filter_by(user_id=user_id, closing_date=selected_date).first()
+        borrowing_base_results = BaseDataFile.query.filter_by(user_id=user_id, closing_date=selected_date, fund_type=fund_type).order_by(BaseDataFile.created_at.desc()).first()
 
     if not borrowing_base_results:
         return (
@@ -142,11 +135,9 @@ def get_bb_data_of_date(selected_date, user_id, base_data_file_id):
             404,
         )
     
-    base_data_files = BaseDataFile.query.filter_by(user_id=user_id).all()
-    closing_dates = [
-        base_data_file.closing_date.strftime("%Y-%m-%d")
-        for base_data_file in base_data_files
-    ]
+    fund_type = borrowing_base_results.fund_type
+   
+    closing_dates = get_closing_dates_list(fund_type)
 
     pickle_borrowing_base_date_wise_results = borrowing_base_results.response
     borrowing_base_date_wise_results = pickle.loads(
@@ -280,7 +271,11 @@ def override_file(base_data_file, excel_file, xl_sheet_df_map, fund_type, includ
 
 def get_closing_dates_list(fund_type):
     user_id = 1
-    base_data_files = BaseDataFile.query.filter_by(user_id=user_id, fund_type=fund_type).all()
+    base_data_files = BaseDataFile.query.filter(
+        BaseDataFile.response!=None, 
+        BaseDataFile.user_id==user_id, 
+        BaseDataFile.fund_type==fund_type
+    ).all()
     closing_dates = [base_data_file.closing_date.strftime("%Y-%m-%d") for base_data_file in base_data_files]
     return closing_dates
 
@@ -415,3 +410,65 @@ def download_calculated_df(base_data_file):
             ),
             500,
         )
+
+def get_company_insights(company_name: str):
+    try:
+        result = CompanyInfoOpenAI.query.filter(func.lower(CompanyInfoOpenAI.company_name) == company_name.lower()).first()
+        parsed_json = {}
+        model_name = ''
+        if result is None:
+            # serpapi
+            serpapi_client = SerpAPIClient()
+            google_search_result = serpapi_client.search(company_name)
+            google_search_result_for_ai_prompt = "\n".join(google_search_result)
+            
+            prompt = company_info_prompt(company_name, google_search_result_for_ai_prompt)
+
+            # gemini
+            client = GeminiClient()
+            prompt_result = client.generate_content(prompt)
+            clean_str = prompt_result.strip('`')
+            clean_str = re.sub(r'^json\s*', '', clean_str).strip()
+            clean_str = clean_str.strip('`')
+            parsed_json = json.loads(clean_str)
+            model_name = 'gemini-2.0-flash'
+
+            # openai
+            # client = OpenAIClient()
+            # result = client.chat_completion([
+            #     {"role": "system", "content": "You are a corporate analyst. Summarize company data from JSON."},
+            #     {"role": "user", "content": prompt}
+            # ])
+            # clean_str = result["content"].strip('"')
+            # clean_str = result["content"].strip('`')
+            # clean_str = re.sub(r'^json\s*', '', clean_str).strip()
+            # parsed_json = json.loads(clean_str)
+            # model_name='openai-gpt4.1'
+
+            company_info = CompanyInfoOpenAI(
+                company_name=company_name,
+                company_info=parsed_json,
+                model_name=model_name
+            )
+            
+            db.session.add(company_info)
+            db.session.commit()
+        else:
+            parsed_json = result.company_info
+            kg_parsed_json = result.knowledge_graph
+            if result.knowledge_graph is None:
+                # getting relationships for knowledge graph
+                kg_prompt = knowledge_graph_prompt(json.dumps(parsed_json))
+                client = GeminiClient()
+                prompt_result = client.generate_content(kg_prompt)
+                kg_clean_str = prompt_result.strip('`')
+                kg_clean_str = re.sub(r'^json\s*', '', kg_clean_str).strip()
+                kg_clean_str = kg_clean_str.strip('`')
+                kg_parsed_json = json.loads(kg_clean_str)
+                model_name = 'gemini-2.0-flash'
+                result.knowledge_graph = kg_parsed_json
+                db.session.add(result)
+                db.session.commit()
+        return ServiceResponse.success(data={ "parsed_json": parsed_json, "kg_parsed_json": kg_parsed_json })
+    except Exception as e:
+        raise Exception(e)

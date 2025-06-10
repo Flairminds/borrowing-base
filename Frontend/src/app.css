@@ -50,7 +50,7 @@
 }
 
 .ant-tabs-nav-wrap {
-  background-color: rgb(241, 241, 241);
+  background-color: var(--tabs-background-color);
 }
 
 .ant-tabs .ant-tabs-tab {
@@ -71,12 +71,12 @@
 }
 
 .ant-tabs-tab-btn:hover {
-  background-color: rgb(241, 241, 241);
+  background-color: var(--tabs-background-color-hover);
   color: black !important;
 }
 
 .ant-tabs-tab-active .ant-tabs-tab-btn {
   /* font-weight: bold; */
 	color: black !important;
-  background-color: rgb(241, 241, 241);
+  background-color: var(--tabs-background-color-active);
 }

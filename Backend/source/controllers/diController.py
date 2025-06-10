@@ -494,3 +494,13 @@ def get_vae_data():
     except Exception as e:
         Log.func_error(e=e)
         return HTTPResponse.error(message="Internal Server Error", status_code=500)
+
+def get_mapping_suggestions():
+    try:
+        response = diService.get_mapping_suggestions()
+        if not response.get('success'):
+            return HTTPResponse.error(message="Something went wrong.")
+        return HTTPResponse.success(message="Success", result=response['data'])
+    except Exception as e:
+        Log.func_error(e=e)
+        return HTTPResponse.error(message="Internal Server Error", status_code=500)

@@ -4,13 +4,9 @@ import { UIComponents } from "../uiComponents";
 
 export const BackOption = ({
 	text = '<- Back',
-	onClick = () => {},
-	loading = false,
-	loadingText = 'Loading...',
-	customStyle = {},
-	btnDisabled = false
+	onClick = () => {}
 }) => {
 	return (
-		<UIComponents.Button onClick={onClick} loading={loading} asLink={true} disabled={btnDisabled} text={loading ? loadingText : text} />
+		<span onClick={onClick} style={{color: 'blue'}}>{text}</span>
 	);
 };

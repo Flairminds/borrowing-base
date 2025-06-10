@@ -54,7 +54,7 @@ export const TableGraph = ({title, tableData, tableColumns, chartsData, yAxis}) 
 
 	return (
 		<div className={Styles.tableGraphContainer}>
-			<div style={{fontSize: '18px', fontWeight: 500, margin: '0.8rem 0.4rem'}}>{title}</div>
+			<h3 style={{fontSize: '20px', margin: '0.8rem 0.4rem'}}>{title}</h3>
 			<div className='d-flex'>
 				<div className={`${Styles.tableContainer}`}>
 					<table className={Styles.table}>
@@ -94,7 +94,7 @@ export const TableGraph = ({title, tableData, tableColumns, chartsData, yAxis}) 
 							{(len > 9) && (
 								<tr>
 									<td colSpan={tableColumns.length} className={Styles.td}>
-										<UIComponents.Button onClick={ModalOpen} text={`View other +${tableData[tableColumns[0]].length - 6 }`} asLink={true} />
+										<UIComponents.Button customStyle={{padding: "0 1rem"}} onClick={ModalOpen} text={`View other +${tableData[tableColumns[0]].length - 6 }`} asLink={true} />
 										<TableViewModal openModal={openModal} setOpenModal={setOpenModal} data={tableData} columns={tableColumns} heading={''} />
 									</td>
 								</tr>

@@ -1,6 +1,7 @@
 from azure.core.exceptions import ResourceExistsError
 import os
 import mmap
+import re
 from io import BytesIO
 import pandas as pd
 from datetime import datetime
@@ -18,6 +19,7 @@ from datetime import datetime
 from werkzeug.datastructures import FileStorage
 import time
 
+from source.services.aiIntegration.openai import OpenAIClient
 from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
@@ -312,7 +314,7 @@ def get_file_type(sheet_name_list):
     cashFileSheetList = {"US Bank Holdings", "Client Holdings"} 
     masterCompSheetList = {"Borrower Stats", "Securities Stats", "SOI Mapping"}
     # marketValueSheetList = {"Sheet1"}
-    marketValueSheetList = {"Market and Book Value Position_"}
+    marketValueSheetList = {"Market and Book Value"}
     masterRatingsList = {"Master Ratings"}
 
     if any(sheet in sheet_name_list for sheet in masterRatingsList):
@@ -579,13 +581,14 @@ def get_base_data(info_id):
                         except Exception as e:
                             print(e, val, type(val))
                         # t[key] = val
+                col_details = next((b for b in base_data_mapping if b.bd_column_lookup == key), None)
+                if col_details is not None and col_details[4] == 'currency':
+                    numerized_val = '$' + numerized_val if numerized_val is not None else val
                 t[key] = {
                     "meta_info": True,
                     "value": val,
                     "display_value": numerized_val if numerized_val else val,
                     "title": val,
-                    "data_type": None,
-                    "unit": None,
                     "old_value": old_value
                 }
             # t['report_date'] = t['report_date'].strftime("%Y-%m-%d")
@@ -1404,7 +1407,26 @@ def extract_validate_store_update(source_file):
             extension = src_file.extension
             file_full_name = file_name + extension
 
+            if extension.lower() == '.csv' and "market" in file_name.lower():
+                file_bytes = source_file["file"]
+                file_stream = BytesIO(file_bytes)
+                
+                df = pd.read_csv(file_stream)
+                
+                excel_buffer = BytesIO()
+                with pd.ExcelWriter(excel_buffer, engine='openpyxl') as writer:
+                    df.to_excel(writer, index=False, sheet_name='Market and Book Value')
+                excel_buffer.seek(0)
+                
+                source_file["file"] = excel_buffer.getvalue()
+                src_file.extension = '.xlsx'
+
             extraction_response = extract_source_file(source_file)
+            
+            # Restore original extension if it was CSV
+            if extension.lower() == '.csv':
+                src_file.extension = extension
+
             file_type = src_file.file_type
             engine = db.get_engine()
         
@@ -2105,3 +2127,33 @@ def get_unmapped_securities(file_ids, fund_type):
     
     except Exception as e:
         raise Exception(e)
+
+
+def get_mapping_suggestions():
+    family_name_rows = PfltSecurityMapping.query.filter_by(cashfile_security_name = None).distinct().all()
+    family_names = [row.family_name for row in family_name_rows]
+    client = OpenAIClient()
+    profile = "Berwick Industrial Park"
+    prompt = (
+        "Given the following company profile, select the best matching company name from the list. "
+        "Provide the best match and a short reasoning.\n"
+        f"Profile: {profile}\n"
+        f"Company Names: {family_names}\n"
+        "Respond in JSON format as {\"best_match\": <company_name>, \"reasoning\": <reason>, \"all_scores\": [<company_name>: <score>, ...]}"
+    )
+    response = client.chat_completion([
+        {"role": "system", "content": "You are a corporate analyst. Summarize company data from JSON."},
+        {"role": "user", "content": prompt}
+    ])
+    print(response)
+    clean_str = response["content"].strip('"')
+    clean_str = response["content"].strip('`')
+    clean_str = re.sub(r'^json\s*', '', clean_str).strip()
+    parsed_json = json.loads(clean_str)
+    # Try to parse the response as JSON
+    try:
+        result = json.loads(response["content"] if isinstance(response, dict) else response)
+    except Exception:
+        result = {"raw_response": response}
+    return result
+    
