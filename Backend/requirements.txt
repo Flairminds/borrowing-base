@@ -73,3 +73,4 @@ Werkzeug==2.3.6
 xlrd==2.0.1
 google-generativeai
 openai
+google-search-results==2.4.2
