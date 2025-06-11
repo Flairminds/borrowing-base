@@ -37,10 +37,10 @@ export function App() {
 	const [previewPageId, setPreviewPageId] = useState(-1);
 	const [previewFundType, setPreviewFundType] = useState("");
 	const [whatifAnalysisPerformed, setWhatifAnalysisPerformed] = useState(false);
-	const [selectedFund,setSelectedFund]=useState()
-	const [gettingDashboardData,setGettingDashboardData]=useState(false)
-	const [gettingDates,setGettingDates]=useState(false)
-	const [currentFund,setCurrentFund]=useState("fetching...")
+	const [selectedFund, setSelectedFund] = useState("");
+	const [gettingDashboardData, setGettingDashboardData] = useState(false);
+	const [gettingDates, setGettingDates] = useState(false);
+	const [currentFund, setCurrentFund] = useState("fetching...");
 	// const [selectedIds, setSelectedIds] = useState([]);
 	const selectedIds = useRef([]);
 
@@ -48,8 +48,8 @@ export function App() {
 		try {
 			const res = await landingPageData(1);
 			if (res.status == 200) {
-				setSelectedFund(res.data.fund_name)
-				setCurrentFund(res.data.fund_name)
+				setSelectedFund(res.data.fund_name);
+				setCurrentFund(res.data.fund_name);
 				setConstDate(res.data.closing_date);
 				setAvailableClosingDates(res.data.closing_dates);
 				setTablesData(res.data);
@@ -67,7 +67,7 @@ export function App() {
 
 	const getborrowingbasedata = async (base_data_file_id) => {
 		try {
-			setGettingDashboardData(true)
+			setGettingDashboardData(true);
 			const response = await getDateReport(null, base_data_file_id, null);
 			if (response.status === 200) {
 				setTablesData(response.data);
@@ -80,7 +80,7 @@ export function App() {
 		} catch (err) {
 			if (err.response && err.response.status === 404) {
 				console.error(err);
-				setGettingDashboardData(false)
+				setGettingDashboardData(false);
 			} else {
 				console.error(err);
 			}

@@ -108,7 +108,7 @@ export const WhatIfAnalysis = ({
 	const [whatIfAnalysisType, setWhatIfAnalysisType] = useState();
 	const [simulationType, setSimulationType] = useState();
 	const [isAddLoadBtnDisable, setIsAddLoadBtnDisable] = useState(true);
-	
+
 
 	useEffect(() => {
 		if (selectedFiles.length > 0) {
@@ -176,8 +176,8 @@ export const WhatIfAnalysis = ({
 
 	const handleReportDownload = async() => {
 		try {
-			const response = await downLoadReportSheet(baseFile.id,1);
-			const blob = new Blob([response.data])
+			const response = await downLoadReportSheet(baseFile.id, 1);
+			const blob = new Blob([response.data]);
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
@@ -361,17 +361,17 @@ export const WhatIfAnalysis = ({
 		setIsAssetInventoryModal(true);
 	};
 
-	const handleFundChange=async(fund)=>{
+	const handleFundChange = async(fund)=>{
 		try {
-			setGettingDates(true)
+			setGettingDates(true);
 			const response = await getAvailableDates(fund);
-			setAvailableClosingDates(response?.data?.result)
-			setGettingDates(false)
+			setAvailableClosingDates(response?.data?.result);
+			setGettingDates(false);
 		} catch (err) {
-			setGettingDates(false)
-			console.log(err)
+			setGettingDates(false);
+			console.log(err);
 		}
-	}
+	};
 	return (
 		<>
 			{saveBtn && (
@@ -380,17 +380,17 @@ export const WhatIfAnalysis = ({
 			<div style={{display: "inline-flex", flexWrap: 'wrap', width: '100%', justifyContent: 'space-between', padding: '0.5rem 1rem'}}>
 				<div style={{ display: "flex", alignItems: 'baseline'}}>
 					<h4>Borrowing Base Dashboard</h4>
-					<div style={{display: 'flex', alignItems: 'baseline', padding: '0 1rem', gap:"10px"}}>
+					<div style={{display: 'flex', alignItems: 'baseline', padding: '0 1rem', gap: "10px"}}>
 						<Select
-								defaultValue={fundOptionsArray[0]}
-								style={{ width: 180, borderRadius: '8px', border: '1px solid #6D6E6F' }}
-								value={selectedFund}
-								onSelect={(value) => {
-									setSelectedFund(fundOptionsArray[value].label);
-									handleFundChange(fundOptionsArray[value].label)
-								}}
-								options={fundOptionsArray}
-							/>
+							defaultValue={fundOptionsArray[0]}
+							style={{ width: 180, borderRadius: '8px', border: '1px solid #6D6E6F' }}
+							value={selectedFund}
+							onSelect={(value) => {
+								setSelectedFund(fundOptionsArray[value].label);
+								handleFundChange(fundOptionsArray[value].label);
+							}}
+							options={fundOptionsArray}
+						/>
 						{gettingDates ? <LoaderSmall/> :
 							<>
 								<Calender setReportDate={setReportDate} setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} setBaseFile={setBaseFile}

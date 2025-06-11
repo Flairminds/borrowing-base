@@ -2,12 +2,12 @@ import { useEffect } from 'preact/hooks';
 import React, { useState } from 'react';
 import { PortfollioDashboard } from '../../components/portfollioDashboard/PortfollioDashboard';
 import { TableGraph } from '../../components/tableGraph/TableGraph';
+import { Loader } from '../../components/uiComponents/loader/loader';
 import { ConcentrationTestTable } from '../../layouts/dashboardLayouts/concentrationTestTable/ConcentrationTestTable';
 import { PrincipleObligationTable } from '../../layouts/dashboardLayouts/PrincipleObligationTable/PrincipleObligationTable';
 import { WhatIfAnalysis } from '../../layouts/dashboardLayouts/whatIfAnalysis/WhatIfAnalysis';
 import { lineChartData } from '../../services/api';
 import styles from './dashboard.module.css';
-import { Loader } from '../../components/uiComponents/loader/loader';
 // import { AssetSelectionPage } from '../../pages/assetSelection/AssetSelectionPage';
 // import { previousSelectedAssetsArray } from '../../utils/helperFunctions/getSelectedAssets';
 
@@ -47,7 +47,7 @@ export const Dashboard = ({
 	const [whatIfAnalysisListData, setWhatIfAnalysisListData ] = useState([]);
 
 	useEffect(() => {
-		if(fundType){
+		if (fundType) {
 			getTrendGraphData(fundType);
 		}
 		if (!tablesData) {

@@ -20,9 +20,7 @@ export const PortfollioDashboard = ({
 	tablesData,
 	trendGraphData,
 	baseFile,
-	getTrendGraphData,
 	whatifAnalysisPerformed,
-	gettingDashboardData,
 	currentFund
 }) => {
 	const [activeComponent, setActiveComponent] = useState('');
@@ -64,55 +62,51 @@ export const PortfollioDashboard = ({
 
 	return (
 		<>
-			{gettingDashboardData ? <Loader/> :
-				<>
-					<div className={stylesOverView.main}>
-						<div className={stylesOverView.titleDiv}>
-							<div className={stylesOverView.overViewHeadingDiv}>
-								<span className={stylesOverView.overViewHeading}>Overview</span>
-								<span className={stylesOverView.fundTypeContainer}>{currentFund}</span>
+			<div className={stylesOverView.main}>
+				<div className={stylesOverView.titleDiv}>
+					<div className={stylesOverView.overViewHeadingDiv}>
+						<span className={stylesOverView.overViewHeading}>Overview</span>
+						<span className={stylesOverView.fundTypeContainer}>{currentFund}</span>
 
-							</div>
-							{/* <div className={stylesOverView.rangePickerDiv}>
-								<RangePicker format="YYYY-MM-DD" onChange={handleRangeChange} />
-							</div> */}
-						</div>
-
-						<div className={`${stylesOverView.tabGraphDiv} ${!whatifAnalysisPerformed ? stylesOverView.fixedHeight : null}`}>
-							<div className={stylesOverView.tabsParent}>
-								{tablesData?.card_data?.ordered_card_names.map((name, index) => (
-									<div
-										key={name}
-										className={`${stylesOverView.tabsDiv} ${activeComponent === name ? stylesOverView.selectedTab : null}`}
-										onClick={() => tabClicked(index + 1, name)}
-									>
-										<Tabs
-											name={name}
-											dashColor={tabConfig[name]?.dashColor || '#000'} // Default color if not found in config
-											value={tablesData?.card_data[name][0]}
-											imgsrc={tabConfig[name]?.imgSrc} // Default image if not found in config
-											activeComponent={activeComponent}
-											setActiveComponent={setActiveComponent}
-											setOverviewTableData={setOverviewTableData}
-										/>
-									</div>
-								))}
-							</div>
-							<div className={stylesOverView.graphDiv}>
-								{activeComponent !== '' && tabConfig[activeComponent] ? (
-									<CardTable
-										setActiveComponent={setActiveComponent}
-										title={tabConfig[activeComponent].title}
-										overviewTableData={overviewTableData}
-									/>
-								) : (
-									<TrendGraph lineChartDisplaydata={lineChartDisplaydata} />
-								)}
-							</div>
-						</div>
 					</div>
-				</>
-			}
+					{/* <div className={stylesOverView.rangePickerDiv}>
+						<RangePicker format="YYYY-MM-DD" onChange={handleRangeChange} />
+					</div> */}
+				</div>
+
+				<div className={`${stylesOverView.tabGraphDiv} ${!whatifAnalysisPerformed ? stylesOverView.fixedHeight : null}`}>
+					<div className={stylesOverView.tabsParent}>
+						{tablesData?.card_data?.ordered_card_names.map((name, index) => (
+							<div
+								key={name}
+								className={`${stylesOverView.tabsDiv} ${activeComponent === name ? stylesOverView.selectedTab : null}`}
+								onClick={() => tabClicked(index + 1, name)}
+							>
+								<Tabs
+									name={name}
+									dashColor={tabConfig[name]?.dashColor || '#000'} // Default color if not found in config
+									value={tablesData?.card_data[name][0]}
+									imgsrc={tabConfig[name]?.imgSrc} // Default image if not found in config
+									activeComponent={activeComponent}
+									setActiveComponent={setActiveComponent}
+									setOverviewTableData={setOverviewTableData}
+								/>
+							</div>
+						))}
+					</div>
+					<div className={stylesOverView.graphDiv}>
+						{activeComponent !== '' && tabConfig[activeComponent] ? (
+							<CardTable
+								setActiveComponent={setActiveComponent}
+								title={tabConfig[activeComponent].title}
+								overviewTableData={overviewTableData}
+							/>
+						) : (
+							<TrendGraph lineChartDisplaydata={lineChartDisplaydata} />
+						)}
+					</div>
+				</div>
+			</div>
 		</>
 	);
 };
