@@ -4,6 +4,7 @@ import locale
 import pandas as pd
 from sqlalchemy import text
 from models import db
+import pytz
 
 def remove_special_characters_and_spaces(input_string):
     input_string = input_string.lower()
@@ -195,3 +196,24 @@ def excel_cell_format(writer, sheet_dfs, sheet_name, sheet_format, column_info):
             
     except Exception as e:
         return f"An unexpected error occurred: {str(e)}"
+    
+from datetime import datetime, timezone, timedelta
+
+def convert_utc_to_ist(utc_str):
+    # Step 1: Parse input date (MM-DD-YYYY)
+    date = datetime.strptime(utc_str, "%m-%d-%Y")
+
+    # Step 2: Add time 05:30:00 manually
+    date = date.replace(hour=5, minute=30, second=0, microsecond=0)
+
+    # Step 3: Set timezone to IST (Asia/Kolkata)
+    ist = pytz.timezone("Asia/Kolkata")
+    ist_date = ist.localize(date)
+
+    # Step 4: Format output as required
+    formatted = ist_date.strftime("%Y-%m-%d %H:%M:%S.%f %z")
+
+    # Convert microseconds to milliseconds and match format exactly
+    formatted = formatted[:-9] + formatted[-9:-6] + " " + formatted[-5:]
+
+    return formatted

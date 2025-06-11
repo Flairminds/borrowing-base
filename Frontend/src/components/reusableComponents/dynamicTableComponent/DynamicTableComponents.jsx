@@ -262,7 +262,7 @@ export const DynamicTableComponents = ({
 	return (
 		<div>
 			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-				<div>
+				<div style={{fontSize: 'small'}}>
 					{displayData?.length} record(s)
 				</div>
 				{showSettings &&

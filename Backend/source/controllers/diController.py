@@ -37,7 +37,8 @@ def get_blobs():
     try:
         req_body = flask.request.get_json()
         fund_type = req_body.get("fund_type")
-        service_response = diService.get_blob_list(fund_type)
+        report_date = req_body.get("report_date")
+        service_response = diService.get_blob_list(fund_type, report_date)
         return HTTPResponse.success(message=service_response["message"], result=service_response["data"])
     except Exception as e:
         Log.func_error(e)

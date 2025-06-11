@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { DatePicker, Modal, Select } from 'antd';
 import { CalendarOutlined, UploadOutlined, FolderOpenOutlined, ProfileOutlined, SettingOutlined } from '@ant-design/icons';
 import styles from './DataIngestionPage.module.css';
@@ -14,8 +14,10 @@ import ProgressBar from '../../components/dataIngestionSteps/ProgressBar/Progres
 import { Calender } from '../../components/calender/Calender';
 import { Icons } from 'react-toastify';
 import CalendarIcon from '../../assets/NavbarIcons/Calendar.svg';
-import { getBaseDataFilesList } from '../../services/dataIngestionApi';
+import { exportBaseDataFile, getBaseDataFilesList } from '../../services/dataIngestionApi';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
+import FundReport from '../../components/dataIngestionSteps/FundReport';
+import { useNavigate } from 'react-router';
 
 const mockBaseData = [
   {
@@ -125,10 +127,9 @@ const BaseDataTab = () => {
 	const [selectedDate, setSelectedDate] = useState(null);
 	const [filterFund, setFilterFund] = useState('');
 	const [filterDate, setFilterDate] = useState(null);
-	const [uploadedFiles, setUploadedFiles] = useState([
-		{ name: 'Q1_Report_2025.xlsx', date: '2025-04-30', fund: 'PCOF', uploadedAt: '10:30 AM', uploadedBy: 'John Doe' },
-	]);
 	const [selectedFiles, setSelectedFiles] = useState([]);
+	const [uploadedFiles, setUploadedFiles] = useState([]);
+	const selectedIds = useRef([]);
 
 	const filteredBaseData = useMemo(() => {
 		return mockBaseData.filter(item => {
@@ -158,6 +159,7 @@ const BaseDataTab = () => {
 			uploadedFiles={uploadedFiles}
 			selectedFiles={selectedFiles}
 			setSelectedFiles={setSelectedFiles}
+			selectedIds={selectedIds}
 		/>,
 		<DataMapping
 			key="step4"
@@ -167,16 +169,64 @@ const BaseDataTab = () => {
 		/>,
 		<ExtractBaseData
 			key="step5"
-			selectedFund={selectedFund}
-			selectedDate={selectedDate}
-			selectedFiles={selectedFiles}
+			selectedIds={selectedIds}
+			uploadedFiles={uploadedFiles}
 		/>
 	];
 
-	const handleFinish = () => {
-		setIsExtractionMode(false);
-		setCurrentStep(0);
-		// Here you would typically handle the final submission of extracted data
+	const [extractionInProgress, setExtractionInProgress] = useState(false);
+	const [unmappedSecurities, setUnmappedSecurities] = useState([]);
+	const [showUnmappedSecuritiesModal, setShowUnmappedSecuritiesModal] = useState(false);
+
+	const navigate = useNavigate();
+	let extractionInterval;
+
+	const getExtractionStatus = async (extractData) => {
+		try {
+			const extractionStatusRes = await getBaseDataFilesList(extractData);
+			const extractionStatus = extractionStatusRes.data.result.data[0].extraction_status;
+			console.info(extractionStatus, 'status');
+			if (extractionStatus !== "In progress") {
+				console.info(extractionStatus, 'conditionn entered');
+				clearInterval(extractionInterval);
+			}
+			if (extractionStatus === "Completed" ) {
+				setExtractionInProgress(false);
+				navigate(`/data-ingestion/base-data-preview/${extractData.id}`);
+				return true;
+			}
+			setExtractionInProgress(false);
+		} catch (err) {
+			setExtractionInProgress(false);
+			showToast('failure', err?.response?.data.message);
+		}
+
+		return false;
+
+	};
+
+	const handleStartExtraction = async (ignoreUnmappedCheck = false) => {
+		try {
+			setExtractionInProgress(true);
+			// setBaseFilePreviewData([]);
+			const extractionResponse = await exportBaseDataFile(selectedIds.current, selectedFund, ignoreUnmappedCheck);
+			console.info(extractionResponse, 'rex');
+			const extractionData = extractionResponse?.data.result;
+			showToast("info", extractionResponse.data.message);
+			// getExtractionStatus(9);
+
+			extractionInterval = setInterval(() => getExtractionStatus(extractionData), 3000);
+		} catch (err) {
+			console.error(err);
+			setExtractionInProgress(false);
+			showToast("error", err.response.data.message);
+			if (err.response.data.result && err.response.data.result.data.length > 0) {
+				setUnmappedSecurities(err.response.data.result.data);
+				setShowUnmappedSecuritiesModal(true);
+			}
+		}
+
+		// setFileExtractionLoading(false);
 	};
 
 	if (isExtractionMode) {
@@ -187,29 +237,69 @@ const BaseDataTab = () => {
 						<div style={{ fontSize: 24, fontWeight: 600 }}>Extract new Base Data</div>
 					</div>
 					<ProgressBar currentStep={currentStep} />
+					{currentStep !== 0 &&
+						<FundReport selectedDate={selectedDate} selectedFund={selectedFund} />
+					}
 					<div style={{ minHeight: 240 }}>{stepContent[currentStep]}</div>
 					<div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 32 }}>
 						<UIComponents.Button
 							text="Back"
 							disabled={currentStep === 0}
+							btnDisabled={currentStep === 0 ? true : false}
 							onClick={() => setCurrentStep(s => s - 1)}
 							customStyle={{ minWidth: 100 }}
 						/>
 						<UIComponents.Button
-							text={currentStep === stepContent.length - 1 ? 'Finish' : 'Next'}
+							text={currentStep === stepContent.length - 1 ? 'Start Extraction' : 'Next'}
 							isFilled={true}
 							onClick={() => {
 								if (currentStep < stepContent.length - 1) {
 									setCurrentStep(s => s + 1);
 								} else {
-									handleFinish();
+									handleStartExtraction();
 								}
 							}}
 							customStyle={{ minWidth: 100 }}
 							btnDisabled={(selectedDate && selectedFund !== "-- Select Fund --") ? false : true }
+							loading={extractionInProgress}
 						/>
 					</div>
 				</div>
+				<Modal title={""} open={showUnmappedSecuritiesModal} footer={null} onCancel={() => setShowUnmappedSecuritiesModal(false)} style={{marginTop: '-50px'}}>
+					{unmappedSecurities.length > 0 &&
+					<div>
+						<p>{unmappedSecurities.length} unmapped securities</p>
+						<ol>
+							{unmappedSecurities.map((item, index) => {
+								if (item) {
+									return <li key={index}>{item.asset} [{item.type}]</li>;
+								}
+							})}
+						</ol>
+						<div>
+							<UIComponents.Button
+								onClick={() => setExtractionInProgress(false)}
+								text='Cancel'
+							// loading={fileExtractionLoading}
+							/>
+							<UIComponents.Button
+								isFilled={true}
+								btnDisabled={true}
+								onClick={() => {}}
+								text='Review Mapping'
+							// loading={fileExtractionLoading}
+							/>
+							<UIComponents.Button
+								loading={extractionInProgress}
+								loadingText='Extracting...'
+								isFilled={true}
+								onClick={(e) => handleStartExtraction(e, true)}
+								text='Extract Base Data'
+							// loading={fileExtractionLoading}
+							/>
+						</div>
+					</div>}
+				</Modal>
 			</>
 		);
 	}
@@ -286,7 +376,7 @@ const BaseDataTab = () => {
 			setDataLoading(true);
 			const data = {
 				"company_id": 1,
-				// "fund_type": Fund
+				"fund_type": Fund
 			};
 			const filesRes = await getBaseDataFilesList(data);
 			const updatedColumns = injectRenderForSourceFiles(filesRes.data.result.columns);

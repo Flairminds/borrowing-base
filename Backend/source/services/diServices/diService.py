@@ -25,6 +25,7 @@ from source.services.commons import commonServices
 from source.app_configs import azureConfig
 from source.utility.ServiceResponse import ServiceResponse
 from source.utility.Log import Log
+from source.utility.Util import convert_utc_to_ist
 from models import SourceFiles, Users, db, ExtractedBaseDataInfo, PfltBaseData, PfltBaseDataHistory, PcofBaseData, PcofBaseDataHistory, PsslBaseData, PsslBaseDataHistory, BaseDataMapping, PfltSecurityMapping, BaseDataMappingColumnInfo, BaseDataFile, BaseDataOtherInfo, ColumnMetadataMaster, SheetMetadataMaster, FileMetadataMaster, VaeData
 from source.services.diServices import helper_functions
 from source.services.diServices import base_data_mapping
@@ -95,7 +96,7 @@ def upload_src_file_to_az_storage(files, report_date, fund_type):
         Log.func_error(e=e)
         return ServiceResponse.error(message="Could not upload files.", status_code = 500)
     
-def get_blob_list(fund_type):
+def get_blob_list(fund_type, report_date):
     company_id = 1 # for Penennt
 
     # If fund type is not provided -> fetching all records 
@@ -115,6 +116,10 @@ def get_blob_list(fund_type):
     
     if fund_type:
         source_files_query = source_files_query.filter(SourceFiles.fund_types.any(fund_type))
+
+    if report_date:
+        formatted_report_date = convert_utc_to_ist(report_date)
+        source_files_query = source_files_query.filter(SourceFiles.report_date == formatted_report_date)
 
     source_files = source_files_query.order_by(SourceFiles.uploaded_at.desc()).all()
 

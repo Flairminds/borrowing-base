@@ -24,7 +24,10 @@ const SelectFundDate = ({ selectedFund, setSelectedFund, selectedDate, setSelect
 					suffixIcon={<img src={CalendarIcon} alt="calendar icon" />}
 					placeholder="Report Date"
 					allowClear={true}
-					onChange={(date) => setSelectedDate(date)}
+					onChange={(date) => {
+						const localDate = date.startOf('day'); // resets time to 00:00
+						setSelectedDate(localDate);
+					}}
 					value={selectedDate}
 				/>
 			</div>

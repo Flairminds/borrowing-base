@@ -1,9 +1,14 @@
 .container {
   padding: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 3rem;
 }
 
 .formGroup {
-  margin-bottom: 24px;
+  width: 100%;
 }
 
 .label {

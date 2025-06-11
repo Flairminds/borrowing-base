@@ -1,12 +1,13 @@
-import { UploadOutlined } from '@ant-design/icons';
-import { Checkbox, Upload } from 'antd';
+import { UploadOutlined, SearchOutlined, CloseOutlined } from '@ant-design/icons';
+import { Checkbox, Upload, Input } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { DynamicTableComponents } from '../reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { UIComponents } from '../uiComponents';
 import { showToast } from '../../utils/helperFunctions/toastUtils';
 import { getBlobFilesList } from '../../services/dataIngestionApi';
-import { FUND_BG_COLOR } from '../../utils/styles';
+import { FUND_BG_COLOR, STATUS_BG_COLOR } from '../../utils/styles';
 import { LoaderSmall } from '../uiComponents/loader/loader';
+import FundReport from './FundReport';
 
 export const UploadFiles = ({ uploadedFiles, setUploadedFiles, selectedFund, selectedDate }) => {
 	const [showUploader, setShowUploader] = useState(false);
@@ -14,22 +15,19 @@ export const UploadFiles = ({ uploadedFiles, setUploadedFiles, selectedFund, sel
 	const [showErrorsModal, setShowErrorsModal] = useState(false);
 	const [validationInfoData, setValidationInfoData] = useState([]);
 	const [dataIngestionFileListColumns, setDataIngestionFileListColumns] = useState([]);
-	const [tableData, setTableData] = useState([]);
-
-
-	console.log("dataIngestionFileListColumns", dataIngestionFileListColumns);
-
-	const columns = [
-		{ key: 'date', label: 'REPORT DATE', isEditable: false },
-		{ key: 'fund', label: 'FUND', isEditable: false },
-		{ key: 'name', label: 'FILE NAME', isEditable: false },
-		{ key: 'uploadedAt', label: 'UPLOADED AT', isEditable: false },
-		{ key: 'uploadedBy', label: 'UPLOADED BY', isEditable: false }
-	];
+	const [searchText, setSearchText] = useState('');
+	const [filteredData, setFilteredData] = useState([]);
 
 	useEffect(() => {
-		blobFilesList(selectedFund);
+		blobFilesList(selectedFund, selectedDate);
 	}, [selectedFund]);
+
+	useEffect(() => {
+		const filtered = uploadedFiles?.data?.filter(item =>
+			item?.file_name?.toLowerCase().includes(searchText.toLowerCase())
+		);
+		setFilteredData(filtered);
+	}, [searchText, uploadedFiles]);
 
 	const injectRender = (columns) => {
 		return columns?.map((col) => {
@@ -81,20 +79,17 @@ export const UploadFiles = ({ uploadedFiles, setUploadedFiles, selectedFund, sel
 		});
 	};
 
-	const blobFilesList = async(fundType) => {
+	const blobFilesList = async(fundType, reportDate) => {
 		try {
 			setDataLoading(true);
-			const payload = fundType || null;
-			const blobResponse = await getBlobFilesList(payload);
+			const blobResponse = await getBlobFilesList(fundType, reportDate);
 			const responseData = blobResponse.data.result;
-			console.log("respose", blobResponse);
-			setTableData(responseData.data);
-			
+			setUploadedFiles(responseData);
+
 			let updatedColumns = [...responseData.columns];
 			updatedColumns = injectRender(updatedColumns);
 			setDataIngestionFileListColumns(updatedColumns);
 			setDataLoading(false);
-
 		} catch (err) {
 			console.error(err);
 			showToast("error", err.response.data.message);
@@ -102,73 +97,79 @@ export const UploadFiles = ({ uploadedFiles, setUploadedFiles, selectedFund, sel
 		}
 	};
 
-	console.log("fil;", tableData);
+	const handleFiles = (fileList) => {
+		if (fileList && fileList.length > 0) {
+			setUploadedFiles(prev => [...prev, ...fileList]);
+		}
+	};
 
-	const handleFiles = () => {
-		console.log("he");
-		
-	}
+	const handleSearch = (value) => {
+		setSearchText(value);
+	};
+
+	const handleClearSearch = () => {
+		setSearchText('');
+	};
+
+	const UploaderSection = () => (
+		<div
+			style={{
+				border: '1px dashed #d9d9d9',
+				borderRadius: 8,
+				padding: 12,
+				textAlign: 'center',
+			}}
+		>
+			<Upload.Dragger
+				multiple
+				showUploadList={false}
+				beforeUpload={() => false}
+				onChange={({ fileList }) => handleFiles(fileList)}
+			>
+				<p style={{ color: '#aaa', fontSize: 32, margin: 0 }}>
+					<UploadOutlined />
+				</p>
+				<p>Drag and drop your files here, or</p>
+				<UIComponents.Button text="Browse Files" />
+			</Upload.Dragger>
+		</div>
+	);
 
 	return (
 		<>
-			<div
-				style={{
-					backgroundColor: '#f5f6f8',
-					borderRadius: 8,
-					padding: '8px 16px',
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'center',
-					fontWeight: 500,
-					fontSize: 18,
-					marginBottom: '0.8rem'
-				}}
-			>
-				<span style={{ marginRight: 16 }}>
-					Fund: <span style={{ color: '#00a99d', fontWeight: 'bold' }}>{selectedFund}</span>
-				</span>
-				<span>
-					Report Date: <span style={{ color: '#00a99d', fontWeight: 'bold' }}>{selectedDate.format('MM-DD-YYYY')}</span>
-				</span>
-			</div>
-
-			<div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+			<div style={{ display: 'flex', alignItems: 'center', marginBottom: 8, padding: '0 7px' }}>
 				<Checkbox
-					style={{ transform: 'scale(1.5)', marginRight: "1rem"}}
+					style={{ transform: 'scale(1.3)', marginRight: "1rem"}}
 					checked={showUploader}
-					onChange={(e) => setShowUploader(e.target.checked)}
+					onChange={() => setShowUploader(!showUploader)}
 				/>
 				<span style={{ fontWeight: 600, fontSize: 18 }}>
 					Upload source files
 				</span>
 			</div>
 
-			{showUploader && (
-				<div
-					key="uploader-container"
-					style={{
-						border: '1px dashed #d9d9d9',
-						borderRadius: 8,
-						padding: 32,
-						textAlign: 'center',
-						marginBottom: 24
-					}}
-				>
-					<Upload.Dragger multiple showUploadList={false} beforeUpload={() => false} onChange={({ fileList }) => handleFiles(fileList)}>
-						<p style={{ color: '#aaa', fontSize: 32 }}>
-							<UploadOutlined />
-						</p>
-						<p>Drag and drop your files here, or</p>
-						<UIComponents.Button text="Browse Files" />
-					</Upload.Dragger>
-				</div>
-			)}
+			{showUploader && <UploaderSection />}
 
 			{dataLoading ? <LoaderSmall /> :
-				<>
-					<div style={{ fontWeight: 500, marginBottom: 8 }}>Uploaded files</div>
-					<DynamicTableComponents data={tableData} columns={dataIngestionFileListColumns} />
-				</>
+				<div style={{padding: '25px', background: 'rgb(245, 245, 245)', borderRadius: '5px' }}>
+					<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px' }}>
+						<h3 style={{fontWeight: 'bold', fontSize: 'large', margin: 0}}>Uploaded files</h3>
+						<Input
+							placeholder="Search by file name"
+							value={searchText}
+							onChange={(e) => handleSearch(e.target.value)}
+							style={{ width: 200 }}
+							suffix={
+								searchText ?
+									<CloseOutlined style={{ cursor: 'pointer' }} onClick={handleClearSearch} /> :
+									<SearchOutlined />
+							}
+						/>
+					</div>
+					<div style={{margin: '10px 0'}}>
+						<DynamicTableComponents data={filteredData} columns={dataIngestionFileListColumns} />
+					</div>
+				</div>
 			}
 		</>
 	);
