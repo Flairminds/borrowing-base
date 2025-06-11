@@ -7,6 +7,13 @@
     margin: 0 1px;
 }
 
+.tableContainer {
+    background-color: var(--section-background-color);
+    box-shadow: var(--section-box-shadow);
+    overflow: auto;
+    max-height: 75vh;
+}
+
 .table {
     width: 100%;
     border-collapse: collapse;

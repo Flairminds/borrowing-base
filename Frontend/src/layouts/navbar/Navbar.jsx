@@ -45,7 +45,7 @@ export const Navbar = () => {
 	};
 
 	return (
-		<nav className="navbar navbar-expand-lg d-flex flex-row w-100" style={{borderBottom: '1px solid #DEDDDC'
+		<nav className="navbar navbar-expand-lg d-flex flex-row w-100" style={{borderBottom: '1px solid #DEDDDC', backgroundColor: 'white'
 		//  ,height:'7%'
 		}}>
 			<div className="container-fluid">

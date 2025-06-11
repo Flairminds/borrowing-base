@@ -120,11 +120,11 @@ export const SecurityMappingPage = ({selectedSecurities}) => {
 	return (
 		<div>
 			<div className={styles.securityOverview}>
-				<div onClick={() => changeSecurityView("all")} className={securityViewType == "all" ? `${styles.securityOverviewCard} ${styles.background}` : `${styles.securityOverviewCard}`}>
+				<div onClick={() => changeSecurityView("all")} className={securityViewType == "all" ? `${styles.securityOverviewCard} ${styles.active}` : `${styles.securityOverviewCard}`}>
 					<div><b>All Securities</b></div>
 					<div className={styles.cardTitle}>{unmappedSecurities?.all_securities_count}</div>
 				</div>
-				<div onClick={() => changeSecurityView("unmapped")} className={securityViewType == "unmapped" ? `${styles.securityOverviewCard} ${styles.background}` : `${styles.securityOverviewCard}`}>
+				<div onClick={() => changeSecurityView("unmapped")} className={securityViewType == "unmapped" ? `${styles.securityOverviewCard} ${styles.active}` : `${styles.securityOverviewCard}`}>
 					<div><b>Unmapped Securities</b></div>
 					<div className={styles.cardTitle}>{unmappedSecurities?.unmapped_securities_count}</div>
 				</div>

@@ -1,14 +1,9 @@
 .main {
-    /* font-family: Arial, sans-serif; */
-    /* padding: 1%; */
-    /* margin-top: 1.3rem; */
-    /* margin-right: 3%; */
-    /* margin-left: 5%; */
-    /* margin-bottom: 1rem; */
-    /* border: 1px solid #DCDEDE; */
-    border-radius: 5px;
-
-  }
+	background-color: var(--section-background-color);
+	padding: 1.5rem;
+	box-shadow: var(--section-box-shadow);
+	border-radius: var(--section-border-radius);
+}
   
   /* table {
     width: 100%;

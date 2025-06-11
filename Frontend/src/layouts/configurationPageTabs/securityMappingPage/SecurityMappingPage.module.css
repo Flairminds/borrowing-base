@@ -8,15 +8,21 @@
 }
 
 .securityOverviewCard {
-	border: 1px solid #ccc;
-	border-radius: 5px;
 	padding: 10px;
 	margin: 0 10px 0 0;
 	/* height: 90px; */
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 	transition: box-shadow 0.3s ease;
 	cursor: pointer;
-	}
+	box-shadow: var(--card-box-shadow);
+	border-radius: var(--card-border-radius);
+	border: var(--card-border);
+	background-color: var(--card-background-color);
+	text-align: center;
+}
+
+.active {
+	border: var(--card-border-active);
+}
 
 .cardTitle {
 	margin: 0;
@@ -35,10 +41,6 @@
 	max-height: 70vh;
 	overflow-y: auto;
 
-}
-
-.background{
-	background:  #efeaea;
 }
 
 .unmappedSecuritiesList {

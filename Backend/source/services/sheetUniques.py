@@ -18,5 +18,6 @@ sheet_uniques = {
     "Concentration Limits": "Investors",
     "Principle Obligations": "Principal Obligations",
 
-    "Portfolio": "Borrower"
+    "Portfolio": "Borrower",
+    "VAE": "Obligor"
 }

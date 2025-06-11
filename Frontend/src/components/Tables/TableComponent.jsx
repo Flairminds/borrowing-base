@@ -225,7 +225,7 @@ export const TableComponent = ({ data, columns, showviewMore, heading, isConcent
 							{(len >= 8 && showviewMore !== false) && (
 								<tr className={Styles.tr}>
 									<td colSpan={columns.length}>
-										<UIComponents.Button onClick={ModalOpen} text={`View other +${data[columns[0]].length - 6}`} asLink={true} />
+										<UIComponents.Button customStyle={{padding: "0 1rem"}} onClick={ModalOpen} text={`View other +${data[columns[0]].length - 6}`} asLink={true} />
 										<TableViewModal setOpenModal={setOpenModal} openModal={openModal} data={data} columns={columns} heading={heading} />
 									</td>
 								</tr>

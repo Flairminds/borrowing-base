@@ -2,14 +2,10 @@
 .main {
     display: flex;
     flex-direction: column;
-    height: 50%;
-    /* width: 100%; */
-    /* background-color: aqua; */
-    padding: 1rem 0.5rem;
-    border: 1px solid #DEDEDE;  
-    border-radius: 10px;
-    /* margin-right: 3% ; */
-    /* margin-left: 5%; */
+    background-color: var(--section-background-color);
+    padding: 1rem;
+    box-shadow: var(--section-box-shadow);
+    border-radius: var(--section-border-radius);
 }
 
 .tabsDiv {
@@ -17,21 +13,22 @@
   align-items: center;
   /* width: 107%; */
   /* height: 16%; */
-  border: 1px solid #DCDEDE;
-  box-shadow: #DCDEDE;
-  border-radius: 6px;
-  margin-bottom: 10px; 
-  gap: 10px;
+  border: 1px solid rgb(245, 245, 245);
+  /* box-shadow: #DCDEDE; */
+  border-radius: var(--section-border-radius);
+  /* margin-bottom: 10px;  */
+  gap: 15px;
   cursor: pointer;
-  padding: 5px 0px;
+  padding: 1rem;
   text-align: left;
+  box-shadow: var(--section-box-shadow);
 }
 
 .tabsParent {
-    width: 22%;
-    /* height: 1%; */
-    /* padding: 20px; */
-    padding: 13px 20px 30px 20px;
+    padding: 0 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 .customTabs .ant-tabs-tab-active {
   background-color: green; /* Change this to the desired green color */
@@ -283,6 +280,7 @@ form {
   .fixedHeight
 {
   height: 420px;
+  min-height: fit-content;
 }
 
 .overViewHeadingDiv{

@@ -1,4 +1,4 @@
-import { Popover } from 'antd';
+import { Popover, Select } from 'antd';
 import React, { useEffect, useState } from 'react';
 import {toast} from 'react-toastify';
 import about from "../../../assets/NavbarIcons/Default.svg";
@@ -24,10 +24,14 @@ import { UpdateAssetDetailsModal } from '../../../modal/updateAssetWIA/updateAss
 // import { assetInventory } from '../../../utils/asset';
 import { UpdateParameterModal } from '../../../modal/updateParameterModal/UpdateParameterModal';
 import { WhatIfAnalysisLib } from '../../../modal/whatIfAnalysisLibrary/WhatIfAnalysisLib';
-import { EbitdaAnalysis, addNewAsset, changeParameter, downLoadReportSheet, downloadExcelAssest, getListOfWhatIfAnalysis, getPreviewTable, intermediateMetricsTable, saveWhatIfAnalysis } from '../../../services/api';
+import { EbitdaAnalysis, addNewAsset, changeParameter, downLoadReportSheet, downloadExcelAssest, getListOfWhatIfAnalysis, getPreviewTable, intermediateMetricsTable, saveWhatIfAnalysis, getAvailableDates } from '../../../services/api';
 import { showToast } from '../../../utils/helperFunctions/toastUtils';
-import Styles from './WhatIfAnalysis.module.css';
+import styles from './WhatIfAnalysis.module.css';
 import { Icons } from '../../../components/icons';
+import { wiaOptions } from '../../../utils/configurations/wiaOptions';
+import { fundOptionsArray } from '../../../utils/constants/constants';
+import { LoaderSmall } from '../../../components/uiComponents/loader/loader';
+import { fmtDateValue, fmtDisplayVal } from '../../../utils/helperFunctions/formatDisplayData';
 
 export const WhatIfAnalysis = ({
 	getTrendGraphData,
@@ -46,7 +50,13 @@ export const WhatIfAnalysis = ({
 	whatIfAnalysisListData,
 	setWhatIfAnalysisListData,
 	fundType,
-	setFundType
+	setFundType,
+	selectedFund,
+	setSelectedFund,
+	setAvailableClosingDates,
+	setGettingDashboardData,
+	gettingDates,
+	setGettingDates
 }) => {
 	const [selectedRow, setSelectedRow] = useState(null);
 	// const[isAnalysisModalOpen,setIsAnalysisModalOpen] =useState(false)
@@ -98,6 +108,7 @@ export const WhatIfAnalysis = ({
 	const [whatIfAnalysisType, setWhatIfAnalysisType] = useState();
 	const [simulationType, setSimulationType] = useState();
 	const [isAddLoadBtnDisable, setIsAddLoadBtnDisable] = useState(true);
+	
 
 	useEffect(() => {
 		if (selectedFiles.length > 0) {
@@ -165,8 +176,8 @@ export const WhatIfAnalysis = ({
 
 	const handleReportDownload = async() => {
 		try {
-			const response = await downLoadReportSheet(baseFile.id,1);
-			const blob = new Blob([response.data])
+			const response = await downLoadReportSheet(baseFile.id, 1);
+			const blob = new Blob([response.data]);
 			const url = window.URL.createObjectURL(blob);
 			const a = document.createElement('a');
 			a.href = url;
@@ -350,36 +361,57 @@ export const WhatIfAnalysis = ({
 		setIsAssetInventoryModal(true);
 	};
 
-	// useEffect(() => {
-	// 	console.log(selectedOptionUpdateValue, 'selected');
-	// }, [selectedOptionUpdateValue]);
+	const handleFundChange = async(fund) => {
+		setSelectedFund(fund);
+		try {
+			setGettingDates(true);
+			const response = await getAvailableDates(fund);
+			setAvailableClosingDates(response?.data?.result);
+			setGettingDates(false);
+		} catch (err) {
+			setGettingDates(false);
+			console.log(err);
+		}
+	};
 
 	return (
 		<>
 			{saveBtn && (
 				<WIAInformation baseFile={baseFile} whaIfAnalsisData={whaIfAnalsisData} isSetDescriptionModal={isSetDescriptionModal} />
 			)}
-			<div style={{display: "inline-flex", flexWrap: 'wrap', width: '100%', justifyContent: 'space-between', padding: '0.5rem 1rem'}}>
-				<div style={{ display: "flex", alignItems: 'baseline'}}>
-					<h4>Borrowing Base Dashboard</h4>
-					<div style={{display: 'flex', alignItems: 'baseline', padding: '0 1rem'}}>
-						<Calender setReportDate={setReportDate} setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} setBaseFile={setBaseFile}
-							availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData}
-						/>
-						{reportDate && <span style={{color: "#2A2E34"}}>{reportDate}<Icons.InfoIcon title={'Select report date from highlighted dates in calendar to view results.'} /></span>}
-					</div>
+			<h4 style={{margin: "0.5rem 0"}}>Borrowing Base Dashboard</h4>
+			<div style={{display: "inline-flex", flexWrap: 'wrap', width: '100%', justifyContent: 'space-between', margin: '0.5rem 0rem 1rem 0'}}>
+				<div style={{ display: "flex", alignItems: 'center'}}>
+					{!selectedFund ? <span style={{padding: "0 5px"}}><LoaderSmall /></span> :
+						<div className={styles.selectFundOptionContainer}>
+							<Select
+								defaultValue={fundOptionsArray[0]}
+								value={selectedFund}
+								onSelect={(value) => handleFundChange(fundOptionsArray[value].label)}
+								options={fundOptionsArray}
+							/>
+							{(gettingDates || selectedFund === "Fetching..." ) ? <span style={{padding: "0 5px"}}><LoaderSmall /></span> :
+								<div className={styles.calendarOption}>
+									{reportDate && <span style={{color: "#2A2E34"}}>
+										{fmtDisplayVal(reportDate)}
+										{/* <Icons.InfoIcon title={'Select report date from highlighted dates in calendar to view results.'} /> */}
+									</span>}
+									<Calender setReportDate={setReportDate} setTablesData={setTablesData} setWhatifAnalysisPerformed={setWhatifAnalysisPerformed} setBaseFile={setBaseFile}
+										availableClosingDates={availableClosingDates} setFundType={setFundType} getTrendGraphData={getTrendGraphData} selectedFund={selectedFund} setGettingDashboardData={setGettingDashboardData} setTrendGraphData={setTrendGraphData}
+									/>
+								</div>
+							}
+						</div>
+					}
 					{/* <span style={{color: "#6D6E6F", padding: '0 0.5rem'}}>{constDate}</span> */}
 					{saveBtn && (
 						<div style={{display: "flex"}}>
 							<h3 style={{marginLeft: "5px" }} >/</h3>
-							<input className={Styles.inputUntittled} placeholder="Untitled" value={inputValueUntitled} onChange={handleInputChange}/>
+							<input className={styles.inputUntittled} placeholder="Untitled" value={inputValueUntitled} onChange={handleInputChange}/>
 						</div>
 					)}
 				</div>
 				<div style={{ display: "flex", alignItems: "center", gap: '5px'}}>
-					<div>
-						<UIComponents.Button text='Import/Use Base Data' onClick={() => setIsAnalysisModalOpen(true)} isFilled={true} title='Import new data file or use existing file for calculation' />
-					</div>
 					<div>
 						<WhatIfAnalysisOptions
 							selectedOption={selectedOption}
@@ -395,6 +427,12 @@ export const WhatIfAnalysis = ({
 						/>
 					</div>
 					<div>
+						<UIComponents.Button text='Borrowing Base Reports' onClick={() => setIsAnalysisModalOpen(true)} isFilled={true} title='Import new data file or use existing file for calculation' />
+					</div>
+					<div>
+						<UIComponents.Button text='Export Report' onClick={() => handleReportDownload()} isFilled={false} title='Download the report' />
+					</div>
+					<div>
 						<PreviewTable whatIfAnalysisId={whatIfAnalysisId} dataPreviewPopup={dataPreviewPopup} setDataPreviewPopup={setDataPreviewPopup} baseFile={baseFile} previewTableData={previewTableData} whatIfAnalysisType={whatIfAnalysisType}/>
 					</div>
 					<div style={{display: "flex"}}>
@@ -404,7 +442,6 @@ export const WhatIfAnalysis = ({
 								{/* <div style={{fontWeight:"400",fontSize:"14px",cursor:"pointer"}} onClick={hanleAssetInventory}>Assets Inventory</div> */}
 								<div style={{fontWeight: "400", fontSize: "14px", cursor: "pointer"}} onClick={handleAboutModal}>Intermediate Metrics</div>
 								<div style={{fontWeight: "400", fontSize: "14px", cursor: "pointer"}} onClick={tableModalfunc}>What if analysis library</div>
-								<div style={{fontWeight: "400", fontSize: "14px", cursor: "pointer"}}onClick={handleReportDownload}>Export</div>
 							</div>
 						}>
 							<img src={about}></img>
@@ -424,6 +461,7 @@ export const WhatIfAnalysis = ({
 							availableClosingDates={availableClosingDates}
 							fundType={fundType}
 							setFundType={setFundType}
+							setSelectedFund={setSelectedFund}
 						/>
 					</div>
 				</div>

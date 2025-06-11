@@ -1,3 +1,10 @@
+.tableGraphContainer {
+	  background-color: var(--section-background-color);
+    padding: 1.5rem;
+    box-shadow: var(--section-box-shadow);
+    border-radius: var(--section-border-radius);
+}
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -60,14 +67,15 @@
     box-shadow: 3px -8px 14px 0 rgba(0, 0, 0, 0.05);
   }
 
-  .tableContainer
-  {
-    width: 50%;
-  }
+.tableContainer {
+	width: 50%;
+	padding: 1rem;
+}
   
   .chartContainer
   {
     width: 50%;
+    padding: 1rem;
     /* padding-left: 3rem; */
   }
 
@@ -102,13 +110,6 @@
   .updatedText
   {
     font-size: 12px;
-  }
-
-  .tableGraphContainer
-  {
-    /* margin: 1rem 3% 1rem 5%; */
-    border : 1px solid #DCDEDE;
-    border-radius:8px;
   }
 
   .check

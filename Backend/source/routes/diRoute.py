@@ -111,3 +111,7 @@ def add_vae_data():
 @di_blueprint.route('/get_vae_data', methods=["GET"])
 def get_vae_data():
     return diController.get_vae_data()
+
+@di_blueprint.route('/get_mapping_suggestions', methods=["GET"])
+def get_mapping_suggestions():
+    return diController.get_mapping_suggestions()

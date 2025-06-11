@@ -60,3 +60,11 @@ def download_excel():
 @dashboard_blueprint.route("/get_closing_dates", methods=["POST"])
 def get_closing_dates():
     return dashboardController.get_closing_dates()
+
+@dashboard_blueprint.route("/get_company_insights", methods=["POST"])
+def get_company_insights():
+    return dashboardController.get_company_insights()
+
+@dashboard_blueprint.route("/compare_pcof_report", methods=["GET"])
+def compare_pcof_report():
+    return dashboardController.compare_pcof_report()
