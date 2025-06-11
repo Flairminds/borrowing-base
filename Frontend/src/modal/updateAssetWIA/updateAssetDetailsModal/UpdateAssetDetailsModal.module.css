@@ -125,6 +125,7 @@
     min-width: 5rem;
     border-bottom: 2px solid rgb(160, 154, 154);
     margin: 1rem 0.5rem;
+    cursor: pointer;
   }
 
   .active
@@ -132,6 +133,7 @@
     min-width: 5rem;
     border-bottom: 2px solid #0EB198;
     margin: 1rem 0.5em;
+    cursor: pointer;
   }
 
   .messageContainer

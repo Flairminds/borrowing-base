@@ -1,0 +1,84 @@
+.container {
+  padding: 40px 5vw 32px 5vw;
+  max-width: 1200px;
+  min-height: 80vh;
+  margin: 32px auto 0 auto;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2%;
+  border-bottom: 1px solid #ececec;
+  /* padding-bottom: 18px; */
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -1px;
+}
+
+.searchRow {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+  margin-bottom: 20px;
+  background: #f3f6fa;
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+}
+
+.companyInfo {
+  margin-top: 20px;
+  background: #fafdff;
+  border-radius: 14px;
+  padding: 25px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: flex-start;
+}
+
+.infoBlock {
+  min-width: 250px;
+  margin-bottom: 0;
+}
+
+.suggestions {
+  margin-top: 18px;
+  color: #d48806;
+  font-size: 1.1rem;
+}
+
+.error {
+  color: #cf1322;
+  margin-top: 18px;
+  font-size: 1.1rem;
+}
+
+@media (max-width: 900px) {
+  .container {
+    padding: 24px 2vw;
+    max-width: 98vw;
+  }
+  .companyInfo {
+    flex-direction: column;
+    padding: 20px 8px;
+    gap: 18px;
+  }
+  .searchRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+} 

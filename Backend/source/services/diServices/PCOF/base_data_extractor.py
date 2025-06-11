@@ -17,7 +17,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
 						else lien_master.lien_type
 					end
 					as "investment_investment_type",
-                    pi.std_industry_name as "investment_industry",
+                    case when pi.std_industry_name is not null then pi.std_industry_name else bs."[ACM] [COI/LC] PNNT Industry" end as "investment_industry",
                     bs."[ACM] [COI/LC] Closing Date"::date as "investment_closing_date",
                     case when ss."[SI] Maturity" is not null and ss."[SI] Maturity" != 'NM' then ss."[SI] Maturity" else null end as "investment_maturity",
                     sum(ssm."Commitment"::float) as "investment_par",
@@ -41,7 +41,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                         else 'No'
                     end as "classifications_defaulted_restructured",
                     ss."[C] LTM Rev" as "financials_ltm_revenue_mms",
-                    ss."EBITDA" as "financials_ltm_ebitda_mms",
+                    bs."[CM] [R] LTM EBITDA" as "financials_ltm_ebitda_mms",
                     null as "leverage_revolver_commitment", -- could not map -- considering null for now
                     ss."[PSM] TEV" as "leverage_total_enterprise_value",
                     ss."Total Gross Leverage" as "leverage_total_leverage",
@@ -56,12 +56,12 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
 						else 'Yes'
 					end as "is_eligible_issuer"
                 from sf_sheet_marketbook_1 ssm
-                left join pflt_security_mapping sm on TRIM(sm.marketvalue_issuer) = TRIM(ssm."Issuer_Name") and TRIM(sm.marketvalue_asset) = TRIM(ssm."Asset_Name")
+                join pflt_security_mapping sm on TRIM(sm.marketvalue_issuer) = TRIM(ssm."Issuer_Name") and TRIM(sm.marketvalue_asset) = TRIM(ssm."Asset_Name")
                 left join sf_sheet_securities_stats ss on ss."Security" = sm.master_comp_security_name
                 left join sf_sheet_borrower_stats bs on bs."Company" = ss."Family Name"
                 left join lien_type_mapping lien_mapping on lien_mapping.lien_type = ss."[SI] Credit Facility Lien Type" and (lien_mapping.is_deleted = false or lien_mapping.is_deleted is null)
 				left join lien_type_master lien_master on lien_master.id = lien_mapping.master_lien_type_id
-				left join pcof_industries pi on pi.industry_name = bs."[ACM] [COI/LC] PNNT Industry"
+				left join pcof_industries pi on lower(pi.industry_name) = lower(bs."[ACM] [COI/LC] PNNT Industry")
                 where (ssm.source_file_id = :market_book_file_id) and
                 ((sm.id is not null AND ss.source_file_id = :master_comp_file_id AND bs.source_file_id = :master_comp_file_id) or sm.id is null)
                 group by ss."Security", sm.family_name, ss."[SI] Credit Facility Lien Type", ss."[SI] Security Type", bs."[ACM] [COI/LC] Closing Date", ss."[SI] Maturity",
@@ -70,7 +70,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."[SI] LIBOR Floor",
                     ss."[SI] Type of Rate",
                     ss."[C] LTM Rev",
-                    ss."EBITDA",
+                    bs."[CM] [R] LTM EBITDA",
                     ss."[PSM] TEV",
                     ss."Total Gross Leverage",
                     ss."Pennant Gross Leverage",
@@ -78,6 +78,7 @@ def map_and_store_base_data(engine, extracted_base_data_info, master_comp_file_d
                     ss."[PSM] Defaulted / Restructured?",
                     ss."[PSM] Capitalization Multiple",
                     ss."LTV",
+                    bs."[ACM] [COI/LC] PNNT Industry",
                     lien_master.lien_type,
                     pi.std_industry_name
                 order by ss."Security"

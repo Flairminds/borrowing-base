@@ -363,21 +363,21 @@ class ConcentrationTestExecutor:
     ):
         total_borrowing_base = test_required_col_df.loc[
             test_required_col_df["Terms"]
-            == "BORROWING BASE - (A) minus (B) minus (A)(iv)",
+            == "Concentration Test Amount",
             "Values",
         ].iloc[0]
 
-        actual = (
-            test_required_col_df["Second Lien and Split Lien"].sum()
-            / total_borrowing_base
-        )
-        if actual > self.limit_percent:
+        applicable_limit = total_borrowing_base * self.limit_percent
+
+        actual = test_required_col_df["Second Lien and Split Lien"].sum()
+
+        if self.is_pass(limit=applicable_limit, actual=actual, comparison_type=comparison_type) :
             result = "Pass"
         else:
             result = "Fail"
         row_data = {
             "Concentration Tests": [test_name],
-            "Concentration Limit": [self.limit_percent],
+            "Concentration Limit": [applicable_limit],
             "Actual": [actual],
             "Result": [result],
             "Show on dashboard": [show_on_dashboard]
@@ -391,20 +391,19 @@ class ConcentrationTestExecutor:
     def execute_Second_Lien(
         self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard, comparison_type
     ):
-        total_borrowing_base = test_required_col_df.loc[
-            test_required_col_df["Terms"]
-            == "BORROWING BASE - (A) minus (B) minus (A)(iv)",
-            "Values",
-        ].iloc[0]
+        total_borrowing_base = test_required_col_df.loc[test_required_col_df["Terms"] == "Concentration Test Amount", "Values"].iloc[0]
 
-        actual = test_required_col_df["Second Lien"].sum() / total_borrowing_base
-        if actual > self.limit_percent:
+        applicable_limit = total_borrowing_base * self.limit_percent
+
+        actual = test_required_col_df["Second Lien"].sum() / total_borrowing_base 
+        
+        if self.is_pass(limit=applicable_limit, actual=actual, comparison_type=comparison_type) :
             result = "Pass"
         else:
             result = "Fail"
         row_data = {
             "Concentration Tests": [test_name],
-            "Concentration Limit": [self.limit_percent],
+            "Concentration Limit": [applicable_limit],
             "Actual": [actual],
             "Result": [result],
             "Show on dashboard": [show_on_dashboard]
@@ -414,7 +413,7 @@ class ConcentrationTestExecutor:
             [concentration_test_df, row_df], ignore_index=True
         )
         return concentration_test_df
-
+    
     def execute_DIP_Collateral_Loans(
         self, test_name, test_required_col_df, concentration_test_df, show_on_dashboard, comparison_type
     ):
@@ -1420,6 +1419,37 @@ class ConcentraionTestFormatter:
             "Number of Issuers",
             "Max. Weighted Average Maturity (Years)",
             "Max. Weighted Average Leverage thru Borrower",
+            "Largest Industry",
+            "Second Largest Industry",
+            "Third Largest Industry",
+            "EBITDA < $10MM",
+            "Other Obligors",
+            "Other Industry",
+            "DIP Loans",
+            "DDTL and Revolving Loans",
+            "Pay Less Frequently than Quarterly",
+            "Loans denominated in Approved Foreign Currency",
+            "Loans to Obligors domiciled in Approved Foreign Country",
+            "Cov-Lite",
+            "Tier 3 Obligors (Measured at Inclusion)",
+            "Second Lien Loans",
+            "First Lien Last Out",
+            "Loans with Remaining Maturity > 6 Years",
+            "Recurring Revenue Loans",
+            "Fixed Rate Loans",
+            "Max. Weighted Average Leverage thru Borrower",
+            "Partial PIK Loan",
+            "Discount Collateral Loans",
+            "Credit Improved Loans",
+            "Warrants to Purchase Equity Securities",
+            "LBO Loan",
+            "Participation Interests",
+            "Eligible Covenant Lite Loans",
+            "Top 5 Obligors",
+            "LTM EBITDA < 15,000,000",
+            "LTM EBITDA >= 5,000,000 but < 7,500,000",
+            "Leverage Limitations",
+            "Second Lien and Split Lien"
         ]
         concentration_tests = []
         concentration_limits = []
@@ -1438,8 +1468,8 @@ class ConcentraionTestFormatter:
         for index, row in self.concentration_test_df.iterrows():
             concentration_tests.append({"data": row["Concentration Tests"]})
             if row["Concentration Tests"] in rows_to_keep:
-                concentration_limits.append({"data": row["Concentration Limit"]})
-                actuals.append({"data": row["Actual"]})
+                concentration_limits.append({"data": numerize.numerize(row["Concentration Limit"]) if row["Concentration Limit"] is not None else "0"})
+                actuals.append({"data": numerize.numerize(row["Actual"]) if row["Actual"] is not None else "0"})
             else:
                 concentration_limits.append(
                     {"data": "{:,.01f}%".format(row["Concentration Limit"] * 100)}

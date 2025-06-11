@@ -451,7 +451,7 @@ export const DataIngestionPage = ({setBaseFilePreviewData, selectedIds}) => {
 							loadingText='Extracting...'
 							isFilled={true}
 							onClick={(e) => handleFileExtraction(e, true)}
-							text='Extract Base Data'
+							text='Proceed for Extraction'
 						// loading={fileExtractionLoading}
 						/>
 					</div>

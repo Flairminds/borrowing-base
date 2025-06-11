@@ -4,14 +4,20 @@ from datetime import date, datetime, timezone
 import json
 from io import BytesIO
 import pandas as pd
-from sqlalchemy import text
+import re
+from sqlalchemy import func, text
 
-from models import db, BaseDataFile, WhatIfAnalysis
+from source.services.aiIntegration.serpapi import SerpAPIClient
+from source.services.aiIntegration.openai import OpenAIClient
+from source.services.aiIntegration.gemini import GeminiClient
+from models import db, BaseDataFile, WhatIfAnalysis, CompanyInfoOpenAI
 from Exceptions.StdFileFormatException import StdFileFormatException
 from source.services.PCOF import utility as PCOFUtility
 from source.services.PCOF.PcofDashboardService import PcofDashboardService
 from source.services.PFLT.PfltDashboardService import PfltDashboardService
 from source.utility.ServiceResponse import ServiceResponse
+from utility.Util import excel_cell_format
+from source.utility.aiPrompts import company_info_prompt, knowledge_graph_prompt
 
 pcofDashboardService = PcofDashboardService()
 pfltDashboardService = PfltDashboardService()
@@ -70,20 +76,7 @@ def latest_closing_date(user_id):
     data["file_name"] = latest_data.file_name
     data["fund_name"] = latest_data.fund_type
 
-    base_data_files = BaseDataFile.query.filter_by(user_id=user_id).all()
-    closing_dates = [
-        base_data_file.closing_date.strftime("%Y-%m-%d")
-        for base_data_file in base_data_files
-    ]
-    data["closing_dates"] = closing_dates
-
-    base_data_files = BaseDataFile.query.filter(
-        BaseDataFile.user_id == user_id, BaseDataFile.response != None
-    ).all()
-    closing_dates = [
-        base_data_file.closing_date.strftime("%Y-%m-%d")
-        for base_data_file in base_data_files
-    ]
+    closing_dates = get_closing_dates_list(latest_data.fund_type)
     data["closing_dates"] = closing_dates
     return jsonify(data), 200
 
@@ -109,7 +102,8 @@ def get_files_list(user_id):
             "closing_date": file.closing_date.strftime("%m-%d-%Y"),
             "created_at": file.created_at.strftime("%m-%d-%Y %H:%M"),
             "fund_type": file.fund_type,
-            "extracted_base_data_info_id": file.extracted_base_data_info_id
+            "extracted_base_data_info_id": file.extracted_base_data_info_id,
+            "is_calculated": True if file.response else False
         }
         for file in base_data_files
     ]
@@ -117,11 +111,11 @@ def get_files_list(user_id):
     return jsonify({"error_status": False, "files_list": file_names}), 200
 
 
-def get_bb_data_of_date(selected_date, user_id, base_data_file_id):
+def get_bb_data_of_date(selected_date, user_id, base_data_file_id, fund_type):
     if base_data_file_id:
         borrowing_base_results = BaseDataFile.query.filter_by(id=base_data_file_id).first()
     else:
-        borrowing_base_results = BaseDataFile.query.filter_by(user_id=user_id, closing_date=selected_date).first()
+        borrowing_base_results = BaseDataFile.query.filter_by(user_id=user_id, closing_date=selected_date, fund_type=fund_type).order_by(BaseDataFile.created_at.desc()).first()
 
     if not borrowing_base_results:
         return (
@@ -141,11 +135,9 @@ def get_bb_data_of_date(selected_date, user_id, base_data_file_id):
             404,
         )
     
-    base_data_files = BaseDataFile.query.filter_by(user_id=user_id).all()
-    closing_dates = [
-        base_data_file.closing_date.strftime("%Y-%m-%d")
-        for base_data_file in base_data_files
-    ]
+    fund_type = borrowing_base_results.fund_type
+   
+    closing_dates = get_closing_dates_list(fund_type)
 
     pickle_borrowing_base_date_wise_results = borrowing_base_results.response
     borrowing_base_date_wise_results = pickle.loads(
@@ -279,7 +271,11 @@ def override_file(base_data_file, excel_file, xl_sheet_df_map, fund_type, includ
 
 def get_closing_dates_list(fund_type):
     user_id = 1
-    base_data_files = BaseDataFile.query.filter_by(user_id=user_id, fund_type=fund_type).all()
+    base_data_files = BaseDataFile.query.filter(
+        BaseDataFile.response!=None, 
+        BaseDataFile.user_id==user_id, 
+        BaseDataFile.fund_type==fund_type
+    ).all()
     closing_dates = [base_data_file.closing_date.strftime("%Y-%m-%d") for base_data_file in base_data_files]
     return closing_dates
 
@@ -287,12 +283,19 @@ def get_report_sheets(fund_type):
     try: 
         engine = db.get_engine()
         with engine.connect() as connection:
-                sheets_info_list = connection.execute(text(f"""
-                    select smm.name, smm.lookup, smm.sequence 
-                    from file_metadata_master fmm 
-                    join sheet_metadata_master smm on fmm.id = smm.file_id 	
-                    where fmm."type" = 'borrowing_base_report' and smm.fund_id = (select id from fund where fund_name = '{fund_type}')
-                """)).fetchall()
+                sheets_info_list = connection.execute(text("""
+                    SELECT smm.name, smm.lookup, smm.sequence, smm.data_format 
+                    FROM file_metadata_master fmm 
+                    JOIN sheet_metadata_master smm ON fmm.id = smm.file_id 	
+                    WHERE fmm.type = 'borrowing_base_report'
+                    AND smm.fund_id = (
+                        SELECT id FROM fund WHERE fund_name = :fund_type
+                    )
+                    ORDER BY 
+                        CASE WHEN smm.sequence IS NULL THEN 1 ELSE 0 END,
+                        smm.sequence,
+                        smm.name
+                """), {'fund_type': fund_type}).fetchall()
         
         return sheets_info_list
     except Exception as e:
@@ -302,14 +305,18 @@ def get_columns_for_sheet_report(sheet_name):
     try:
         engine = db.get_engine()
         with engine.connect() as connection:
-            columns_tuple = connection.execute(text(f"""
-                select cmm.column_lookup, cmm.column_name, cmm.data_type, cmm.unit, cmm.sequence 
-                from column_metadata_master cmm 
+           columns_tuple = connection.execute(text("""
+                SELECT cmm.column_lookup, cmm.column_name, cmm.data_type, cmm.unit, cmm.sequence 
+                FROM column_metadata_master cmm 
                 JOIN sheet_metadata_master smm ON cmm.sheet_id = smm.smm_id 
                 JOIN file_metadata_master fmm ON smm.file_id = fmm.id
-                WHERE smm."lookup" = '{sheet_name}' 
+                WHERE smm."lookup" = :sheet_name 
                 AND fmm.type = 'borrowing_base_report'
-            """)).fetchall()
+                ORDER BY 
+                    CASE WHEN cmm.sequence IS NULL THEN 1 ELSE 0 END,
+                    cmm.sequence,
+                    cmm.column_name
+            """), {'sheet_name': sheet_name}).fetchall()
         
         return columns_tuple
     except Exception as e:
@@ -321,16 +328,25 @@ def download_calculated_df(base_data_file):
         intermediate_calculation = pickle.loads(base_data_file.intermediate_calculation)
         sheet_list = get_report_sheets(base_data_file.fund_type)
 
-        downloadable_sheets = []
         if base_data_file.fund_type == "PCOF":
-            other_sheets = ["df_subscriptionBB", "df_security", "df_industry", "df_Input_pricing", "df_Inputs_Portfolio_LeverageBorrowingBase", "df_Obligors_Net_Capital", "df_Inputs_Advance_Rates", "df_Inputs_Concentration_limit", "df_principle_obligations", "df_segmentation_overview", "df_PL_BB_Output"]
+            downloadable_sheets = ["df_PL_BB_Build", "df_Inputs_Other_Metrics", "df_Availability_Borrower", "df_PL_BB_Results", "df_subscriptionBB", "df_security", "df_industry", "df_Input_pricing", "df_Inputs_Portfolio_LeverageBorrowingBase", "df_Obligors_Net_Capital", "df_Inputs_Advance_Rates", "df_Inputs_Concentration_limit", "df_principle_obligations", "df_segmentation_overview", "df_PL_BB_Output"]
             for sheet in sheet_list:
                 sheet_name = sheet[0]
                 sheet_lookup = sheet[1]
-                intermediate_calculation[sheet_name] = intermediate_calculation.pop(sheet_lookup)
+                sheet_format = sheet[3]
 
-                downloadable_sheets.append(sheet_name)
-            downloadable_sheets.extend(other_sheets)    
+                if sheet_lookup in intermediate_calculation:
+                    if sheet_format == 'key_value':
+                        df = intermediate_calculation[sheet_lookup]
+                        # If it's a two-column DataFrame, assume first column is key and second is value
+                        intermediate_calculation[sheet_name] = pd.Series(df.iloc[:, 1].values, index=df.iloc[:, 0])
+                    else:
+                        intermediate_calculation[sheet_name] = intermediate_calculation.pop(sheet_lookup)
+
+                for i, downloadable_sheet_lookup in enumerate(downloadable_sheets):
+                    if downloadable_sheet_lookup == sheet_lookup:
+                        downloadable_sheets[i] = sheet_name
+                        break     
 
         if base_data_file.fund_type == "PFLT":
             downloadable_sheets = ["Loan List", "Inputs", "Exchange Rates", "Haircut", "Industry", "Cash Balance Projections", "Credit Balance Projection", "Borrowing Base", "Concentration Test"]
@@ -344,40 +360,14 @@ def download_calculated_df(base_data_file):
         
         if base_data_file.fund_type == "PCOF":
             excel_data = BytesIO()
-            sheet_list_sorted = sorted(sheet_list, key=lambda x: x[2])
 
             used_sheets = []
             with pd.ExcelWriter(excel_data, engine="openpyxl") as writer:
-                for sheet_name, sheet_lookup, _ in sheet_list_sorted:
+                for sheet_name, sheet_lookup, _, sheet_format in sheet_list:
                     used_sheets.append(sheet_name)
                     column_info = get_columns_for_sheet_report(sheet_lookup)
-                    column_info_sorted = sorted(column_info, key=lambda x: x[4]) 
 
-                    dataframe = sheet_dfs[sheet_name]
-
-                    desired_columns = [col[1] for col in column_info_sorted]
-                    extra_columns = [col for col in dataframe.columns if col not in desired_columns]
-                    final_columns = desired_columns + extra_columns
-
-                    dataframe = dataframe[[col for col in final_columns if col in dataframe.columns]]
-
-                    for column_lookup, column_name, data_type, unit, _ in column_info_sorted:
-                        if column_name not in dataframe.columns:
-                            continue
-
-                        elif data_type == 'date':
-                            if pd.api.types.is_datetime64tz_dtype(dataframe[column_name]):
-                                dataframe[column_name] = dataframe[column_name].dt.tz_localize(None)
-
-                            dataframe[column_name] = pd.to_datetime(dataframe[column_name], errors='coerce')
-                            dataframe[column_name] = dataframe[column_name].dt.strftime('%m/%d/%Y')                
-
-                        elif data_type == 'float' and unit == 'percent':
-                            dataframe[column_name] = dataframe[column_name].apply(
-                                lambda x: f"{x * 100:.2f}%" if pd.notnull(x) else ""
-                            )
-
-                    dataframe.to_excel(writer, sheet_name=sheet_name, index=False)
+                    dataframe = excel_cell_format(writer, sheet_dfs, sheet_name, sheet_format, column_info)
 
                 for dataframe_name, dataframe in sheet_dfs.items():
                     if dataframe_name not in used_sheets:
@@ -420,3 +410,66 @@ def download_calculated_df(base_data_file):
             ),
             500,
         )
+
+def get_company_insights(company_name: str):
+    try:
+        result = CompanyInfoOpenAI.query.filter(func.lower(CompanyInfoOpenAI.company_name) == company_name.lower()).first()
+        parsed_json = {}
+        model_name = ''
+        kg_parsed_json = None
+        if result is None:
+            # serpapi
+            serpapi_client = SerpAPIClient()
+            google_search_result = serpapi_client.search(company_name)
+            google_search_result_for_ai_prompt = "\n".join(google_search_result)
+            
+            prompt = company_info_prompt(company_name, google_search_result_for_ai_prompt)
+
+            # gemini
+            client = GeminiClient()
+            prompt_result = client.generate_content(prompt)
+            clean_str = prompt_result.strip('`')
+            clean_str = re.sub(r'^json\s*', '', clean_str).strip()
+            clean_str = clean_str.strip('`')
+            parsed_json = json.loads(clean_str)
+            model_name = 'gemini-2.0-flash'
+
+            # openai
+            # client = OpenAIClient()
+            # result = client.chat_completion([
+            #     {"role": "system", "content": "You are a corporate analyst. Summarize company data from JSON."},
+            #     {"role": "user", "content": prompt}
+            # ])
+            # clean_str = result["content"].strip('"')
+            # clean_str = result["content"].strip('`')
+            # clean_str = re.sub(r'^json\s*', '', clean_str).strip()
+            # parsed_json = json.loads(clean_str)
+            # model_name='openai-gpt4.1'
+
+            company_info = CompanyInfoOpenAI(
+                company_name=company_name,
+                company_info=parsed_json,
+                model_name=model_name
+            )
+            
+            db.session.add(company_info)
+            db.session.commit()
+        else:
+            parsed_json = result.company_info
+            kg_parsed_json = result.knowledge_graph
+            if result.knowledge_graph is None:
+                # getting relationships for knowledge graph
+                kg_prompt = knowledge_graph_prompt(json.dumps(parsed_json))
+                client = GeminiClient()
+                prompt_result = client.generate_content(kg_prompt)
+                kg_clean_str = prompt_result.strip('`')
+                kg_clean_str = re.sub(r'^json\s*', '', kg_clean_str).strip()
+                kg_clean_str = kg_clean_str.strip('`')
+                kg_parsed_json = json.loads(kg_clean_str)
+                model_name = 'gemini-2.0-flash'
+                result.knowledge_graph = kg_parsed_json
+                db.session.add(result)
+                db.session.commit()
+        return ServiceResponse.success(data={ "parsed_json": parsed_json, "kg_parsed_json": kg_parsed_json })
+    except Exception as e:
+        raise Exception(e)

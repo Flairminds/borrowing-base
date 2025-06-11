@@ -311,6 +311,7 @@ export const BorrowingBasePreviewPage = ({ baseFilePreviewData, setBaseFilePrevi
 							previewFundType={previewFundType}
 							filterSelections={filterSelections[baseFilePreviewData.fundType]}
 							showFilter={true}
+							visibleSortHeader={true}
 						/>
 					</div>
 				</div>}

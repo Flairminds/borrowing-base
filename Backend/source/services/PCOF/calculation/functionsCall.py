@@ -15,17 +15,17 @@ from source.services.concTestService.concTestService import ConcentrationTestExe
 def calculation_for_subscription(
     df_subscriptionBB, df_Inputs_Concentration_limit, df_Inputs_Advance_Rates
 ):
+    eligible_designations = ["Institutional Investors", "HNW Investors", "High Net Worth Investors"]
     df_subscriptionBB = calculate_Uncalled_Capital(df_subscriptionBB)
     Total_Eligible_Commitments = df_subscriptionBB[
-        (df_subscriptionBB["Designation"] == "Institutional Investors")
-        | (df_subscriptionBB["Designation"] == "High Net Worth Investors")
+        df_subscriptionBB["Designation"].isin(eligible_designations)
     ]["Uncalled Capital"].sum()
     total_allInvestors = df_subscriptionBB["Uncalled Capital"].sum()
     df_subscriptionBB = calculate_percent_of_Uncalled(
         df_subscriptionBB, total_allInvestors
     )
     df_subscriptionBB = calculate_of_Elig_Uncalled(
-        df_subscriptionBB, Total_Eligible_Commitments
+        df_subscriptionBB, Total_Eligible_Commitments, eligible_designations
     )
     df_subscriptionBB = calculate_Concentration_Limit(
         df_subscriptionBB,
