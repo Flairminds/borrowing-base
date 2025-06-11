@@ -19,6 +19,7 @@ from datetime import datetime
 from werkzeug.datastructures import FileStorage
 import time
 
+from source.utility.Util import float_to_currency, float_to_numerized
 from source.services.aiIntegration.openai import OpenAIClient
 from source.services.commons import commonServices
 from source.app_configs import azureConfig
@@ -540,17 +541,27 @@ def get_base_data(info_id):
             with engine.connect() as connection:
                 result = connection.execute(text('''
                     select count(distinct pbd.issuer) as no_of_issuers,
-                            count(distinct pbd.investment_name) as no_of_investments
+                            count(distinct pbd.investment_name) as no_of_investments,
+                            (select count(distinct pbd2.issuer) as eligible_issuers from pcof_base_data pbd2 where pbd2.base_data_info_id = :info_id and pbd2.is_eligible_issuer = 'Yes') as eligible_issuers,
+                            sum(NULLIF(pbd.investment_cost, '')::float) as total_investment_cost,
+                            sum(NULLIF(pbd.investment_par, '')::float) as total_investment_par,
+                            sum(NULLIF(pbd.investment_external_valuation, '')::float) as total_investment_external_valuation,
+                            sum(NULLIF(pbd.investment_internal_valuation, '')::float) as total_investment_internal_valuation
                             --sum(pbd.total_commitment::float) as total_commitment,
                             --sum(pbd.outstanding_principal::float) as total_outstanding_balance,
                             --(select count(distinct ssm.Issuer_Name) from source_files sf left join sf_sheet_marketbook_1 ssm on ssubh.source_file_id = sf.id left join pflt_security_mapping psm on psm.cashfile_security_name = ssubh."Security/Facility Name" where sf.id in (select unnest(files) from extracted_base_data_info ebdi where ebdi.id = :info_id) and psm.id is null and file_type = 'cashfile') as unmapped_records
                     from pcof_base_data pbd
                     where pbd.base_data_info_id = :info_id'''), {'info_id': info_id}).fetchall()
                 final_result = result[0]
-            no_of_issuers, no_of_investments = final_result
+            no_of_issuers, no_of_investments, eligible_issuers, total_investment_cost, total_investment_par, total_investment_external_valuation, total_investment_internal_valuation = final_result
             card_data = [{
                 "No of Issuers": no_of_issuers,
                 "No of Investments": no_of_investments,
+                "Eligible Issuers": eligible_issuers,
+                "Total Cost": '$' + float_to_numerized(total_investment_cost),
+                "Total Par": '$' + float_to_numerized(total_investment_par),
+                "Total External Valuation": '$' + float_to_numerized(total_investment_external_valuation),
+                "Total Internal Valuation": '$' + float_to_numerized(total_investment_internal_valuation),
                 "Report Date": base_data_info.report_date.strftime("%Y-%m-%d"),
                 # "Unmapped Securities": unmapped_records,
                 "Fund Type": base_data_info.fund_type

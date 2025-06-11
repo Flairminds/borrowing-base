@@ -682,10 +682,11 @@ export const AddAdditionalInformationModal = (
 															<div className={styles.rowHeader}
 																style={{
 																	display: "grid",
-																	gridTemplateColumns: `repeat(${selectedData[sheet]?.Column?.length}, 1fr) 50px`, // Dynamic grid
+																	gridTemplateColumns: `20px repeat(${selectedData[sheet]?.Column?.length}, 1fr) 50px`, // Dynamic grid
 																	gap: "10px",
 																	padding: "10px"
 																}}>
+																<div className={styles.column}></div>
 																{selectedData[sheet]?.Column?.map((inputField, index) => (
 																	<div key={index} className={styles.column}>
 																		{inputField.label}
@@ -699,12 +700,13 @@ export const AddAdditionalInformationModal = (
 																	<div key={ind} className={styles.row}
 																		style={{
 																			display: "grid",
-																			gridTemplateColumns: `repeat(${selectedData[sheet]?.Column.length}, 1fr) 50px`, // Dynamic grid
+																			gridTemplateColumns: `20px repeat(${selectedData[sheet]?.Column.length}, 1fr) 50px`, // Dynamic grid
 																			gap: "10px",
 																			padding: "10px",
 																			alignItems: "center"
 																		}}
 																	>
+																		<div>{ind + 1}.</div>
 																		{selectedData[sheet]?.Column?.map((inputField, index) => {
 																			const defaultValue = selectedData[sheet]?.defaultData?.[ind]?.[inputField.name];
 																			return (
@@ -720,8 +722,8 @@ export const AddAdditionalInformationModal = (
 																							format="MM-DD-YYYY"
 																							style={{
 																								width: "100%",
-																								padding: "4px",
-																								borderRadius: "8px",
+																								padding: "4px 6px",
+																								borderRadius: "5px",
 																								border: "1px solid rgba(201, 196, 196, 0.6)"
 																							}}
 																							disabled= {inputField?.isNotEditable}
@@ -731,8 +733,8 @@ export const AddAdditionalInformationModal = (
 																							placeholder={inputField.label}
 																							style={{
 																								width: "100%",
-																								padding: "4px",
-																								borderRadius: "8px",
+																								padding: "4px 6px",
+																								borderRadius: "5px",
 																								border: "1px solid rgba(201, 196, 196, 0.6)"
 																							}}
 																							disabled= {inputField?.isNotEditable}
@@ -754,13 +756,13 @@ export const AddAdditionalInformationModal = (
 																		/>
 																	</div>
 																))}
+																<Form.Item>
+																	<Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+																		Add Details
+																	</Button>
+																</Form.Item>
 															</div>
 
-															<Form.Item>
-																<Button style={{ marginBottom: "1rem" }} type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-																	Add Details
-																</Button>
-															</Form.Item>
 														</>
 													)}
 												</Form.List>

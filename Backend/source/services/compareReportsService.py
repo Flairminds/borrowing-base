@@ -207,7 +207,7 @@ sheets_to_compare =[
     # ['InputPLBB', 'InputPLBB']
 ]
 mapping_columns = {
-    'PL BB Build': ['Issuer', 'Investment Name'],
+    'PL BB Build': ['Issuer'],
     'InputPLBB': ['Investment Type']
 }
 
@@ -273,14 +273,14 @@ def compare_pcof_report():
         print(sheet_name)
         # pepper report
         source_data = {
-            "file_path": "",
+            "file_path": "C:/Users/punit/Flairminds/onpepper - borrowing base/borrowing-base/Backend/PCOF-Borrowing_Base_Report (15).xlsx",
             "sheet_name": sheet_name[0],
             "mapping_columns": mapping_columns[sheet_name[0]],
             "compare_columns": [x[0] for x in PCOF_columns[sheet_name[0]]]
         }
         # client report
         target_data = {
-            "file_path": "",
+            "file_path": "C:/Users/punit/Flairminds/onpepper - borrowing base/borrowing-base/Backend/4.30.2025 PCOF IV Borrowing Base (2).xlsx",
             "sheet_name": sheet_name[1],
             "mapping_columns": mapping_columns[sheet_name[1]],
             "compare_columns": [x[1] for x in PCOF_columns[sheet_name[0]]]
