@@ -55,7 +55,7 @@ def float_to_numerized(value):
     try:
         if value is None:
             return "0"
-        return numerize.numerize(float(value))
+        return numerize.numerize(float(value), 2)
     except Exception as e:
         print(e)
         return value

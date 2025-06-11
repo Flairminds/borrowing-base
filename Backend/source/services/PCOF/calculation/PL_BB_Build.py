@@ -938,7 +938,7 @@ def calculate_Leverage_Revolver_percent_of_TEV(data):
 
 
 def calculate_Leverage_Revolver_percent_of_TEV_helper(x, y):
-    if x == 0:
+    if x == 0 or y == 0:
         return 0
 
     else:
