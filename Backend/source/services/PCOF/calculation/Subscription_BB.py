@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def calculate_Uncalled_Capital(subscription_df):
     """<b>Uncalled Capital</b> in SubscriptionBB table is derived from two values corresponding to terms <b>Commitment</b> and <b>Capital Called</b> from SubscriptionBB table
     <br>
@@ -17,10 +20,14 @@ def calculate_percent_of_Uncalled(subscription_df, total_allInvestors):
     return subscription_df
 
 
-def calculate_of_Elig_Uncalled(subscription_df, Total_Eligible_Commitments):
+def calculate_of_Elig_Uncalled(subscription_df, Total_Eligible_Commitments, eligible_designations):
     subscription_df["percent of Elig Uncalled"] = subscription_df[
         "Uncalled Capital"
     ] / (Total_Eligible_Commitments)
+    subscription_df["percent of Elig Uncalled"] = subscription_df.apply(
+        lambda x: (x["Uncalled Capital"] / Total_Eligible_Commitments if x['Designation'] not in eligible_designations else np.nan),
+        axis=1,
+    )
     return subscription_df
 
 
@@ -28,10 +35,10 @@ def calculate_of_Elig_Uncalled(subscription_df, Total_Eligible_Commitments):
 def return_Concentration_Limit(
     designation, Institutional_Investors_Investors, HNW_Investors_Individual
 ):
-    if designation == "Institutional Investors":
-        return Institutional_Investors_Investors
-    else:
-        return HNW_Investors_Individual
+    match designation:
+        case "Institutional Investors": return Institutional_Investors_Investors
+        case "HNW Investors": return HNW_Investors_Individual
+    return np.nan
 
 
 def calculate_Concentration_Limit(

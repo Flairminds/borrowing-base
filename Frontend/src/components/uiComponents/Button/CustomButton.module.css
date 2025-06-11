@@ -2,9 +2,9 @@
 	color: var(--primary-btn-text-color) !important;
 	border: 1px solid var(--primary-theme-color) !important;
 	background-color: var(--primary-theme-color) !important;
-	border-radius: 6px !important;
+	border-radius: 5px !important;
 	min-width: 75px;
-	margin:0.1rem 0.5rem;
+	margin: 0.1rem 0.2rem;
 	box-shadow: var(--btn-box-shadow);
 }
 
@@ -18,9 +18,9 @@
 }
 
 .outlinedBtn {
-	color:  #2A2E34 !important;
+	color: var(--primary-theme-color) !important;
 	background-color: white !important;
-	border:  1px solid var(--primary-theme-color) !important;
+	border: 1px solid var(--primary-theme-color) !important;
 }
 
 .textBtn {

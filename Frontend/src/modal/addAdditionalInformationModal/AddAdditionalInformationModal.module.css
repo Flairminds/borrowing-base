@@ -16,7 +16,7 @@
 }
 
 .rowContainer {
-  max-height: 45vh;
+  max-height: 50vh;
   overflow-y: auto;
 }
 
@@ -33,6 +33,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+  margin: 2rem 0 0 0;
 }
 
 .visible {
