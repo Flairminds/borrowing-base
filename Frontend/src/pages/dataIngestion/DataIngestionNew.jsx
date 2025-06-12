@@ -1,143 +1,35 @@
+import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
+import { Input, Modal, Select } from 'antd';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { DatePicker, Modal, Select } from 'antd';
-import { CalendarOutlined, UploadOutlined, FolderOpenOutlined, ProfileOutlined, SettingOutlined } from '@ant-design/icons';
-import styles from './DataIngestionPage.module.css';
-import { UIComponents } from '../../components/uiComponents';
-import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
-import SelectFundDate from '../../components/dataIngestionSteps/SelectFundDate/SelectFundDate';
-import { UploadFiles } from '../../components/dataIngestionSteps/UploadFiles';
-import { SelectFiles } from '../../components/dataIngestionSteps/SelectFiles';
+import { useNavigate } from 'react-router';
+import { Calender } from '../../components/calender/Calender';
 import { DataMapping } from '../../components/dataIngestionSteps/DataMapping';
 import { ExtractBaseData } from '../../components/dataIngestionSteps/ExtractBaseData';
-import { fundMap, fundOptionsArray } from '../../utils/constants/constants';
-import ProgressBar from '../../components/dataIngestionSteps/ProgressBar/ProgressBar';
-import { Calender } from '../../components/calender/Calender';
-import { Icons } from 'react-toastify';
-import CalendarIcon from '../../assets/NavbarIcons/Calendar.svg';
-import { exportBaseDataFile, getBaseDataFilesList } from '../../services/dataIngestionApi';
-import { showToast } from '../../utils/helperFunctions/toastUtils';
 import FundReport from '../../components/dataIngestionSteps/FundReport';
-import { useNavigate } from 'react-router';
+import ProgressBar from '../../components/dataIngestionSteps/ProgressBar/ProgressBar';
+import { SelectFiles } from '../../components/dataIngestionSteps/SelectFiles';
+import SelectFundDate from '../../components/dataIngestionSteps/SelectFundDate/SelectFundDate';
+import { UploadFiles } from '../../components/dataIngestionSteps/UploadFiles';
+import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
+import { UIComponents } from '../../components/uiComponents';
+import { LoaderSmall } from '../../components/uiComponents/loader/loader';
+import { exportBaseDataFile, getBaseDataFilesList, getBlobFilesList } from '../../services/dataIngestionApi';
+import { fundMap, fundOptionsArray } from '../../utils/constants/constants';
+import { showToast } from '../../utils/helperFunctions/toastUtils';
+import { FUND_BG_COLOR, STATUS_BG_COLOR } from '../../utils/styles';
+import styles from './DataIngestionPage.module.css';
 
-const mockBaseData = [
-  {
-    key: '231',
-    reportDate: { value: '2025-06-03', meta_info: { display_value: '2025-06-03' } },
-    fund: { value: 'PSSL', meta_info: { display_value: 'PSSL' } },
-    extractionStatus: { value: 'Failed', meta_info: { display_value: 'Failed' } },
-    extractionDate: { value: '2025-06-05', meta_info: { display_value: '2025-06-05' } },
-    sourceFiles: { value: ['New Master Comps PSSL v4.xlsx', 'PSSLF221 CashFile 20250228 4.xlsm'], meta_info: { display_value: '2 files' } },
-    action: { value: 'Errors', meta_info: { display_value: 'Errors' } }
-  },
-  {
-    key: '230',
-    reportDate: { value: '2025-06-03', meta_info: { display_value: '2025-06-03' } },
-    fund: { value: 'PSSL', meta_info: { display_value: 'PSSL' } },
-    extractionStatus: { value: 'Failed', meta_info: { display_value: 'Failed' } },
-    extractionDate: { value: '2025-06-05', meta_info: { display_value: '2025-06-05' } },
-    sourceFiles: { value: ['New Master Comps PSSL v4 dsk', 'PSSLF221 CashFile 20250228 4.xlsm'], meta_info: { display_value: '2 files' } },
-    action: { value: 'Errors', meta_info: { display_value: 'Errors' } }
-  },
-  {
-    key: '229',
-    reportDate: { value: '2025-06-05', meta_info: { display_value: '2025-06-05' } },
-    fund: { value: 'PCOF', meta_info: { display_value: 'PCOF' } },
-    extractionStatus: { value: 'Completed', meta_info: { display_value: 'Completed' } },
-    extractionDate: { value: '2025-06-05', meta_info: { display_value: '2025-06-05' } },
-    sourceFiles: { value: ['Market-and-Book-Value-Position 20250520 100604-24 dsx', 'Super Master Comps March-1545263523.xlsx'], meta_info: { display_value: '2 files' } },
-    action: { value: 'Preview Base Data', meta_info: { display_value: 'Preview Base Data' } }
-  },
-  {
-    key: '228',
-    reportDate: { value: '2025-04-30', meta_info: { display_value: '2025-04-30' } },
-    fund: { value: 'PCOF', meta_info: { display_value: 'PCOF' } },
-    extractionStatus: { value: 'Completed', meta_info: { display_value: 'Completed' } },
-    extractionDate: { value: '2025-05-30', meta_info: { display_value: '2025-05-30' } },
-    sourceFiles: { value: ['Market-and-Book-Value-Position 20250520 100604-24 xlsx', 'Super Master Comps yMarch-24.xlsx'], meta_info: { display_value: '2 files' } },
-    action: { value: 'Preview Base Data', meta_info: { display_value: 'Preview Base Data' } }
-  },
-  {
-    key: '227',
-    reportDate: { value: '2025-04-30', meta_info: { display_value: '2025-04-30' } },
-    fund: { value: 'PCOF', meta_info: { display_value: 'PCOF' } },
-    extractionStatus: { value: 'Completed', meta_info: { display_value: 'Completed' } },
-    extractionDate: { value: '2025-05-28', meta_info: { display_value: '2025-05-28' } },
-    sourceFiles: { value: ['Market-and-Book-Value-Position 20250520 100604-24 8x', 'Super Master Comps viMarch-24.xlsx'], meta_info: { display_value: '2 files' } },
-    action: { value: 'Preview Base Data', meta_info: { display_value: 'Preview Base Data' } }
-  }
-];
-
-const mockSourceFiles = [
-  { 
-    key: '1', 
-    name: { value: 'report_Q1_2025.xlsx', meta_info: { display_value: 'report_Q1_2025.xlsx' } },
-    fund: { value: 'PSSL', meta_info: { display_value: 'PSSL' } },
-    reportDate: { value: '2025-01-15', meta_info: { display_value: '2025-01-15' } },
-    uploadedAt: { value: '10:30 AM', meta_info: { display_value: '10:30 AM' } },
-    uploadedBy: { value: 'John Doe', meta_info: { display_value: 'John Doe' } }
-  },
-  { 
-    key: '2', 
-    name: { value: 'data_feb_2025.csv', meta_info: { display_value: 'data_feb_2025.csv' } },
-    fund: { value: 'PCOF', meta_info: { display_value: 'PCOF' } },
-    reportDate: { value: '2025-02-20', meta_info: { display_value: '2025-02-20' } },
-    uploadedAt: { value: '02:45 PM', meta_info: { display_value: '02:45 PM' } },
-    uploadedBy: { value: 'Jane Smith', meta_info: { display_value: 'Jane Smith' } }
-  },
-  { 
-    key: '3', 
-    name: { value: 'analysis_march_2025.xlsx', meta_info: { display_value: 'analysis_march_2025.xlsx' } },
-    fund: { value: 'PSSL', meta_info: { display_value: 'PSSL' } },
-    reportDate: { value: '2025-03-10', meta_info: { display_value: '2025-03-10' } },
-    uploadedAt: { value: '09:10 AM', meta_info: { display_value: '09:10 AM' } },
-    uploadedBy: { value: 'Alice Brown', meta_info: { display_value: 'Alice Brown' } }
-  },
-  { 
-    key: '4', 
-    name: { value: 'customer_data_2025.csv', meta_info: { display_value: 'customer_data_2025.csv' } },
-    fund: { value: 'PCOF', meta_info: { display_value: 'PCOF' } },
-    reportDate: { value: '2025-05-05', meta_info: { display_value: '2025-05-05' } },
-    uploadedAt: { value: '01:15 PM', meta_info: { display_value: '01:15 PM' } },
-    uploadedBy: { value: 'Alice Brown', meta_info: { display_value: 'Alice Brown' } }
-  },
-];
-
-const columns = [
-  { key: 'key', label: '#', isEditable: false },
-  { key: 'reportDate', label: 'REPORT DATE', isEditable: false },
-  { key: 'fund', label: 'FUND', isEditable: false },
-  { key: 'extractionStatus', label: 'EXTRACTION STATUS', isEditable: false },
-  { key: 'extractionDate', label: 'EXTRACTION DATE', isEditable: false },
-  { key: 'sourceFiles', label: 'SOURCE FILES', isEditable: false },
-  { key: 'action', label: '', isEditable: false }
-];
-
-const stepTitles = [
-	'Select Fund & Date',
-	'Upload source files',
-	'Select files for extraction',
-	'Data mapping',
-	'Extract Base data',
-];
 
 const BaseDataTab = () => {
+	// Extract New Base Data
 	const [isExtractionMode, setIsExtractionMode] = useState(false);
 	const [currentStep, setCurrentStep] = useState(0);
 	const [selectedFund, setSelectedFund] = useState(fundOptionsArray[0].label);
 	const [selectedDate, setSelectedDate] = useState(null);
-	const [filterFund, setFilterFund] = useState('');
-	const [filterDate, setFilterDate] = useState(null);
+
 	const [selectedFiles, setSelectedFiles] = useState([]);
 	const [uploadedFiles, setUploadedFiles] = useState([]);
 	const selectedIds = useRef([]);
-
-	const filteredBaseData = useMemo(() => {
-		return mockBaseData.filter(item => {
-			const matchesFund = !filterFund || item.fund.value === filterFund;
-			const matchesDate = !filterDate || item.reportDate.value === filterDate;
-			return matchesFund && matchesDate;
-		});
-	}, [filterFund, filterDate]);
 
 	const stepContent = [
 		<SelectFundDate
@@ -304,7 +196,6 @@ const BaseDataTab = () => {
 		);
 	}
 
-	const [selectedReportDate, setSelectedReportDate] = useState(null);
 	const [reportDates, setReportDates] = useState(null);
 	const [fund, setFund] = useState(fundOptionsArray[0].label);
 	const [filteredData, setFilteredData] = useState([]);
@@ -325,7 +216,7 @@ const BaseDataTab = () => {
 							{row.source_file_details?.map((file, index) => (
 								<div
 									key={file.file_id}
-									onClick={() => handleSourceFileClick(file)}
+									// onClick={() => handleSourceFileClick(file)}
 									style={{
 										color: '#007BFF',
 										cursor: 'pointer',
@@ -385,12 +276,7 @@ const BaseDataTab = () => {
 			filesRes.data.result?.data?.forEach(d => reportDatesArr.push(d.report_date));
 			setReportDates(reportDatesArr);
 			setDataLoading(false);
-			if (filterDate) {
-				const temp = filesRes.data.result.data.filter(t => t.report_date == filterDate);
-				setFilteredData(temp);
-			} else {
-				setFilteredData(filesRes.data.result.data);
-			}
+			setFilteredData(filesRes.data.result.data);
 		} catch (err) {
 			showToast('error', err?.response?.data.message);
 			setDataLoading(false);
@@ -398,44 +284,44 @@ const BaseDataTab = () => {
 	};
 
 	const handleDateChange = (date, dateString) => {
-		setSelectedReportDate(date); // `date` is a Day.js or Moment object depending on your setup
-		console.log('Selected Date:', dateString); // Useful for debugging
+		if (date) {
+			const selectedReportDateFiles = baseDataFilesList?.data.filter(item => {
+				if (fund !== "-- Select Fund --") {
+					return item.report_date === dateString && item.fund === fundOptionsArray[fund].label;
+				} else {
+					return item.report_date === dateString;
+				}
+			});
+			setFilteredData(selectedReportDateFiles);
+		} else {
+			setFilteredData(baseDataFilesList?.data);
+			setFund(0);
+		}
 	};
 
 	const handleDropdownChange = (fund) => {
-		const choosedFund = fundOptionsArray[fund].label;
-		console.log("ch", choosedFund);
+		if ( fundOptionsArray[fund].label !== "-- Select Fund --") {
+			const choosedFund = fundOptionsArray[fund].label;
+			const selectedReportDateFiles = baseDataFilesList?.data.filter(item => item.fund === choosedFund);
+			setFilteredData(selectedReportDateFiles);
+		} else {
+			setFilteredData(baseDataFilesList?.data);
+		}
 		setFund(fund);
 	};
-
-	const columnsToAdd = [{
-		'key': 'file_preview',
-		'label': '',
-		'render': (value, row) => <div onClick={() => {
-			// handleBaseDataPreview(row),
-			console.log("Hii")
-		}}
-			style={{color: row.extraction_status.toLowerCase() === "completed" ? 'green' : 'red', cursor: 'pointer'}} title={row.extraction_status.toLowerCase() === "completed" ? 'Click to preview base data' : 'Click to view errors' } >
-			{row.extraction_status.toLowerCase() === "completed" ? 'Preview Base Data' : (row.extraction_status.toLowerCase() === "failed" ? 'Errors' : '')}
-		</div>
-	}];
 
 	return (
 		<>
 			<div style={{ background: '#fff', borderRadius: 8, padding: 24 }}>
 				<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
 					<h1 style={{ fontSize: 24, fontWeight: 600 }}>Extracted Base Data</h1>
-					<div style={{ display: 'flex', alignItems: "center", gap: 12 }}>
+					<div style={{ display: 'flex', alignItems: "center", gap: 2 }}>
 						<div style={{ padding: '0 5px 0 0' }}>
 							<div style={{display: "flex", alignItems: "center", padding: "0 5px 0 7px"}}>
-								<DatePicker
-									id="reportDatePicker"
-									style={{ width: 130 }}
-									suffixIcon={<img src={CalendarIcon} alt="calendar icon" />}
-									placeholder="Report Date"
-									allowClear={true}
-									onChange={handleDateChange}
-									value={selectedReportDate}
+								<Calender
+									fileUpload={true}
+									availableClosingDates={reportDates}
+									onDateChange={handleDateChange}
 								/>
 							</div>
 						</div>
@@ -455,91 +341,253 @@ const BaseDataTab = () => {
 						/>
 					</div>
 				</div>
-				{/* <div className={styles.baseDataTableContainer}>
-					<DynamicTableComponents data={filteredData} columns={baseDataFilesList?.columns} />
-				</div> */}
+				{dataLoading ? <LoaderSmall /> :
+					<div className={styles.baseDataTableContainer}>
+						<DynamicTableComponents data={filteredData} columns={baseDataFilesList?.columns} />
+					</div>
+				}
 			</div>
 		</>
 	);
 };
 
 const SourceFilesTab = () => {
-  const [selectedRows, setSelectedRows] = useState([]);
-  const [fundFilter, setFundFilter] = useState('');
-  const [dateFilter, setDateFilter] = useState(null);
+	const [selectedIds, setSelectedIds] = useState([]);
+	const [uploadedSourceFiles, setUploadedSourceFiles] = useState({ data: [], columns: [] });
+	const [dataLoading, setDataLoading] = useState(false);
 
-  const filteredSourceFiles = useMemo(() => {
-    return mockSourceFiles.filter(item => {
-      const matchesFund = !fundFilter || item.fund.value === fundFilter;
-      const matchesDate = !dateFilter || item.reportDate.value === dateFilter;
-      return matchesFund && matchesDate;
-    });
-  }, [fundFilter, dateFilter]);
+	useEffect(() => {
+		blobFilesList();
+	}, []);
 
-  const columns = [
-    { key: 'name', label: 'FILE NAME', isEditable: false },
-    { key: 'fund', label: 'FUND', isEditable: false },
-    { key: 'reportDate', label: 'REPORT DATE', isEditable: false },
-    { key: 'uploadedAt', label: 'UPLOADED AT', isEditable: false },
-    { key: 'uploadedBy', label: 'UPLOADED BY', isEditable: false }
-  ];
+	const blobFilesList = async () => {
+		const fundType = null;
+		setDataLoading(true);
+		try {
+			const blobResponse = await getBlobFilesList(fundType);
+			setUploadedSourceFiles(blobResponse.data.result || { data: [], columns: [] });
+		} catch (err) {
+			console.error(err);
+			showToast("error", err.response?.data?.message || "Error loading files");
+		} finally {
+			setDataLoading(false);
+		}
+	};
 
-  return (
-    <div style={{ padding: '24px' }}>
-      <div style={{ background: '#fff', borderRadius: 8, padding: 24 }}>
-        <div style={{ fontSize: 22, fontWeight: 600, marginBottom: 24 }}>Uploaded Source Files</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
-          <span style={{ fontWeight: 500 }}>Filter by:</span>
-          <select 
-            value={fundFilter} 
-            style={{ width: 140, padding: '4px 8px', borderRadius: 4, border: '1px solid #d9d9d9' }} 
-            onChange={e => setFundFilter(e.target.value)}
-          >
-            <option value="">All Funds</option>
-            {fundOptionsArray.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-          <input 
-            type="date" 
-            value={dateFilter || ''} 
-            style={{ width: 130, padding: '4px 8px', borderRadius: 4, border: '1px solid #d9d9d9' }} 
-            onChange={e => setDateFilter(e.target.value)} 
-          />
-          <UIComponents.Button 
-            text="× Clear Filters" 
-            onClick={() => { 
-              setFundFilter(''); 
-              setDateFilter(null); 
-            }} 
-          />
-          <div style={{ flex: 1 }} />
-          <UIComponents.Button text="View Archived" customStyle={{ background: '#2966d8', color: '#fff' }} />
-          <UIComponents.Button 
-            text="Archive Selected" 
-            customStyle={{ background: '#ffe58f', color: '#ad6800' }}
-            disabled={selectedRows.length === 0}
-          />
-          <UIComponents.Button 
-            text="Delete Selected" 
-            customStyle={{ background: '#ff7875', color: '#fff' }}
-            disabled={selectedRows.length === 0}
-          />
-        </div>
-        <DynamicTableComponents
-          data={filteredSourceFiles}
-          columns={columns}
-          showSettings={false}
-          onSelectionChange={setSelectedRows}
-          selectable={true}
-        />
-        <div style={{ marginTop: 12, color: '#888', fontSize: 14 }}>
-          {filteredSourceFiles.length} file(s)
-          {selectedRows.length > 0 && `, ${selectedRows.length} selected`}
-        </div>
-      </div>
-    </div>
-  );
+	const toggleSelection = (fileId) => {
+		setSelectedIds(prev =>
+			prev.includes(fileId)
+				? prev.filter(id => id !== fileId)
+				: [...prev, fileId]
+		);
+	};
+
+	return (
+		<div style={{ padding: '24px' }}>
+			<div style={{ background: '#fff', borderRadius: 8}}>
+				<div style={{ fontSize: 22, fontWeight: 600, marginBottom: 24 }}>Uploaded Source Files</div>
+				{dataLoading ? <LoaderSmall /> : (
+					<SourceFileTable
+						uploadedFiles={uploadedSourceFiles}
+						selectedIds={selectedIds}
+						toggleSelection={toggleSelection}
+					/>
+				)}
+			</div>
+		</div>
+	);
+};
+
+const SourceFileTable = ({ uploadedFiles, selectedIds, toggleSelection }) => {
+	const [showErrorsModal, setShowErrorsModal] = useState(false);
+	const [validationInfoData, setValidationInfoData] = useState([]);
+	const [dataIngestionFileListColumns, setDataIngestionFileListColumns] = useState([]);
+
+	const [fund, setFund] = useState(fundOptionsArray[0].label);
+	const [filteredData, setFilteredData] = useState([]);
+	const [searchText, setSearchText] = useState('');
+	const [reportDates, setReportDates] = useState(null);
+
+	// Initialize table columns
+	useEffect(() => {
+		const columnsToAdd = [{
+			key: 'file_select',
+			label: '',
+			render: (value, row) => {
+				const isDisabled = ['In Progress', 'Failed'].includes(row.extraction_status);
+				return (
+					<div style={{ display: 'flex', alignItems: 'center' }}>
+						<input
+							checked={selectedIds.includes(row.file_id)}
+							onChange={() => toggleSelection(row.file_id)}
+							type="checkbox"
+							disabled={isDisabled}
+							style={{ transform: 'scale(1.3)' }}
+						/>
+					</div>
+				);
+			}
+		}];
+
+		const updatedColumns = injectRender([...columnsToAdd, ...uploadedFiles.columns]);
+		setDataIngestionFileListColumns(updatedColumns);
+	}, [uploadedFiles.columns, selectedIds, toggleSelection]);
+
+	// Filter data based on search
+	useEffect(() => {
+		const filtered = uploadedFiles?.data?.filter(item =>
+			item?.file_name?.toLowerCase().includes(searchText.toLowerCase())
+		);
+		setFilteredData(filtered);
+	}, [searchText, uploadedFiles]);
+
+	useEffect(() => {
+		const reportDateList = uploadedFiles?.data?.map(item => {
+			if (item?.report_date) {
+				return item.report_date;
+			}
+		});
+		setReportDates(reportDateList);
+	}, [uploadedFiles]);
+
+	const injectRender = (columns) => {
+		return columns?.map((col) => {
+			if (col.key === 'extraction_status') {
+				return {
+					...col,
+					render: (value, row) => (
+						<div>
+							<span style={{
+								display: 'inline-block',
+								padding: '3px 7px',
+								borderRadius: '8px',
+								...(STATUS_BG_COLOR[row.extraction_status?.toLowerCase()] || {})
+							}}>
+								{row.extraction_status}
+							</span>
+							{row.extraction_status === 'Failed' && row.validation_info && (
+								<span
+									style={{ cursor: "pointer", paddingLeft: "3px" }}
+									onClick={() => {
+										setShowErrorsModal(true);
+										setValidationInfoData(row.validation_info);
+									}}
+								>
+									Show more
+								</span>
+							)}
+						</div>
+					)
+				};
+			}
+			if (col.key === 'fund') {
+				return {
+					...col,
+					render: (value, row) => (
+						<div>
+							{row.fund?.map((f, i) => (
+								<span
+									key={i}
+									style={{
+										display: 'inline-block',
+										...(FUND_BG_COLOR[f] || {}),
+										padding: '3px 7px',
+										margin: '0 2px',
+										borderRadius: '8px'
+									}}
+								>
+									{f}
+								</span>
+							))}
+						</div>
+					)
+				};
+			}
+			return col;
+		});
+	};
+
+	const handleDropdownChange = (fund) => {
+		if ( fundOptionsArray[fund].label !== "-- Select Fund --") {
+			const choosedFund = fundOptionsArray[fund].label;
+			const selectedReportDateFiles = uploadedFiles?.data.filter(item => item.fund.includes(choosedFund));
+			setFilteredData(selectedReportDateFiles);
+		} else {
+			setFilteredData(uploadedFiles?.data);
+		}
+		setFund(fund);
+	};
+
+	const handleDateChange = (date, dateString) => {
+		if (date) {
+			const selectedReportDateFiles = uploadedFiles?.data.filter(item => {
+				if (fund !== "-- Select Fund --") {
+					return item.report_date === dateString;
+				} else {
+					return item.report_date === dateString;
+				}
+			});
+			setFilteredData(selectedReportDateFiles);
+		} else {
+			setFilteredData(uploadedFiles?.data);
+		}
+		setFund(0);
+	};
+
+	const handleSearch = (value) => {
+		setSearchText(value);
+	};
+
+	const handleClearSearch = () => {
+		setSearchText('');
+	};
+
+	return (
+		<>
+			<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+				<span style={{ fontWeight: 500 }}>Filter by:</span>
+				<Select
+					defaultValue={fundOptionsArray[0].label}
+					style={{ width: 150, borderRadius: '8px', margin: "0.5rem 0rem" }}
+					onChange={handleDropdownChange}
+					value={fund}
+					options={fundOptionsArray}
+				/>
+				<Calender
+					fileUpload={true}
+					availableClosingDates={reportDates}
+					onDateChange={handleDateChange}
+				/>
+				<Input
+					placeholder="Search by file name"
+					value={searchText}
+					onChange={(e) => handleSearch(e.target.value)}
+					style={{ width: 200 }}
+					suffix={
+						searchText ?
+							<CloseOutlined style={{ cursor: 'pointer' }} onClick={handleClearSearch} /> :
+							<SearchOutlined />
+					}
+				/>
+				<div style={{ flex: 1 }} />
+				<UIComponents.Button text="View Archived" customStyle={{ background: '#2966d8', color: '#fff' }} />
+				<UIComponents.Button
+					text="Archive Selected"
+					customStyle={{ background: '#ffe58f', color: '#ad6800' }}
+					// disabled={selectedRows.length === 0}
+				/>
+				<UIComponents.Button
+					text="Delete Selected"
+					customStyle={{ background: '#ff7875', color: '#fff' }}
+					// disabled={selectedRows.length === 0}
+				/>
+			</div>
+			<DynamicTableComponents
+				data={filteredData}
+				columns={dataIngestionFileListColumns}
+			/>
+		</>
+	);
 };
 
 const tabItems = [

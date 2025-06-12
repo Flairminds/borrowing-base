@@ -153,7 +153,7 @@ export const UploadFiles = ({ uploadedFiles, setUploadedFiles, selectedFund, sel
 			{dataLoading ? <LoaderSmall /> :
 				<div style={{padding: '25px', background: 'rgb(245, 245, 245)', borderRadius: '5px' }}>
 					<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px' }}>
-						<h3 style={{fontWeight: 'bold', fontSize: 'large', margin: 0}}>Uploaded files</h3>
+						<h3 style={{fontWeight: 'bold', fontSize: 'large', margin: 0}}>Uploaded Source Files</h3>
 						<Input
 							placeholder="Search by file name"
 							value={searchText}

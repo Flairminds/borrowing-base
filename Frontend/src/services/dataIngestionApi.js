@@ -2,12 +2,11 @@ import axios from 'axios';
 import { ApiURL } from '../utils/configurations/apiUrl';
 
 
-export const getBlobFilesList = (fundType, report_date) => {
+export const getBlobFilesList = (fundType, report_date= null) => {
 	const payload = {
 		fund_type: fundType,
-		report_date: report_date.format('MM-DD-YYYY')
+		report_date: report_date?.format('MM-DD-YYYY')
 	};
-
 	const response = axios.post(`${ApiURL}/data_ingestion/get_blobs`, payload, {
 		withCredentials: true
 	});

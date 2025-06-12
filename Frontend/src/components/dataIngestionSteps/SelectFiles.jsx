@@ -48,11 +48,11 @@ export const SelectFiles = ({ uploadedFiles, selectedFiles, setSelectedFiles, se
 		if (selectedIds?.current.indexOf(fileId) === -1) {
 			// setSelectedIds([...selectedIds, fileId]);
 			selectedIds.current = [...selectedIds.current, fileId];
-			setFilesSelected(selectedIds.current.length);
+			// setFilesSelected(selectedIds.current.length);
 			// setSelectedIds([...selectedIds, fileId]);
 		} else {
 			selectedIds.current = selectedIds?.current.filter(id => id !== fileId);
-			setFilesSelected(selectedIds.current.length);
+			// setFilesSelected(selectedIds.current.length);
 			// setSelectedIds(selectedIds.filter(id => id !== fileId));
 		}
 		console.info('sel ids', selectedIds);
@@ -108,31 +108,12 @@ export const SelectFiles = ({ uploadedFiles, selectedFiles, setSelectedFiles, se
 		});
 	};
 
-	const handleSearch = (value) => {
-		setSearchText(value);
-	};
-
-	const handleClearSearch = () => {
-		setSearchText('');
-	};
-
 	return (
 		<div>
 			<div style={{ fontWeight: 600, fontSize: 18, marginBottom: 16 }}>Select files for extraction</div>
 			<div style={{padding: '25px', background: 'rgb(245, 245, 245)', borderRadius: '5px' }}>
 				<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '7px' }}>
-					<h3 style={{fontWeight: 'bold', fontSize: 'large', margin: 0}}>Uploaded files for extraction</h3>
-					<Input
-						placeholder="Search by file name"
-						value={searchText}
-						onChange={(e) => handleSearch(e.target.value)}
-						style={{ width: 200 }}
-						suffix={
-							searchText ?
-								<CloseOutlined style={{ cursor: 'pointer' }} onClick={handleClearSearch} /> :
-								<SearchOutlined />
-						}
-					/>
+					<h3 style={{fontWeight: 'bold', fontSize: 'large', margin: 0}}>Available files</h3>
 				</div>
 				<div style={{margin: '10px 0'}}>
 					<DynamicTableComponents data={filteredData} columns={dataIngestionFileListColumns} />
