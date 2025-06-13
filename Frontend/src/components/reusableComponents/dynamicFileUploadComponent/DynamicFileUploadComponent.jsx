@@ -26,7 +26,8 @@ export const DynamicFileUploadComponent = ({
 			});
 
 			if (validFiles.length > 0) {
-				setUploadedFiles(prev => [...prev, ...validFiles]);
+				// setUploadedFiles(prev => [...prev, ...validFiles]);
+				setUploadedFiles([...validFiles]);
 			} else {
 				showToast('error', 'Invalid file format. Please upload a valid file.');
 			}

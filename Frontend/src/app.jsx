@@ -3,12 +3,14 @@ import { Route, Routes, Navigate } from 'react-router';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './app.css';
+import ExtractNewBaseData from './layouts/dataIngestion/ExtractNewBaseData';
 import { PageLayout } from './layouts/pageLayout/PageLayout';
 import { AssetSelectionPage } from './pages/assetSelection/AssetSelectionPage';
 import { BaseDataFileList } from './pages/baseDataFileList/BaseDataFileList';
 import { BorrowingBasePreviewPage } from './pages/borrowingBasePreview/BorrowingBasePreviewPage';
 import { ConfigurationPage } from './pages/configurationPage/ConfigurationPage';
 import { Dashboard } from './pages/dashboard/Dashboard';
+import DataIngestion from './pages/dataIngestion/DataIngestion';
 import { DataIngestionPage } from './pages/dataIngestion/DataIngestionPage';
 import PortfolioInsights from './pages/portfolioInsights/PortfolioInsights';
 import { SecurityMapping } from './pages/securityMapping/SecurityMapping';
@@ -144,8 +146,10 @@ export function App() {
 							/>
 						}
 					/>
-					<Route path='data-ingestion' element={<Navigate to="base-data" replace />} />
-					<Route path='data-ingestion/ingestion-files-list'
+					{/* <Route path='data-ingestion' element={<Navigate to="base-data" replace />} /> */}
+					<Route path='data-ingestion' element={<DataIngestion />} />
+
+					{/* <Route path='data-ingestion/ingestion-files-list'
 						element={
 							<DataIngestionPage
 								dataIngestionFileList={dataIngestionFileList}
@@ -156,8 +160,9 @@ export function App() {
 								// setSelectedIds={setSelectedIds}
 							/>
 						}
-					/>
-					<Route path='data-ingestion/base-data'
+					/> */}
+					<Route path='/data-ingestion/extract-new-base-data' element={<ExtractNewBaseData />} />
+					{/* <Route path='data-ingestion/base-data'
 						element={
 							<BaseDataFileList
 								setBaseFilePreviewData={setBaseFilePreviewData}
@@ -165,7 +170,7 @@ export function App() {
 								setPreviewFundType={setPreviewFundType}
 							/>
 						}
-					/>
+					/> */}
 					<Route path='data-ingestion/base-data-preview/:infoId'
 						element={
 							<BorrowingBasePreviewPage
@@ -181,7 +186,6 @@ export function App() {
 					/>
 					{/* <Route path='/security-mapping' element={<SecurityMappingPage selectedSecurities={selectedSecurities} />} /> */}
 					<Route path='/configuration' element={<ConfigurationPage />} />
-
 					{/* <Route path='/securities-mapping' element={<SecurityMapping />} /> */}
 				</Route>
 			</Routes>

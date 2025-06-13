@@ -28,6 +28,7 @@
   --tabs-background-color-active: rgb(240, 240, 240);
   --tabs-background-color-hover: rgb(240, 240, 240);
   --btn-box-shadow: 0 10px 15px 2px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --body-background-color: rgb(245, 245, 245);
 }
 
 * {
