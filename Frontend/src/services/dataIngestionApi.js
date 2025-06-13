@@ -2,11 +2,7 @@ import axios from 'axios';
 import { ApiURL } from '../utils/configurations/apiUrl';
 
 
-export const getBlobFilesList = (fundType, report_date= null) => {
-	const payload = {
-		fund_type: fundType,
-		report_date: report_date?.format('MM-DD-YYYY')
-	};
+export const getBlobFilesList = (payload) => {
 	const response = axios.post(`${ApiURL}/data_ingestion/get_blobs`, payload, {
 		withCredentials: true
 	});
@@ -14,17 +10,18 @@ export const getBlobFilesList = (fundType, report_date= null) => {
 };
 
 export const uploadNewFile = (files, reportDate, selectedFunds) => {
-
 	const formData = new FormData();
 	files.forEach((file) => {
 		formData.append('files', file);
 	});
-	formData.append("reporting_date", reportDate);
-	selectedFunds.forEach((fund) => {
-		formData.append('fund_type', fund);
-	});
-	// formData.append("fund_type", selectedFunds);
-
+	formData.append("reporting_date", reportDate?.format('YYYY-MM-DD'));
+	if (Array.isArray(selectedFunds)) {
+		selectedFunds.forEach((fund) => {
+			formData.append('fund_type', fund);
+		});
+	} else {
+		formData.append("fund_type", selectedFunds);
+	}
 
 	const response = axios.post(`${ApiURL}/data_ingestion/upload_source`, formData, {
 		withCredentials: true
@@ -111,7 +108,7 @@ export const updateColumnsOrder = (updatedOrderData) => {
 	return response;
 };
 
-export const updateArchiveStatus = (fileIds, addToArchive) => {
+export const updateArchiveStatus = (fileIds, addToArchive = true) => {
 	const filesData = {
 		"list_of_ids": fileIds,
 		"to_archive": addToArchive

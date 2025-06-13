@@ -4,7 +4,7 @@ export const ExtractBaseData = ({ selectedIds, uploadedFiles }) => {
 	const [ selectedFiles, setSelectedFiles ] = useState([]);
 
 	useEffect(() => {
-		const selectedList = uploadedFiles?.data?.map(item => {
+		const selectedList = uploadedFiles?.data?.filter(item => {
 			if (selectedIds?.current.includes(item.file_id)) return item;
 		});
 		setSelectedFiles(selectedList);
@@ -15,10 +15,9 @@ export const ExtractBaseData = ({ selectedIds, uploadedFiles }) => {
 			<div style={{ fontWeight: 600, fontSize: 18, marginBottom: 16 }}>Extract Base data</div>
 			<div>Ready to extract base data for the selected files.</div>
 			<ul style={{ marginTop: 8 }}>
-				{selectedFiles.map((file, key) => (
+				{selectedFiles?.map((file, key) => (
 					<div key={key} style={{display: 'flex'}}>
-						<li key={file}>{file.file_name}</li>,&nbsp;
-						Uploaded at - &nbsp; <span key={file}>{file.uploaded_at}</span>
+						<li key={file}>{file.file_name}</li>
 					</div>
 				))}
 			</ul>

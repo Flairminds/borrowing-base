@@ -72,10 +72,10 @@ export const PAGE_ROUTES = {
 export const sidebarItemsArray = [
 	{ imgSrc: HomeIcon, imgAlt: "Home Icon", name: 'Dashboard', route: '/' },
 	{ imgSrc: ThreeBarIcon, imgAlt: "ThreeBar Icon", name: 'Conc. Test Setup', route: '/fund-setup' },
-	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: PAGE_ROUTES.BASE_DATA_LIST.url },
+	// { imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: PAGE_ROUTES.BASE_DATA_LIST.url },
+	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion', route: '/data-ingestion' },
 	{ imgSrc: settingIcon, imgAlt: "Config Icon", name: 'Configuration', route: '/configuration' },
-	{ imgIcon: <MdInsights size={25} />, imgAlt: "Config Icon", name: 'Insights', route: '/insights' },
-	{ imgSrc: projectDocumentsIcon, imgAlt: "projectDocuments Icon", name: 'Data Ingestion New', route: '/data-ingestion/new' }
+	{ imgIcon: <MdInsights size={25} />, imgAlt: "Config Icon", name: 'Insights', route: '/insights' }
 	// { imgSrc: DoneCheckIcon, imgAlt: "DoneCheck Icon" },
 	// { imgSrc: suitcasePortfolioIcon, imgAlt: "suitcasePortfolio Icon" },
 	// { imgSrc: GroupUserIcon, imgAlt: "GroupUser Icon" },

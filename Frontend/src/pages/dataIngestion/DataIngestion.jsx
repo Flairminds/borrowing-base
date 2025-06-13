@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { BaseDataTab } from '../../layouts/dataIngestion/BaseData';
 import { SourceFilesTab } from '../../layouts/dataIngestion/SourceFile';
@@ -10,7 +10,7 @@ const tabItems = [
 	{ key: 'sourceFiles', label: 'Source Files', children: <SourceFilesTab />, query: 'source-files' }
 ];
 
-const DataIngestionNew = () => {
+const DataIngestion = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const [activeKey, setActiveKey] = useState('baseData');
 
@@ -44,4 +44,4 @@ const DataIngestionNew = () => {
 	);
 };
 
-export default DataIngestionNew;
+export default DataIngestion;

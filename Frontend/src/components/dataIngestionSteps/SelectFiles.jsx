@@ -68,7 +68,7 @@ export const SelectFiles = ({ uploadedFiles, selectedFiles, setSelectedFiles, se
 							<span style={{display: 'inline-block', padding: '3px 7px', borderRadius: '8px', ...(STATUS_BG_COLOR[row.extraction_status.toLowerCase()] || {backgroundColor: 'gray', color: 'white'})}}>
 								{row.extraction_status}
 							</span>
-							{row.extraction_status === 'Failed' && row.validation_info &&
+							{row.extraction_status === 'Failed' && row.validation_info.length > 0 &&
 								<span
 									style={{cursor: "pointer", paddingLeft: "3px"}}
 									onClick={() => {

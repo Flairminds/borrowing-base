@@ -1,35 +1,48 @@
 import { SearchOutlined, CloseOutlined } from '@ant-design/icons';
 import { Input, Select } from "antd";
-import { useEffect, useState, React } from "react";
+import React, { useEffect, useState } from "react";
 import { Calender } from "../../components/calender/Calender";
 import { DynamicTableComponents } from '../../components/reusableComponents/dynamicTableComponent/DynamicTableComponents';
 import { UIComponents } from "../../components/uiComponents";
 import { LoaderSmall } from "../../components/uiComponents/loader/loader";
-import { getBlobFilesList } from "../../services/dataIngestionApi";
+import { getArchive, getBlobFilesList, updateArchiveStatus } from "../../services/dataIngestionApi";
 import { fundOptionsArray } from "../../utils/constants/constants";
 import { showToast } from "../../utils/helperFunctions/toastUtils";
 import { FUND_BG_COLOR, STATUS_BG_COLOR } from "../../utils/styles";
 
 export const SourceFilesTab = () => {
+	// State management
 	const [selectedIds, setSelectedIds] = useState([]);
 	const [uploadedSourceFiles, setUploadedSourceFiles] = useState({ data: [], columns: [] });
 	const [dataLoading, setDataLoading] = useState(false);
+	const [isViewActive, setIsViewActive] = useState(false);
+	const [showErrorsModal, setShowErrorsModal] = useState(false);
+	const [validationInfoData, setValidationInfoData] = useState([]);
+	const [dataIngestionFileListColumns, setDataIngestionFileListColumns] = useState([]);
+	const [fund, setFund] = useState(fundOptionsArray[0].label);
+	const [filteredData, setFilteredData] = useState([]);
+	const [searchText, setSearchText] = useState('');
+	const [reportDates, setReportDates] = useState(null);
 
+	// Fetch source files on mount
 	useEffect(() => {
 		blobFilesList();
 	}, []);
 
 	const blobFilesList = async () => {
-		const fundType = null;
 		setDataLoading(true);
+		const payload = {
+			"fund_type": null
+		};
 		try {
-			const blobResponse = await getBlobFilesList(fundType);
+			const blobResponse = await getBlobFilesList(payload);
 			setUploadedSourceFiles(blobResponse.data.result || { data: [], columns: [] });
 		} catch (err) {
 			console.error(err);
 			showToast("error", err.response?.data?.message || "Error loading files");
 		} finally {
 			setDataLoading(false);
+			setIsViewActive(false);
 		}
 	};
 
@@ -41,31 +54,35 @@ export const SourceFilesTab = () => {
 		);
 	};
 
-	return (
-		<div style={{ padding: '24px' }}>
-			<div style={{ background: '#fff', borderRadius: 8}}>
-				<div style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>Uploaded Source Files</div>
-				{dataLoading ? <LoaderSmall /> : (
-					<SourceFileTable
-						uploadedFiles={uploadedSourceFiles}
-						selectedIds={selectedIds}
-						toggleSelection={toggleSelection}
-					/>
-				)}
-			</div>
-		</div>
-	);
-};
+	const handleViewArchived = async () => {
+		setDataLoading(true);
+		try {
+			const res = await getArchive();
+			const archiveData = res.data.result.data;
+			setUploadedSourceFiles(archiveData);
+		} catch (err) {
+			console.error(err);
+			showToast("error", err.response.data.message);
+		} finally {
+			setDataLoading(false);
+			setIsViewActive(true);
+		}
+	};
 
-const SourceFileTable = ({ uploadedFiles, selectedIds, toggleSelection }) => {
-	const [showErrorsModal, setShowErrorsModal] = useState(false);
-	const [validationInfoData, setValidationInfoData] = useState([]);
-	const [dataIngestionFileListColumns, setDataIngestionFileListColumns] = useState([]);
-
-	const [fund, setFund] = useState(fundOptionsArray[0].label);
-	const [filteredData, setFilteredData] = useState([]);
-	const [searchText, setSearchText] = useState('');
-	const [reportDates, setReportDates] = useState(null);
+	console.info(selectedIds, 'ids');
+	const updateFilesArchiveStatus = async() => {
+		setDataLoading(true);
+		try {
+			await updateArchiveStatus(selectedIds, !isViewActive);
+			await blobFilesList();
+		} catch (err) {
+			console.error(err);
+			showToast("error", err.response.data.message);
+		} finally {
+			setSelectedIds([]);
+			setDataLoading(false);
+		}
+	};
 
 	// Initialize table columns
 	useEffect(() => {
@@ -88,26 +105,28 @@ const SourceFileTable = ({ uploadedFiles, selectedIds, toggleSelection }) => {
 			}
 		}];
 
-		const updatedColumns = injectRender([...columnsToAdd, ...uploadedFiles.columns]);
+		const updatedColumns = injectRender([...columnsToAdd, ...uploadedSourceFiles.columns]);
 		setDataIngestionFileListColumns(updatedColumns);
-	}, [uploadedFiles.columns, selectedIds, toggleSelection]);
+	}, [uploadedSourceFiles.columns, selectedIds]);
 
 	// Filter data based on search
 	useEffect(() => {
-		const filtered = uploadedFiles?.data?.filter(item =>
+		const filtered = uploadedSourceFiles?.data?.filter(item =>
 			item?.file_name?.toLowerCase().includes(searchText.toLowerCase())
 		);
 		setFilteredData(filtered);
-	}, [searchText, uploadedFiles]);
+	}, [searchText, uploadedSourceFiles]);
 
+	// Extract report dates
 	useEffect(() => {
-		const reportDateList = uploadedFiles?.data?.map(item => {
+		const reportDateList = uploadedSourceFiles?.data?.map(item => {
 			if (item?.report_date) {
 				return item.report_date;
 			}
-		});
+			return null;
+		}).filter(date => date !== null);
 		setReportDates(reportDateList);
-	}, [uploadedFiles]);
+	}, [uploadedSourceFiles]);
 
 	const injectRender = (columns) => {
 		return columns?.map((col) => {
@@ -167,30 +186,27 @@ const SourceFileTable = ({ uploadedFiles, selectedIds, toggleSelection }) => {
 	};
 
 	const handleDropdownChange = (fund) => {
-		if ( fundOptionsArray[fund].label !== "-- Select Fund --") {
+		if (fundOptionsArray[fund].label !== "-- Select Fund --") {
 			const choosedFund = fundOptionsArray[fund].label;
-			const selectedReportDateFiles = uploadedFiles?.data.filter(item => item.fund.includes(choosedFund));
-			setFilteredData(selectedReportDateFiles);
+			const selectedReportDateFiles = uploadedSourceFiles?.data.filter(item =>
+				item.fund?.includes(choosedFund)
+			);
+			setFilteredData(selectedReportDateFiles || []);
 		} else {
-			setFilteredData(uploadedFiles?.data);
+			setFilteredData(uploadedSourceFiles?.data || []);
 		}
 		setFund(fund);
 	};
 
 	const handleDateChange = (date, dateString) => {
 		if (date) {
-			const selectedReportDateFiles = uploadedFiles?.data.filter(item => {
-				if (fund !== "-- Select Fund --") {
-					return item.report_date === dateString;
-				} else {
-					return item.report_date === dateString;
-				}
-			});
-			setFilteredData(selectedReportDateFiles);
+			const selectedReportDateFiles = uploadedSourceFiles?.data.filter(item =>
+				item.report_date === dateString
+			);
+			setFilteredData(selectedReportDateFiles || []);
 		} else {
-			setFilteredData(uploadedFiles?.data);
+			setFilteredData(uploadedSourceFiles?.data || []);
 		}
-		setFund(0);
 	};
 
 	const handleSearch = (value) => {
@@ -202,51 +218,59 @@ const SourceFileTable = ({ uploadedFiles, selectedIds, toggleSelection }) => {
 	};
 
 	return (
-		<>
-			<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-				<span style={{ fontWeight: 500 }}>Filter by:</span>
-				<Select
-					defaultValue={fundOptionsArray[0].label}
-					style={{ width: 150, borderRadius: '8px', margin: "0.5rem 0rem" }}
-					onChange={handleDropdownChange}
-					value={fund}
-					options={fundOptionsArray}
-				/>
-				<Calender
-					fileUpload={true}
-					availableClosingDates={reportDates}
-					onDateChange={handleDateChange}
-				/>
-				<Input
-					placeholder="Search by file name"
-					value={searchText}
-					onChange={(e) => handleSearch(e.target.value)}
-					style={{ width: 200 }}
-					suffix={
-						searchText ?
-							<CloseOutlined style={{ cursor: 'pointer' }} onClick={handleClearSearch} /> :
-							<SearchOutlined />
-					}
-				/>
-				<div style={{ flex: 1 }} />
-				<UIComponents.Button text="View Archived" customStyle={{ background: '#2966d8', color: '#fff' }} btnDisabled={true} />
-				<UIComponents.Button
-					text="Archive Selected"
-					customStyle={{ background: '#ffe58f', color: '#ad6800' }}
-					// disabled={selectedRows.length === 0}
-					btnDisabled={true}
-				/>
-				<UIComponents.Button
-					text="Delete Selected"
-					customStyle={{ background: '#ff7875', color: '#fff' }}
-					// disabled={selectedRows.length === 0}
-					btnDisabled={true}
-				/>
+		<div style={{ padding: '24px' }}>
+			<div style={{ background: '#fff', borderRadius: 8}}>
+				<div style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>Uploaded Source Files</div>
+				<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+					{/* <span style={{ fontWeight: 500 }}>Filter by:</span> */}
+					<Select
+						defaultValue={fundOptionsArray[0].label}
+						style={{ width: 150, borderRadius: '8px', margin: "0.5rem 0rem" }}
+						onChange={handleDropdownChange}
+						value={fund}
+						options={fundOptionsArray}
+					/>
+					<Calender
+						fileUpload={true}
+						availableClosingDates={reportDates}
+						onDateChange={handleDateChange}
+					/>
+					<Input
+						placeholder="Search by file name"
+						value={searchText}
+						onChange={(e) => handleSearch(e.target.value)}
+						style={{ width: 200 }}
+						suffix={
+							searchText ?
+								<CloseOutlined style={{ cursor: 'pointer' }} onClick={handleClearSearch} /> :
+								<SearchOutlined />
+						}
+					/>
+					<div style={{ flex: 1 }} />
+					<UIComponents.Button
+						text={isViewActive ? "View Source Files" : "View Archived"}
+						customStyle={{ background: '#2966d8', color: '#fff' }}
+						onClick={isViewActive ? blobFilesList : handleViewArchived}
+					/>
+					<UIComponents.Button
+						text={isViewActive ? "Unarchive Selected" : "Archive Selected"}
+						customStyle={{ background: '#ffe58f', color: '#ad6800' }}
+						onClick={updateFilesArchiveStatus}
+						btnDisabled={isViewActive && selectedIds.length === 0 ? true : false}
+					/>
+					<UIComponents.Button
+						text="Delete Selected"
+						customStyle={{ background: '#ff7875', color: '#fff' }}
+						btnDisabled={true}
+					/>
+				</div>
+				{dataLoading ? <LoaderSmall /> : (
+					<DynamicTableComponents
+						data={filteredData}
+						columns={dataIngestionFileListColumns}
+					/>
+				)}
 			</div>
-			<DynamicTableComponents
-				data={filteredData}
-				columns={dataIngestionFileListColumns}
-			/>
-		</>
+		</div>
 	);
 };
